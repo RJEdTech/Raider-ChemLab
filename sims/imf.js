@@ -98,7 +98,7 @@ const IM={
     {id:'muA',label:'A: dipole moment',unit:'D',lvl:'ap',d:2,min:0,max:3,modes:['pair'],get:s=>SB[s.p.a].mu},
     {id:'muB',label:'B: dipole moment',unit:'D',lvl:'ap',d:2,min:0,max:3,modes:['pair'],get:s=>SB[s.p.b].mu}
   ],
-  graphs:[{id:'main',label:'Boiling points, liquid left, or vapor pressure (matches the view)',lvl:'bio',custom:true},{id:'cc',label:'ln P vs 1/T (Clausius–Clapeyron)',lvl:'ap',custom:true}],
+  graphs:[{id:'main',label:'Data for this view',lvl:'bio',custom:true},{id:'cc',label:'ln P vs 1/T',lvl:'ap',custom:true}],
   defaultGraph:'main',
   plot(sim,ctx,box,id){const p=sim.p,A=SB[p.a],B=SB[p.b];
     if(id==='cc'){const xs=[1/TK(100),1/TK(0)],pts=s=>{const out=[];for(let T=0;T<=100;T+=2)out.push([1000/TK(T),Math.log(vp(s,T))]);return out;};const pa=pts(A),pb=pts(B);const ys=pa.concat(pb).map(q=>q[1]);
@@ -133,10 +133,10 @@ const IM={
     if(ap&&A.M>40&&B.M>40&&Math.abs(A.M-B.M)<3)t+=' Same molar mass, different forces: the structure decides.';
     return t;},
   tour:[
-    {title:'Forces between molecules',text:'Inside each molecule, atoms are held by covalent bonds. Between molecules there are much weaker attractions: intermolecular forces. They decide whether a substance is a gas, a liquid or a solid at room temperature.',focus:[0,40,800,280],speed:1,setup(sim){BioLab.setValues(sim,{mode:'pair',a:'H2O',b:'CH4'});}},
-    {title:'London dispersion forces',text:'Methane is nonpolar, but its electron cloud is always shifting. A brief δ− on one molecule pushes the neighbor’s electrons away, making a δ+ that attracts it. Every molecule has these forces.',focus:[400,40,400,280],speed:0.5},
-    {title:'Hydrogen bonding',text:'In water, H is bonded to O, which pulls its electron away. The bare δ+ hydrogen is strongly attracted to a lone pair on the next O. Hydrogen bonds are the strongest of the three forces.',focus:[0,40,400,280],speed:1},
-    {title:'Boiling point follows the force',text:'Water boils at 100 °C; methane at −161.5 °C. Boiling separates the molecules from each other, not the atoms inside them, so stronger forces mean a higher boiling point.',focus:[0,300,800,150],speed:1},
+    {title:'Forces between molecules',text:'Inside each molecule, atoms are held by covalent bonds. Between molecules there are much weaker attractions: intermolecular forces. They decide whether a substance is a gas, a liquid or a solid at room temperature.',focus:[4,4,792,308],speed:1,setup(sim){BioLab.setValues(sim,{mode:'pair',a:'H2O',b:'CH4'});}},
+    {title:'London dispersion forces',text:'Methane is nonpolar, but its electron cloud is always shifting. A brief δ− on one molecule pushes the neighbor’s electrons away, making a δ+ that attracts it. Every molecule has these forces.',focus:[404,4,392,308],speed:0.5},
+    {title:'Hydrogen bonding',text:'In water, H is bonded to O, which pulls its electron away. The bare δ+ hydrogen is strongly attracted to a lone pair on the next O. Hydrogen bonds are the strongest of the three forces.',focus:[4,4,392,308],speed:1},
+    {title:'Boiling point follows the force',text:'Water boils at 100 °C; methane at −161.5 °C. Boiling separates the molecules from each other, not the atoms inside them, so stronger forces mean a higher boiling point.',focus:[4,316,792,130],speed:1},
     {lvl:'honors',title:'Size matters for London forces',text:'I₂ is nonpolar, yet it boils at 184 °C, far above polar HCl (−85 °C). I₂ has 106 electrons; a big electron cloud is easy to distort, so its London forces are strong.',focus:[0,40,800,410],speed:1,setup(sim){BioLab.setValues(sim,{a:'I2',b:'HCl'});}},
     {title:'The evaporation race',text:'Put 1.00 mL of water and of ethanol in two dishes at 25 °C. Ethanol’s molecules escape faster, because water’s hydrogen bonds hold its small molecules more tightly.',focus:[0,0,800,450],speed:1,setup(sim){BioLab.setValues(sim,{mode:'race',a:'H2O',b:'C2H5OH',temp:25});restart(sim);}},
     {lvl:'ap',title:'Vapor pressure',text:'In a closed flask, molecules escape until the vapor pressure is reached. It rises steeply with temperature. Where it hits 1 atm, the liquid boils: the Clausius–Clapeyron equation ties the curve to ΔHvap.',focus:[0,0,800,450],speed:1,setup(sim){BioLab.setValues(sim,{mode:'vp',a:'H2O',b:'C2H5OH',temp:60});}}

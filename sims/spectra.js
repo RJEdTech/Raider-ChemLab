@@ -212,7 +212,7 @@ const SIM={
     if(p.mode==='flame'){drawFlame(sim,ctx,k,t);return;}
     // Bohr atom
     for(let n=1;n<=6;n++){const r=rn(n);ctx.strokeStyle=n<=p.nhi?PAL['cv-soft']:PAL['line'];ctx.lineWidth=n<=p.nhi?1.6:1;ctx.setLineDash(n<=p.nhi?[]:[3,4]);ctx.beginPath();ctx.arc(AX,AY,r,0,6.29);ctx.stroke();}ctx.setLineDash([]);
-    const lang=-0.62;for(let n=2;n<=6;n++){const r=rn(n);const lab=n===6?'n = 6':String(n);ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(lab).width+6;const x=AX+Math.cos(lang)*r+(n===6?w/2-6:0),y=AY+Math.sin(lang)*r;
+    const lang=-0.62;for(let n=2;n<=6;n++){const r=rn(n);const lab=n===6&&k<1.25?'n = 6':String(n);ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(lab).width+6;const x=AX+Math.cos(lang)*r+(n===6?w/2-6:0),y=AY+Math.sin(lang)*r;
       ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(x-w/2,y-7*k,w,14*k);txt(ctx,lab,x,y,{s:12*k,w:700,a:'center',b:'middle',c:PAL['cv-soft']});}
     CL.drawAtom(ctx,AX,AY,10,'',{color:'#c0392b',label:'+'});
     if(st.zap>0&&!RM){const f=1-st.zap/0.5;ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(lerp(AX-150,AX-atomR(sim),f),AY+lerp(40,0,f),5,0,6.29);ctx.fill();}
