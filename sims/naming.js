@@ -635,6 +635,4 @@ function drawDrill(sim,ctx,k){const st=sim.st,d=st.d,P=PAL;if(!d)return;const io
     const lab=kn!==0?CL.fmt(a.f,a.q):'?';const z=fitText(ctx,lab,cw-12,14*k,12*k,700);txt(ctx,lab,x+cw/2,y+chh/2+1,{s:z,w:700,c:kn!==0?'#fff':P['cv-soft'],a:'center',b:'middle'});});}
 
 BioLab.register(SIM);
-/* expose the model for testing in Node */
-if(typeof window!=='undefined')window.__namingModel={mkIonic,mkMol,mkAcid,hydrate,catBySym,anionByF,checkName,checkFormula,choicesFor,genCompound,CAT1,CAT2,MONO,PA,MOLS,HYD,ACIDS,steps,pathFor,checkIon,ionFormulaNorm,allowed,NH4,HG2,COMMON,mkCommon,ionChoices,POSIONS,familyOf,acidName};
 })();
