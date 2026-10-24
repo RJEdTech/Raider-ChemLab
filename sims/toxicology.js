@@ -70,7 +70,7 @@ const TOX={
   controls:[
     {id:'view',label:'View',type:'seg',def:'ld50',lvl:'bio',noTrial:true,options:[{v:'ld50',l:'Dose and LD₅₀'},{v:'body',l:'In the bloodstream',lvl:'honors'}]},
     {id:'sub',label:'Substance',type:'select',def:'caffeine',lvl:'bio',modes:['ld50'],options:KEYS.map(k=>({v:k,l:SUB[k].l}))},
-    {id:'dose',label:'Dose given to the test group',type:'range',min:-1,max:5,step:0.01,def:Math.log10(192),unit:'',lvl:'bio',modes:['ld50'],help:'The slider is logarithmic: each step to the right multiplies the dose.'},
+    {id:'dose',label:'Dose given to the test group',type:'range',min:-1,max:5,step:0.01,def:Math.log10(192),unit:'',lvl:'bio',noTrial:true,modes:['ld50'],help:'The slider is logarithmic: each step to the right multiplies the dose.'},
     {id:'mass',label:'Body mass for scaling',type:'range',min:20,max:120,step:1,def:60,unit:' kg',lvl:'bio',help:'LD₅₀ × body mass gives the amount that matches the LD₅₀ for that mass.'},
     {id:'mg',label:'Caffeine per serving',type:'range',min:25,max:300,step:5,def:95,unit:' mg',lvl:'honors',modes:['body'],help:'A cup of brewed coffee has about 95 mg; a can of cola about 34 mg.'},
     {id:'n',label:'Number of servings',type:'range',min:1,max:6,step:1,def:1,unit:'',lvl:'honors',modes:['body']},
@@ -79,8 +79,9 @@ const TOX={
   ],
   actions:[{id:'replay',label:'Replay the day',lvl:'honors',modes:['body'],primary:true,run(sim){sim.st.th=0;}}],
   init(){return {th:0,hold:false};},
-  step(sim,dt){const st=sim.st;if(!st.hold)st.th=Math.min(HOURS,st.th+dt*HRATE);doseOut(sim);},
+  step(sim,dt){const st=sim.st;if(st.ramp){if(sim.p.dose<st.ramp)BioLab.setValues(sim,{dose:Math.min(st.ramp,sim.p.dose+dt*0.25)});else st.ramp=0;}if(!st.hold)st.th=Math.min(HOURS,st.th+dt*HRATE);doseOut(sim);},
   metrics:[
+    {id:'dmg',label:'Dose given',unit:'mg/kg',lvl:'bio',min:0,max:null,d:1,modes:['ld50'],get:s=>dose(s.p)},
     {id:'resp',label:'Test group responding',unit:'',lvl:'bio',text:true,modes:['ld50'],get:s=>{const n=responding(SUB[s.p.sub],dose(s.p));return n+' of '+N;}},
     {id:'pct',label:'Expected response at this dose',unit:'%',lvl:'bio',min:0,max:100,d:1,modes:['ld50'],get:s=>100*R(SUB[s.p.sub],dose(s.p))},
     {id:'ld',label:'LD₅₀ (rat, oral)',unit:'mg/kg',lvl:'bio',min:0,max:null,d:1,modes:['ld50'],get:s=>SUB[s.p.sub].ld},
@@ -100,13 +101,12 @@ const TOX={
   plot(sim,ctx,box,id){const p=sim.p,W=box.cw,H=box.ch;
     if(id==='ladder'){const b={x:box.L+90,y:box.T+4,w:box.W-96,h:box.H-8};const x0=0,x1=5;ctx.strokeStyle=PAL['g-grid'];ctx.lineWidth=1;
       const X=v=>b.x+(Math.log10(v)-x0)/(x1-x0)*b.w,rowH=b.h/KEYS.length;
-      for(let e=x0;e<=x1;e++){const x=Math.round(b.x+(e-x0)/(x1-x0)*b.w)+.5;ctx.beginPath();ctx.moveTo(x,b.y);ctx.lineTo(x,b.y+b.h);ctx.stroke();txt(ctx,Math.pow(10,e).toLocaleString('en-US'),x,b.y+b.h+16,{s:12,c:PAL['g-axis'],a:'center'});}
+      for(let e=x0;e<=x1;e++){const x=Math.round(b.x+(e-x0)/(x1-x0)*b.w)+.5;ctx.beginPath();ctx.moveTo(x,b.y);ctx.lineTo(x,b.y+b.h);ctx.stroke();txt(ctx,b.w<400?['1','10','100','1k','10k','100k'][e]:Math.pow(10,e).toLocaleString('en-US'),x,b.y+b.h+16,{s:12,c:PAL['g-axis'],a:'center'});}
       KEYS.slice().sort((a,c)=>SUB[a].ld-SUB[c].ld).forEach((key,i)=>{const S=SUB[key],y=b.y+rowH*(i+0.5),x=X(S.ld),sel=key===p.sub;
         ctx.fillStyle=sel?PAL['s1']:PAL['g-axis'];ctx.globalAlpha=sel?1:0.55;ctx.fillRect(b.x,y-rowH*0.28,x-b.x,rowH*0.56);ctx.globalAlpha=1;
-        txt(ctx,S.l.split(' (')[0],b.x-8,y,{s:12,c:sel?PAL['fg']:PAL['muted'],a:'right',b:'middle',w:sel?700:400});txt(ctx,(S.ld>=100?Math.round(S.ld).toLocaleString('en-US'):S.ld),x+6,y,{s:12,c:PAL['muted'],b:'middle'});});
+        txt(ctx,S.l.split(' (')[0],b.x-8,y,{s:12,c:sel?PAL['fg']:PAL['muted'],a:'right',b:'middle',w:sel?700:400});const vl=String(S.ld>=100?Math.round(S.ld).toLocaleString('en-US'):S.ld);ctx.font='12px '+FONT;const inside=x+6+ctx.measureText(vl).width>b.x+b.w;if(inside){ctx.font='700 12px '+FONT;pill(ctx,vl,x-ctx.measureText(vl).width/2-12,y,PAL['card'],PAL['fg'],12);}else txt(ctx,vl,x+6,y,{s:12,c:PAL['muted'],b:'middle'});});
       txt(ctx,'LD₅₀ (mg/kg, log scale). Shorter bar = more toxic.',b.x+b.w,box.ch-4,{s:13,c:PAL['muted'],a:'right'});return;}
-    if(id==='conc'){if(p.view!=='body'){txt(ctx,'Switch the view to “In the bloodstream”.',W/2,H/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
-      drawConc(ctx,sim,{x:box.L,y:box.T+18,w:box.W,h:box.H-18},1,true);return;}
+    if(id==='conc'){drawConc(ctx,sim,{x:box.L,y:box.T+18,w:box.W,h:box.H-18},1,true);return;}
     if(id==='logit'){const S=SUB[p.sub],b={x:box.L,y:box.T,w:box.W,h:box.H};const lx0=Math.log10(S.ld)-1,lx1=Math.log10(S.ld)+1;
       const X=v=>b.x+(v-lx0)/(lx1-lx0)*b.w,Y=v=>b.y+b.h/2-v/6*b.h/2;ctx.strokeStyle=PAL['g-grid'];ctx.lineWidth=1;
       for(let v=-6;v<=6;v+=3){const y=Math.round(Y(v))+.5;ctx.beginPath();ctx.moveTo(b.x,y);ctx.lineTo(b.x+b.w,y);ctx.stroke();txt(ctx,String(v),b.x-8,y,{s:13,c:PAL['g-axis'],a:'right',b:'middle'});}
@@ -139,15 +139,15 @@ const TOX={
     return s;},
   tour:[
     {title:'A dose–response test',text:{bio:'Toxicologists give groups of test animals a dose of a substance and count how many respond. Each rat here is one animal in a group of 40. The dose is in milligrams per kilogram of body mass.',honors:'Classic LD₅₀ tests used large groups. Modern guidelines (such as the OECD up-and-down procedure) estimate the LD₅₀ with far fewer animals.'},focus:[16,56,300,290],pause:true,setup(sim){BioLab.setValues(sim,{view:'ld50',sub:'caffeine',dose:1.4});}},
-    {title:'Raise the dose',text:'At a low dose no animal responds. As the dose rises, the animals with the lowest tolerance respond first. Individuals differ, so the response grows gradually.',focus:[[16,56,300,290],[330,40,460,290]],speed:1,setup(sim){BioLab.setValues(sim,{dose:2.0});}},
-    {title:'The S-shaped curve',text:'Plotted against the log of the dose, the share responding makes an S. The LD₅₀ is the dose where half the group responds: 192 mg/kg for caffeine in rats.',focus:[330,40,460,290],speed:1,setup(sim){BioLab.setValues(sim,{dose:Math.log10(192)});}},
+    {title:'Raise the dose',text:'At a low dose no animal responds. As the dose rises, the animals with the lowest tolerance respond first. Individuals differ, so the response grows gradually.',focus:[[16,56,300,290],[330,40,460,290]],speed:1,setup(sim){BioLab.setValues(sim,{dose:1.4});sim.st.ramp=2.6;}},
+    {title:'The S-shaped curve',text:'Plotted against the log of the dose, the share responding makes an S. The LD₅₀ is the dose where half the group responds: 192 mg/kg for caffeine in rats.',focus:[330,40,460,290],speed:1,setup(sim){sim.st.ramp=0;BioLab.setValues(sim,{dose:Math.log10(192)});}},
     {title:'Lower LD₅₀, more toxic',text:'Switch to nicotine. Its curve sits far to the left: half the group responds at only 50 mg/kg. The lower the LD₅₀, the more toxic the substance.',focus:[330,40,460,290],speed:1,setup(sim){BioLab.setValues(sim,{sub:'nicotine',dose:Math.log10(50)});}},
     {title:'Scale by body mass',text:'Multiply the LD₅₀ by a body mass: 192 mg/kg × 60 kg = 11.5 g of caffeine. That is the classic worksheet math. It comes from rats, and real harm starts far lower, so it is never a safe amount.',focus:[12,334,776,110],pause:true,setup(sim){BioLab.setValues(sim,{sub:'caffeine',dose:Math.log10(192),mass:60});}},
     {title:'The dose makes the poison',text:'Even water has an LD₅₀ (about 90 000 mg/kg in rats). Paracelsus wrote that all things are poison and only the dose makes a thing not a poison. Toxicity is about how much, not just what.',focus:[330,40,460,290],speed:1,setup(sim){BioLab.setValues(sim,{sub:'water',dose:Math.log10(90000)});}},
     {lvl:'honors',title:'Into the bloodstream',text:'One cup of coffee: caffeine is absorbed in about an hour, peaks near 2 mg/L in a 60 kg person, then the liver clears it. Each dot in the circle stands for a fixed amount of caffeine.',focus:[[16,40,300,300],[330,40,460,290]],speed:1,setup(sim){BioLab.setValues(sim,{view:'body',n:1,mg:95,tau:4});sim.st.th=0;}},
     {lvl:'honors',title:'Half-life and build-up',text:'Elimination is first order: half the caffeine is gone every half-life (about 5 h). A new serving every 4 hours arrives before the last is cleared, so the level climbs toward a steady state.',focus:[330,40,460,290],speed:1,setup(sim){BioLab.setValues(sim,{view:'body',n:6,mg:95,tau:4});sim.st.th=0;}}
   ],
-  onTourExit(sim){const b={};sim.def.controls.forEach(c=>b[c.id]=c.def);BioLab.setValues(sim,b);sim.st.th=0;sim.st.hold=false;syncMode(sim);},
+  onTourExit(sim){sim.st.ramp=0;const b={};sim.def.controls.forEach(c=>b[c.id]=c.def);BioLab.setValues(sim,b);sim.st.th=0;sim.st.hold=false;syncMode(sim);},
   onChallenge(sim,ch,phase){if(phase==='ask'){sim.st.hold=false;}if(ch&&ch.instant&&ch.set&&phase==='done'){BioLab.setValues(sim,ch.set);if(ch.th!==undefined){sim.st.th=ch.th;sim.st.hold=true;}syncMode(sim);BioLab.refresh(sim);}},
   challenges:[
     {lvl:'bio',q:'At 96 mg/kg of caffeine, about 2 of the 40 rats respond. What happens if you double the dose to 192 mg/kg?',choices:['About twice as many respond (4 of 40)','About half the group responds (20 of 40)','All 40 respond'],correct:1,
