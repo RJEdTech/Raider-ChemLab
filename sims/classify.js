@@ -9,7 +9,7 @@ const CL=window.ChemLab;
    Properties mode: sort property cards into physical or chemical (and intensive or extensive). */
 const W=800,H=500,CX=340,CY=240,R=160;
 const ss=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
-const RAD={H:5.5,C:9,N:8.5,O:8.5,He:7,Ne:8,Ar:10,Na:7.5,Cl:10.5,Cu:9.5,Zn:9.5,Fe:9.5,S:9.5,Si:9};
+const SC=1.4;const RAD={H:5.5,C:9,N:8.5,O:8.5,He:7,Ne:8,Ar:10,Na:7.5,Cl:10.5,Cu:9.5,Zn:9.5,Fe:9.5,S:9.5,Si:9};Object.keys(RAD).forEach(k=>RAD[k]*=SC);
 const TPL={
   He:{a:[['He',0,0]]},Ar:{a:[['Ar',0,0]]},Ne:{a:[['Ne',0,0]]},Cu:{a:[['Cu',0,0]]},Zn:{a:[['Zn',0,0]]},Fe:{a:[['Fe',0,0]]},S:{a:[['S',0,0]]},Si:{a:[['Si',0,0]]},Ox:{a:[['O',0,0]]},
   'Na+':{a:[['Na',0,0]],q:'+'},'Cl-':{a:[['Cl',0,0]],q:'−'},
@@ -22,6 +22,7 @@ const TPL={
   Fe2O3:{a:[['Fe',-9,0],['Fe',9,0],['O',0,-12],['O',0,12],['O',-23,0]],b:[[0,2],[0,3],[1,2],[1,3],[0,4]]},
   oil:{a:[['C',-25,4],['C',-15,-4],['C',-5,4],['C',5,-4],['C',15,4],['C',25,-4]],b:[[0,1],[1,2],[2,3],[3,4],[4,5]]}
 };
+Object.keys(TPL).forEach(k=>{TPL[k].a=TPL[k].a.map(([s,x,y])=>[s,x*SC,y*SC]);});
 const ext=f=>{const t=TPL[f];let e=0;t.a.forEach(([s,x,y])=>{e=Math.max(e,Math.hypot(x,y)+RAD[s]);});return e;};
 const LABEL={'Na+':'Na⁺','Cl-':'Cl⁻',oil:'C₆H₁₄',Ox:'O'};
 const lab=f=>LABEL[f]||CL.fmt(f);
@@ -35,7 +36,7 @@ const SAMPLES={
       why:'Each particle is an O₂ molecule: two atoms bonded together, but both are oxygen. A molecule made of one kind of atom is still an <b>element</b>.'},
   cu:{l:'Copper wire',comps:[{lat:['Cu'],ph:'s'}],cls:'element',sub:'atoms',macro:'wire',sym:'Cu(s)',
       why:'The wire is a solid grid of copper atoms and nothing else. One kind of atom, so copper is an <b>element</b>.'},
-  h2o:{l:'Pure water',comps:[{f:'H2O',n:20,ph:'l'}],cls:'compound',macro:'beaker',sym:'H₂O(l)',
+  h2o:{l:'Pure water',comps:[{f:'H2O',n:34,ph:'l'}],cls:'compound',macro:'beaker',sym:'H₂O(l)',
       why:'Every particle is the same H₂O molecule, so water is one substance. Each molecule holds two kinds of atoms bonded in a fixed ratio, so it is a <b>compound</b>.'},
   co2:{l:'Carbon dioxide gas',comps:[{f:'CO2',n:10,ph:'g'}],cls:'compound',macro:'flask',sym:'CO₂(g)',
       why:'Every particle is a CO₂ molecule: one carbon and two oxygen atoms bonded together. One substance made of two elements is a <b>compound</b>.'},
@@ -43,11 +44,11 @@ const SAMPLES={
       why:'This flask holds the same atoms as water, but they are not bonded into H₂O. H₂ and O₂ molecules are two different substances spread evenly, so it is a <b>homogeneous mixture</b> of two elements.'},
   air:{l:'Air',comps:[{f:'N2',n:13,ph:'g'},{f:'O2',n:3,ph:'g'},{f:'Ar',n:1,ph:'g'}],cls:'homog',mixOf:'elements',macro:'flask',sym:'N₂(g) + O₂(g) + Ar(g)',vary:{c:1,min:1,max:8},
       why:'N₂, O₂ and Ar particles are three substances mixed evenly all the way down to single particles, so air is a <b>homogeneous mixture</b>.'},
-  salt:{l:'Salt water',comps:[{f:'H2O',n:20,ph:'l'},{f:'Na+',n:3,ph:'l',as:'NaCl'},{f:'Cl-',n:3,ph:'l',as:'NaCl',nc:true}],cls:'homog',mixOf:'compounds',macro:'beaker',sym:'NaCl(aq)',vary:{c:[1,2],min:1,max:6},
+  salt:{l:'Salt water',comps:[{f:'H2O',n:30,ph:'l'},{f:'Na+',n:3,ph:'l',as:'NaCl'},{f:'Cl-',n:3,ph:'l',as:'NaCl',nc:true}],cls:'homog',mixOf:'compounds',macro:'beaker',sym:'NaCl(aq)',vary:{c:[1,2],min:1,max:6},
       why:'Water molecules and dissolved Na⁺ and Cl⁻ ions are spread evenly, and every drop looks the same. Two substances mixed evenly make a <b>homogeneous mixture</b>, also called a solution.'},
-  sand:{l:'Sand in water',comps:[{f:'H2O',n:14,ph:'l',reg:{y0:-0.55,y1:0.38}},{lat:['Si','Ox'],alt:true,ph:'s',reg:{y0:0.42,y1:1}}],cls:'heter',mixOf:'compounds',macro:'sandy',sym:'SiO₂(s) + H₂O(l)',vary:{sand:true},
+  sand:{l:'Sand in water',comps:[{f:'H2O',n:18,ph:'l',reg:{y0:-0.55,y1:0.38}},{lat:['Si','Ox'],alt:true,ph:'s',reg:{y0:0.42,y1:1}}],cls:'heter',mixOf:'compounds',macro:'sandy',sym:'SiO₂(s) + H₂O(l)',vary:{sand:true},
       why:'The sand (SiO₂) sits in its own solid layer and the water is above it. You can see different parts, so it is a <b>heterogeneous mixture</b>.'},
-  oil:{l:'Oil and water',comps:[{f:'oil',n:5,ph:'l',reg:{y0:-0.62,y1:-0.06}},{f:'H2O',n:14,ph:'l',reg:{y0:0.02,y1:1}}],cls:'heter',mixOf:'compounds',macro:'layers',sym:'C₆H₁₄(l) + H₂O(l)',
+  oil:{l:'Oil and water',comps:[{f:'oil',n:5,ph:'l',reg:{y0:-0.62,y1:-0.06}},{f:'H2O',n:18,ph:'l',reg:{y0:0.02,y1:1}}],cls:'heter',mixOf:'compounds',macro:'layers',sym:'C₆H₁₄(l) + H₂O(l)',
       why:'Oil molecules stay in their own layer on top of the water. Two visible layers means a <b>heterogeneous mixture</b>.'},
   fes:{l:'Iron filings and sulfur powder',comps:[{lat:['Fe'],ph:'s',reg:{x0:-1,x1:-0.08,y0:0.05,y1:1}},{lat:['S'],ph:'s',reg:{x0:0.08,x1:1,y0:-0.2,y1:1}}],cls:'heter',mixOf:'elements',macro:'powder',sym:'Fe(s) + S(s)',
       why:'Grains of iron and grains of sulfur sit side by side without bonding. A magnet could pull the iron out. Separate grains you can see make a <b>heterogeneous mixture</b> of two elements.'},
@@ -65,12 +66,12 @@ const sampleList=()=>Object.keys(SAMPLES).filter(k=>atLeast(SAMPLES[k].lvl||'bio
 
 /* ---------- changes ---------- */
 const PROCS={
-  melt:{l:'Melting ice',phys:true,eq:'H₂O(s) → H₂O(l)',macro:'ice',before:[{f:'H2O',n:16,ph:'s',reg:{y0:-0.3,y1:1}}],after:[{f:'H2O',n:16,ph:'l',reg:{y0:-0.25,y1:1}}],
+  melt:{l:'Melting ice',phys:true,eq:'H₂O(s) → H₂O(l)',macro:'ice',before:[{f:'H2O',n:24,ph:'s',reg:{y0:-0.45,y1:1}}],after:[{f:'H2O',n:24,ph:'l',reg:{y0:-0.4,y1:1}}],
         what:'The H₂O molecules leave their fixed places and slide past each other, but every one is still H₂O.'},
-  boil:{l:'Boiling water',phys:true,eq:'H₂O(l) → H₂O(g)',macro:'boil',before:[{f:'H2O',n:16,ph:'l',reg:{y0:-0.25,y1:1}}],after:[{f:'H2O',n:16,ph:'g'}],
+  boil:{l:'Boiling water',phys:true,eq:'H₂O(l) → H₂O(g)',macro:'boil',before:[{f:'H2O',n:22,ph:'l',reg:{y0:-0.4,y1:1}}],after:[{f:'H2O',n:22,ph:'g'}],
         what:'The H₂O molecules break away from each other and fly apart as a gas. Bonds inside each molecule never break.'},
   dissolve:{l:'Dissolving salt in water',phys:true,eq:'NaCl(s) → Na⁺(aq) + Cl⁻(aq)',macro:'dissolve',
-        before:[{lat:['Na+','Cl-'],alt:true,grid:[4,2],at:[0,0.62],ph:'s'},{f:'H2O',n:14,ph:'l',reg:{y0:-0.55,y1:0.38}}],after:[{f:'Na+',n:4,ph:'l'},{f:'Cl-',n:4,ph:'l'},{f:'H2O',n:14,ph:'l'}],
+        before:[{lat:['Na+','Cl-'],alt:true,grid:[4,2],at:[0,0.62],ph:'s'},{f:'H2O',n:20,ph:'l',reg:{y0:-0.55,y1:0.38}}],after:[{f:'Na+',n:4,ph:'l'},{f:'Cl-',n:4,ph:'l'},{f:'H2O',n:20,ph:'l'}],
         what:'Water pulls the Na⁺ and Cl⁻ ions out of the crystal and spreads them through the water. Evaporate the water and you get the same NaCl back.'},
   electro:{l:'Electrolysis of water',phys:false,eq:'2H₂O(l) → 2H₂(g) + O₂(g)',macro:'electro',before:[{f:'H2O',n:8,ph:'l',reg:{y0:-0.4,y1:1}}],after:[{f:'H2',n:8,ph:'g',reg:{x0:-1,x1:-0.04}},{f:'O2',n:4,ph:'g',reg:{x0:0.04,x1:1}}],
         what:'Electricity breaks the bonds inside H₂O. The same H and O atoms regroup into two new substances: H₂ gas and O₂ gas, twice as much H₂ as O₂.'},
@@ -110,7 +111,7 @@ function regBox(reg){reg=reg||{};return {x0:CX+(reg.x0===undefined?-1:reg.x0)*R,
 const inCirc=(x,y,m)=>Math.hypot(x-CX,y-CY)<=R-m;
 function makeMol(f,x,y,ph,box,r){const t=TPL[f];const sp=ph==='g'?55:16,a=r()*6.283;
   return {f,t,tr:{x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,a:r()*6.283,va:(r()-0.5)*(ph==='g'?3:1),ph,hx:x,hy:y,box,e:ext(f),p1:r()*6.283,p2:r()*6.283}};}
-function latticeSites(comp,r){const sp=comp.alt?(comp.lat.includes('Cl-')?19.5:(comp.lat.includes('Ox')?18.5:20)):20.5;const pts=[];
+function latticeSites(comp,r){const sp=SC*(comp.alt?(comp.lat.includes('Cl-')?19.5:(comp.lat.includes('Ox')?18.5:20)):20.5);const pts=[];
   if(comp.grid){const [nx,ny]=comp.grid,cx=CX+comp.at[0]*R,cy=CY+comp.at[1]*R;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)pts.push([cx+(i-(nx-1)/2)*sp,cy+(j-(ny-1)/2)*sp,i,j]);return pts;}
   const b=regBox(comp.reg);const hex=!comp.alt;const dy=hex?sp*0.866:sp;
   for(let j=-20;j<=20;j++)for(let i=-20;i<=20;i++){const x=CX+i*sp+(hex&&(j&1)?sp/2:0),y=CY+j*dy;if(inCirc(x,y,12)&&x>=b.x0+6&&x<=b.x1-6&&y>=b.y0+6&&y<=b.y1-4)pts.push([x,y,i,j]);}
@@ -169,7 +170,7 @@ function amtOpt(sim){const s=SAMPLES[sim.p.sample],v=s.vary,a=atLeast('honors')?
   if(v.mix)return {mix:lerp(0.08,0.45,a)};if(v.sand)return {sandY:lerp(0.78,0.1,a)};
   const n=Math.round(lerp(v.min,v.max,a)),counts={};(Array.isArray(v.c)?v.c:[v.c]).forEach(ci=>counts[ci]=n);return {counts};}
 function sampleComps(sim){const s=SAMPLES[sim.p.sample],o=amtOpt(sim);if(o.sandY===undefined)return s.comps;
-  return [{f:'H2O',n:Math.round(lerp(16,8,(0.78-o.sandY)/0.68)),ph:'l',reg:{y0:-0.55,y1:o.sandY-0.04}},{lat:['Si','Ox'],alt:true,ph:'s',reg:{y0:o.sandY,y1:1}}];}
+  return [{f:'H2O',n:Math.round(lerp(20,10,(0.78-o.sandY)/0.68)),ph:'l',reg:{y0:-0.55,y1:o.sandY-0.04}},{lat:['Si','Ox'],alt:true,ph:'s',reg:{y0:o.sandY,y1:1}}];}
 function sortSet(sim){const v=sim.vis,p=sim.p,key=p.sample+'|'+(atLeast('honors')?p.amt:50);if(v.sKey!==key||!v.set){v.sKey=key;v.set=buildSet(sampleComps(sim),7,amtOpt(sim));}return v.set;}
 function chg(sim){const v=sim.vis,p=sim.p;if(v.cKey!==p.proc||!v.B){v.cKey=p.proc;const pr=PROCS[p.proc];v.B=buildSet(pr.before,11);v.A=buildSet(pr.after,23);v.map=mapAtoms(pr,v.B,v.A);}return v;}
 function mapAtoms(pr,B,A){const pairs=[];
@@ -191,10 +192,10 @@ function propCall(sim,k){const st=sim.st;if(st.pcall)return;st.pcall=k;st.ptries
 
 /* ---------- SVG particle diagrams for the challenge panel ---------- */
 function svgDiagram(spec,seed){const r=rng(seed),Wd=230,Hd=150,placed=[];let body='';const atoms=[],bonds=[];
-  spec.forEach(({f,n})=>{const t=TPL[f],e=ext(f)*0.85;for(let k=0;k<n;k++){let x=0,y=0;for(let tr=0;tr<300;tr++){x=e+6+r()*(Wd-2*e-12);y=e+6+r()*(Hd-2*e-12);if(placed.every(p=>Math.hypot(p[0]-x,p[1]-y)>p[2]+e+3))break;}
-    placed.push([x,y,e]);const a=r()*6.283;const pts=t.a.map(([s,dx,dy])=>{const [rx,ry]=rot(dx*0.85,dy*0.85,a);return [s,x+rx,y+ry];});
+  spec.forEach(({f,n})=>{const t=TPL[f],e=ext(f)*0.6;for(let k=0;k<n;k++){let x=0,y=0;for(let tr=0;tr<300;tr++){x=e+6+r()*(Wd-2*e-12);y=e+6+r()*(Hd-2*e-12);if(placed.every(p=>Math.hypot(p[0]-x,p[1]-y)>p[2]+e+3))break;}
+    placed.push([x,y,e]);const a=r()*6.283;const pts=t.a.map(([s,dx,dy])=>{const [rx,ry]=rot(dx*0.6,dy*0.6,a);return [s,x+rx,y+ry];});
     (t.b||[]).forEach(([i,j])=>bonds.push(`<line x1="${pts[i][1].toFixed(1)}" y1="${pts[i][2].toFixed(1)}" x2="${pts[j][1].toFixed(1)}" y2="${pts[j][2].toFixed(1)}" stroke="#8a8f98" stroke-width="4" stroke-linecap="round"/>`));
-    pts.forEach(([s,px,py])=>atoms.push(`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(RAD[s]*0.85).toFixed(1)}" fill="${CL.cpk(s)}" stroke="#333" stroke-width="1"/>`));}});
+    pts.forEach(([s,px,py])=>atoms.push(`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(RAD[s]*0.6).toFixed(1)}" fill="${CL.cpk(s)}" stroke="#333" stroke-width="1"/>`));}});
   const els=[];spec.forEach(({f})=>TPL[f].a.forEach(([s])=>{if(!els.includes(s))els.push(s);}));
   const key=els.map((s,i)=>`<circle cx="${12+i*58}" cy="${Hd+16}" r="6" fill="${CL.cpk(s)}" stroke="#333"/><text x="${22+i*58}" y="${Hd+21}" font-size="13" fill="currentColor">${s}</text>`).join('');
   body=`<rect x="1" y="1" width="${Wd-2}" height="${Hd-2}" rx="10" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="2"/>`+bonds.join('')+atoms.join('')+key;

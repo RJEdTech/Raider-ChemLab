@@ -122,12 +122,12 @@ const SIM={
     {id:'acc',label:'Accepted percent water',unit:'%',lvl:'ap',min:0,max:60,d:1,get:s=>{const c=calc(s.st),h=HYD[s.st.h||s.p.hyd];return h.unknown&&!c.constant?NaN:h.acc;}},
     {id:'err',label:'Percent error',unit:'%',lvl:'ap',min:0,max:20,d:1,get:s=>{const c=calc(s.st),h=HYD[s.st.h||s.p.hyd];if(h.unknown&&!c.constant)return NaN;return 100*Math.abs(c.pct-h.acc)/h.acc;}}
   ],
-  graphs:[{id:'mass',label:'Mass after each weighing',lvl:'bio',custom:true},{id:'tga',label:'Thermogravimetric curve (mass vs temperature)',lvl:'ap',custom:true}],
+  graphs:[{id:'mass',label:'Mass at each weighing',lvl:'bio',custom:true},{id:'tga',label:'TGA: mass vs temperature',lvl:'ap',custom:true}],
   defaultGraph:'mass',
   plot(sim,ctx,box,id){const st=sim.st;
-    if(id==='tga'){const h=HYD[st.h||sim.p.hyd];const ax=axes(ctx,box,{xmin:25,xmax:800,ymin:40,ymax:102,xl:'Temperature (°C)',yl:'% of starting mass'});
+    if(id==='tga'){const h=HYD[st.h||sim.p.hyd];const ax=axes(ctx,box,{xmin:25,xmax:800,ymin:25,ymax:102,xl:'Temperature (°C)',yl:'% of starting mass'});
       [[LOWT,'low flame'],[520,'strong flame'],[750,'red-hot']].forEach(([T,l],i)=>{ctx.strokeStyle=PAL['muted'];ctx.setLineDash([3,4]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax.X(T),box.T);ctx.lineTo(ax.X(T),box.T+box.H);ctx.stroke();ctx.setLineDash([]);
-        txt(ctx,l,ax.X(T)+4,box.T+14+i*16,{s:12,c:PAL['muted']});});
+        txt(ctx,l,ax.X(T)+(i===2?-4:4),box.T+14+i*16,{s:12,c:PAL['muted'],a:i===2?'right':'left'});});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=serColor(1);ctx.lineWidth=2.5;ctx.beginPath();
       for(let T=25;T<=800;T+=3){const y=ax.Y(tgaPct(h,T));T===25?ctx.moveTo(ax.X(T),y):ctx.lineTo(ax.X(T),y);}ctx.stroke();
       const anh=100*h.Ma/h.Mh;ctx.setLineDash([6,4]);ctx.strokeStyle=serColor(2);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(box.L,ax.Y(anh));ctx.lineTo(box.L+box.W,ax.Y(anh));ctx.stroke();ctx.setLineDash([]);ctx.restore();
@@ -239,7 +239,7 @@ const SIM={
     if(heating&&!RM&&wFrac(st)>0.02)for(let i=0;i<6;i++){const ph=(t*0.9+i/6)%1;ctx.fillStyle=PAL['cv-soft'];ctx.globalAlpha=0.35*(1-ph);ctx.beginPath();ctx.arc(st.pos[0]-14+i*6+Math.sin(t*3+i)*6,st.pos[1]-26-ph*60,4+ph*7,0,6.29);ctx.fill();}
     ctx.globalAlpha=1;
     // zoom circle
-    drawZoom(sim,ctx,420,158,92,vdt,k,t,c);
+    drawZoom(sim,ctx,420,160,98,vdt,k,t,c);drawSteps(ctx,st,c,k);
     // header: equation + status
     const eq=hf(h)+'(s) → '+CL.fmt(h.anh)+'(s) + '+(h.unknown?'x':h.x)+'H₂O(g)';
     txt(ctx,eq,16,30,{s:15*k,w:700});
@@ -285,9 +285,9 @@ function drawZoom(sim,ctx,cx,cy,R,vdt,k,t,c){const st=sim.st,v=sim.vis,h=HYD[st.
   ctx.beginPath();ctx.arc(cx,cy,R-1,0,6.29);ctx.clip();
   const hide=h.unknown&&!c.constant;const units=6,heat=st.cur&&st.cur.k==='heat'?1:0,jig=RM?0:(0.6+2.2*heat);
   const totalW=st.h?Math.round(units*h.x*wFrac(st)):units*h.x;const oxU=st.h?Math.round(units*st.nOx/Math.max(1e-9,st.nA+st.nOx)):0;
-  if(v.prevB!==null&&totalW<v.prevB&&!hide){for(let i=totalW;i<v.prevB;i++){const u=i%units,col=u%3,row=Math.floor(u/3);v.esc.push({x:cx-56+col*56,y:cy-24+row*52,vx:(Math.random()-0.5)*30,vy:-40-Math.random()*40,life:1.6});}}
+  if(v.prevB!==null&&totalW<v.prevB&&!hide){for(let i=totalW;i<v.prevB;i++){const u=i%units,col=u%3,row=Math.floor(u/3);v.esc.push({x:cx-60+col*60,y:cy-26+row*56,vx:(Math.random()-0.5)*30,vy:-40-Math.random()*40,life:1.6});}}
   v.prevB=totalW;
-  for(let u=0;u<units;u++){const col=u%3,row=Math.floor(u/3),ux=cx-56+col*56,uy=cy-24+row*52;const ph=u*1.7;
+  for(let u=0;u<units;u++){const col=u%3,row=Math.floor(u/3),ux=cx-60+col*60,uy=cy-26+row*56;const ph=u*1.7;
     const j=a=>Math.sin(t*9+ph+a)*jig;
     const nw=Math.floor(totalW/units)+(u<totalW%units?1:0);
     const isOx=u<oxU;
@@ -296,13 +296,20 @@ function drawZoom(sim,ctx,cx,cy,R,vdt,k,t,c){const st=sim.st,v=sim.vis,h=HYD[st.
     else if(h.an==='SO4')ChemLab.drawAtom(ctx,ux+(hide?14:0)+j(2),uy+19+j(3),8,'S',{color:'#d4a017',label:''});
     else{ChemLab.drawAtom(ctx,ux-15+j(2),uy+15+j(3),7,'Cl',{label:''});ChemLab.drawAtom(ctx,ux+15+j(4),uy+15+j(5),7,'Cl',{label:''});}
     if(h.an==='SO4'&&!isOx)for(let i=0;i<4;i++){const a=i*Math.PI/2+0.6;ChemLab.drawAtom(ctx,ux+(hide?14:0)+Math.cos(a)*9+j(2),uy+19+Math.sin(a)*7+j(3),4,'O',{label:''});}
-    if(!hide)for(let i=0;i<nw;i++){const a=-Math.PI*0.95+i*(Math.PI*1.3/Math.max(1,h.x-1));const r=21;drawWater(ctx,ux+Math.cos(a)*r+j(i+6),uy+Math.sin(a)*r*0.85+j(i+7),a);}}
+    if(!hide)for(let i=0;i<nw;i++){const a=-Math.PI*0.95+i*(Math.PI*1.3/Math.max(1,h.x-1));const r=20;drawWater(ctx,ux+Math.cos(a)*r+j(i+6),uy+Math.sin(a)*r*0.85+j(i+7),a);}}
   v.esc=v.esc.filter(e=>{e.life-=vdt;e.x+=e.vx*vdt;e.y+=e.vy*vdt;if(e.life>0){ctx.globalAlpha=clamp(e.life,0,1);drawWater(ctx,e.x,e.y,e.life*3);ctx.globalAlpha=1;}return e.life>0&&e.y>cy-R-20;});
   if(hide){ctx.fillStyle=PAL['card'];ctx.globalAlpha=0.82;ctx.fillRect(cx-R,cy-R,2*R,2*R);ctx.globalAlpha=1;txt(ctx,'Unknown: find x',cx,cy-6,{s:14*k,w:700,a:'center',b:'middle'});txt(ctx,'from your data',cx,cy+14*k,{s:12*k,a:'center',b:'middle',c:PAL['cv-soft']});}
   ctx.restore();
   // legend to the right of the circle
-  const lx=cx+R+18;let ly=cy-30;const items=[[h.cat+'²⁺','#3f6fb0'],[h.an==='SO4'?'SO₄²⁻':'Cl⁻',h.an==='SO4'?'#d4a017':ChemLab.cpk('Cl')],['H₂O','w']];
-  items.forEach(([l,col])=>{if(col==='w')drawWater(ctx,lx+6,ly,0);else{ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx+6,ly,6,0,6.29);ctx.fill();}txt(ctx,l,lx+18,ly,{s:12.5*k,b:'middle',w:600});ly+=24*Math.max(1,k*0.85);});}
+  const lx=cx-R-16;let ly=cy-34;const items=[[h.cat+'²⁺','#3f6fb0'],[h.an==='SO4'?'SO₄²⁻':'Cl⁻',h.an==='SO4'?'#d4a017':ChemLab.cpk('Cl')],['H₂O','w']];
+  items.forEach(([l,col])=>{if(col==='w')drawWater(ctx,lx-6,ly,0);else{ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx-6,ly,6,0,6.29);ctx.fill();}txt(ctx,l,lx-18,ly,{s:12.5*k,b:'middle',w:600,a:'right'});ly+=24*Math.max(1,k*0.85);});
+  if(!st.h)txt(ctx,'Inside the crystals you will add',cx,cy+R+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});}
+function drawSteps(ctx,st,c,k){const x=578;let y=86;const lh=26*Math.max(1,k*0.85);
+  const done=[!!c.e,!!c.f,st.heats>0,c.heated.length>0,c.constant];const L=['Weigh empty','Add + weigh','Heat','Cool + weigh','Constant mass'];
+  const now=done.indexOf(false);txt(ctx,'Procedure',x,y-4,{s:12.5*k,w:700,c:PAL['cv-soft']});y+=lh*0.9;
+  L.forEach((l,i)=>{const ok=done[i];ctx.strokeStyle=ok?PAL['s3']:PAL['cv-soft'];ctx.lineWidth=2;rr(ctx,x,y-7*k,14*k,14*k,3);ctx.stroke();
+    if(ok){ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(x+3*k,y);ctx.lineTo(x+6*k,y+4*k);ctx.lineTo(x+11*k,y-4*k);ctx.stroke();}
+    txt(ctx,(i+1)+'. '+l,x+22*k,y,{s:12.5*k,b:'middle',w:i===now?700:500,c:ok?PAL['cv-soft']:PAL['cv-ink']});y+=lh;});}
 function drawWater(ctx,x,y,a){ctx.save();ctx.translate(x,y);ctx.rotate(a||0);ctx.fillStyle='#e53935';ctx.beginPath();ctx.arc(0,0,4.6,0,6.29);ctx.fill();
   ctx.fillStyle='#ffffff';ctx.strokeStyle='#8a8a8a';ctx.lineWidth=0.8;[[-4.5,3.6],[4.5,3.6]].forEach(q=>{ctx.beginPath();ctx.arc(q[0],q[1],2.8,0,6.29);ctx.fill();ctx.stroke();});ctx.restore();}
 

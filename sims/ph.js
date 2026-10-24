@@ -153,7 +153,7 @@ const PH={
       ctx.strokeStyle=serColor(1);ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(-14));ctx.lineTo(ax.X(14),ax.Y(0));ctx.stroke();
       SOL.forEach(s=>{const on=s.id===sim.p.sol&&sim.p.mode==='scale';ctx.fillStyle=on?serColor(0):PAL['g-grid'];ctx.beginPath();ctx.arc(ax.X(s.pH),ax.Y(-s.pH),on?6:3.5,0,6.29);ctx.fill();
         ctx.fillStyle=on?serColor(1):PAL['g-grid'];ctx.beginPath();ctx.arc(ax.X(s.pH),ax.Y(s.pH-14),on?6:3.5,0,6.29);ctx.fill();});
-      ctx.restore();legend(ctx,box.L+12,box.T+12,[{label:'log [H₃O⁺]',color:serColor(0)},{label:'log [OH⁻]',color:serColor(1)}]);
+      ctx.restore();legend(ctx,box.L+box.W*0.3,box.T+12,[{label:'log [H₃O⁺]',color:serColor(0)},{label:'log [OH⁻]',color:serColor(1)}]);
       if(sim.p.mode==='scale')txt(ctx,r.s.n+': exponents '+(-r.pH).toFixed(1)+' + '+(r.pH-14).toFixed(1)+' = −14',box.L+box.W-6,box.T+box.H-10,{s:13,c:PAL['muted'],a:'right'});return;}
     const ax=id==='dil'?axes(ctx,box,{xmin:-4,xmax:0,ymin:0,ymax:7,xl:'log₁₀ of acid concentration (M):  −1 means 0.10 M',yl:'pH'}):axes(ctx,box,{xmin:-4,xmax:0,ymin:0,ymax:100,xl:'log₁₀ of acid concentration (M)',yl:'Percent ionized'});
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.lineWidth=2.5;
@@ -161,7 +161,7 @@ const PH={
     lines.forEach(([fn,col])=>{ctx.strokeStyle=col;ctx.beginPath();for(let lc=-4;lc<=0.001;lc+=0.05){const y=fn(Math.pow(10,lc));lc<=-4?ctx.moveTo(ax.X(lc),ax.Y(y)):ctx.lineTo(ax.X(lc),ax.Y(y));}ctx.stroke();});
     const lc=Math.log10(r.C),ys=id==='dil'?[r.pHs,r.pHw]:[100,100*r.alpha];[0,1].forEach(i=>{ctx.fillStyle=serColor(i);ctx.beginPath();ctx.arc(ax.X(lc),ax.Y(ys[i]),6.5,0,6.29);ctx.fill();ctx.strokeStyle=PAL['card'];ctx.lineWidth=2;ctx.stroke();});
     ctx.restore();legend(ctx,box.L+12,box.T+12,[{label:'HCl (strong)',color:serColor(0)},{label:r.wa.f+' (weak)',color:serColor(1)}]);
-    if(id==='dil')txt(ctx,'Strong: slope 1 pH unit per 10×.  Weak: about ½.',box.L+box.W-6,box.T+box.H-10,{s:13,c:PAL['muted'],a:'right'});},
+    if(id==='dil'&&box.W>520)txt(ctx,'Strong: slope 1 pH unit per 10×.  Weak: about ½.',box.L+box.W-6,box.T+box.H-10,{s:13,c:PAL['muted'],a:'right'});},
   infoPanel(sim){const p=sim.p,r=calc(p),hon=atLeast('honors'),ap=atLeast('ap');
     if(p.mode==='scale'){const ind=p.ind!=='none'?IND[p.ind]:null;
       const rows=SOL.map(s=>{const L=liquid(p.ind,s.pH,s.col)[1];const on=s.id===p.sol?' style="font-weight:700"':'';
@@ -189,10 +189,10 @@ const PH={
     if(hon)t+=' The weak acid is at equilibrium: molecules keep ionizing and re-forming ('+n0+' of 40 are ionized right now).';
     return t;},
   tour:[
-    {title:'The pH scale',text:'pH runs from about 0 to 14. Below 7 is acidic, exactly 7 is neutral, and above 7 is basic. The colors on the bar are the colors of universal indicator.',focus:[588,34,210,392],pause:true,setup(sim){BioLab.setValues(sim,{mode:'scale',sol:'lemon',ind:'none'});}},
-    {title:'Each step is 10×',text:{bio:'Lemon juice is pH 2 and coffee is pH 5. Three pH steps means 10 × 10 × 10 = 1,000 times more H₃O⁺ in the lemon juice. The bars use a log scale so both fit.',honors:'pH = −log[H₃O⁺]. Lemon juice: [H₃O⁺] = 1 × 10⁻² M. Coffee: 1 × 10⁻⁵ M. The exponents differ by 3, so the concentrations differ by 10³.'},focus:[200,34,390,392],pause:true,setup(sim){BioLab.setValues(sim,{sol:'coffee'});}},
-    {title:'Both ions are always there',text:{bio:'Even bleach has a few H₃O⁺ ions, and even lemon juice has a few OH⁻. When one goes up, the other goes down.',honors:'[H₃O⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ at 25 °C, so pH + pOH = 14. The two bars always add up to the same total height.'},focus:[200,34,390,392],pause:true,setup(sim){BioLab.setValues(sim,{sol:'bleach'});}},
-    {title:'Indicators show pH by color',text:'An indicator is a dye that changes color at a certain pH. Universal indicator is a mix of dyes, so it shows a different color across the whole scale. Dark drinks like cola hide the color, which is why labs also use pH meters.',focus:[14,34,190,392],pause:true,setup(sim){BioLab.setValues(sim,{sol:'vinegar',ind:'uni'});}},
+    {title:'The pH scale',text:'pH runs from about 0 to 14. Below 7 is acidic, exactly 7 is neutral, and above 7 is basic. The colors on the bar are the colors of universal indicator.',focus:[518,20,280,400],pause:true,setup(sim){BioLab.setValues(sim,{mode:'scale',sol:'lemon',ind:'none'});}},
+    {title:'Each step is 10×',text:{bio:'Lemon juice is pH 2 and coffee is pH 5. Three pH steps means 10 × 10 × 10 = 1,000 times more H₃O⁺ in the lemon juice. The bars use a log scale so both fit.',honors:'pH = −log[H₃O⁺]. Lemon juice: [H₃O⁺] = 1 × 10⁻² M. Coffee: 1 × 10⁻⁵ M. The exponents differ by 3, so the concentrations differ by 10³.'},focus:[178,18,340,428],pause:true,setup(sim){BioLab.setValues(sim,{sol:'coffee'});}},
+    {title:'Both ions are always there',text:{bio:'Even bleach has a few H₃O⁺ ions, and even lemon juice has a few OH⁻. When one goes up, the other goes down.',honors:'[H₃O⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ at 25 °C, so pH + pOH = 14. The two bars always add up to the same total height.'},focus:[178,18,340,428],pause:true,setup(sim){BioLab.setValues(sim,{sol:'bleach'});}},
+    {title:'Indicators show pH by color',text:'An indicator is a dye that changes color at a certain pH. Universal indicator is a mix of dyes, so it shows a different color across the whole scale. Dark drinks like cola hide the color, which is why labs also use pH meters.',focus:[4,50,170,384],pause:true,setup(sim){BioLab.setValues(sim,{sol:'vinegar',ind:'uni'});}},
     {title:'A strong acid ionizes completely',text:'Now two beakers at the same concentration, 0.10 M. In HCl, every molecule has given its H⁺ to water: 40 H₃O⁺ (pink) and 40 Cl⁻ (green) in view, and no HCl molecules left.',focus:[[ZC[0][0]-ZR-6,ZC[0][1]-ZR-6,2*ZR+12,2*ZR+12]],speed:0.5,setup(sim){BioLab.setValues(sim,{mode:'compare',conc:0.1,weak:'HC2H3O2',ind:'none'});}},
     {title:'A weak acid mostly stays intact',text:{bio:'In acetic acid, almost every molecule is still whole (an orange ball with its small white H). Only about 1 in 75 gives up its H⁺ at any moment, so the pH is higher: 2.87 instead of 1.00.',honors:'HC₂H₃O₂ + H₂O ⇌ H₃O⁺ + C₂H₃O₂⁻ sits far to the left. Watch: a molecule ionizes, and an ion pair finds each other and re-forms. That is dynamic equilibrium.'},focus:[[ZC[1][0]-ZR-6,ZC[1][1]-ZR-6,2*ZR+12,2*ZR+12]],speed:0.5},
     {title:'Dilute both 10×',text:{bio:'At 0.010 M, HCl goes from pH 1 to pH 2: one step per 10× dilution. The weak acid’s pH rises by only about half a step.',ap:'Strong acid: pH rises 1.00 per 10× dilution. Weak acid: [H₃O⁺] ≈ √(Ka·C), so pH rises about 0.5, and the percent ionized goes up from 1.3% to 4.2%.'},focus:[0,300,800,150],pause:true,setup(sim){BioLab.setValues(sim,{conc:0.01});}},
@@ -240,39 +240,38 @@ const PH={
 
 function drawScale(sim,ctx,r,k,hon,ap){const p=sim.p,s=r.s;
   // beaker with the solution and a pH meter probe
-  const bx=34,by=176,bw=150,bh=190,[col,cname]=liquid(p.ind,s.pH,s.col);
+  const bx=20,by=176,bw=132,bh=180,[col,cname]=liquid(p.ind,s.pH,s.col);
   CL.drawBeaker(ctx,{x:bx,y:by,w:bw,h:bh,fill:0.72,liquid:col});
-  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(150,124);ctx.bezierCurveTo(150,150,150,150,150,320);ctx.stroke();
-  ctx.fillStyle=PAL['cv-glass'];rr(ctx,144,300,12,40,5);ctx.fill();
-  meter(ctx,22,62,168,s.pH.toFixed(2),k,'pH');
-  txt(ctx,s.n,bx+bw/2,by+bh+28,{s:15*k,w:700,a:'center'});
-  if(p.ind!=='none')txt(ctx,IND[p.ind].n+': '+cname,bx+bw/2,by+bh+28+18*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(122,124);ctx.lineTo(122,316);ctx.stroke();
+  ctx.fillStyle=PAL['cv-glass'];rr(ctx,116,300,12,40,5);ctx.fill();
+  meter(ctx,12,62,150,s.pH.toFixed(2),k,'pH');
+  txt(ctx,s.n,bx+bw/2,by+bh+26,{s:15*k,w:700,a:'center'});
+  if(p.ind!=='none')txt(ctx,cname,bx+bw/2,by+bh+26+19*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
   // log-scale ladder of [H3O+] and [OH-]
-  const T=66,B=390,X0=396,Y=e=>T+(-e)/14*(B-T); // e = exponent 0..-14
+  const T=66,B=350,X0=352,Y=e=>T+(-e)/14*(B-T); // e = exponent 0..-14
   txt(ctx,'Concentration (mol/L), log scale',X0,34,{s:13*k,w:700,a:'center'});
-  const step=k>1.3?2:1;ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;
-  for(let e=0;e>=-14;e-=1){const y=Y(e);ctx.beginPath();ctx.moveTo(X0-58,y);ctx.lineTo(X0+58,y);ctx.globalAlpha=e%2?0.35:0.8;ctx.stroke();ctx.globalAlpha=1;
-    if(-e%step===0&&-e%2===0)txt(ctx,'10'+sup(e),X0,y-3,{s:12*k,c:PAL['cv-soft'],a:'center'});}
-  const bar=(x,e,c)=>{const y=Y(e);ctx.fillStyle=c;rr(ctx,x,y,30,B-y,4);ctx.fill();};
-  bar(X0-50,-s.pH,'#d22d68');bar(X0+20,s.pH-14,'#2f6fd0');
-  txt(ctx,'H₃O⁺',X0-35,B+24,{s:14*k,w:700,a:'center',c:PAL['cv-h']});txt(ctx,'OH⁻',X0+35,B+24,{s:14*k,w:700,a:'center',c:PAL['cv-sub']});
-  const yh=clamp(Y(-s.pH),T+10,B-8),yo=clamp(Y(s.pH-14),T+10,B-8);
-  // value pills beside the bars
-  drawValue(ctx,sx(r.h,2),X0-58,yh,'right',k);drawValue(ctx,sx(r.oh,2),X0+58,yo,'left',k);
-  if(ap)txt(ctx,'['+'H₃O⁺][OH⁻] = 1.0 × 10⁻¹⁴',X0,B+24+20*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
-  else if(hon)txt(ctx,'pH + pOH = '+s.pH.toFixed(1)+' + '+(14-s.pH).toFixed(1)+' = 14',X0,B+24+20*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  const step=k>1.3?4:2;ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;
+  for(let e=0;e>=-14;e-=1){const y=Y(e);ctx.beginPath();ctx.moveTo(X0-52,y);ctx.lineTo(X0+52,y);ctx.globalAlpha=e%2?0.35:0.8;ctx.stroke();ctx.globalAlpha=1;
+    if((-e)%step===0)txt(ctx,'10'+sup(e),X0-60,y,{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});}
+  const bar=(x,e,c)=>{const y=Y(e);ctx.fillStyle=c;rr(ctx,x,y,32,Math.max(2,B-y),4);ctx.fill();};
+  bar(X0-42,-s.pH,'#d22d68');bar(X0+10,s.pH-14,'#2f6fd0');
+  txt(ctx,'H₃O⁺',X0-26,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-h']});txt(ctx,'OH⁻',X0+26,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-sub']});
+  drawValue(ctx,sx(r.h,2),X0-6,B+22+19*k,'right',k);drawValue(ctx,sx(r.oh,2),X0+6,B+22+19*k,'left',k);
+  if(k<1.3){if(ap)txt(ctx,'[H₃O⁺][OH⁻] = 1.0 × 10⁻¹⁴',X0,B+86,{s:12*k,c:PAL['cv-soft'],a:'center'});
+    else if(hon)txt(ctx,'pH + pOH = '+s.pH.toFixed(1)+' + '+(14-s.pH).toFixed(1)+' = 14',X0,B+86,{s:12*k,c:PAL['cv-soft'],a:'center'});}
   // vertical pH scale with household solutions
-  const SX=626,SW=26,PY=v=>T+v/14*(B-T);
+  const SX=562,SW=26,PT=66,PB=400,PY=v=>PT+v/14*(PB-PT);
   const g=ctx.createLinearGradient(0,PY(0),0,PY(14));UNI.forEach(u=>g.addColorStop(u[0]/14,u[1]));ctx.fillStyle=g;rr(ctx,SX,PY(0),SW,PY(14)-PY(0),6);ctx.fill();
   txt(ctx,'pH',SX+SW/2,34,{s:13*k,w:700,a:'center'});
   for(let v=0;v<=14;v+=(k>1.3?2:1))txt(ctx,String(v),SX-8,PY(v),{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(SX-2,PY(7));ctx.lineTo(SX+SW+2,PY(7));ctx.stroke();ctx.setLineDash([]);
   const few=k>1.25,LX=SX+SW+30;
-  const list=few?[s]:SOL;const slot=(B-T)/(SOL.length-1);
-  list.forEach((it,i)=>{const yv=PY(it.pH),ly=few?clamp(yv,T+8,B-8):T+SOL.indexOf(it)*slot,on=it.id===s.id;
+  const list=few?[s]:SOL;const slot=(PB-PT)/(SOL.length-1);
+  list.forEach(it=>{const yv=PY(it.pH),ly=few?clamp(yv,PT+8,PB-8):PT+SOL.indexOf(it)*slot,on=it.id===s.id;
     ctx.strokeStyle=on?PAL['cv-ink']:PAL['cv-soft'];ctx.lineWidth=on?2:1;ctx.beginPath();ctx.moveTo(SX+SW,yv);ctx.lineTo(SX+SW+10,yv);ctx.lineTo(LX-4,ly);ctx.stroke();
     ctx.fillStyle=on?PAL['cv-ink']:PAL['cv-soft'];ctx.beginPath();ctx.arc(SX+SW,yv,on?4.5:3,0,6.29);ctx.fill();
-    txt(ctx,it.n,LX,ly,{s:(on?13:12)*k,w:on?800:400,c:on?PAL['cv-ink']:PAL['cv-soft'],b:'middle'});});
+    txt(ctx,it.n,LX,ly,{s:(few?12:on?13:12)*k,w:on?800:400,c:on?PAL['cv-ink']:PAL['cv-soft'],b:'middle'});});
+  if(few){txt(ctx,'acidic',SX+SW+12,PY(0.6),{s:12*k,c:PAL['cv-soft'],b:'middle'});txt(ctx,'basic',SX+SW+12,PY(13.4),{s:12*k,c:PAL['cv-soft'],b:'middle'});}
 }
 function drawValue(ctx,s,x,y,align,k){ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(s).width+12,h=20*k;const x0=align==='right'?x-w:x;rr(ctx,x0,y-h/2,w,h,h/2);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();txt(ctx,s,x0+w/2,y+1,{s:12*k,w:700,a:'center',b:'middle'});}
 

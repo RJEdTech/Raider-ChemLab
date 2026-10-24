@@ -13,7 +13,7 @@ const BX=16,BY=58,BW=452,BH=424;   // particle box
 const PX=488,PW=300;               // right panel
 const PPM=80;                      // particles per mol/L for A and B
 const HPM=30;                      // H⁺ (and Cl⁻) per mol/L
-const EA_MG=5;                     // kJ/mol for H⁺ on the Mg surface (scaled; see About)
+const EA_MG=6;                     // kJ/mol for H⁺ on the Mg surface (scaled; see About)
 const DH_GAS=-30;                  // kJ/mol, drawn on the energy diagram for A + B → AB
 const CAT=0.55;                    // a catalyst path has 55% of Eₐ
 const WIN=4;                       // s, rate window
@@ -48,12 +48,13 @@ function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.rxn,d=sim
   d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
   d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});}
 
-/* Smooth estimates from everything counted since the conditions last changed:
-   k = reactions ÷ ∫[A][B]dt, so rate = k[A][B]; collisions per A–B pair, f and the success share are cumulative too. */
-const condKey=p=>[p.T,p.Ea,p.cat,p.orient].join('|');
-function stats(sim){const st=sim.st,a=st.acc;if(!a||a.t<0.8||a.c<6||a.ab<=0)return null;const mg=sim.p.rxn==='mg';
-  const kpair=a.n/a.ab,zpair=a.c/a.ab,now=mg?count(st,'H')*exposedFaces(st):count(st,'A')*count(st,'B');
-  return {rate:kpair*now,coll:zpair*now,succ:a.n/a.c,fE:a.cE/a.c,n:a.c,kM:mg?NaN:kpair*PPM,t:a.t};}
+const ZP=0.045;    // collisions per second per A–B pair at 300 K, measured in this box
+const HZ=0.0072;  // H⁺ hits per second per (ion × exposed Mg face) at 300 K
+/* Collision-theory rate law, in particles per second for this box: rate = Z·f·p
+   Z ∝ √T·[A][B] (collision frequency), f = fraction of molecules with E ≥ Eₐ (the shaded tail), p = orientation factor. */
+function model(sim){const p=sim.p,st=sim.st,T=p.T,f=tail(eaNow(p),T),sT=Math.sqrt(T/300);
+  if(p.rxn==='mg'){const Z=st.mg.some(m=>!m.gone)?HZ*sT*st.nH*exposedFaces(st):0;return {Z,f,p:1,succ:f,rate:Z*f};}
+  const Z=ZP*sT*st.mA*st.mB,pp=pOr(p);return {Z,f,p:pp,succ:f*pp,rate:Z*f*pp,k:ZP*sT*f*pp*PPM};}
 const count=(st,k)=>st.ps.reduce((a,q)=>a+(q.k===k&&!q.dead?1:0),0);
 
 const RATES={
@@ -66,7 +67,7 @@ const RATES={
         ap:'Measure rate = Z × f × p for yourself: the collision frequency Z, the fraction f with E ≥ Eₐ, and the orientation factor p. Then check your numbers against the Arrhenius equation.'},
   scale:{bio:'A zoomed-in view of a tiny drop of solution, a few nanometers across. Each ball is one particle.',
          ap:'A 2-D slice a few nanometers across. 80 particles in the box stand for 1 mol/L. Energies are in kJ/mol, so each particle’s energy is shown as if it were a mole of them.'},
-  aspect:1.6,timeScale:1,dtMax:0.01,sampleDt:0.25,window:120,unit:'s',chChange:4,chReveal:12,
+  aspect:1.6,timeScale:1,dtMax:0.01,sampleDt:0.25,window:120,unit:'s',chChange:4,chReveal:8,
   controls:[
     {id:'rxn',label:'Reaction',type:'seg',def:'gas',lvl:'bio',options:[{v:'gas',l:'A + B → AB'},{v:'mg',l:'Mg + HCl'}],noTrial:false},
     {id:'cA',label:'Concentration of A',type:'range',min:0.1,max:1,step:0.05,def:0.5,unit:' M',lvl:'bio',modes:['gas'],help:'Changing a concentration mixes a fresh batch.'},
@@ -75,19 +76,23 @@ const RATES={
     {id:'surf',label:'Magnesium',type:'seg',def:'ribbon',lvl:'bio',modes:['mg'],options:[{v:'ribbon',l:'One chunk (ribbon)'},{v:'powder',l:'Powder (same mass)'}]},
     {id:'T',label:'Temperature',type:'range',min:200,max:600,step:10,def:300,unit:' K',lvl:'bio',help:'300 K is about room temperature (27 °C).'},
     {id:'cat',label:'Add a catalyst',type:'toggle',def:false,lvl:'bio',modes:['gas'],help:'Gives the reaction a lower-energy path'},
-    {id:'Ea',label:'Activation energy Eₐ',type:'range',min:6,max:20,step:1,def:12,unit:' kJ/mol',lvl:'honors',modes:['gas']},
+    {id:'Ea',label:'Activation energy Eₐ',type:'range',min:4,max:20,step:1,def:10,unit:' kJ/mol',lvl:'honors',modes:['gas']},
     {id:'orient',label:'Reactive side of B',type:'range',min:60,max:360,step:30,def:180,unit:'°',lvl:'ap',modes:['gas'],help:'How much of B’s surface can react. 180° means half, so p = 0.5.'}
   ],
   actions:[{id:'restart',label:'Mix a fresh batch',lvl:'bio',primary:true,run(sim){restart(sim);}}],
-  init(sim){const p=sim.p,st={ps:[],mg:[],ev:[],cl:[],t0:0,key:keyOf(p),Tlast:p.T,rnd:rng(9137+Math.round(p.T)+(RATES.seedOff||0)),acc:{key:condKey(p),t:0,n:0,ab:0,c:0,cE:0},nLim0:0,half:NaN,done:NaN,h2:0,mgGone:0,react:0,refill:0};
-    if(p.rxn==='mg'){buildMg(st,p.surf);const n=Math.round(p.cH*HPM);for(let i=0;i<n;i++){place(st,'H',p.T);place(st,'Cl',p.T);}st.nLim0=st.mg.length;}
-    else{const nA=Math.round(p.cA*PPM),nB=Math.round(p.cB*PPM);for(let i=0;i<Math.max(nA,nB);i++){if(i<nA)place(st,'A',p.T);if(i<nB)place(st,'B',p.T);}st.nLim0=Math.min(nA,nB);}
-    st.nA0=count(st,'A');st.nB0=count(st,'B');st.nH0=count(st,'H');return st;},
+  init(sim){const p=sim.p,st={ps:[],mg:[],t0:0,key:keyOf(p),Tlast:p.T,rnd:rng(9137+Math.round(p.T)+(RATES.seedOff||0)),bud:0,nLim0:0,half:NaN,done:NaN,h2:0,hits:0,mA:0,mB:0,mC:0,nH:0};
+    if(p.rxn==='mg'){buildMg(st,p.surf);st.nH=Math.round(p.cH*HPM);for(let i=0;i<st.nH;i++){place(st,'H',p.T);place(st,'Cl',p.T);}st.nLim0=st.mg.length;}
+    else{const nA=Math.round(p.cA*PPM),nB=Math.round(p.cB*PPM);for(let i=0;i<Math.max(nA,nB);i++){if(i<nA)place(st,'A',p.T);if(i<nB)place(st,'B',p.T);}st.mA=nA;st.mB=nB;st.nLim0=Math.min(nA,nB);}
+    return st;},
   step(sim,dt){const p=sim.p;let st=sim.st;if(keyOf(p)!==st.key){restart(sim);st=sim.st;}
     const r=st.rnd,T=p.T;
     if(p.T!==st.Tlast){const f=Math.sqrt(p.T/st.Tlast);st.ps.forEach(q=>{q.vx*=f;q.vy*=f;q.vz*=f;});st.Tlast=p.T;}
-    const mg=p.rxn==='mg',Ea=eaNow(p),half=(p.orient/2)*Math.PI/180,ps=st.ps,ck=condKey(p);
-    if(st.acc.key!==ck)st.acc={key:ck,t:0,n:0,ab:0,c:0,cE:0};const acc=st.acc;acc.t+=dt;acc.ab+=dt*(mg?count(st,'H')*exposedFaces(st):count(st,'A')*count(st,'B'));
+    const mg=p.rxn==='mg',Ea=eaNow(p),half=(p.orient/2)*Math.PI/180,ps=st.ps;
+    // the rate law sets how many reactions happen; the particles below carry them out at real collisions
+    const mod=model(sim);let dn=mod.rate*dt;
+    if(mg){if(st.mg.some(m=>!m.gone)){st.bud+=dn;st.hits+=dn;}}
+    else{dn=Math.min(dn,st.mA,st.mB);st.mA-=dn;st.mB-=dn;st.mC+=dn;st.bud+=dn;
+      if(Number.isNaN(st.half)&&st.nLim0>0&&st.mC>=st.nLim0/2)st.half=sim.t-st.t0;}
     // move, thermostat, walls
     for(const q of ps){if(q.k==='H2'){q.y-=70*dt;q.x+=Math.sin(sim.t*3+q.a)*12*dt;if(q.y<BY+q.r){q.dead=true;st.h2++;}continue;}
       if(r()<0.6*dt){const sd=VS*Math.sqrt(T/300/q.m);q.vx=randn(r)*sd;q.vy=randn(r)*sd;q.vz=randn(r)*sd;}
@@ -107,74 +112,70 @@ const RATES={
             const B=a.k==='B'?a:b,A=a.k==='A'?a:b,mu=A.m*B.m/(A.m+B.m);
             const E=0.5*mu*(sq(B.vx-A.vx)+sq(B.vy-A.vy)+sq(B.vz-A.vz))*EU;
             let dir=Math.atan2(A.y-B.y,A.x-B.x)-B.a;dir=Math.atan2(Math.sin(dir),Math.cos(dir));
-            const okE=E>=Ea,okO=Math.abs(dir)<=half;acc.c++;if(okE)acc.cE++;
-            if(okE&&okO){const M=A.m+B.m,c=mkP(st,'C',(A.x+B.x)/2,(A.y+B.y)/2,T);c.vx=(A.m*A.vx+B.m*B.vx)/M;c.vy=(A.m*A.vy+B.m*B.vy)/M;c.vz=(A.m*A.vz+B.m*B.vz)/M;c.a=B.a;
-              A.dead=true;B.dead=true;ps.push(c);acc.n++;st.react++;fx(sim,c.x,c.y,'ok');continue;}
+            const okE=E>=Ea,okO=Math.abs(dir)<=half;
+            if(okE&&okO&&st.bud>=1){join(sim,A,B);continue;}
             fx(sim,(A.x+B.x)/2,(A.y+B.y)/2,okE?'orient':'weak');}
           const J=2*vn/(a.m+b.m);a.vx+=J*b.m*nx;a.vy+=J*b.m*ny;b.vx-=J*a.m*nx;b.vy-=J*a.m*ny;}}}}
+    // if the right collision has not come along, the nearest A–B pair reacts
+    if(!mg)while(st.bud>=2.5){const As=ps.filter(q=>q.k==='A'&&!q.dead),Bs=ps.filter(q=>q.k==='B'&&!q.dead);if(!As.length||!Bs.length){st.bud=0;break;}
+      const A=As[Math.floor(r()*As.length)];let best=null,bd=1e9;Bs.forEach(q=>{const e=sq(q.x-A.x)+sq(q.y-A.y);if(e<bd){bd=e;best=q;}});join(sim,A,best);}
     // H⁺ on the Mg surface
     if(mg){for(const q of ps){if(q.dead||q.k==='H2')continue;if(q.y<BY+BH-MGC*3.4-q.r)continue;
       for(const m of st.mg){if(m.gone)continue;const dx=q.x-m.x,dy=q.y-m.y,R=q.r+MGR,d2=dx*dx+dy*dy;if(d2>=R*R)continue;
         const d=Math.sqrt(d2)||1,nx=dx/d,ny=dy/d,vn=q.vx*nx+q.vy*ny;q.x=m.x+nx*R;q.y=m.y+ny*R;if(vn>=0)continue;
-        if(q.k==='H'){const E=0.5*q.m*(q.vx*q.vx+q.vy*q.vy+q.vz*q.vz)*EU,okE=E>=Ea;acc.c++;if(okE)acc.cE++;
-          if(okE){q.dead=true;acc.n++;st.refill++;fx(sim,m.x+nx*MGR,m.y+ny*MGR,'ok');
-            if(m.h===0)m.h=1;else{m.gone=true;st.mgGone++;st.react++;const ion=mkP(st,'Mg2',m.x,m.y-4,T);ion.vy=-Math.abs(ion.vy)-40;ps.push(ion);
-              const b=mkP(st,'H2',m.x+(r()-.5)*8,m.y-MGR-6,T);ps.push(b);}
-            break;}
+        if(q.k==='H'){const E=0.5*q.m*(q.vx*q.vx+q.vy*q.vy+q.vz*q.vz)*EU;
+          if(E>=Ea&&st.bud>=1){hitMg(sim,q,m,nx,ny);break;}
           fx(sim,m.x+nx*MGR,m.y+ny*MGR,'weak');}
-        q.vx-=2*vn*nx;q.vy-=2*vn*ny;break;}}}
+        q.vx-=2*vn*nx;q.vy-=2*vn*ny;break;}}
+      while(st.bud>=2.5){const open=st.mg.filter(m=>!m.gone),Hs=ps.filter(q=>q.k==='H'&&!q.dead);if(!open.length||!Hs.length){st.bud=0;break;}
+        const m=open[Math.floor(r()*open.length)];let best=Hs[0],bd=1e9;Hs.forEach(q=>{const e=sq(q.x-m.x)+sq(q.y-m.y);if(e<bd){bd=e;best=q;}});hitMg(sim,best,m,0,-1);}}
     if(ps.some(q=>q.dead))st.ps=ps.filter(q=>!q.dead);
     // the rest of the beaker holds far more acid: each H⁺ used up is replaced by one drifting in through the top edge
     while(st.refill>0){st.refill--;const n=mkP(st,'H',BX+12+r()*(BW-24),BY+8,T);n.vy=Math.abs(n.vy);st.ps.push(n);}
-    if(Number.isNaN(st.half)&&st.nLim0>0&&st.react>=st.nLim0/2)st.half=sim.t-st.t0;
-    if(mg&&Number.isNaN(st.done)&&st.mgGone>=st.mg.length)st.done=sim.t-st.t0;},
+    if(mg&&Number.isNaN(st.done)&&!st.mg.some(m=>!m.gone))st.done=sim.t-st.t0;},
   metrics:[
-    {id:'rate',label:'Reaction rate',unit:'M/s',lvl:'bio',min:0,max:null,d:3,modes:['gas'],get:s=>{const x=stats(s);return x?x.rate/PPM:NaN;}},
-    {id:'cA',label:'A left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>count(s.st,'A')/PPM},
-    {id:'cB',label:'B left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>count(s.st,'B')/PPM},
-    {id:'cC',label:'AB made',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>count(s.st,'C')/PPM},
+    {id:'rate',label:'Reaction rate',unit:'M/s',lvl:'bio',min:0,max:null,d:4,modes:['gas'],get:s=>model(s).rate/PPM},
+    {id:'cA',label:'A left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mA/PPM},
+    {id:'cB',label:'B left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mB/PPM},
+    {id:'cC',label:'AB made',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mC/PPM},
     {id:'half',label:'Time to react halfway',unit:'s',lvl:'bio',min:0,max:null,d:1,modes:['gas'],get:s=>s.st.half},
-    {id:'bub',label:'H₂ bubbles per second',unit:'/s',lvl:'bio',min:0,max:null,d:2,modes:['mg'],get:s=>{const x=stats(s);return x?x.rate/2:NaN;}},
+    {id:'bub',label:'H₂ bubbles per second',unit:'/s',lvl:'bio',min:0,max:null,d:2,modes:['mg'],get:s=>model(s).rate/2},
     {id:'mgl',label:'Mg atoms left',unit:'of 12',lvl:'bio',min:0,max:12,d:0,modes:['mg'],get:s=>s.st.mg.filter(m=>!m.gone).length},
     {id:'done',label:'Time for the Mg to disappear',unit:'s',lvl:'bio',min:0,max:null,d:1,modes:['mg'],get:s=>s.st.done},
     {id:'surfA',label:'Mg faces touching acid',unit:'',lvl:'honors',min:0,max:30,d:0,modes:['mg'],get:s=>exposedFaces(s.st)},
-    {id:'cHn',label:'[H⁺] now',unit:'M',lvl:'honors',min:0,max:3,d:2,modes:['mg'],get:s=>count(s.st,'H')/HPM},
-    {id:'Z',label:'Collisions per second',unit:'/s',lvl:'honors',min:0,max:null,d:0,get:s=>{const x=stats(s);return x?x.coll:NaN;}},
-    {id:'succ',label:'Collisions that react',unit:'%',lvl:'honors',min:0,max:100,d:1,get:s=>{const x=stats(s);return x&&x.n?x.succ*100:NaN;}},
-    {id:'fE',label:'Collisions with E ≥ Eₐ (f)',unit:'%',lvl:'ap',min:0,max:100,d:1,get:s=>{const x=stats(s);return x&&x.n?x.fE*100:NaN;}},
-    {id:'pE',label:'Molecules with E ≥ Eₐ (theory)',unit:'%',lvl:'ap',min:0,max:100,d:1,get:s=>tail(eaNow(s.p),s.p.T)*100},
+    {id:'Z',label:'Collisions per second',unit:'/s',lvl:'honors',min:0,max:null,d:1,get:s=>model(s).Z},
+    {id:'succ',label:'Collisions that react',unit:'%',lvl:'honors',min:0,max:100,d:2,get:s=>model(s).succ*100},
+    {id:'fE',label:'Share with E ≥ Eₐ (f)',unit:'%',lvl:'ap',min:0,max:100,d:2,get:s=>model(s).f*100},
     {id:'p',label:'Orientation factor p',unit:'',lvl:'ap',min:0,max:1,d:2,modes:['gas'],get:s=>pOr(s.p)},
-    {id:'k',label:'k = rate / ([A][B])',unit:'M⁻¹s⁻¹',lvl:'ap',min:0,max:null,d:3,modes:['gas'],get:s=>{const x=stats(s);return x?x.kM:NaN;}}
+    {id:'k',label:'Rate constant k',unit:'M⁻¹s⁻¹',lvl:'ap',min:0,max:null,d:4,modes:['gas'],get:s=>model(s).k}
   ],
   graphs:[{id:'conc',label:'Concentration vs time',lvl:'bio',custom:true},{id:'rt',label:'Reaction rate vs time',lvl:'honors',custom:true}],
   defaultGraph:'conc',
   plot(sim,ctx,box,id){const st=sim.st,mg=sim.p.rxn==='mg',rows=sim.hist.filter(r=>r.t>=st.t0-1e-9);
     const el=Math.max(0,sim.t-st.t0),xmax=Math.max(30,Math.ceil(el/10)*10);
-    if(id==='conc'){const ser=mg?[{id:'cHn',l:'[H⁺]',c:PAL['cv-h']},{id:'mg2',l:'[Mg²⁺]',c:PAL['cv-soft']}]:[{id:'cA',l:'[A]',c:PAL['cv-sub']},{id:'cB',l:'[B]',c:PAL['cv-prod']},{id:'cC',l:'[AB]',c:PAL['s5']}];
+    if(id==='conc'){const ser=mg?[{id:'cH',l:'[H⁺]',c:PAL['cv-h']},{id:'mg2',l:'[Mg²⁺]',c:PAL['cv-soft']}]:[{id:'cA',l:'[A]',c:PAL['cv-sub']},{id:'cB',l:'[B]',c:PAL['cv-prod']},{id:'cC',l:'[AB]',c:PAL['s5']}];
       const ymax=mg?Math.max(1,sim.p.cH)*1.05:Math.max(sim.p.cA,sim.p.cB,0.2)*1.1;
       box.T=34;box.H=box.ch-34-40;const ax=BioLab.h.axes(ctx,box,{xmin:0,xmax,ymin:0,ymax,xl:'Time since mixing (s)',yl:'Concentration (M)'});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();
-      ser.forEach(s=>{ctx.strokeStyle=s.c;ctx.lineWidth=2.5;ctx.beginPath();let n=0;rows.forEach(r=>{let v=s.id==='mg2'?(r.v.mgl!==undefined?(12-r.v.mgl)/HPM:NaN):r.v[s.id];if(!Number.isFinite(v))return;const X=ax.X(r.t-st.t0),Y=ax.Y(v);n++?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();});
+      ser.forEach(s=>{ctx.strokeStyle=s.c;ctx.lineWidth=2.5;ctx.beginPath();let n=0;rows.forEach(r=>{let v=s.id==='mg2'?(12-r.v.mgl)/HPM:s.id==='cH'?sim.p.cH:r.v[s.id];if(!Number.isFinite(v))return;const X=ax.X(r.t-st.t0),Y=ax.Y(v);n++?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();});
       ctx.restore();legend(ctx,box.L,14,ser.map(s=>({label:s.l,color:s.c})));}
     else{const key=mg?'bub':'rate';const vals=rows.map(r=>r.v[key]).filter(Number.isFinite);const ymax=Math.max(mg?1:0.02,...vals)*1.15;
       const ax=BioLab.h.axes(ctx,box,{xmin:0,xmax,ymin:0,ymax,xl:'Time since mixing (s)',yl:mg?'H₂ bubbles per second':'Rate (M/s)'});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=PAL['g-line'];ctx.lineWidth=2.5;ctx.beginPath();let n=0;
       rows.forEach(r=>{const v=r.v[key];if(!Number.isFinite(v))return;const X=ax.X(r.t-st.t0),Y=ax.Y(v);n++?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();ctx.restore();
       txt(ctx,'Averaged over the last '+WIN+' s',box.L+box.W,box.T+14,{s:12,c:PAL['muted'],a:'right'});}},
-  narrate(sim){const p=sim.p,st=sim.st,x=stats(sim),hon=atLeast('honors'),ap=atLeast('ap'),mg=p.rxn==='mg';
-    const ea=eaNow(p),warm=p.T>=380?' At '+p.T+' K the particles move fast, so many more of them carry enough energy.':p.T<=250?' At '+p.T+' K the particles are slow, and very few carry enough energy.':'';
+  narrate(sim){const p=sim.p,st=sim.st,x=model(sim),hon=atLeast('honors'),ap=atLeast('ap'),mg=p.rxn==='mg';
+    const ea=eaNow(p),pc=v=>v<0.1?v.toFixed(2):v.toFixed(1);
+    const warm=p.T>=380?' At '+p.T+' K the particles move fast, so many more of them carry enough energy.':p.T<=250?' At '+p.T+' K the particles are slow, and very few carry enough energy.':'';
     if(mg){const left=st.mg.filter(m=>!m.gone).length;
-      if(!left)return '<b>The magnesium is gone.</b> Every Mg atom became an Mg²⁺ ion in solution, and every pair of H⁺ ions became one H₂ molecule that bubbled away. Took '+st.done.toFixed(1)+' s.';
-      if(!count(st,'H'))return 'The acid ran out first, so the leftover Mg cannot react. HCl was the <b>limiting reactant</b>.';
-      const f=exposedFaces(st);return (p.surf==='powder'?'<b>Powder exposes '+f+' Mg faces</b> to the acid.':'<b>Only the outside of the chunk</b> ('+f+' faces) touches the acid. The atoms inside must wait their turn.')+' H⁺ ions react only where they hit the metal surface, so more surface means more successful hits per second.'+(hon?' Each Mg atom needs two H⁺ hits: Mg + 2H⁺ → Mg²⁺ + H₂.':'')+warm;}
-    const nA=count(st,'A'),nB=count(st,'B');
-    if(!nA||!nB)return 'One reactant is used up, so <b>no more AB can form</b> and the rate drops to zero. Press <b>Mix a fresh batch</b> to start again.';
-    if(!x)return 'A and B were just mixed. Particles are flying around and starting to collide.';
-    if(ap)return '<b>rate = Z × f × p</b>: '+x.coll.toFixed(0)+' collisions/s × '+(x.fE*100).toFixed(1)+'% with E ≥ Eₐ × p = '+pOr(p).toFixed(2)+' → about '+(x.coll*x.fE*pOr(p)).toFixed(1)+' reactions/s predicted, '+x.rate.toFixed(1)+' measured.'+(p.cat?' The catalyst lowers Eₐ to '+ea.toFixed(1)+' kJ/mol.':'');
-    let s='About <b>'+x.coll.toFixed(0)+' collisions per second</b>, but only '+(x.succ*100).toFixed(1)+'% of them make AB. A collision works only if the particles hit <b>hard enough</b> and A hits the <b>dark side of B</b>.';
+      if(!left)return '<b>The magnesium is gone</b> after '+st.done.toFixed(1)+' s. Every Mg atom became an Mg²⁺ ion, and every pair of H⁺ ions it met became one H₂ molecule that bubbled away.';
+      const f=exposedFaces(st);return (p.surf==='powder'?'<b>The powder exposes '+f+' Mg faces</b> to the acid.':'<b>Only the outside of the chunk</b> ('+f+' faces) touches the acid. The atoms inside must wait their turn.')+' H⁺ ions react only where they hit the metal, so more surface means more successful hits each second.'+(hon?' Each Mg atom needs two H⁺ hits: Mg + 2H⁺ → Mg²⁺ + H₂.':'')+warm;}
+    if(st.mA<0.5||st.mB<0.5)return 'One reactant is used up, so <b>no more AB can form</b> and the rate drops to zero. Press <b>Mix a fresh batch</b> to start again.';
+    if(ap)return '<b>rate = Z × f × p</b> = '+x.Z.toFixed(0)+' collisions/s × '+pc(x.f*100)+'% × '+x.p.toFixed(2)+' = '+(x.rate).toFixed(2)+' reactions/s in this box, or '+(x.rate/PPM).toFixed(4)+' M/s.'+(p.cat?' The catalyst lowers Eₐ to '+ea.toFixed(1)+' kJ/mol.':' As A and B get used up, Z falls and the reaction slows.');
+    let s='About <b>'+x.Z.toFixed(0)+' collisions per second</b>, but only '+pc(x.succ*100)+'% of them make AB. A collision works only if the particles hit <b>hard enough</b> and A hits the <b>dark side of B</b>.';
     if(p.cat)s+=' The catalyst lowers the energy needed'+(hon?' from '+p.Ea+' to '+ea.toFixed(1)+' kJ/mol':'')+', so more collisions succeed.';
     else if(warm)s+=warm;
-    else if(nA+nB<30)s+=' Fewer particles are left, so collisions happen less often and the reaction slows down.';
+    else if(st.mA+st.mB<30)s+=' Fewer particles are left, so they collide less often and the reaction slows down.';
     return s;},
   tour:[
     {title:'Particles in a box',text:{bio:'You are zoomed in on a tiny drop of solution. Blue balls are A, orange balls are B. They fly around, bounce off the walls and off each other.',ap:'Each particle has a speed drawn from the Maxwell–Boltzmann distribution at the box temperature. A water bath (a thermostat) keeps that distribution steady.'},focus:[BX,BY,BW,BH],speed:0.5,setup(sim){BioLab.setValues(sim,{rxn:'gas',cA:0.5,cB:0.5,T:300,cat:false});restart(sim);}},
@@ -196,18 +197,18 @@ const RATES={
      explain:{bio:'The acid can only touch the outside of the metal. Powder has far more atoms on its surface, so more H⁺ ions hit Mg every second and the bubbles come faster. The same amount of Mg still makes the same total amount of H₂.'}},
     {lvl:'bio',instant:true,set:{rxn:'gas',cA:0.5,cB:0.5,T:300,cat:false},q:'A and B collide many times a second, yet most collisions make no AB. Why?',choices:['Most collisions are too gentle or hit the wrong way around','A and B do not like each other','The box is too small'],correct:0,
      explain:{bio:'A collision reacts only if it has enough energy to get over the energy hill and A hits the reactive (dark) side of B. Watch the gray rings: each one is a collision that just bounced.',honors:'Check the readouts: about 1–2% of collisions react at 300 K. The rest have E < Eₐ or the wrong orientation.'}},
-    {lvl:'honors',q:'You heat the box from 300 K to 400 K. Collisions per second rise by only about 15%. What happens to the reaction rate?',choices:['It rises by about 15% too','It rises about 3 times','It does not change'],correct:1,
+    {lvl:'honors',q:'You heat the box from 300 K to 400 K. Collisions per second rise by only about 15%. What happens to the share of collisions that react?',choices:['It stays the same; only the number of collisions changes','It roughly triples','It goes down, because fast particles bounce off'],correct:1,
      baseline:{rxn:'gas',cA:0.6,cB:0.6,T:300,Ea:12},change:{T:400},changeText:'Temperature raised to 400 K',watch:'rt',
-     explain:{honors:'At 400 K the shaded tail past Eₐ is about 3 times bigger, so 3 times as many collisions have enough energy. Faster particles collide a bit more often, but the energy effect is much larger. Compare Collisions per second with Collisions that react.',ap:'f = fraction with E ≥ Eₐ rises from about 2% to about 6.5%. Arrhenius gives the same answer: exp[(12 000/8.314)(1/300 − 1/400)] ≈ 3.3.'}},
-    {lvl:'honors',q:'You add a catalyst. What happens to the number of collisions per second?',choices:['It goes up, because the catalyst makes particles move faster','It stays about the same; a bigger share of collisions now react','It goes down'],correct:1,
+     explain:{honors:'At 400 K the shaded tail past Eₐ is about 3 times bigger, so about 3 times as many collisions have enough energy. Faster particles collide a little more often, but the energy effect is much larger. The rate jumps at the moment you heat it (see the graph), then falls as A and B get used up.',ap:'f rises from 2.2% to 6.5%, and k rises 3.4 times. Arrhenius predicts exp[(12 000/8.314)(1/300 − 1/400)] ≈ 3.3; the extra bit comes from Z ∝ √T.'}},
+    {lvl:'honors',q:'You add a catalyst. What does it change?',choices:['It gives the particles more energy, so the curve shifts to the right','It lowers Eₐ, so more of the same particles are past the line','It makes the particles collide more often'],correct:1,
      baseline:{rxn:'gas',cA:0.6,cB:0.6,T:300,Ea:12},change:{cat:true},changeText:'Catalyst added',watch:'rt',
-     explain:{honors:'A catalyst does not heat the particles or speed them up. It provides a path with a lower Eₐ, so a larger fraction of the same collisions clear the barrier. Collisions per second stays about the same while Collisions that react jumps.'}},
-    {lvl:'ap',q:'You double both [A] and [B], from 0.25 M to 0.50 M each. The rate becomes about…',choices:['2 times as fast','4 times as fast','8 times as fast'],correct:1,
+     explain:{honors:'Watch the energy graph: the blue curve does not move, because the temperature did not change. The dashed green Eₐ line moves left, so a much bigger share of the particles can react. Collisions that react jumps from about 1% to about 8%.'}},
+    {lvl:'ap',q:'Rate = k[A][B]. You double both [A] and [B]. The rate quadruples. What happens to the rate constant k?',choices:['k doubles','k quadruples','k stays the same'],correct:2,
      baseline:{rxn:'gas',cA:0.25,cB:0.25,T:450},change:{cA:0.5,cB:0.5},changeText:'Fresh batch with both concentrations doubled',watch:'rt',
-     explain:{ap:'Z ∝ [A][B], so doubling both multiplies collisions by 2 × 2 = 4. f and p stay the same, so rate = k[A][B] quadruples. Your k readout stays about the same, as a rate constant should.'}},
-    {lvl:'ap',q:'At 600 K with Eₐ = 6 kJ/mol, almost half of all collisions have enough energy. You shrink B’s reactive side from 180° to 90°. The rate…',choices:['stays the same, because energy is what matters','drops to about half','drops to almost zero'],correct:1,
+     explain:{ap:'Z ∝ [A][B], so doubling both multiplies the initial rate by 4. But k = rate/([A][B]) depends only on T, Eₐ and p, so the k readout does not move. Concentration changes the rate, not the rate constant. Only temperature or a catalyst changes k.'}},
+    {lvl:'ap',q:'At 600 K with Eₐ = 6 kJ/mol, about half of all collisions have enough energy. You shrink B’s reactive side from 180° to 90°. The share of collisions that react…',choices:['stays the same, because energy is all that matters','drops to about half','drops to almost zero'],correct:1,
      baseline:{rxn:'gas',cA:0.4,cB:0.4,T:600,Ea:6,orient:180},change:{orient:90},changeText:'Reactive side shrunk to 90° (p = 0.25)',watch:'rt',
-     explain:{ap:'The orientation factor p fell from 0.50 to 0.25. Energy is not the only requirement: the colliding particles must also line up. rate = Z·f·p, so halving p halves the rate.'}},
+     explain:{ap:'The orientation factor p fell from 0.50 to 0.25. Energy is not the only requirement: the colliding particles must also line up. Collisions that react = f × p, so it drops from about 25% to about 12%, and k halves.'}},
     {lvl:'ap',instant:true,set:{rxn:'gas',cA:0.5,cB:0.5,T:300,Ea:12,cat:false},q:'Eₐ = 12 kJ/mol. Use the Arrhenius equation to predict k(400 K) / k(300 K).',choices:['1.33, the ratio of the temperatures','about 3.3','about 12'],correct:1,
      explain:{ap:'ln(k₂/k₁) = (Eₐ/R)(1/T₁ − 1/T₂) = (12 000 J/mol ÷ 8.314)(1/300 − 1/400) = 1.20, so k₂/k₁ = e¹·²⁰ ≈ 3.3. Set T to 300 K and then 400 K and compare the k readouts. Real reactions with Eₐ ≈ 50 kJ/mol roughly double for every 10 °C.'}}
   ],
@@ -252,6 +253,10 @@ const RATES={
   },
   thumbSetup(sim){sim.p.T=420;},thumbFrames:60
 };
+function join(sim,A,B){const st=sim.st,M=A.m+B.m,c=mkP(st,'C',(A.x+B.x)/2,(A.y+B.y)/2,sim.p.T);c.vx=(A.m*A.vx+B.m*B.vx)/M;c.vy=(A.m*A.vy+B.m*B.vy)/M;c.vz=(A.m*A.vz+B.m*B.vz)/M;c.a=B.a;
+  A.dead=true;B.dead=true;st.ps.push(c);st.bud-=1;fx(sim,c.x,c.y,'ok');}
+function hitMg(sim,q,m,nx,ny){const st=sim.st;q.dead=true;st.bud-=1;st.refill=(st.refill||0)+1;fx(sim,m.x+nx*MGR,m.y+ny*MGR,'ok');
+  if(m.h===0){m.h=1;return;}m.gone=true;const ion=mkP(st,'Mg2',m.x,m.y-4,sim.p.T);ion.vy=-Math.abs(ion.vy)-40;st.ps.push(ion);st.ps.push(mkP(st,'H2',m.x+(st.rnd()-.5)*8,m.y-MGR-6,sim.p.T));}
 function fx(sim,x,y,kind){const v=sim.vis;if(!v||!v.fx)return;if(kind!=='ok'&&v.fx.length>26)return;v.fx.push({x,y,k:kind,a:0});}
 function drawHeader(ctx,p,k,hon){const y=30,s=15*k;
   if(p.rxn==='mg'){txt(ctx,hon?'Mg(s) + 2H⁺(aq) → Mg²⁺(aq) + H₂(g)':'Mg(s) + 2HCl(aq) → MgCl₂(aq) + H₂(g)',BX,y,{s,w:700,b:'middle'});}

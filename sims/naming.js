@@ -41,6 +41,13 @@ const PA=[
   ['hydrogen sulfite','HSO3',-1,'ap'],['arsenate','AsO4',-3,'ap']
 ].map(([name,f,q,lvl,fam])=>({name,f,q,lvl,fam:fam||null,poly:true,ox:/O/.test(f)}));
 const PAby={};PA.forEach(a=>PAby[a.f]=a);
+/* plausible mix-ups for each ion, used for multiple-choice options */
+const SIMILAR={OH:['oxide','hydride','peroxide'],CN:['cyanate','nitride','carbide'],C2H3O2:['carbonate','acetite','oxalate'],MnO4:['manganate','permanganite','manganese'],
+  HCO3:['carbonate','hydrogen carbonite','hydroxide'],CO3:['carbonite','hydrogen carbonate','carbide'],SCN:['cyanide','thiocyanite','thiosulfate'],C2O4:['carbonate','acetate','oxalite'],
+  O2:['oxide','dioxide','hydroxide'],S2O3:['sulfate','sulfite','thiosulfite'],CrO4:['dichromate','chromite','chromide'],Cr2O7:['chromate','dichromite','dichromide'],
+  HSO4:['sulfate','hydrogen sulfite','hydrosulfate'],HSO3:['sulfite','hydrogen sulfate','hydrosulfite'],H2PO4:['hydrogen phosphate','phosphate','dihydrogen phosphite'],HPO4:['dihydrogen phosphate','phosphate','hydrogen phosphite'],
+  PO4:['phosphite','phosphide','hydrogen phosphate'],PO3:['phosphate','phosphide','hypophosphite'],AsO4:['arsenite','arsenide','phosphate'],SO4:['sulfite','sulfide','thiosulfate'],SO3:['sulfate','sulfide','thiosulfate'],
+  NO3:['nitrite','nitride','ammonium'],NO2:['nitrate','nitride','dioxide'],NH4:['ammonia','nitride','hydronium'],H3O:['hydroxide','ammonium','hydride'],Hg2:['mercury(II)','dimercury','mercury']};
 const ALTNAME={'hydrogen carbonate':'bicarbonate','hydrogen sulfate':'bisulfate','hydrogen sulfite':'bisulfite'};
 const POSIONS=[{name:'ammonium',f:'NH4',q:1,lvl:'bio',poly:true},{name:'hydronium',f:'H3O',q:1,lvl:'honors',poly:true},{name:'mercury(I)',f:'Hg2',q:2,lvl:'honors',poly:true}];
 // oxyanion families: [element, [[name, O count]] from most O to least]
@@ -95,6 +102,7 @@ function allowed(cat,an){const f=an.f;
   if(['N','P'].includes(f))return cat.type===1&&!cat.poly&&!['Ag','Cd'].includes(cat.f);
   if(f==='Se')return cat.type===1&&!cat.poly;
   if(cat.f==='NH4')return !['O','N','P','H','O2'].includes(f);
+  if(cat.f==='Cr'&&['CrO4','Cr2O7'].includes(f))return false;if(cat.f==='Mn'&&f==='MnO4')return false;
   if(cat.f==='Al'&&['CO3','SO3','HCO3','CrO4','Cr2O7','SO4H'].includes(f))return false;
   if(cat.f==='Ag'&&['OH','HCO3','O2'].includes(f))return false;
   if(cat.type===2){const r=cat.rule;
@@ -135,7 +143,7 @@ function edgeOn(path,a,b){const i=path.indexOf(a),j=path.indexOf(b);return i>=0&
 
 /* ---------- worked steps (the hint sequence) ---------- */
 const H=s=>CL.html(s);
-function chargeTxt(q){return (Math.abs(q)===1?'':Math.abs(q))+(q>0?'+':'−');}
+function chargeTxt(q){return Math.abs(q)+(q>0?'+':'−');}
 function ionHtml(f,q){return CL.html(f,q);}
 function steps(c,dir){const out=[];
   if(c.kind==='ionic'){const cat=c.cat,an=c.an;const cf=cat.poly?ionHtml(cat.f,cat.q):cat.f;
@@ -163,6 +171,7 @@ function varCharges(f){const q=TMION.filter(t=>t[0]===f).map(t=>t[1]);const extr
   return extra.map(x=>f+'<sup>'+x+'+</sup>').join(' or ');}
 
 /* ---------- answer checking ---------- */
+const cap=s=>String(s).replace(/^./,m=>m.toUpperCase());
 function normName(s){return String(s||'').toLowerCase().replace(/[‐-―−]/g,'-').replace(/aluminium/g,'aluminum').replace(/sulph/g,'sulf').replace(/caesium/g,'cesium')
   .replace(/\s*\(\s*/g,'(').replace(/\s*\)\s*/g,') ').replace(/\s+/g,' ').replace(/ ions?$/,'').trim();}
 function nameAlts(c){const base=normName(c.name),out=[base];
@@ -170,8 +179,7 @@ function nameAlts(c){const base=normName(c.name),out=[base];
   out.slice().forEach(n=>{['mono','tetra','penta','hexa','hepta','deca'].forEach(p=>{const short=p.slice(0,-1)+'oxide';if(n.includes(short)&&!n.includes(p+'oxide'))out.push(n.replace(short,p+'oxide'));});
     if(n.includes('hydroiodic'))out.push(n.replace('hydroiodic','hydriodic'));});
   if(c.kind==='mol'&&c.formula==='N2O')out.push('nitrous oxide');
-  if(c.kind==='common')out.push(normName(c.c.sys));
-  return out;}
+    return out;}
 const SUBS='₀₁₂₃₄₅₆₇₈₉',SUPS='⁰¹²³⁴⁵⁶⁷⁸⁹';
 function normFormula(s){return String(s||'').replace(/[₀-₉]/g,c=>SUBS.indexOf(c)).replace(/\((aq|s|l|g)\)/gi,'').replace(/\s+/g,'').replace(/[·•∙*.]/g,'*');}
 function formulaAlts(c){const f=c.formula,out=[f];if(/C2H3O2/.test(f))out.push(f.replace(/C2H3O2/g,'CH3COO'));if(f==='HC2H3O2')out.push('CH3COOH');return out;}
@@ -185,7 +193,7 @@ function checkName(c,input){const s=normName(input);if(!s)return {empty:true,msg
   const alts=nameAlts(c);if(alts.includes(s)){const note=s!==normName(c.name)&&/aoxide|ooxide/.test(s)?'Most textbooks drop the extra vowel: '+c.name+'.':'';return {ok:true,note};}
   const has=w=>s.includes(w);
   if(c.kind==='ionic'){const cat=c.cat,an=c.an;
-    if(/(^|\s)(mono|di|tri|tetra|penta|hexa)(?!hydrate)/.test(s.replace(an.name,'').replace(/hydrate.*/,''))&&!/^(dichromate|dihydrogen)/.test(an.name))return {node:'q1',msg:`${c.formula.replace(/\*.*/,'')} is ionic (it has a metal${cat.poly?' or ammonium':''}), so it does not use prefixes like di- or tri-. The charges set the ratio.`};
+    if(/(^|\s)(mono|di|tri|tetra|penta|hexa)/.test(s.replace(normName(an.name),'').replace(/\s\S*hydrate$/,'')))return {node:'q1',msg:`${c.formula.replace(/\*.*/,'')} is ionic (it has a metal${cat.poly?' or ammonium':''}), so it does not use prefixes like di- or tri-. The charges set the ratio.`};
     if(/acid/.test(s))return {node:'q2',msg:'Acids start with H. This compound starts with a metal, so it is ionic.'};
     const base=cat.poly?cat.f==='NH4'?'ammonium':'mercury':cat.base||cat.name;
     if(!s.startsWith(base))return {node:cat.type===2?'t2':'t1',msg:`Start with the cation’s name: ${cat.poly?cat.name:base}.`};
@@ -193,7 +201,7 @@ function checkName(c,input){const s=normName(input);if(!s)return {empty:true,msg
     if(cat.type===2){if(!rm)return {node:'q3',msg:`${base.replace(/^./,m=>m.toUpperCase())} can have more than one charge, so the name needs a Roman numeral for its charge: ${cat.name}.`};
       const r=rm[1].toUpperCase();if(/^\d+\+?$/.test(r))return {node:'t2',msg:`Use a Roman numeral, not a number: (${cat.roman}).`};
       if(r!==cat.roman){const sub=c.nC>1?c.nC:c.nA;return {node:'t2',msg:`The Roman numeral is the charge on each ${base} ion. ${c.nA} × ${chargeTxt(an.q)} = ${c.nA*Math.abs(an.q)}−, shared by ${c.nC} ${cat.f}, so each is ${cat.q}+ → (${cat.roman}).${ROMAN.indexOf(r)===sub?' It is not the subscript.':''}`};}}
-    else if(rm&&!cat.poly)return {node:'q3',msg:`${base.replace(/^./,m=>m.toUpperCase())} only forms one ion (${chargeTxt(cat.q)}), so it gets no Roman numeral.`};
+    else if(rm&&!cat.poly)return {node:'q3',msg:`${base.replace(/^./,m=>m.toUpperCase())} only forms one ion, ${CL.fmt(cat.f,cat.q)}, so it gets no Roman numeral.`};
     const after=rest.replace(/^\([^)]*\)/,'').trim();const anPart=after.replace(/\s*\S*hydrate$/,'').trim();
     if(anPart!==normName(an.name)&&anPart!==(ALTNAME[an.name]||'#')){
       if(an.poly){const other=PA.find(a=>a.name===anPart);
@@ -211,8 +219,8 @@ function checkName(c,input){const s=normName(input);if(!s)return {empty:true,msg
     if(!/acid$/.test(s)){if(s.startsWith('hydrogen'))return {node:'q2',msg:`Dissolved in water, ${CL.fmt(c.formula)}(aq) is named as an acid: ${c.name}. (“Hydrogen ${an.name}” is the name for the pure gas or compound, not the acid.)`};return {node:'q2',msg:`It starts with H and is in water, so the name ends in “acid”: ${c.name}.`};}
     if(c.binary&&!s.startsWith('hydro'))return {node:'q5',msg:`${an.name.replace(/^./,m=>m.toUpperCase())} has no oxygen, so the acid takes hydro-: ${c.name}.`};
     if(!c.binary&&s.startsWith('hydro'))return {node:'q5',msg:`${an.name.replace(/^./,m=>m.toUpperCase())} contains oxygen, so there is no hydro- prefix: ${c.name}.`};
-    if(!c.binary){if(/ate$/.test(an.name)&&/ous acid$/.test(s))return {node:'oxy',msg:`${an.name} ends in -ate, so the acid ends in -ic: ${c.name}. (-ite → -ous.)`};
-      if(/ite$/.test(an.name)&&/ic acid$/.test(s))return {node:'oxy',msg:`${an.name} ends in -ite, so the acid ends in -ous: ${c.name}. (-ate → -ic.)`};
+    if(!c.binary){if(/ate$/.test(an.name)&&/ous acid$/.test(s))return {node:'oxy',msg:`${cap(an.name)} ends in -ate, so the acid ends in -ic: ${c.name}. (-ite → -ous.)`};
+      if(/ite$/.test(an.name)&&/ic acid$/.test(s))return {node:'oxy',msg:`${cap(an.name)} ends in -ite, so the acid ends in -ous: ${c.name}. (-ate → -ic.)`};
       return {node:'oxy',msg:`The anion is ${an.name} (${CL.fmt(an.f,an.q)}), so the acid is ${c.name}.`};}
     return {node:'bin',msg:`hydro- + root + -ic acid: ${c.name}.`};}
   if(c.kind==='mol'){const m=c.m;const e2=CL.anionName[m.b];
@@ -225,6 +233,7 @@ function checkName(c,input){const s=normName(input);if(!s)return {empty:true,msg
     if(p2===e2)return {node:'mol',msg:`Molecular names need a prefix on the second element too, even mono-: ${c.name}.`};
     if(p1===elName(m.a)&&m.na>1)return {node:'mol',msg:`There are ${m.na} ${elName(m.a)} atoms, so use ${PREF[m.na]}-: ${c.name}.`};
     return {node:'mol',msg:`Count the atoms: ${m.na} ${elName(m.a)} → ${m.na>1?PREF[m.na]+'-':'no prefix'}; ${m.nb} ${elName(m.b)} → ${PREF[m.nb]}-. So: ${c.name}.`};}
+  if(s===normName(c.c.sys))return {node:'mol',msg:`That follows the prefix rules, but ${CL.fmt(c.formula)} has a common name that everyone uses: ${c.name}.`};
   return {node:'mol',msg:`${CL.fmt(c.formula)} has a common name: ${c.name}.`};}
 function checkFormula(c,input){const raw=normFormula(input);if(!raw)return {empty:true,msg:'Type a formula first.'};
   if(formulaAlts(c).includes(raw))return {ok:true};
@@ -234,39 +243,42 @@ function checkFormula(c,input){const raw=normFormula(input);if(!raw)return {empt
     if(c.kind==='ionic'){const cs=c.cat.f;if(!raw.startsWith(cs.replace(/\d/g,'').slice(0,1))||raw.indexOf(c.an.f.replace(/\d/g,''))===0)return {node:'order',msg:'Write the positive ion (the metal or ammonium) first.'};
       return {node:'poly',msg:`The atoms are right, but keep each polyatomic ion together as a unit: ${CL.fmt(c.formula)}.`};}
     return {node:c.kind==='mol'?'mol':'oxy',msg:`The atoms are right; write it in the standard order: ${CL.fmt(c.formula)}.`};}
+  if(c.kind==='ionic'&&c.hyd&&!raw.includes('*'))return {node:'hyd',msg:`Put a dot (or *) between the salt and the water: ${CL.fmt(c.formula)}.`};
   if(c.kind==='ionic'){const cat=c.cat,an=c.an;
     const k=scaleOf(got,want);if(k>1&&Number.isInteger(k))return {node:'bal',msg:`Reduce the subscripts to the smallest whole-number ratio: ${CL.fmt(c.formula)}.`};
-    if(an.poly&&c.nA>1&&!raw.includes('('+an.f+')'))return {node:'poly',msg:`More than one ${an.name} ion needs parentheses: (${CL.fmt(an.f)})${CL.sub(c.nA)}. Without them, the subscript only multiplies the last atom.`};
-    if(cat.poly&&c.nC>1&&!raw.includes('('+cat.f+')'))return {node:'poly',msg:`Two or more ammonium ions need parentheses: (NH₄)${CL.sub(c.nC)}.`};
     if(cat.type===2){const alt=CAT2.filter(x=>x.f===cat.f&&x.q!==cat.q).map(x=>mkIonic(x,an,c.hyd)).find(x=>sameCounts(CL.parse(x.formula.replace(/\*/g,'·')),got));
       if(alt)return {node:'t2',msg:`That is the formula for ${alt.name}. (${cat.roman}) means ${CL.fmt(cat.f,cat.q)}: ${CL.fmt(c.formula)}.`};}
     const wrongAn=PA.filter(a=>a!==an&&a.fam&&a.fam===an.fam).map(a=>mkIonic(cat,a,c.hyd)).find(x=>sameCounts(CL.parse(x.formula.replace(/\*/g,'·')),got));
-    if(wrongAn)return {node:'poly',msg:`That is ${wrongAn.name}. ${an.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(an.f,an.q)}.`};
+    if(wrongAn)return {node:'poly',msg:`That is ${wrongAn.name}. ${cap(an.name)} is ${CL.fmt(an.f,an.q)}.`};
+    if(an.poly&&c.nA>1&&new RegExp(an.f.replace(/[()]/g,'\\$&')+'\\d').test(raw)&&!raw.includes('('+an.f+')'))return {node:'poly',msg:`More than one ${an.name} ion needs parentheses: (${CL.fmt(an.f)})${CL.sub(c.nA)}. Without them, the subscript only multiplies the last atom.`};
+    if(cat.poly&&c.nC>1&&new RegExp(cat.f+'\\d').test(raw)&&!raw.includes('('+cat.f+')'))return {node:'poly',msg:`Two or more ammonium ions need parentheses: (NH₄)${CL.sub(c.nC)}.`};
     if(c.hyd){const gotW=got.O-(want.O-c.hyd);if(got.H!==want.H||gotW!==c.hyd){const dry=Object.assign({},want);dry.H-=2*c.hyd;dry.O-=c.hyd;const g2=Object.assign({},got);const w2=Math.round(((got.H||0)-(dry.H||0))/2);g2.H-=2*w2;g2.O-=w2;
       if(sameCounts(g2,dry))return {node:'hyd',msg:`${HYDPRE[c.hyd]}- means ${c.hyd} water${c.hyd>1?'s':''}: ·${c.hyd>1?c.hyd:''}H₂O.`};}}
     return {node:'bal',msg:`The charges must add to zero. ${c.nC} × ${chargeTxt(cat.q)} and ${c.nA} × ${chargeTxt(an.q)} balance: ${CL.fmt(c.formula)}.`};}
   if(c.kind==='acid'){const an=c.an,n=Math.abs(an.q);
     const dry=Object.assign({},got);dry.H=(dry.H||0)-0;const anC=CL.parse(an.f);const g2=Object.assign({},got);g2.H=(g2.H||0)-(anC.H||0);const a2=Object.assign({},anC);delete a2.H;const g3=Object.assign({},g2);delete g3.H;
     if(sameCounts(g3,a2))return {node:c.binary?'bin':'oxy',msg:`${an.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(an.f,an.q)}, so the acid needs ${n} H⁺: ${CL.fmt(c.formula)}.`};
-    return {node:c.binary?'bin':'oxy',msg:`${c.name} comes from ${an.name}, ${CL.fmt(an.f,an.q)}${c.binary?'':' (-ic ↔ -ate, -ous ↔ -ite)'}: ${CL.fmt(c.formula)}.`};}
-  if(c.kind==='mol'){const m=c.m;if(got[m.a]===m.nb&&got[m.b]===m.na&&m.na!==m.nb)return {node:'mol',msg:`The prefixes are swapped. ${PREF[m.na]||'No prefix'} goes with ${elName(m.a)} and ${PREF[m.nb]}- with ${elName(m.b)}: ${CL.fmt(c.formula)}.`};
+    return {node:c.binary?'bin':'oxy',msg:`${cap(c.name)} comes from ${an.name}, ${CL.fmt(an.f,an.q)}${c.binary?'':' (-ic ↔ -ate, -ous ↔ -ite)'}: ${CL.fmt(c.formula)}.`};}
+  if(c.kind==='mol'){const m=c.m;if(got[m.a]===m.nb&&got[m.b]===m.na&&m.na!==m.nb)return {node:'mol',msg:`The prefixes are swapped. ${m.na>1?PREF[m.na]+'-':'No prefix'} goes with ${elName(m.a)} and ${PREF[m.nb]}- with ${elName(m.b)}: ${CL.fmt(c.formula)}.`};
     return {node:'mol',msg:`In a molecular name the prefixes are the subscripts: ${m.na>1?PREF[m.na]+'-':'no prefix'} = ${m.na}, ${PREF[m.nb]}- = ${m.nb}. There are no charges to crisscross: ${CL.fmt(c.formula)}.`};}
   return {node:'mol',msg:`${c.name} is ${CL.fmt(c.formula)}.`};}
 
 /* ---------- multiple-choice distractors (each one is a real, common mistake) ---------- */
 function wrongNames(c){const w=[];
   if(c.kind==='ionic'){const cat=c.cat,an=c.an,hy=c.hyd?' '+HYDPRE[c.hyd]+'hydrate':'';const base=cat.base||cat.name;
-    w.push((c.nC>1?PREF[c.nC]:'')+base+' '+prefixed(c.nA>1?PREF[c.nA]:'',an.name)+hy);
+    w.push((c.nC>1?PREF[c.nC]:'')+base+' '+prefixed(PREF[c.nA],an.name)+hy);
     if(cat.type===2&&!cat.poly){w.push(base+' '+an.name+hy);const sub=c.nC>1?c.nC:c.nA;if(ROMAN[sub]&&sub!==cat.q)w.push(base+'('+ROMAN[sub]+') '+an.name+hy);
       const other=TMION.find(t=>t[0]===cat.f&&t[1]!==cat.q);if(other)w.push(base+'('+ROMAN[other[1]]+') '+an.name+hy);}
     else if(!cat.poly)w.push(base+'('+ROMAN[cat.q]+') '+an.name+hy);
-    if(an.poly){const fam=familyOf(an);if(fam){fam.filter(a=>a!==an).forEach(a=>w.push(cat.name+' '+a.name+hy));}
+    if(an.poly){const fam=familyOf(an);if(fam){fam.filter(a=>a!==an).forEach(a=>w.push(cat.name+' '+a.name+hy));}(SIMILAR[an.f]||[]).forEach(x=>w.push(cat.name+' '+x+hy));
       const at=CL.parse(an.f),main=Object.keys(at).find(k=>k!=='O'&&k!=='H')||'O';if(CL.anionName[main])w.push(cat.name+' '+CL.anionName[main]+hy);}
     else{w.push(cat.name+' '+elName(an.f)+hy);const ate=PA.find(a=>a.fam===an.f||(an.f==='S'&&a.f==='SO4')||(an.f==='N'&&a.f==='NO3')||(an.f==='P'&&a.f==='PO4')||(an.f==='Cl'&&a.f==='ClO3'));if(ate)w.push(cat.name+' '+ate.name+hy);}
-    if(c.hyd){w.push(cat.name+' '+an.name+' '+HYDPRE[clamp(c.hyd+1,1,10)]+'hydrate');w.push(cat.name+' '+an.name);}}
+    if(c.hyd){w.push(cat.name+' '+an.name+' '+HYDPRE[clamp(c.hyd+1,1,10)]+'hydrate');w.push(cat.name+' '+an.name);}
+    if(cat.poly)(SIMILAR[cat.f]||[]).forEach(x=>w.push(x+' '+an.name+hy));}
   else if(c.kind==='acid'){const an=c.an;w.push('hydrogen '+an.name);
     if(c.binary){w.push((ACIDROOT[an.name]||an.name.replace(/ide$/,''))+'ic acid');w.push('hydro'+(ACIDROOT[an.name]||an.name.replace(/ide$/,''))+'ous acid');}
-    else{const r=c.name.replace(/(ic|ous) acid$/,'');w.push('hydro'+c.name);w.push(r+(/ic acid$/.test(c.name)?'ous':'ic')+' acid');}}
+    else{const r=c.name.replace(/(ic|ous) acid$/,'');w.push('hydro'+c.name);w.push(r+(/ic acid$/.test(c.name)?'ous':'ic')+' acid');}
+    w.push(an.name+' acid');}
   else if(c.kind==='mol'){const m=c.m;w.push(elName(m.a)+' '+CL.anionName[m.b]);w.push('mono'+(m.na>1?'':'')+elName(m.a)+' '+prefixed(PREF[m.nb],CL.anionName[m.b]));
     w.push((m.nb>1?PREF[m.nb]:'')+elName(m.a)+' '+prefixed(PREF[m.na],CL.anionName[m.b]));w.push(elName(m.a)+'('+ROMAN[Math.min(7,m.nb*2)]+') '+CL.anionName[m.b]);
     if(m.na>1)w.push(elName(m.a)+' '+prefixed(PREF[m.nb],CL.anionName[m.b]));}
@@ -276,16 +288,19 @@ function wrongFormulas(c){const w=[];
   if(c.kind==='ionic'){const cat=c.cat,an=c.an,hy=c.hyd?'*'+(c.hyd>1?c.hyd:'')+'H2O':'';
     w.push(cat.f+an.f+hy);
     if(an.poly&&c.nA>1)w.push(cat.f+(c.nC>1?c.nC:'')+an.f+c.nA+hy);
-    if(!(c.nC===1&&c.nA===1)){if(c.nC===c.nA){}else{const sw=(cat.poly&&c.nA>1?'('+cat.f+')':cat.f)+(c.nA>1?c.nA:'')+(an.poly&&c.nC>1?'('+an.f+')':an.f)+(c.nC>1?c.nC:'');w.push(sw+hy);}}
+    if(!(c.nC===1&&c.nA===1)){if(c.nC===c.nA||cat.f==='Hg2'){}else{const sw=(cat.poly&&c.nA>1?'('+cat.f+')':cat.f)+(c.nA>1?c.nA:'')+(an.poly&&c.nC>1?'('+an.f+')':an.f)+(c.nC>1?c.nC:'');w.push(sw+hy);}}
     else{const a=Math.abs(cat.q),b=Math.abs(an.q);if(a>1||b>1)w.push((cat.poly&&b>1?'('+cat.f+')':cat.f)+(b>1?b:'')+(an.poly&&a>1?'('+an.f+')':an.f)+(a>1?a:'')+hy);}
     if(cat.type===2){CAT2.filter(x=>x.f===cat.f&&x.q!==cat.q).forEach(x=>w.push(mkIonic(x,an,c.hyd).formula));}
     const fam=familyOf(an);if(fam)fam.filter(a=>a!==an).forEach(a=>w.push(mkIonic(cat,a,c.hyd).formula));
-    if(c.hyd)w.push(c.formula.replace(/\*.*/,'')+'*'+(c.hyd+1)+'H2O');}
-  else if(c.kind==='acid'){const an=c.an,n=Math.abs(an.q);w.push('H'+an.f);if(n===1)w.push('H2'+an.f);
+    if(c.hyd)w.push(c.formula.replace(/\*.*/,'')+'*'+(c.hyd+1)+'H2O');
+    if(cat.f==='Hg2')w.push('HgCl2'.replace('Cl',an.f),'Hg'+an.f);
+    const C=cat.poly?'('+cat.f+')':cat.f,A=an.poly?'('+an.f+')':an.f;w.push(cat.f+(an.poly?A:an.f)+'2'+hy,C+'2'+an.f+hy,cat.f+'3'+(an.poly?A:an.f)+'2'+hy,(an.poly?an.f:an.f)+cat.f+hy);}
+  else if(c.kind==='acid'){const an=c.an,n=Math.abs(an.q);w.push('H'+an.f);if(n===1)w.push('H2'+an.f);if(n<3)w.push('H3'+an.f);w.push('H'+(n>1?n:'')+an.f+(an.poly?'':'O3'));
     const fam=familyOf(an);if(fam)fam.filter(a=>a!==an).forEach(a=>w.push(mkAcid(a).formula));
+    (SIMILAR[an.f]||[]).forEach(x=>{const a=PA.find(y=>y.name===x);if(a&&a.q<0)w.push(mkAcid(a).formula);});if(c.formula==='HCN')w.push('HCNO','H3N');
     if(c.binary)w.push('H'+(n>1?n:'')+an.f+'O3');else{const at=CL.parse(an.f);const main=Object.keys(at).find(k=>k!=='O'&&k!=='H');if(main&&main!=='C')w.push('H'+(n>1?n:'')+main);}}
-  else if(c.kind==='mol'){const m=c.m;w.push(m.a+m.b);w.push(m.a+(m.nb>1?m.nb:'')+m.b+(m.na>1?m.na:''));w.push(m.a+(m.na>1?m.na:'')+m.b);w.push(m.a+'2'+m.b+(m.nb*2));}
-  else w.push('H2O2','NH4','CH3');
+  else if(c.kind==='mol'){const m=c.m;w.push(m.a+m.b);w.push(m.a+(m.nb>1?m.nb:'')+m.b+(m.na>1?m.na:''));w.push(m.a+(m.na>1?m.na:'')+m.b);w.push(m.a+'2'+m.b+(m.nb*2));w.push(m.a+(m.na>1?m.na:'')+m.b+(m.nb+1));w.push(m.a+(m.na+1)+m.b+(m.nb>1?m.nb:''));}
+  else w.push(...{H2O:['H2O2','HO','H3O'],NH3:['NH4','N3H','NH2'],CH4:['CH3','C4H','CH2'],H2O2:['H2O','HO','HO2']}[c.formula]);
   return w;}
 function choicesFor(c,dir,r){const right=dir==='f2n'?c.name:c.formula;const pool=(dir==='f2n'?wrongNames(c):wrongFormulas(c));const seen=new Set([dir==='f2n'?normName(right):right]);const out=[];
   pool.forEach(x=>{const k=dir==='f2n'?normName(x):x;if(!seen.has(k)&&x){seen.add(k);out.push(x);}});
@@ -344,7 +359,7 @@ function checkIon(ion,dir,input){if(!String(input||'').trim())return {empty:true
   return {msg:`${ion.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(ion.f,ion.q)}.`};}
 function ionChoices(ion,dir,r){const pool=PA.concat(POSIONS);let w=[];const fam=ion.fam?pool.filter(a=>a.fam===ion.fam&&a!==ion):[];
   if(dir==='f2n'){w=fam.map(a=>a.name);const at=CL.parse(ion.f),main=Object.keys(at).find(k=>k!=='O'&&k!=='H');if(main&&CL.anionName[main])w.push(CL.anionName[main]);
-    pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(a.name));}
+    (SIMILAR[ion.f]||[]).forEach(x=>w.push(x));pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(a.name));}
   else{fam.forEach(a=>w.push(CL.fmt(a.f,a.q)));w.push(CL.fmt(ion.f,ion.q>0?ion.q+1:ion.q===-1?-2:-1));pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(CL.fmt(a.f,a.q)));}
   const right=dir==='f2n'?ion.name:CL.fmt(ion.f,ion.q);const seen=new Set([right]),out=[];w.forEach(x=>{if(!seen.has(x)){seen.add(x);out.push(x);}});
   const ch=[right,...out.slice(0,3)];for(let i=ch.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[ch[i],ch[j]]=[ch[j],ch[i]];}return {list:ch,correct:ch.indexOf(right)};}

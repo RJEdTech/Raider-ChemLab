@@ -75,7 +75,8 @@ function metalPos(sim){const s=blockSize(sim.p),home=[BX+BW/2,BY+BH-s/2-10],land
   const path=polyline([home,[home[0],188],[land[0],188],land]);const f=(t-t0)/MOVE,e=f<0.5?2*f*f:1-2*(1-f)*(1-f);return path.at(e*path.L);}
 
 /* ---------- drawing pieces ---------- */
-function panel(ctx,lines,k){let w=0;lines.forEach(l=>{ctx.font=(l.w||400)+' '+l.s*k+'px '+FONT;w=Math.max(w,ctx.measureText(l.t).width);});
+function panel(ctx,lines,k){let w=0;lines=lines.map(l=>{let s=l.s;ctx.font=(l.w||400)+' '+s*k+'px '+FONT;while(s>12&&ctx.measureText(l.t).width>740){s-=0.5;ctx.font=(l.w||400)+' '+s*k+'px '+FONT;}return Object.assign({},l,{s});});
+  lines.forEach(l=>{ctx.font=(l.w||400)+' '+l.s*k+'px '+FONT;w=Math.max(w,ctx.measureText(l.t).width);});
   const lh=lines.map(l=>l.s*k*1.35),h=lh.reduce((a,b)=>a+b,0)+14;rr(ctx,12,10,Math.min(776,w+28),h,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   let y=10+8;lines.forEach((l,i)=>{y+=lh[i];txt(ctx,l.t,26,y-lh[i]*0.28,{s:l.s*k,w:l.w||400,c:l.c||PAL['cv-ink']});});return 10+h;}
 function arrow(ctx,x1,y1,x2,y2,c,w){const a=Math.atan2(y2-y1,x2-x1),h=Math.max(9,w*2.6);ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=w;ctx.lineCap='round';
@@ -126,7 +127,7 @@ function drawProbe(ctx,x,yTop,yTip){ctx.strokeStyle='#5a6270';ctx.lineWidth=5;ct
 function drawMetalLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,M=metalOf(p),hn=hon();
   // panel
   const dT=st.Tw-p.T0,dTm=st.Tw-p.tHot;const L=[];
-  L.push({t:(M.unk?M.n:M.n+' ('+M.sym+')')+', '+p.mMetal.toFixed(0)+' g at '+p.tHot.toFixed(1)+' °C  →  '+p.mWater.toFixed(1)+' g water at '+p.T0.toFixed(1)+' °C',s:14,w:700});
+  L.push({t:p.mMetal.toFixed(0)+' g '+(M.unk?M.n.replace('Unknown metal','metal'):M.n.toLowerCase())+' at '+p.tHot.toFixed(0)+' °C  →  '+p.mWater.toFixed(0)+' g water at '+p.T0.toFixed(1)+' °C',s:14,w:700});
   if(!hn)L.push({t:dropped(sim)?'Heat flows from the hot metal into the cooler water.':'The metal heats in boiling water, then goes in the cup.',s:13,c:PAL['cv-soft']});
   else{L.push({t:'q_water = '+p.mWater.toFixed(1)+' g × 4.184 J/g·°C × '+sgn(dT,1)+' °C = '+sgn(p.mWater*CW*dT,0)+' J',s:13,c:PAL['cv-soft']});
     if(M.unk||ap())L.push({t:dropped(sim)?'c_metal = q_water / (m × ΔT_metal) = '+sgn(p.mWater*CW*dT,0)+' J / ('+p.mMetal.toFixed(1)+' g × '+sgn(-dTm,1)+' °C) = '+(Number.isFinite(cFromData(sim,false))?cFromData(sim,false).toFixed(3):'—')+' J/g·°C':'c_metal = q_water / (m_metal × ΔT_metal)',s:13,c:PAL['cv-soft']});
@@ -148,8 +149,8 @@ function drawMetalLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,M=metalOf(p),hn=h
   pill(ctx,'Bath '+p.tHot.toFixed(1)+' °C',BX+BW/2,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   pill(ctx,'Cup '+st.Tw.toFixed(1)+' °C',CX,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   zoomLink(ctx,CX-30,CBOT-40,16);
-  drawZoom(sim,ctx,vdt,k,t,st.Tw,sim.t>=DROP?st.Tm:null,M.col,sim.t>=DROP?'Metal atoms meet water':'Water in the cup');
-  panel(ctx,L,k);}
+  drawZoom(sim,ctx,vdt,k,t,st.Tw,sim.t>=DROP?st.Tm:null,M.col,sim.t>=DROP?'Metal meets water':'Water in the cup');
+  panel(ctx,L.slice(0,1),k);}
 
 function drawSnack(ctx,x,y,S,frac,char,t){const w=17*Math.cbrt(Math.max(0.05,frac)),h=w*0.62;const col=S.col;
   ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,w,h,0.15,0,6.29);ctx.fill();
@@ -157,7 +158,7 @@ function drawSnack(ctx,x,y,S,frac,char,t){const w=17*Math.cbrt(Math.max(0.05,fra
   ctx.strokeStyle=CL.shade(col,-0.45);ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,y,w,h,0.15,0,6.29);ctx.stroke();return h;}
 function drawFoodLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=snackOf(p),hn=hon(),lit=sim.t>=DROP&&st.burning;
   const b=burned(sim),dT=st.Tmax-p.T0,q=p.mWater*CW*dT;
-  const L=[{t:S.n+': '+p.mSnack.toFixed(2)+' g before, '+st.mNow.toFixed(2)+' g now, '+b.toFixed(2)+' g burned',s:14,w:700}];
+  const L=[{t:S.n+': '+p.mSnack.toFixed(2)+' g before, '+st.mNow.toFixed(2)+' g now',s:14,w:700}];
   if(!hn)L.push({t:'Highest water temperature: '+st.Tmax.toFixed(1)+' °C (ΔT = '+dT.toFixed(1)+' °C)',s:13,c:PAL['cv-soft']});
   else{L.push({t:'q = '+p.mWater.toFixed(1)+' g × 4.184 J/g·°C × '+dT.toFixed(1)+' °C = '+q.toFixed(0)+' J = '+(q/J_PER_CAL).toFixed(2)+' Cal',s:13,c:PAL['cv-soft']});
     L.push({t:'Energy per gram = '+(q/J_PER_CAL).toFixed(2)+' Cal / '+b.toFixed(2)+' g = '+(Number.isFinite(calPerG(sim))?calPerG(sim).toFixed(2):'—')+' Cal/g   (label '+S.cal.toFixed(2)+')',s:13,c:PAL['cv-soft']});}
@@ -187,10 +188,10 @@ function drawFoodLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=snackOf(p),hn=ho
   pill(ctx,'Water '+st.Tw.toFixed(1)+' °C',CANX,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   zoomLink(ctx,CANX-14,CANT+100,16);
   drawZoom(sim,ctx,vdt,k,t,st.Tw,null,null,'Water in the can');
-  panel(ctx,L,k);}
+  panel(ctx,L.slice(0,1),k);}
 
 function drawBombLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=snackOf(p),dT=st.Tmax-p.T0,q=BOMB_C*dT;
-  const L=[{t:S.n+' '+p.mSnack.toFixed(3)+' g in a bomb calorimeter, C_cal = '+BOMB_C.toFixed(2)+' kJ/°C',s:14,w:700},
+  const L=[{t:p.mSnack.toFixed(3)+' g '+S.n.toLowerCase()+', C_cal = '+BOMB_C.toFixed(2)+' kJ/°C',s:14,w:700},
     {t:'q = C_cal × ΔT = '+BOMB_C.toFixed(2)+' kJ/°C × '+dT.toFixed(3)+' °C = '+q.toFixed(2)+' kJ  →  '+(q/p.mSnack).toFixed(2)+' kJ/g',s:13,c:PAL['cv-soft']}];
   // insulated jacket and bucket
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.setLineDash([6,4]);rr(ctx,BKX-18,BKT-22,BKW+36,BKB-BKT+22,12);ctx.stroke();ctx.setLineDash([]);
@@ -212,8 +213,32 @@ function drawBombLab(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=snackOf(p),dT=st
   bench(ctx);
   pill(ctx,'Water '+st.Tw.toFixed(3)+' °C',BKX+BKW/2,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   zoomLink(ctx,BKX+BKW-40,BKT+50,16);
-  drawZoom(sim,ctx,vdt,k,t,st.Tw,null,null,'Water around the bomb');
-  panel(ctx,L,k);}
+  drawZoom(sim,ctx,vdt,k,t,st.Tw,null,null,'Water in the bucket');
+  panel(ctx,L.slice(0,1),k);}
+
+
+function calcHTML(sim){const p=sim.p,st=sim.st,hn=hon(),A=ap();const f1=v=>sgn(v,1),row=(a,b)=>'<p>'+a+(b?'<br><span class="help">'+b+'</span>':'')+'</p>';let h='<h3>Your calculation</h3>';
+  if(p.mode==='metal'){const M=metalOf(p),dT=st.Tw-p.T0,dTm=st.Tw-p.tHot,q=p.mWater*CW*dT;
+    if(sim.t<DROP)return h+row('The metal starts at the bath temperature, '+p.tHot.toFixed(1)+' °C. The water starts at '+p.T0.toFixed(1)+' °C.','Watch the cup thermometer after the metal goes in.');
+    if(!hn)return h+row('<b>Heat gained by the water</b> = mass × 4.184 × temperature change = '+p.mWater.toFixed(0)+' g × 4.184 × '+dT.toFixed(1)+' °C = <b>'+q.toFixed(0)+' J</b>')+row('The metal lost the same '+q.toFixed(0)+' J. Its temperature dropped '+(p.tHot-st.Tw).toFixed(1)+' °C, much more than the water rose.');
+    h+=row('<b>q<sub>water</sub></b> = m·c·ΔT = '+p.mWater.toFixed(1)+' g × 4.184 J/g·°C × '+f1(dT)+' °C = <b>'+sgn(q,0)+' J</b>');
+    if(A&&p.Ccal>0)h+=row('<b>q<sub>cup</sub></b> = C<sub>cal</sub>·ΔT = '+p.Ccal.toFixed(0)+' J/°C × '+f1(dT)+' °C = <b>'+sgn(p.Ccal*dT,0)+' J</b>');
+    const qt=q+(A?p.Ccal*dT:0);h+=row('<b>q<sub>metal</sub></b> = −q<sub>'+(A&&p.Ccal>0?'water + cup':'water')+'</sub> = <b>'+sgn(-qt,0)+' J</b>, and ΔT<sub>metal</sub> = '+st.Tw.toFixed(1)+' − '+p.tHot.toFixed(1)+' = '+f1(dTm)+' °C');
+    const c=dTm<-0.05?-qt/(p.mMetal*dTm):NaN;h+=row('<b>c<sub>metal</sub></b> = q<sub>metal</sub> ÷ (m·ΔT) = '+sgn(-qt,0)+' J ÷ ('+p.mMetal.toFixed(1)+' g × '+f1(dTm)+' °C) = <b>'+(Number.isFinite(c)?c.toFixed(3):'—')+' J/g·°C</b>',st.Tm-st.Tw>0.5?'The water is still warming. Wait for the highest steady temperature before you calculate.':(M.unk?'Compare with the table: Al 0.897, Fe 0.449, Cu 0.385, Pb 0.129 J/g·°C.':'Accepted value for '+M.n.toLowerCase()+': '+M.c.toFixed(3)+' J/g·°C ('+(100*Math.abs(c-M.c)/M.c).toFixed(1)+'% error).'));
+    return h;}
+  const S=snackOf(p),b=burned(sim);
+  if(p.mode==='food'){const dT=st.Tmax-p.T0,q=p.mWater*CW*dT,Cal=q/J_PER_CAL,cpg=calPerG(sim);
+    h+=row('<b>Mass burned</b> = '+p.mSnack.toFixed(2)+' g − '+st.mNow.toFixed(2)+' g = <b>'+b.toFixed(2)+' g</b>');
+    h+=row('<b>Temperature rise</b> = '+st.Tmax.toFixed(1)+' °C (highest) − '+p.T0.toFixed(1)+' °C = <b>'+dT.toFixed(1)+' °C</b>');
+    h+=row('<b>q</b> = m·c·ΔT = '+p.mWater.toFixed(1)+' g × 4.184 J/g·°C × '+dT.toFixed(1)+' °C = <b>'+q.toFixed(0)+' J</b> = '+(q/1000).toFixed(2)+' kJ = <b>'+Cal.toFixed(2)+' Cal</b>','1 Cal (food Calorie) = 1 kcal = 4184 J');
+    h+=row('<b>Energy per gram</b> = '+Cal.toFixed(2)+' Cal ÷ '+b.toFixed(2)+' g = <b>'+(Number.isFinite(cpg)?cpg.toFixed(2):'—')+' Cal/g</b>'+(hn&&Number.isFinite(cpg)?' = '+(cpg*4.184).toFixed(2)+' kJ/g':''),'Label: '+S.cal.toFixed(2)+' Cal/g ('+S.src+')'+(hn&&Number.isFinite(cpg)?'. Percent error: '+(100*Math.abs(cpg-S.cal)/S.cal).toFixed(0)+'%':''));
+    if(A&&Number.isFinite(cpg))h+=row('<b>ΔH<sub>comb</sub></b> = −q ÷ mass = <b>'+sgn(-cpg*4.184,2)+' kJ/g</b>','Negative: the reaction released the heat the water gained.');
+    return h;}
+  const dT=st.Tmax-p.T0,q=BOMB_C*dT;
+  h+=row('<b>ΔT</b> = '+st.Tmax.toFixed(3)+' − '+p.T0.toFixed(3)+' = <b>'+dT.toFixed(3)+' °C</b>');
+  h+=row('<b>q<sub>cal</sub></b> = C<sub>cal</sub>·ΔT = '+BOMB_C.toFixed(2)+' kJ/°C × '+dT.toFixed(3)+' °C = <b>'+q.toFixed(2)+' kJ</b>','C_cal was found by burning benzoic acid, 26.43 kJ/g.');
+  h+=row('<b>ΔH<sub>comb</sub></b> ≈ −q ÷ mass = −'+q.toFixed(2)+' kJ ÷ '+p.mSnack.toFixed(3)+' g = <b>'+sgn(-q/p.mSnack,2)+' kJ/g</b> = '+sgn(-q/p.mSnack/4.184,2)+' Cal/g','Label: '+S.cal.toFixed(2)+' Cal/g = '+(S.cal*4.184).toFixed(2)+' kJ/g');
+  return h;}
 
 /* ---------- the sim ---------- */
 const MOD=['metal'],FOOD=['food'],BOMB=['bomb'],FB=['food','bomb'],ALL=['metal','food','bomb'];
@@ -242,7 +267,7 @@ const CAL={
   ],
   actions:[{id:'again',label:'Run the trial again',lvl:'bio',primary:true,run(sim){restart(sim);}}],
   init(sim){const p=sim.p;return {Tw:p.T0,Tm:p.tHot,Tmax:p.T0,mNow:p.mSnack,burning:false,rate:0,boiled:false,E:0};},
-  step(sim,dt){const p=sim.p,st=sim.st,t=sim.t;
+  step(sim,dt){const p=sim.p,st=sim.st,t=sim.t;sim.infoDirty=true;
     if(p.mode==='metal'){if(t<DROP){st.Tm=p.tHot;st.Tw=p.T0;st.Tmax=p.T0;return;}
       const M=metalOf(p),Cm=p.mMetal*M.c,Cw=p.mWater*CW+cupC(p),kh=2.0*Math.pow(p.mMetal/50,2/3),P=kh*(st.Tm-st.Tw);
       st.Tm-=P*dt/Cm;st.Tw+=P*dt/Cw;st.Tmax=Math.max(st.Tmax,st.Tw);return;}
@@ -265,7 +290,7 @@ const CAL={
     {id:'qcup',label:'Heat gained by the cup',unit:'J',lvl:'ap',min:0,max:null,d:0,modes:MOD,get:s=>s.p.mode==='metal'?s.p.Ccal*(s.st.Tw-s.p.T0):NaN},
     {id:'cData',label:'Specific heat from your data',unit:'J/g·°C',lvl:'honors',min:0,max:1,d:3,modes:MOD,get:s=>cFromData(s,false)},
     {id:'cCup',label:'Specific heat, cup included',unit:'J/g·°C',lvl:'ap',min:0,max:1,d:3,modes:MOD,get:s=>cFromData(s,true)},
-    {id:'match',label:'Closest metal in the table',unit:'',lvl:'honors',text:true,modes:MOD,get:s=>{const c=cFromData(s,atLeast('ap'));const m=closestMetal(c);if(!m)return 'Waiting for data';return METALS[m.k].n+' ('+METALS[m.k].c.toFixed(3)+')'+(m.err>0.08?', still settling':'');}},
+    {id:'match',label:'Closest metal in the table',unit:'',lvl:'honors',text:true,modes:MOD,get:s=>{if(s.p.mode!=='metal'||s.t<DROP)return 'Waiting for data';if(s.st.Tm-s.st.Tw>0.5)return 'Wait for equilibrium';const m=closestMetal(cFromData(s,atLeast('ap')));if(!m)return 'Waiting for data';return METALS[m.k].n+' ('+METALS[m.k].c.toFixed(3)+')';}},
     {id:'Tf',label:'Predicted final temperature',unit:'°C',lvl:'ap',min:0,max:100,d:1,modes:MOD,get:s=>s.p.mode==='metal'?eqTemp(s.p):NaN},
     {id:'mBurn',label:'Mass of snack burned',unit:'g',lvl:'bio',min:0,max:2,d:2,modes:FB,get:s=>s.p.mode==='metal'?NaN:burned(s)},
     {id:'mNow',label:'Snack mass now',unit:'g',lvl:'bio',min:0,max:2,d:2,modes:FB,noTrial:true,get:s=>s.p.mode==='metal'?NaN:s.st.mNow},
@@ -279,6 +304,7 @@ const CAL={
   ],
   graphs:[{id:'temps',label:'Water and metal temperature',lvl:'bio',lines:['Tw','Tm']},{id:'tw',label:'Water temperature',lvl:'bio',lines:['Tw']},{id:'mass',label:'Snack mass',lvl:'bio',lines:['mNow']},{id:'twb',label:'Bomb water temperature',lvl:'ap',lines:['TwB']}],
   defaultGraph:'temps',
+  infoPanel:calcHTML,
   narrate(sim){const p=sim.p,st=sim.st,hn=hon();
     if(p.mode==='metal'){const M=metalOf(p),nm=M.unk?'The unknown metal':M.n;
       if(sim.t<DROP)return nm+' is heating in the bath at '+p.tHot.toFixed(0)+' °C. In a moment it goes into the cup of '+p.T0.toFixed(1)+' °C water.';
@@ -298,7 +324,7 @@ const CAL={
     {title:'Into the cup',text:'Move the hot metal into the foam cup of cool water and put the lid on. The foam keeps heat from leaking out, so all the heat the metal loses goes into the water.',focus:[CX-HWT-30,170,2*HWT+60,BENCH-170+50],speed:0.4},
     {title:'Watch the particles',text:'The metal atoms vibrate hard because they are hot. When they bump the slower water molecules, they pass energy along. The metal’s vibrations calm down while the water molecules speed up.',focus:[ZX-ZR-10,ZY-ZR-30,2*ZR+20,2*ZR+40],speed:1},
     {title:'Thermal equilibrium',text:{bio:'Heat flows until the metal and water reach the same temperature. Then it stops. The metal cools a lot, but the water warms only a little.',honors:'At equilibrium T_metal = T_water. The copper cooled about 76 °C and the water warmed about 3.5 °C because the water’s heat capacity (100 g × 4.184) is far larger than the copper’s (50 g × 0.385).'},focus:[CX-HWT-30,170,2*HWT+60,BENCH-170+50],speed:2},
-    {lvl:'honors',title:'Heat lost = heat gained',text:'q_water = m·c·ΔT for the water. The metal lost the same amount of heat, so c_metal = q_water ÷ (m_metal × ΔT_metal). Compare it with the table to identify the metal.',focus:[8,6,784,112],pause:true},
+    {lvl:'honors',title:'Heat lost = heat gained',text:'Your calculation panel below the graph works it out: q_water = m·c·ΔT for the water. The metal lost the same amount of heat, so c_metal = −q_water ÷ (m_metal × ΔT_metal). Compare it with the table to identify the metal.',focus:[8,6,784,60],pause:true},
     {title:'Burn a snack',text:{bio:'Now the energy-in-food lab. A cheese puff burns under a can of water. The energy stored in its chemical bonds becomes heat, and the water warms up.',honors:'Weigh the snack before and after. Use the mass that actually burned, because the char left behind did not release its energy.'},focus:[CANX-CANW/2-40,CANT-20,CANW+80,BENCH-CANT+20],speed:0.5,setup(sim){BioLab.setValues(sim,{mode:'food',snack:'puff',mSnack:1.2});restart(sim);sim.t=8;}},
     {title:'Where the heat goes',text:{bio:'Only part of the heat reaches the water. The rest warms the air around the can. That is why your Calories per gram come out lower than the label.',honors:'In an open can only about 25–30% of the heat reaches the water. A foil draft shield helps, but the result still falls short of the label.'},focus:[SNX-140,CANB-20,280,BENCH-CANB+30],speed:0.5},
     {lvl:'ap',title:'The bomb calorimeter',text:'A bomb calorimeter burns the sample in pure oxygen inside a sealed steel bomb sunk in 2 kg of water. Almost no heat escapes, so q = C_cal × ΔT gives a value close to the label. ΔH_comb = −q / mass.',focus:[BKX-30,BKT-40,BKW+60,BENCH-BKT+40],speed:2,setup(sim){BioLab.setValues(sim,{mode:'bomb',snack:'puff',mSnack:1.2});restart(sim);}}
