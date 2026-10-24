@@ -119,8 +119,8 @@ const ACT={
     if(ap)h+='<p class="help">Standard reduction potentials (V): '+SORD.map(k=>(k==='H'?'H⁺/H₂':SOLS[k].ionH+'/'+k)+' '+SOLS[k].E.toFixed(2)).join(', ')+'.</p>';
     return h;},
   narrate(sim){const m=sim.p.metal,s=sim.p.sol,M=MET[m],S=SOLS[s],r=rxn(m,s),w=sim.st.wells[wkey(m,s)],hon=atLeast('honors');const mn=CL.el(m).name,sn=s==='H'?'hydrochloric acid':S.ionT;
-    if(r.same)return 'A metal cannot replace its own ions: '+mn+' in '+S.ionT+' just sits there.';
-    if(!w)return 'Will <b>'+mn+'</b> react with '+sn+'? Make a prediction, then add the metal and watch both the well and the zoom.';
+    if(r.same)return 'A metal cannot replace its own ions: '+mn.toLowerCase()+' in '+S.ionT+' just sits there.';
+    if(!w)return 'Will <b>'+mn.toLowerCase()+'</b> react with '+sn+'? Make a prediction, then add the metal and watch both the well and the zoom.';
     if(!r.go)return '<b>No reaction.</b> '+mn+(s==='H'?' sits below hydrogen in the activity series, so it does not give electrons to H⁺.':' is less active than '+CL.el(S.ion).name.toLowerCase()+', so its atoms hold on to their electrons and the '+S.ionT+' ions stay in solution.');
     if(s==='H')return '<b>'+mn+' is above hydrogen:</b> each '+m+' atom gives 2 electrons to two H⁺ ions, which pair up as H₂ gas bubbles'+(hon?'. '+m+' is oxidized and H⁺ is reduced.':'.');
     return '<b>'+mn+' is more active than '+CL.el(S.ion).name.toLowerCase()+'.</b> '+(r.k>1?r.k+' '+m+' atoms':'Each '+m+' atom')+' gives '+r.n+' electron'+(r.n>1?'s':'')+' to '+(r.j>1?r.j+' '+S.ionT+' ions':'one '+S.ionT+' ion')+', which become '+S.ion+' metal on the surface'+(hon?'. '+m+' is oxidized; '+S.ionT+' is reduced.':'. The '+m+' atoms leave as '+M.ion+' ions.');},

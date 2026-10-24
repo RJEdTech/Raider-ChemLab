@@ -84,7 +84,7 @@ function unpaired(st){return SUB.reduce((a,s)=>a+st.occ[s.lab].filter(b=>b.lengt
 function valenceOf(p){const T=targetCounts(p.Z,p.charge);let maxn=0;SUB.forEach(s=>{if(T[s.lab]>0)maxn=Math.max(maxn,s.n);});return SUB.filter(s=>s.n===maxn).reduce((a,s)=>a+T[s.lab],0);}
 
 function sync(sim){const d=sim.def;if(!sim.ui||!sim.ui.sec)return;const o=document.getElementById(d.id+'-Z-out');if(o){const e=el(sim.p);o.textContent=sim.p.Z+' · '+e.sym+' ('+e.name.toLowerCase()+')';}}
-function onTarget(sim){if(sim.p.Z-sim.p.charge<0)BioLab.setValues(sim,{charge:0});if(sim.st)clearAll(sim);sync(sim);}
+function onTarget(sim){sim.p.Z=clamp(Math.round(sim.p.Z),1,MAXZ);sim.p.charge=Math.round(sim.p.charge);if(sim.p.Z-sim.p.charge<0)BioLab.setValues(sim,{charge:0});if(sim.st)clearAll(sim);sync(sim);}
 
 const SLOTS=[];SUB.forEach(s=>{for(let b=0;b<s.nb;b++)SLOTS.push({v:s.lab+':'+b,l:s.lab+(s.nb>1?' orbital '+(b+1)+' of '+s.nb+(s.l?' (mℓ = '+(b-s.l>0?'+':b-s.l<0?'−':'')+Math.abs(b-s.l)+')':''):'')});});
 
@@ -126,7 +126,7 @@ const SIM={
     {id:'rule',label:'Rules check',lvl:'bio',text:true,get:s=>check(s).short},
     {id:'full',label:'Configuration so far',lvl:'bio',text:true,get:s=>cfgText(placedCounts(s.st),false)},
     {id:'noble',label:'Noble-gas notation',lvl:'honors',text:true,get:s=>cfgText(placedCounts(s.st),true)},
-    {id:'val',label:'Electrons in the outermost shell (ground state)',lvl:'bio',min:0,max:8,d:0,get:s=>valenceOf(s.p)},
+    {id:'val',label:'Electrons in the highest occupied shell',lvl:'bio',min:0,max:null,d:0,get:s=>valenceOf(s.p)},
     {id:'unp',label:'Unpaired electrons placed',lvl:'ap',min:0,max:null,d:0,get:s=>unpaired(s.st)},
     {id:'mag',label:'Magnetism',lvl:'ap',text:true,get:s=>{const n=nPlaced(s.st);if(!n)return 'no electrons yet';return unpaired(s.st)?'Paramagnetic (attracted to a magnet)':'Diamagnetic (all electrons paired)';}},
     {id:'qn',label:'Quantum numbers of the last electron added',lvl:'ap',text:true,noTrial:true,get:s=>{const L=lastE(s.st);if(!L)return 'no electrons yet';return 'n = '+L.s.n+', ℓ = '+L.s.l+', mℓ = '+(L.ml>0?'+':L.ml<0?'−':'')+Math.abs(L.ml)+', mₛ = '+(L.ms>0?'+½':'−½');}}

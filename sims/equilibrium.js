@@ -134,7 +134,7 @@ const EQ={
       if(q.x<BX+m){q.x=BX+m;q.vx=Math.abs(q.vx);}if(q.x>BX+W-m){q.x=BX+W-m;q.vx=-Math.abs(q.vx);}if(q.y<BY+m){q.y=BY+m;q.vy=Math.abs(q.vy);}if(q.y>BY+BH-m-(st.ag>0?14:0)){q.y=BY+BH-m-(st.ag>0?14:0);q.vy=-Math.abs(q.vy);}}
     if(st.full>0)st.full-=dt;
     st.log.push([sim.t,st.rf,st.rr]);if(st.log.length>400)st.log.shift();},
-  afterPrewarm(sim){const st=sim.st;st.I=Object.assign({},st.n);st.IV=st.V;st.last=null;st.Q0=Qof(sysOf(sim.p),st);st.K0=Kat(sysOf(sim.p),TK(sim.p));},
+  afterPrewarm(sim){const st=sim.st,S0=sysOf(sim.p);st.I=Object.assign({},S0.n0);st.IV=st.V;st.last=null;st.Q0=Qof(sysOf(sim.p),st);st.K0=Kat(sysOf(sim.p),TK(sim.p));},
   metrics:[
     {id:'N2O4',label:'[N₂O₄]',unit:'M',lvl:'bio',min:0,max:null,d:4,show:p=>p.sys==='no2',get:s=>s.p.sys==='no2'?conc(s.st,'N2O4'):NaN},
     {id:'NO2',label:'[NO₂]',unit:'M',lvl:'bio',min:0,max:null,d:4,show:p=>p.sys==='no2',get:s=>s.p.sys==='no2'?conc(s.st,'NO2'):NaN},
@@ -175,7 +175,7 @@ const EQ={
     const cI=s=>I[s.id]/IV,xc=xe/IV;
     h+='<div class="tbl-wrap"><table><thead><tr><th></th>'+S.sp.map(s=>'<th>['+s.f+']</th>').join('')+'</tr></thead><tbody>'+
       row('I',s=>fmtC(cI(s)))+row('C',s=>(s.nu>0?'+':'−')+(Math.abs(s.nu)>1?Math.abs(s.nu):'')+'x')+row('E',s=>fmtC(cI(s)+s.nu*xc))+'</tbody></table></div>';
-    h+='<p>Solving K = '+fmtK(K)+' gives <b>x = '+fmtC(xc)+' M</b>'+(xc<0?' (negative: the reaction runs in reverse)':'')+'. I is the mixture right after the last change you made.</p>';
+    h+='<p>Solving K = '+fmtK(K)+' gives <b>x = '+fmtC(xc)+' M</b>'+(xc<0?' (negative: the reaction runs in reverse)':'')+'. I is '+(st.last?'the mixture right after the last change you made.':'the starting mixture, before any reaction.')+'</p>';
     return h;},
   narrate(sim){const p=sim.p,S=sysOf(p),st=sim.st,hon=atLeast('honors'),ap=atLeast('ap');const Q=Qof(S,st),K=Kat(S,TK(p)),lr=Math.log10(Q/K);
     const at=Math.abs(lr)<0.02,dir=lr<0?'right':'left';const last=st.last&&sim.t-st.last.t<10?st.last.kind:null;

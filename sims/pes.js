@@ -86,7 +86,7 @@ const SIM={
   ],
   graphs:[{id:'ie',label:'Outermost binding energy vs Z (periodicity)',lvl:'bio',custom:true},{id:'bez',label:'1s binding energy vs Z (nuclear charge)',lvl:'honors',custom:true}],
   defaultGraph:'ie',
-  plot(sim,ctx,box,id){const p=sim.p,hide=sim.st.myst;const isIE=id==='ie';const ymax=isIE?2.6:420;
+  plot(sim,ctx,box,id){const p=sim.p,hide=sim.st.myst;const isIE=id==='ie';const ymax=isIE?3.0:460;
     const ax=axes(ctx,box,{xmin:0.5,xmax:20.5,ymin:0,ymax,xl:'Atomic number Z',yl:isIE?'Outermost binding energy (MJ/mol)':'1s binding energy (MJ/mol)',xd:0});
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();
     const v=z=>isIE?PEAKS[z][PEAKS[z].length-1].BE:PEAKS[z][0].BE;

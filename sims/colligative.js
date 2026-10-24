@@ -19,6 +19,7 @@ const SOL={sugar:{l:'Sugar (sucrose, C₁₂H₂₂O₁₁)',f:'C₁₂H₂₂O�
 const ION={suc:{c:'#8d6e63',r:10,t:'',hex:1},eg:{c:'#78909c',r:6,t:''},Na:{c:'#7e57c2',r:5.5,t:'+'},Cl:{c:'#43a047',r:7.5,t:'−'},Ca:{c:'#ef6c00',r:6.5,t:'2+'},Mg:{c:'#00897b',r:5.5,t:'2+'},SO4:{c:'#c0a000',r:9,t:'2−'},X:{c:'#455a64',r:8.5,t:'X'}};
 const SOLV={water:{l:'water',Kf:1.86,Kb:0.512,fp:0,bp:100,bath:-15,start:10,L:80,k:0.5,M:18.02},lauric:{l:'lauric acid',Kf:3.9,Kb:null,fp:43.8,bp:null,bath:25,start:60,L:82,k:0.4,M:200.32}};
 const P0=23.76,UNK_SOLV_G=25.0;
+const mn=(v,d)=>(v<-0.0005?'−':'')+Math.abs(v).toFixed(d);   // proper minus sign
 const solOf=p=>SOL[p.solute]||SOL.sugar,svOf=p=>(p.view==='freeze'?SOLV[p.solvent]:SOLV.water)||SOLV.water;
 const iOf=p=>{const s=solOf(p);return p.realI?s.ri:s.i;};
 const mOf=p=>p.solute==='unk'?p.gx/SOL.unk.M/(UNK_SOLV_G/1000):p.m;
@@ -99,7 +100,7 @@ const SIM={
     {id:'K',label:'Constant used',unit:'',lvl:'ap',text:true,get:s=>s.p.view==='boil'?'Kb = 0.512 °C·kg/mol (water)':s.p.view==='vapor'?'P° = 23.76 mmHg (water, 25 °C)':'Kf = '+svOf(s.p).Kf+' °C·kg/mol ('+svOf(s.p).l+')'},
     {id:'Mx',label:'Molar mass of X from ΔTf',unit:'g/mol',lvl:'ap',min:0,max:300,d:1,when:p=>p.solute==='unk'&&p.view==='freeze',get:s=>{const p=s.p;if(p.solute!=='unk'||p.view!=='freeze')return NaN;const dT=Math.round(dTf(p)*100)/100;const m=dT/(1*svOf(p).Kf);return p.gx/(m*UNK_SOLV_G/1000);}}
   ],
-  graphs:[{id:'curve',label:'Temperature vs time (solution and pure)',lvl:'bio',lines:['T','Tp']},{id:'dt',label:'Temperature change vs molality',lvl:'bio',custom:true},{id:'vp',label:'Vapor pressure vs mole fraction',lvl:'honors',custom:true}],
+  graphs:[{id:'curve',label:'Cooling or heating curve',lvl:'bio',custom:true},{id:'dt',label:'Temperature change vs molality',lvl:'bio',custom:true},{id:'vp',label:'Vapor pressure vs mole fraction',lvl:'honors',custom:true}],
   defaultGraph:'curve',
   plot(sim,ctx,box,id){plotC(sim,ctx,box,id);},
   narrate(sim){ensure(sim);return narrC(sim);},
@@ -171,8 +172,8 @@ function narrC(sim){const p=sim.p,st=sim.st,s=solOf(p),sv=svOf(p),hon=atLeast('h
   if(p.view==='boil'){const bp=100+dTb(p);if(r.ph==='liquid')return 'The hot plate heats the solution. Dissolved '+parts+' hold water molecules back from escaping, so the solution has to get hotter than pure water before it boils: <b>'+bp.toFixed(2)+' °C</b>.';
     return 'The solution is boiling at '+r.T.toFixed(2)+' °C while pure water boils at 100.00 °C. As water boils away the solution gets more concentrated, so its boiling point creeps up.';}
   const fp=sv.fp-dTf(p);
-  if(r.ph==='liquid')return 'The '+(sv===SOLV.water?'solution':'lauric acid solution')+' is cooling toward its freezing point. To freeze, solvent molecules must line up in a crystal, and the dissolved '+parts+' get in the way, so it must get colder than pure '+sv.l+': <b>'+fp.toFixed(2)+' °C</b>.';
-  return 'Crystals of pure '+sv.l+' are forming ('+Math.round(r.f*100)+'% frozen). The solute stays in the liquid, which gets more concentrated, so the temperature keeps sliding below the starting freezing point of <b>'+fp.toFixed(2)+' °C</b>'+(hon?' (ΔTf = '+i.toFixed(1)+' × '+sv.Kf+' × '+m.toFixed(2)+' = '+dTf(p).toFixed(2)+' °C).':'.');}
+  if(r.ph==='liquid')return 'The '+(sv===SOLV.water?'solution':'lauric acid solution')+' is cooling toward its freezing point. To freeze, solvent molecules must line up in a crystal, and the dissolved '+parts+' get in the way, so it must get colder than pure '+sv.l+': <b>'+mn(fp,2)+' °C</b>.';
+  return 'Crystals of pure '+sv.l+' are forming ('+Math.round(r.f*100)+'% frozen). The solute stays in the liquid, which gets more concentrated, so the temperature keeps sliding below the starting freezing point of <b>'+mn(fp,2)+' °C</b>'+(hon?' (ΔTf = '+i.toFixed(1)+' × '+sv.Kf+' × '+m.toFixed(2)+' = '+dTf(p).toFixed(2)+' °C).':'.');}
 
 /* ---------- drawing ---------- */
 function water(ctx,x,y,a,s){const c=Math.cos(a),sn=Math.sin(a);ctx.fillStyle='#f5f5f5';ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=0.8;
@@ -183,7 +184,8 @@ function ion(ctx,x,y,t,s,k){const o=ION[t];if(!o)return;ctx.fillStyle=o.c;ctx.st
   ctx.beginPath();ctx.arc(x,y,o.r*s,0,6.2832);ctx.fill();ctx.stroke();if(o.t)txt(ctx,o.t,x,y+1,{s:Math.max(9,o.r*s*1.15),w:800,c:'#fff',a:'center',b:'middle'});}
 function zoomC(sim,ctx,cx,cy,R,k,t,vdt){const p=sim.p,st=sim.st,frz=p.view==='freeze'?st.runS.f:0,edge=-1+2*clamp(frz,0,1),s=R/110;
   ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.fillStyle=PAL['cv-water'];ctx.fill();ctx.clip();
-  if(frz>0.01){ctx.fillStyle='rgba(225,240,255,0.55)';ctx.fillRect(cx-R,cy-R,(edge+1)*R,2*R);}
+  if(frz>0.01){ctx.fillStyle='rgba(215,235,255,0.85)';ctx.fillRect(cx-R,cy-R,(edge+1)*R,2*R);ctx.strokeStyle='rgba(90,140,190,0.6)';ctx.lineWidth=1;ctx.beginPath();for(let gx=-1;gx<edge;gx+=0.2)for(let gy=-1;gy<1;gy+=0.2){const X=cx+gx*R,Y=cy+(gy+(Math.round(gx/0.2)%2?0.1:0))*R;ctx.moveTo(X,Y);ctx.lineTo(X+0.2*R,Y);ctx.moveTo(X,Y);ctx.lineTo(X,Y+0.2*R);}ctx.stroke();
+    ctx.strokeStyle='rgba(90,140,190,0.9)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+edge*R,cy-R);ctx.lineTo(cx+edge*R,cy+R);ctx.stroke();}
   const jig=RM?0:1;
   st.zm.forEach((o,i)=>{if(vdt>0&&jig){o.x+=(Math.random()-0.5)*0.03;o.y+=(Math.random()-0.5)*0.03;o.a+=(Math.random()-0.5)*0.4;const r=Math.hypot(o.x,o.y);if(r>0.9){o.x*=0.9/r;o.y*=0.9/r;}}
     if(o.t!=='w'&&frz>0.01&&o.x<edge+0.12)o.x=Math.min(0.88,edge+0.12+Math.random()*0.05);});
@@ -192,12 +194,12 @@ function zoomC(sim,ctx,cx,cy,R,k,t,vdt){const p=sim.p,st=sim.st,frz=p.view==='fr
     water(ctx,cx+x*R,cy+y*R,a,s);});
   st.zm.forEach(o=>{if(o.t==='w')return;ion(ctx,cx+o.x*R,cy+o.y*R,o.t,s,k);});
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.stroke();}
-function scaleBar(sim,ctx,x,y0,y1,k,compact){const p=sim.p,sv=svOf(p),boil=p.view==='boil';const ref=boil?100:sv.fp,d=boil?dTb(p):dTf(p),val=boil?ref+d:ref-d;
+function scaleBar(sim,ctx,x,y0,y1,k,compact){if(compact)x=600;const p=sim.p,sv=svOf(p),boil=p.view==='boil';const ref=boil?100:sv.fp,d=boil?dTb(p):dTf(p),val=boil?ref+d:ref-d;
   const span=boil?4:Math.max(8,Math.ceil((d+2)/4)*4),top=boil?ref+span*0.75:ref+span*0.25,bot=top-span,Y=v=>y0+(top-v)/(top-bot)*(y1-y0);
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke();
-  const step=span<=4?1:span<=8?2:span<=16?4:5;for(let v=Math.ceil(bot/step)*step;v<=top;v+=step){ctx.beginPath();ctx.moveTo(x-5,Y(v));ctx.lineTo(x+5,Y(v));ctx.stroke();if(!compact)txt(ctx,v.toFixed(0),x-9,Y(v)+4,{s:12*k,c:PAL['cv-soft'],a:'right'});}
+  const step=span<=4?1:span<=8?2:span<=16?4:5;for(let v=Math.ceil(bot/step)*step;v<=top;v+=step){ctx.beginPath();ctx.moveTo(x-5,Y(v));ctx.lineTo(x+5,Y(v));ctx.stroke();if(!compact)txt(ctx,mn(v,0),x-9,Y(v)+4,{s:12*k,c:PAL['cv-soft'],a:'right'});}
   const lab=(v,c,s2)=>{ctx.strokeStyle=c;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-12,Y(v));ctx.lineTo(x+40,Y(v));ctx.stroke();txt(ctx,s2,x+46,Y(v)+5,{s:12.5*k,w:700,c});};
-  lab(ref,PAL['cv-ink'],(boil?'pure: ':'pure: ')+ref.toFixed(1)+' °C');lab(val,PAL['s1'],'solution: '+val.toFixed(2)+' °C');
+  lab(ref,PAL['cv-ink'],(compact?'pure ':'pure: ')+mn(ref,1)+(compact?'':' °C'));lab(val,PAL['s1'],(compact?'':'solution: ')+mn(val,2)+' °C');
   if(d>0.05){ctx.strokeStyle=PAL['s1'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+22,Y(ref));ctx.lineTo(x+22,Y(val));ctx.stroke();}
   txt(ctx,boil?'Boiling point':'Freezing point',x-10,y0-14,{s:13*k,w:700,c:PAL['cv-ink']});}
 function drawC(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3,hon=atLeast('honors'),sv=svOf(p);ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
@@ -207,7 +209,7 @@ function drawC(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3,hon=atLeas
   if(!boil){ctx.fillStyle=sv===SOLV.water?PAL['cv-water']:PAL['cv-water'];ctx.fillRect(44,170,252,262);
     if(sv===SOLV.water){[[70,186],[110,200],[240,190],[268,214],[84,300],[262,330],[90,390],[250,396]].forEach(([x,y])=>{rr(ctx,x-13,y-11,26,22,4);ctx.fillStyle='rgba(255,255,255,0.7)';ctx.fill();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.2;ctx.stroke();});}
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(44,150);ctx.lineTo(44,432);ctx.lineTo(296,432);ctx.lineTo(296,150);ctx.stroke();
-    txt(ctx,sv===SOLV.water?'Ice–salt bath −15 °C':'Water bath 25 °C',170,442,{s:12.5*k,w:700,a:'center',c:PAL['cv-soft']});}
+    txt(ctx,sv===SOLV.water?'Ice–salt bath −15 °C':'Water bath 25 °C',170,424,{s:12.5*k,w:700,a:'center',c:PAL['cv-soft']});}
   else{rr(ctx,60,404,220,30,6);ctx.fillStyle='#c62828';ctx.fill();txt(ctx,'Hot plate',170,424,{s:12.5*k,w:700,a:'center',c:'#fff'});}
   // test tube
   const tx=140,tw=60,ty=60,tb=boil?396:400,ly=ty+90;
@@ -217,7 +219,7 @@ function drawC(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3,hon=atLeas
   if(boil&&r.ph==='boiling'&&!RM){ctx.strokeStyle=PAL['cv-bstroke'];ctx.lineWidth=1.5;for(let i=0;i<9;i++){const ph=((t*0.9+i*0.31)%1);ctx.beginPath();ctx.arc(tx+10+(i*17)%42,tb-14-ph*(tb-ly-24),2+ph*3,0,6.2832);ctx.stroke();}}
   ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx,tb-30);ctx.quadraticCurveTo(tx,tb,tx+tw/2,tb);ctx.quadraticCurveTo(tx+tw,tb,tx+tw,tb-30);ctx.lineTo(tx+tw,ty);ctx.stroke();
   // probe
-  ctx.fillStyle='#78909c';ctx.fillRect(tx+tw/2-3,40,6,tb-60-40);pill(ctx,r.T.toFixed(1)+' °C',tx+tw/2,30,PAL['cv-ink'],PAL['card'],14*k);
+  ctx.fillStyle='#78909c';ctx.fillRect(tx+tw/2-3,40,6,tb-60-40);pill(ctx,mn(r.T,1)+' °C',tx+tw/2,30,PAL['cv-ink'],PAL['card'],14*k);
   // zoom from the tube
   const zx=440,zy=150,zr=100;ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(tx+tw,ly+60);ctx.lineTo(zx-zr*0.9,zy+zr*0.4);ctx.stroke();ctx.setLineDash([]);
   zoomC(sim,ctx,zx,zy,zr,k,t,vdt);if(!compact)txt(ctx,(r.f>0.01&&!boil?'Ice crystal (left) pushes the solute out':'Water molecules and '+solOf(p).sh+(solOf(p).i>1?' ions':' molecules')),zx,zy+zr+20,{s:12.5*k,w:600,a:'center',c:PAL['cv-ink']});
@@ -227,7 +229,7 @@ function drawC(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3,hon=atLeas
   const L1=hon?(boil?'ΔTb = i·Kb·m':'ΔTf = i·Kf·m'):(boil?'More particles → higher boiling point':'More particles → lower freezing point');
   const L2=hon?'= ('+i.toFixed(1)+')('+K+')('+m.toFixed(2)+') = '+d.toFixed(2)+' °C':(solOf(p).i===1?'Each unit stays whole: i = 1':'Each unit splits into '+solOf(p).i+' ions: i = '+solOf(p).i);
   txt(ctx,L1,346,346+4*(k-1),{s:15*k,w:700});txt(ctx,L2,346,378+12*(k-1),{s:13.5*k,c:PAL['cv-soft']});
-  if(!compact)txt(ctx,(boil?'Boils at ':'Starts to freeze at ')+(boil?100+d:sv.fp-d).toFixed(2)+' °C ('+(boil?'+':'−')+d.toFixed(2)+' °C)',346,412,{s:13*k,w:600,c:PAL['s1']});}
+  if(!compact)txt(ctx,boil?'Boils at '+(100+d).toFixed(2)+' °C, '+d.toFixed(2)+' °C above pure water':'Starts to freeze at '+mn(sv.fp-d,2)+' °C, '+d.toFixed(2)+' °C below pure '+sv.l,346,412,{s:13*k,w:600,c:PAL['s1']});}
 function drawVapor(sim,ctx,vdt,k,compact){const p=sim.p,st=sim.st,chi=chiW(p),hon=atLeast('honors');
   const x0=60,x1=420,y0=56,sy=290,y1=430,S=st.surf.length,sw=(x1-x0)/S;
   ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(x0,y0,x1-x0,sy-y0);ctx.fillStyle=PAL['cv-water'];ctx.fillRect(x0,sy,x1-x0,y1-sy);
@@ -248,6 +250,16 @@ function drawVapor(sim,ctx,vdt,k,compact){const p=sim.p,st=sim.st,chi=chiW(p),ho
 
 /* ---------- graphs ---------- */
 function plotC(sim,ctx,box,id){const p=sim.p,sv=svOf(p);
+  if(id==='curve'){if(p.view==='vapor'){txt(ctx,'Choose Freezing point or Boiling point to see a temperature curve.',box.cw/2,box.ch/2,{s:15,c:PAL['muted'],a:'center',b:'middle'});return;}
+    const H=sim.hist.filter(r=>Number.isFinite(r.v.T)),boil=p.view==='boil',ref=boil?100:sv.fp,val=boil?100+dTb(p):sv.fp-dTf(p);
+    let lo=Math.min(val,ref,...H.map(r=>Math.min(r.v.T,r.v.Tp))),hi=Math.max(val,ref,...H.map(r=>Math.max(r.v.T,r.v.Tp)));
+    if(boil){lo=Math.max(lo,ref-12);}else{hi=Math.min(hi,ref+12);}
+    const pad=Math.max(1,(hi-lo)*0.1);lo-=pad;hi+=pad;const xmax=Math.max(15,sim.t);
+    const ax=axes(ctx,box,{xmin:0,xmax,ymin:lo,ymax:hi,xl:'Time (min)',yl:'Temperature (°C)'});
+    ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();
+    [[ref,PAL['muted']],[val,PAL['s1']]].forEach(([v,c])=>{ctx.strokeStyle=c;ctx.setLineDash([3,4]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(box.L,ax.Y(v));ctx.lineTo(box.L+box.W,ax.Y(v));ctx.stroke();});ctx.setLineDash([]);
+    [['Tp',serColor(1),[6,4]],['T',PAL['s1'],[]]].forEach(([kk,c,dash])=>{ctx.strokeStyle=c;ctx.lineWidth=2.5;ctx.setLineDash(dash);ctx.beginPath();H.forEach((r,j)=>{const x=ax.X(r.t),y=ax.Y(r.v[kk]);j?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();});ctx.setLineDash([]);ctx.restore();
+    legend(ctx,box.L+12,box.T+10,[{label:'solution ('+(boil?'boils':'freezes')+' at '+mn(val,2)+' °C)',color:PAL['s1']},{label:'pure '+sv.l,color:serColor(1),dash:true}]);return;}
   if(id==='dt'){const boil=p.view==='boil';const K=boil?0.512:sv.Kf;const keys=['sugar','nacl','cacl2'];const ymax=Math.max(4,3*K*3)*1.05;
     const ax=axes(ctx,box,{xmin:0,xmax:3,ymin:0,ymax:3*K*3*1.05,xl:'Molality (m)',yl:(boil?'ΔTb':'ΔTf')+' (°C)'});const items=[];
     keys.forEach((kk,j)=>{const s=SOL[kk],ii=p.realI?s.ri:s.i;ctx.strokeStyle=serColor(j+1);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));ctx.lineTo(ax.X(3),ax.Y(ii*K*3));ctx.stroke();items.push({label:s.f+' (i = '+ii+')',color:serColor(j+1)});});

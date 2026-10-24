@@ -22,7 +22,7 @@ function radial(n,l,Z){const rmax=(2.5*n*n+6*n+5)/Z,dr=rmax/GRID;const P=new Flo
   let imax=0;for(let i=1;i<=GRID;i++)if(P[i]>P[imax])imax=i;
   const nodes=[];for(let i=2;i<=GRID;i++){if(Rv[i-1]!==0&&Math.sign(Rv[i])!==Math.sign(Rv[i-1])&&Math.abs(Rv[i])+Math.abs(Rv[i-1])>1e-12)nodes.push((i-0.5)*dr);}
   const inv=u=>{let lo=0,hi=GRID;while(hi-lo>1){const m=(lo+hi)>>1;if(cdf[m]<u)lo=m;else hi=m;}const f=(u-cdf[lo])/Math.max(1e-12,cdf[hi]-cdf[lo]);return (lo+f)*dr;};
-  const r90=inv(0.9);return {P,Rv,dr,rmax,rmp:imax*dr,nodes,inv,r90};}
+  const r90=inv(0.9);let rmp=imax*dr;if(imax>0&&imax<GRID){const d=P[imax-1]-2*P[imax]+P[imax+1];if(d<0)rmp=(imax+0.5*(P[imax-1]-P[imax+1])/d)*dr;}return {P,Rv,dr,rmax,rmp,nodes,inv,r90};}
 const avgR=(n,l,Z)=>(3*n*n-l*(l+1))/(2*Z);           // ⟨r⟩ in a0
 const NPTS=1700;
 
@@ -54,7 +54,7 @@ function sync(sim){if(!sim.ui||!sim.ui.sec)return;const st=sim.st;if(st&&!st._dr
     cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*800;if(x>490)return;down={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
     cv.addEventListener('pointermove',e=>{if(!down)return;const s=sim.st;s.yaw+=(e.clientX-down.x)*0.012;s.pitch=clamp(s.pitch+(e.clientY-down.y)*0.012,-1.5,1.5);down={x:e.clientX,y:e.clientY};s.held=1.2;});
     const up=()=>{down=null;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.style.touchAction='pan-y';}}
-function onOrb(sim){if(sim.st)build(sim);}
+function onOrb(sim){sim.p.Z=clamp(Math.round(sim.p.Z)||1,1,6);if(sim.st)build(sim);}
 
 const X1=radial(1,0,1),X2=radial(2,0,1),XHe=radial(1,0,2);
 

@@ -167,14 +167,14 @@ const SIM={
     // zoom on the gas
     const zx=640,zy=148,zr=88;ctx.save();ctx.fillStyle=PAL['card'];ctx.beginPath();ctx.arc(zx,zy,zr,0,6.29);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.stroke();ctx.clip();
     const nC=st.burst?2:Math.round(clamp(nn/Math.max(1e-6,need(p).n),0,2.5)*14),r=rng(11);
-    for(let i=0;i<nC;i++){const a=r()*6.28,rad=r()*zr*0.85,x=zx+Math.cos(a+t*0.3*(0.5+r()))*rad,y=zy+Math.sin(a+t*0.3*(0.5+r()))*rad,ro=r()*3+t;
+    for(let i=0;i<nC;i++){const a=r()*6.28,rad=Math.sqrt(r())*zr*0.82,ph=r()*6.28,x=zx+Math.cos(a)*rad+(RM?0:Math.sin(t*1.3+ph)*8),y=zy+Math.sin(a)*rad+(RM?0:Math.cos(t*1.1+ph)*8),ro=ph+(RM?0:t*0.6);
       ctx.save();ctx.translate(x,y);ctx.rotate(ro);CL.drawAtom(ctx,-11,0,6.5,'O',{label:''});CL.drawAtom(ctx,11,0,6.5,'O',{label:''});CL.drawAtom(ctx,0,0,7.5,'C',{label:''});ctx.restore();}
     if(nC===0)txt(ctx,'No gas yet',zx,zy,{s:14*k,a:'center',b:'middle',c:PAL['cv-soft']});
     ctx.restore();txt(ctx,'CO₂ gas inside the bag',zx,zy+zr+18*k,{s:12.5*k,a:'center',c:PAL['cv-soft']});
     ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(zx-zr,zy+10);ctx.lineTo(BX+40,topY+30);ctx.stroke();ctx.setLineDash([]);
     // readout
     let y=zy+zr+50*Math.max(1,k*0.8);const lh=24*Math.max(1,k*0.85);
-    txt(ctx,(st.burst?0:nn*pl.Vm).toFixed(2)+' L of CO₂',500,y,{s:15*k,w:800});y+=lh;
+    txt(ctx,st.burst?'Gas escaped':(nn*pl.Vm).toFixed(2)+' L of CO₂',500,y,{s:15*k,w:800});y+=lh;
     txt(ctx,'in a '+b.V+' L bag: '+(100*F).toFixed(0)+'% full',500,y,{s:13*k});y+=lh;
     if(st.mixed&&frac>0.97){const oc=outcome(F,st.burst).split(':')[0];pill(ctx,oc,500+oc.length*4.2*k+10,y+6,st.burst?PAL['s1']:F<0.85?PAL['s4']:F<=1.05?PAL['s3']:PAL['s4'],'#fff',13*k);}
     else if(!st.mixed)txt(ctx,'Not mixed yet',500,y+6,{s:13*k,c:PAL['cv-soft']});},

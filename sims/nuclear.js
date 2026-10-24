@@ -294,7 +294,7 @@ function drawChain(sim,ctx,k,t){const p=sim.p,st=sim.st,C=CHAINS[p.chain],hon=at
   // right panel
   const RX=560,RW=228;rr(ctx,RX,14,RW,422,12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
   const q=C.steps[st.ci];txt(ctx,C.name,RX+14,40,{s:Math.min(13*k,18),w:700});txt(ctx,'Step '+(st.ci+1)+' of '+C.steps.length,RX+14,40+20*k,{s:12*k,c:PAL['cv-soft']});
-  notation(ctx,q[1],SYMZ(q[0]),q[0],RX+RW/2,150,44,PAL['cv-ink']);txt(ctx,q[2]?'half-life '+q[3]:'stable',RX+RW/2,186,{s:13*k,w:700,a:'center',c:q[2]?PAL['cv-soft']:PAL['s3']});
+  notation(ctx,q[1],SYMZ(q[0]),q[0],RX+RW/2,150,44,PAL['cv-ink']);txt(ctx,q[2]?(k<1.4?'half-life ':'t½ ')+q[3]:'stable',RX+RW/2,186,{s:13*k,w:700,a:'center',c:q[2]?PAL['cv-soft']:PAL['s3']});
   if(st.ci>0){const pr=C.steps[st.ci-1],m=pr[2];const n={Z:SYMZ(pr[0]),A:pr[1],mode:m};const e=eqTerms(n);txt(ctx,'Last decay',RX+14,236,{s:12*k,w:700,c:PAL['cv-soft']});equation(ctx,e.t,RX+RW/2,282,Math.min(20,15*k),PAL['cv-ink'],e.hi);}
   const na=C.steps.slice(0,st.ci).filter(x=>x[2]==='a').length,nb=C.steps.slice(0,st.ci).filter(x=>x[2]==='b-').length;
   txt(ctx,'α so far: '+na,RX+14,350,{s:14*k,w:700,c:PAL['s1']});txt(ctx,'β⁻ so far: '+nb,RX+14,350+22*k,{s:14*k,w:700,c:PAL['s4']});}

@@ -198,8 +198,7 @@ const RL={
     {title:'Change one thing at a time',text:{bio:'Now the thiosulfate is cut in half. The reaction is slower, so it takes about twice as long to hide the X.',honors:'Halving [S₂O₃²⁻] doubles the time, so it halves the rate: first order in thiosulfate. Try the same with HCl and the time barely changes: zero order in H⁺.'},focus:[[10,44,296,452],[BXR,44,480,286]],speed:1,setup(sim){BioLab.setValues(sim,{cS:0.05});}},
     {lvl:'honors',title:'Initial rate is a slope',text:'For crystal violet, the colorimeter tracks the purple color. The dashed tangent at t = 0 is the initial rate. Comparing initial rates between trials gives the order of each reactant.',focus:[BXR,44,480,286],speed:1,setup(sim){BioLab.setValues(sim,{rxnI:'cv',cCV:10,cOH:0.05});syncMode(sim);}},
     {title:'Acid concentration',text:{bio:'Now the thiosulfate is back to 0.100 M and the HCl is doubled to 2.0 M. Watch the time: it hardly changes. More of a reactant does not always mean faster.',honors:'Doubling [HCl] leaves the time almost unchanged, so the rate is zero order in H⁺. Orders must be measured; they do not come from the coefficients.'},focus:[[10,44,296,452],[BXR,340,476,142]],speed:1,setup(sim){BioLab.setValues(sim,{cS:0.1,cHs:2});}},
-    {title:'Concentration over time',text:{bio:'Crystal violet fades. The concentration drops fast at first, then slower. Each half-life takes the same time: half, then a quarter, then an eighth is left.',honors:'Plot [A], ln[A] and 1/[A] against time. Only one of them is a straight line. For crystal violet in excess OH⁻ it is ln[A]: first order.'},focus:[[10,44,296,452],[BXR,44,480,452]],speed:1,setup(sim){BioLab.setValues(sim,{mode:'integrated',rxnG:'cv',cCV:15,cOH:0.05});syncMode(sim);}},
-    {lvl:'honors',title:'A second-order reaction',text:'2NO₂ → 2NO + O₂. Now 1/[A] vs t is the straight one, and each half-life is twice as long as the last because the rate depends on [NO₂]².',focus:[BXR,44,480,452],speed:1,setup(sim){BioLab.setValues(sim,{rxnG:'second',g0:20});syncMode(sim);}},
+    {title:'Concentration over time',text:{bio:'Crystal violet fades. The concentration drops fast at first, then slower. Each half-life takes the same time: half, then a quarter, then an eighth is left.',honors:'Plot [A], ln[A] and 1/[A] against time. Only one of them is a straight line. For crystal violet in excess OH⁻ it is ln[A]: first order. For 2NO₂ → 2NO + O₂ it would be 1/[A], and each half-life would double.'},focus:[[10,44,296,452],[BXR,44,480,452]],speed:1,setup(sim){BioLab.setValues(sim,{mode:'integrated',rxnG:'cv',cCV:15,cOH:0.05});syncMode(sim);}},
     {lvl:'ap',title:'Temperature and Eₐ',text:'Run N₂O₅ at several temperatures. k grows about 4× for each 10 °C. A plot of ln k against 1/T is a straight line with slope −Eₐ/R.',focus:[[BXR,44,480,452]],speed:1,setup(sim){BioLab.setValues(sim,{rxnG:'first',T:45,g0:20});syncMode(sim);}},
     {lvl:'ap',title:'Mechanisms',text:'The slow step controls the rate. A mechanism fits only if its slow step (with intermediates replaced) gives the experimental rate law, and its steps add up to the overall equation.',focus:[[0,0,800,500]],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{mode:'mech',mech:'b'});syncMode(sim);}}
   ],
@@ -279,7 +278,7 @@ function drawVesselI(ctx,sim,k,t){const p=sim.p,st=sim.st,fs=12*k,cx=156;
     ctx.fillStyle='rgba(246,240,205,'+(0.985*Math.pow(cloud,0.8)).toFixed(3)+')';ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.fill();
     if(cloud>0.05&&!RM){const r=rng(5);ctx.fillStyle='rgba(225,205,120,'+(0.5*cloud).toFixed(2)+')';for(let i=0;i<70;i++){const a=r()*6.283,d=Math.sqrt(r())*R*0.95;ctx.fillRect(cx+Math.cos(a+t*0.05)*d,cy+Math.sin(a+t*0.05)*d,2,2);}}
     ctx.strokeStyle='#8aa6b4';ctx.lineWidth=5;ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R*0.42,0,6.29);ctx.stroke();
-    txt(ctx,'Looking down through the flask at an X',cx,cy+R+18+fs*1.4,{s:fs,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,k>1.35?'Top view of the flask':'Looking down through the flask at an X',cx,cy+R+18+fs*1.4,{s:fs,c:PAL['cv-soft'],a:'center'});
     pill(ctx,Number.isNaN(st.tX)?'t = '+st.rt.toFixed(1)+' s':'X gone at '+st.tX.toFixed(1)+' s',cx,cy+R+18+fs*3.4,Number.isNaN(st.tX)?PAL['card2']:'#1b7339',Number.isNaN(st.tX)?PAL['cv-ink']:'#fff',14*k);
     return;}
   if(p.rxnI==='cv'){drawColorimeter(ctx,cx,ySeries(sim,st.rt),ySeries(sim,0),k);return;}
@@ -330,7 +329,7 @@ function drawLawCard(ctx,sim,k){const p=sim.p,st=sim.st,R=curI(p),fs=12*k,y=340,
     txt(ctx,'Change one concentration, then compare the times.',BXR+16,y+98+fs,{s:fs,c:PAL['cv-soft']});return;}
   const x=i0(sim),fc=(v,u)=>u===1e-6?(v*1e6).toFixed(1)+' µM':u===1e-3?(v*1e3).toFixed(1)+' mM':v.toFixed(3)+' M';
   txt(ctx,'['+R.a+']₀ = '+fc(x.A0,R.ua)+'    ['+R.b+']₀ = '+fc(x.B0,R.ub),BXR+16,y+16+fs,{s:13*k,w:700});
-  const law='Your rate law:  rate = k['+R.a+']'+sup(p.gm)+'['+R.b+']'+sup(p.gn);txt(ctx,law,BXR+16,y+48+fs,{s:15*k,w:700,c:PAL['s5']});
+  const law=(k>1.35?'':'Your rate law:  ')+'rate = k['+R.a+']'+sup(p.gm)+'['+R.b+']'+sup(p.gn);txt(ctx,law,BXR+16,y+48+fs,{s:(k>1.35?13:15)*k,w:700,c:PAL['s5']});
   txt(ctx,'Initial rate = '+(st.rt<0.04*st.tend?'measuring…':sci(iMeasR0(sim),3)+' M/s'),BXR+16,y+80+fs,{s:13*k});
   if(ap)txt(ctx,'k = '+(st.rt<0.04*st.tend?'…':kFromGuess(sim)),BXR+16,y+108+fs,{s:13*k,c:PAL['cv-soft']});
   if(p.check){const pr=iParams(sim),ok=p.gm===pr.m&&p.gn===pr.n;pill(ctx,ok?'✓ matches the data':'✗ not yet',BXR+476-16-70*k,y+80+fs*0.6,ok?'#1b7339':'#b3261e','#fff',13*k);}}

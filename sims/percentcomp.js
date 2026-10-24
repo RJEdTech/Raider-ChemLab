@@ -74,7 +74,7 @@ const SIM={
   lede:{bio:'Every compound has a fixed recipe by mass. Find what percent of its mass comes from each element, then use a lab to work backward from masses to a formula.',
         honors:'Turn percents or grams into moles, find the simplest whole-number ratio (the empirical formula), and use the molar mass to get the molecular formula.',
         ap:'Add combustion analysis: burn a compound of C, H and O, weigh the CO₂ and H₂O it makes, and find its empirical formula with oxygen by difference.'},
-  scale:{bio:'Percent composition is the same for a grain of salt and a truckload: it depends only on the formula.',honors:'In the Mg lab, about 0.3 g of ribbon reacts with oxygen from the air. The balance reads to 0.001 g.'},
+  scale:'Percent composition is the same for a grain of salt and a truckload. In the Mg lab, about 0.3 g of ribbon (a strip about 30 cm long) reacts with oxygen from the air; the balance reads to 0.001 g.',
   aspect:1.6,timeless:true,animated:true,chChange:0.6,chReveal:6,
   controls:[
     {id:'mode',label:'Activity',type:'seg',def:'pie',lvl:'bio',noTrial:true,options:[{v:'pie',l:'Percent composition'},{v:'mgo',l:'Magnesium oxide lab'},{v:'emp',l:'Empirical formula'},{v:'comb',l:'Combustion analysis',lvl:'ap'}],onChange:changed},
@@ -260,25 +260,25 @@ function drawMg(sim,ctx,vdt,k,t){const st=sim.st,p=sim.p,cur=st.cur,heating=cur&
   const items=[['Mg','Mg²⁺ / Mg'],['O','O²⁻'],['N','N³⁻ (in Mg₃N₂)']];let ly=zy-30;items.forEach(([s,l])=>{CL.drawAtom(ctx,zx+zr+22,ly,7,s,{label:''});txt(ctx,l,zx+zr+36,ly,{s:12*k,b:'middle',w:600});ly+=24*Math.max(1,k*0.85);});
   txt(ctx,'Bunsen burner',180,484,{s:12.5*k,a:'center',w:600});txt(ctx,'Balance ±0.001 g',660,484,{s:12.5*k,a:'center',w:600});}
 
-function drawTable(ctx,head,rows,show,k,y0){const n=head.length,lw=k>1.3?190:210,cw=(780-lw)/(n-1);const rh=34*Math.max(1,k*0.85);let y=y0;
-  head.forEach((h,i)=>txt(ctx,h,i?lw+cw*(i-0.5)+10:16,y,{s:14*k,w:800,a:i?'center':'left',c:i?ec(h):PAL['cv-ink']}));y+=rh*0.5;
+function drawTable(ctx,head,rows,show,k,y0){const n=head.length,lw=k>1.3?170:210,cw=(780-lw)/(n-1);const rh=34*Math.max(1,k*0.85);let y=y0;
+  head.forEach((h,i)=>txt(ctx,h,i?lw+cw*(i-0.5)+10:16,y,{s:14*k,w:800,a:i?'center':'left',c:PAL['cv-ink']}));y+=rh*0.5;
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(16,y);ctx.lineTo(784,y);ctx.stroke();y+=rh*0.55;
   rows.forEach((r,ri)=>{const vis=ri<show;txt(ctx,r[0],16,y,{s:12.5*k,w:600,c:vis?PAL['cv-ink']:PAL['cv-soft'],b:'middle'});
     r.slice(1).forEach((v,i)=>txt(ctx,vis?v:'·',lw+cw*(i+0.5)+10,y,{s:(ri===rows.length-1?15:13.5)*k,w:ri===rows.length-1?800:600,a:'center',b:'middle',c:vis?PAL['cv-ink']:PAL['cv-soft']}));
     if(ri===show-1&&ri<rows.length){ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.5;rr(ctx,10,y-rh/2+2,776,rh-4,8);ctx.stroke();}y+=rh;});return y;}
 function drawEmp(sim,ctx,k){const p=sim.p,st=sim.st,d=empData(p),hon=atLeast('honors'),idx=Object.keys(EMP).indexOf(p.unk);
   txt(ctx,'Mystery compound '+String.fromCharCode(65+idx)+(hon?'  ·  molar mass '+d.Mmol.toFixed(1)+' g/mol':''),16,30,{s:15*k,w:800});
-  const rows=[[p.given==='pct'?'Grams (in 100 g)':'Grams (in '+p.smass2+' g)',...d.g.map(v=>p.given==='pct'?v.toFixed(2):v.toFixed(3))],['Moles (÷ atomic mass)',...d.mol.map(v=>v.toFixed(4))],['÷ smallest',...d.rat.map(v=>v.toFixed(2))],['× '+d.m+' → whole numbers',...d.ints.map(String)]];
+  const rows=[[k>1.3?'Grams':p.given==='pct'?'Grams (in 100 g)':'Grams (in '+p.smass2+' g)',...d.g.map(v=>p.given==='pct'?v.toFixed(2):v.toFixed(3))],[k>1.3?'Moles':'Moles (÷ atomic mass)',...d.mol.map(v=>v.toFixed(4))],['÷ smallest',...d.rat.map(v=>v.toFixed(2))],[k>1.3?'× '+d.m:'× '+d.m+' → whole numbers',...d.ints.map(String)]];
   const y=drawTable(ctx,['Element',...d.els],rows,st.step,k,74);
   const yy=Math.max(y+20,330);
   if(st.step>=4){pill(ctx,'Empirical formula: '+CL.fmt(d.f),200,yy,PAL['s1'],'#fff',16*k);
     if(hon)txt(ctx,'formula mass '+d.Me.toFixed(2)+' g/mol',200,yy+30*k,{s:12.5*k,a:'center',c:PAL['cv-soft']});}
   if(st.step>=5){const mf=fstr(d.els,d.ints.map(v=>v*d.n));pill(ctx,'Molecular: '+CL.fmt(mf),590,yy,PAL['s2'],'#fff',16*k);txt(ctx,d.Mmol.toFixed(1)+' ÷ '+d.Me.toFixed(2)+' = '+d.n,590,yy+30*k,{s:12.5*k,a:'center',c:PAL['cv-soft']});
-    drawMolecule(ctx,mf,590,yy+90*Math.max(1,k*0.8),k>1.3?0.9:1.1,0);}
-  else if(st.step>=4)drawMolecule(ctx,d.f,200,yy+90*Math.max(1,k*0.8),1.1,0);
+    if(k<1.3)drawMolecule(ctx,mf,590,yy+90,1.1,0);}
+  else if(st.step>=4&&k<1.3)drawMolecule(ctx,d.f,200,yy+90*Math.max(1,k*0.8),1.1,0);
   if(st.step<4)txt(ctx,'Press Next step to work through it',400,yy,{s:13*k,a:'center',c:PAL['cv-soft']});}
 function drawComb(sim,ctx,k,t){const p=sim.p,st=sim.st,d=combData(p),f=clamp(st.burnT<0?0:st.burnT/3,0,1);
-  txt(ctx,'Sample '+(Object.keys(COMB).indexOf(p.cs)+1)+': '+p.cmass.toFixed(2)+' g of CₓHᵧO_z + O₂ → CO₂ + H₂O',16,30,{s:14*k,w:800});
+  txt(ctx,'Sample '+(Object.keys(COMB).indexOf(p.cs)+1)+': '+p.cmass.toFixed(2)+' g of a C, H, O compound burns in O₂',16,30,{s:14*k,w:800});
   const y=118;ctx.fillStyle=PAL['cv-glass'];ctx.globalAlpha=0.25;rr(ctx,40,y-24,300,48,22);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;rr(ctx,40,y-24,300,48,22);ctx.stroke();
   ctx.fillStyle=st.burnT>=0&&f<1?'rgba(255,120,40,.35)':PAL['cv-bg2'];rr(ctx,150,y-40,120,80,10);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;rr(ctx,150,y-40,120,80,10);ctx.stroke();
   ctx.fillStyle='#d9d4c8';rr(ctx,185,y+4,50,10,3);ctx.fill();if(f<1){ctx.fillStyle='#f3efe2';ctx.fillRect(195,y-2+6*f,30,6*(1-f));}
@@ -287,7 +287,7 @@ function drawComb(sim,ctx,k,t){const p=sim.p,st=sim.st,d=combData(p),f=clamp(st.
     ctx.fillStyle=i?'#c9d3dc':'#d7d0e8';rr(ctx,x-40,y-26,80,52,10);ctx.fill();ctx.strokeStyle=PAL['cv-glass'];rr(ctx,x-40,y-26,80,52,10);ctx.stroke();txt(ctx,chem,x,y+1,{s:12*k,a:'center',b:'middle',w:700,c:'#33363c'});
     txt(ctx,l,x,y-36,{s:12.5*k,a:'center',w:700});txt(ctx,'+'+(m*f).toFixed(4)+' g',x,y+46*Math.max(1,k*0.8),{s:13.5*k,a:'center',w:800,c:i?PAL['s2']:PAL['s5']});});
   if(st.burnT>=0&&f<1&&!RM)for(let i=0;i<6;i++){const ph=(t*0.9+i/6)%1,xx=230+ph*420;const isC=i%2;ctx.fillStyle=isC?PAL['s2']:PAL['s5'];ctx.beginPath();ctx.arc(xx,y+(isC?-6:6),4,0,6.29);ctx.fill();}
-  if(f>=1){const rows=[['Mass of element (g)',...d.masses.map(v=>v.toFixed(4))],['Moles',...d.mol.map(v=>v.toFixed(5))],['÷ smallest',...d.rat.map(v=>v.toFixed(2))],['Whole numbers',...d.ints.map(String)]];
+  if(f>=1){const rows=[[k>1.3?'Mass (g)':'Mass of element (g)',...d.masses.map(v=>v.toFixed(4))],['Moles',...d.mol.map(v=>v.toFixed(5))],['÷ smallest',...d.rat.map(v=>v.toFixed(2))],['Whole numbers',...d.ints.map(String)]];
     const yy=drawTable(ctx,['Element',...d.els],rows,4,k,206);pill(ctx,'Empirical formula: '+CL.fmt(d.f),400,Math.min(476,yy+10),PAL['s1'],'#fff',15*k);}
   else txt(ctx,st.burnT<0?'Press Burn the sample':'Burning…',400,300,{s:14*k,a:'center',c:PAL['cv-soft']});}
 

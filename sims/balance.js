@@ -93,8 +93,8 @@ if(BAD.length)console.error('balance: equations failed the balance check and wer
 const LIBM={},RXM={};LIB.forEach(e=>LIBM[e.id]=e);RX.forEach(e=>RXM[e.id]=e);
 const NSLOT=6;
 const LAY=sim=>sim.vis.lay||{BY:176,BH:186};
-const fEq=sim=>[8,30,784,LAY(sim).BY-34],fBoxes=sim=>{const l=LAY(sim);return [[8,l.BY,384,l.BH],[408,l.BY,384,l.BH]];},fScales=()=>[8,384,784,128],
-  fRightScales=sim=>{const l=LAY(sim);return [[408,l.BY,384,l.BH],[8,384,784,128]];};
+const fEq=sim=>[8,30,784,LAY(sim).BY-34],fBoxes=sim=>{const l=LAY(sim);return [[8,l.BY,384,l.BH],[408,l.BY,384,l.BH]];},fScales=()=>[8,376,784,136],
+  fRightScales=sim=>{const l=LAY(sim);return [[408,l.BY,384,l.BH],[8,376,784,136]];};
 
 /* ---------- state helpers ---------- */
 function cur(sim){const p=sim.p;if(p.mode==='redox')return RXM[p.req]||RX[0];
@@ -313,7 +313,7 @@ const BAL={
     else if(r.bal){st='Balanced ✓';bg='#1b7339';}else if(r.atoms&&!r.qok){st='Not balanced: charge is '+qs(r.t.qR)+' vs '+qs(r.t.qP);bg='#b3261e';}else{const h=hint(r);st='Not balanced: '+h.k+' is '+r.t.R[h.k]+' vs '+r.t.P[h.k];bg='#b3261e';}
     const PH=13*k*1.7,PY=EY+F*0.62+a0*1.4+PH/2+5;if(st)pill(ctx,st,400,PY,bg,'#fff',13*k);
     // particle boxes
-    const BY=PY+PH/2+8,BH=380-BY;v.lay={EY,BY,BH};[[8,'Reactants',e.r,r.c.slice(0,r.nr),r.mR],[408,'Products',e.p,r.c.slice(r.nr),r.mP]].forEach(([bx,name,list,cs,m])=>{
+    const BY=PY+PH/2+8,BH=372-BY;v.lay={EY,BY,BH};[[8,'Reactants',e.r,r.c.slice(0,r.nr),r.mR],[408,'Products',e.p,r.c.slice(r.nr),r.mP]].forEach(([bx,name,list,cs,m])=>{
       ctx.fillStyle=PAL['cv-bg2'];rr(ctx,bx,BY,384,BH,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
       txt(ctx,name,bx+12,BY+20*Math.min(k,1.3),{s:13*k,w:700,c:PAL['cv-soft']});
       if(hon)txt(ctx,m.toFixed(2)+' g',bx+372,BY+20*Math.min(k,1.3),{s:13*k,w:700,c:PAL['cv-soft'],a:'right'});
@@ -321,7 +321,7 @@ const BAL={
     ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(392,BY+BH/2-14);ctx.lineTo(407,BY+BH/2);ctx.lineTo(392,BY+BH/2+14);ctx.closePath();ctx.fill();
     // mini scales, one per element (plus charge in redox mode)
     const cats=r.t.els.map(kk=>({k:kk,L:r.t.R[kk],R:r.t.P[kk]}));if(mode==='redox')cats.push({k:'charge',L:r.t.qR,R:r.t.qP,q:true});
-    const n=cats.length,cw=784/n,SY=440;
+    const n=cats.length,cw=784/n,SY=448;
     cats.forEach((c,i)=>{const cx=8+cw*(i+0.5),Lb=Math.min(cw*0.78,150);const diff=c.q?(c.L-c.R):(c.L-c.R),den=c.q?Math.max(Math.abs(c.L),Math.abs(c.R),1):Math.max(c.L,c.R,1);
       const target=hid?0:clamp(diff/den,-1,1)*0.22;const cur0=v.th[c.k]===undefined?target:v.th[c.k];const th=RM?target:cur0+(target-cur0)*Math.min(1,(vdt||0.05)*6);v.th[c.k]=th;
       const ok=!hid&&c.L===c.R,col=hid?PAL['cv-soft']:ok?PAL['s3']:PAL['s1'];

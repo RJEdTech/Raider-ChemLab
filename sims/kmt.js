@@ -55,20 +55,23 @@ function stepK(sim,dt){ensure(sim);const p=sim.p,st=sim.st;swapGas(sim);syncCoun
   while(left>1e-9){const h=Math.min(left,hmax);left-=h;
     const ms=st.mol;
     for(let i=0;i<ms.length;i++){const m=ms[i];m.x+=m.vx*SC*h;m.y+=m.vy*SC*h;
-      if(m.x<box.x0){m.x=2*box.x0-m.x;m.vx=Math.abs(m.vx);}
+      if(m.x<box.x0){m.x=2*box.x0-m.x;m.vx=Math.abs(m.vx);if(eff)spin(m,'x');}
       if(m.x>box.x1){if(eff&&m.y>HOLE.y0&&m.y<HOLE.y1){st.esc[m.s]++;if(i%EFF_EVERY===0&&st.fly.length<60)st.fly.push({x:box.x1,y:m.y,vx:m.vx,vy:m.vy,s:m.s});
-          const g=gasOfMol(p,m.s),n=mk(g,box,st.T,true);m.x=n.x;m.y=n.y;m.vx=n.vx;m.vy=n.vy;m.vz=n.vz;continue;}
-        m.x=2*box.x1-m.x;m.vx=-Math.abs(m.vx);}
-      if(m.y<box.y0){m.y=2*box.y0-m.y;m.vy=Math.abs(m.vy);}else if(m.y>box.y1){m.y=2*box.y1-m.y;m.vy=-Math.abs(m.vy);}}
+          m.x=box.x0+1;m.y=lerp(box.y0+4,box.y1-4,Math.random());m.vx=-m.vx;continue;} // re-enters from the reservoir with the same speed, so the box keeps its distribution
+        m.x=2*box.x1-m.x;m.vx=-Math.abs(m.vx);if(eff)spin(m,'x');}
+      if(m.y<box.y0){m.y=2*box.y0-m.y;m.vy=Math.abs(m.vy);if(eff)spin(m,'y');}else if(m.y>box.y1){m.y=2*box.y1-m.y;m.vy=-Math.abs(m.vy);if(eff)spin(m,'y');}}
     if(!eff&&p.coll)collide(sim);
-    // thermostat on the whole sample
-    let ke=0,n=0;for(const m of ms){const M=gasOfMol(p,m.s).M/1000;ke+=0.5*M*(m.vx*m.vx+m.vy*m.vy+m.vz*m.vz);n++;}
-    const Tk=n?ke/(1.5*R*n):p.T;let l2=1+h/0.6*(p.T/Math.max(1,Tk)-1);l2=clamp(l2,0.8,1.25);const l=Math.sqrt(l2);for(const m of ms){m.vx*=l;m.vy*=l;m.vz*=l;}st.T=Tk*l2;}
+    // thermostat: the walls hold each gas at the set temperature
+    const ke=[0,0],cn=[0,0];for(const m of ms){const M=gasOfMol(p,m.s).M/1000;ke[m.s]+=0.5*M*(m.vx*m.vx+m.vy*m.vy+m.vz*m.vz);cn[m.s]++;}
+    let Tsum=0;for(let s2=0;s2<2;s2++){if(!cn[s2])continue;const Tk=ke[s2]/(1.5*R*cn[s2]);let l2=1+h/0.4*(p.T/Math.max(1,Tk)-1);l2=clamp(l2,0.8,1.25);const l=Math.sqrt(l2);for(const m of ms)if(m.s===s2){m.vx*=l;m.vy*=l;m.vz*=l;}Tsum+=Tk*l2*cn[s2];}
+    st.T=(cn[0]+cn[1])?Tsum/(cn[0]+cn[1]):p.T;}
   if(eff){st.escT+=dt;for(const f of st.fly){f.x+=f.vx*SC*dt;f.y+=f.vy*SC*dt*0.5;}st.fly=st.fly.filter(f=>f.x<810&&f.y>-10&&f.y<460);}
   // speed samples for the histogram (last 1.5 s)
   st.hT+=dt;if(st.hT>=0.05){st.hT=0;const arr=[];const ms=st.mol;const stepI=eff?EFF_EVERY/5:1;for(let i=0;i<ms.length;i+=stepI){const m=ms[i];arr.push([m.s,Math.hypot(m.vx,m.vy,m.vz)]);}st.hist.push(arr);if(st.hist.length>30)st.hist.shift();}
   // smoothed stats
   const stats=statsOf(sim);for(const k in stats){const v=stats[k];st.ema[k]=st.ema[k]===undefined||!Number.isFinite(st.ema[k])?v:st.ema[k]+(v-st.ema[k])*Math.min(1,dt/0.7);}}
+/* turn the two velocity components along a wall by a random angle (keeps speed and the bounce; lets energy share among x, y, z) */
+function spin(m,ax){const a=Math.random()*6.2832,c=Math.cos(a),sn=Math.sin(a);if(ax==='x'){const u=m.vy,w=m.vz;m.vy=u*c-w*sn;m.vz=u*sn+w*c;}else{const u=m.vx,w=m.vz;m.vx=u*c-w*sn;m.vz=u*sn+w*c;}}
 function collide(sim){const p=sim.p,ms=sim.st.mol;ms.sort((a,b)=>a.x-b.x);
   for(let i=0;i<ms.length;i++){const a=ms[i],ga=gasOfMol(p,a.s);for(let j=i+1;j<ms.length;j++){const b=ms[j];const gb=gasOfMol(p,b.s),d=ga.r+gb.r;const dx=b.x-a.x;if(dx>d)break;const dy=b.y-a.y,r2=dx*dx+dy*dy;if(r2>=d*d||r2<1e-6)continue;
     const r=Math.sqrt(r2),ux=dx/r,uy=dy/r;const rvx=a.vx-b.vx,rvy=a.vy-b.vy,rvz=a.vz-b.vz;if(rvx*ux+rvy*uy<=0)continue; // separating already
@@ -168,7 +171,7 @@ const SIM={
     {lvl:'honors',t:'Effusion',d:'Gas escaping through a tiny hole into empty space.'},{lvl:'honors',t:'Graham’s law',d:'Rate₁/Rate₂ = √(M₂/M₁): lighter gases effuse and diffuse faster.'},
     {lvl:'honors',t:'Dalton’s law of partial pressures',d:'P_total = P₁ + P₂ + …, and each gas’s partial pressure is its mole fraction times the total.'},{lvl:'honors',t:'Mole fraction (χ)',d:'Moles of one gas ÷ total moles of gas.'},
     {lvl:'ap',t:'Maxwell–Boltzmann distribution',d:'The spread of molecular speeds in a gas at one temperature. It shifts right and flattens as T rises or M falls.'},{lvl:'ap',t:'Root-mean-square speed',d:'u_rms = √(3RT/M), with M in kg/mol.'},{lvl:'ap',t:'Average kinetic energy',d:'KE_avg = (3/2)RT per mole, or (3/2)kT per molecule, the same for every gas at a given T.'}],
-  about:'<p><b>Speeds box.</b> Every molecule has a real 3D velocity in m/s; you see its side view, drawn at 0.25 pixels per (m/s) per second, so N₂ at 300 K drifts about 120 px each second. When two dots touch they collide as hard spheres, with the collision direction tilted randomly out of the screen (the dots are really at different depths). These collisions conserve energy and momentum and spread any starting speeds into the Maxwell–Boltzmann distribution, which the dashed curve shows: f(v) = 4π(M/2πRT)^{3/2} v² e^{−Mv²/2RT}. A gentle thermostat (0.6 s) holds the average kinetic energy at (3/2)RT. The histogram averages the last 1.5 s of speeds. Partial pressures come from the kinetic-theory result P = (2/3)(N/V)·KE_avg for a 24.6 L box where each dot is 0.01 mol.</p><p><b>Pinhole effusion.</b> Molecules do not collide with each other (real effusion needs a hole smaller than the distance between collisions). Every molecule that reaches the hole escapes and is replaced from a reservoir, so the gas never runs out. 25 molecules move for each dot drawn, so the escape counts include molecules you cannot see. The measured rate ratio approaches √(M₂/M₁) as the counts grow.</p><p><b>Diffusion race.</b> Each gas front advances at a speed proportional to 1/√M, so the ring lands where Graham’s law puts it. In real tubes the gases diffuse through air and the ring often forms a little closer to the middle (measured ratios of about 1.2–1.4 for NH₃/HCl). Time runs 30× faster than a real 100 cm tube.</p>',
+  about:'<p><b>Speeds box.</b> Every molecule has a real 3D velocity in m/s; you see its side view, drawn at 0.25 pixels per (m/s) per second, so N₂ at 300 K drifts about 120 px each second. When two dots touch they collide as hard spheres, with the collision direction tilted randomly out of the screen (the dots are really at different depths). These collisions conserve energy and momentum and spread any starting speeds into the Maxwell–Boltzmann distribution, which the dashed curve shows: f(v) = 4π(M/2πRT)^{3/2} v² e^{−Mv²/2RT}. The walls act as a gentle thermostat (0.4 s) that holds each gas’s average kinetic energy at (3/2)RT. The histogram averages the last 1.5 s of speeds. Partial pressures come from the kinetic-theory result P = (2/3)(N/V)·KE_avg for a 24.6 L box where each dot is 0.01 mol.</p><p><b>Pinhole effusion.</b> Molecules do not collide with each other (real effusion needs a hole smaller than the distance between collisions). Every molecule that reaches the hole escapes and is counted, and an identical molecule enters from a reservoir on the left, so the gas never runs out and its speed distribution stays the same. 25 molecules move for each dot drawn, so the escape counts include molecules you cannot see. The measured rate ratio approaches √(M₂/M₁) as the counts grow.</p><p><b>Diffusion race.</b> Each gas front advances at a speed proportional to 1/√M, so the ring lands where Graham’s law puts it. In real tubes the gases diffuse through air and the ring often forms a little closer to the middle (measured ratios of about 1.2–1.4 for NH₃/HCl). Time runs 30× faster than a real 100 cm tube.</p>',
   initVis(sim){},
   draw(sim,ctx,vdt,k,t){ensure(sim);drawK(sim,ctx,vdt,k,t);},
   thumbFrames:30
@@ -238,15 +241,15 @@ function miniHist(sim,ctx,x,y,w,h,k,compact){const p=sim.p,nb=24,vmax=vMaxFor(p)
   for(let s=0;s<2;s++){if(!gs[s])continue;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();for(let i=0;i<=80;i++){const v=i/80*vmax,yy=y+h-D.per[s]*mb(v,gs[s].M,p.T)*vmax/nb/ymax*h;i?ctx.lineTo(x+i/80*w,yy):ctx.moveTo(x,yy);}ctx.stroke();ctx.setLineDash([]);}
   txt(ctx,'0',x,y+h+16*k,{s:12*k,c:PAL['cv-soft']});txt(ctx,vmax+' m/s',x+w,y+h+16*k,{s:12*k,c:PAL['cv-soft'],a:'right'});
   if(!compact)txt(ctx,vmax/2+'',x+w/2,y+h+16*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
-  txt(ctx,'How many have each speed',x,y-8,{s:12.5*k,w:700,c:PAL['cv-ink']});}
+  txt(ctx,compact?'Speeds':'How many have each speed',x,y-8,{s:12.5*k,w:700,c:PAL['cv-ink']});}
 function energyBars(sim,ctx,x,y,w,h,k,compact){const p=sim.p,gs=[gA(p),hasB(p)?gB(p):null],vmax=vMaxFor(p),kmax=1.5*R*1000/1000*1.15;
-  const groups=[{l:'Avg speed',v:[E(sim,'v0'),E(sim,'v1')],mx:vmax*0.6,f:v=>Math.round(v)+''},{l:'Avg energy',v:[E(sim,'ke0'),E(sim,'ke1')],mx:kmax,f:v=>v.toFixed(1)}];
+  const groups=[{l:compact?'speed':'Avg speed',v:[E(sim,'v0'),E(sim,'v1')],mx:vmax*0.6,f:v=>Math.round(v)+''},{l:compact?'energy':'Avg energy',v:[E(sim,'ke0'),E(sim,'ke1')],mx:kmax,f:v=>v.toFixed(1)}];
   const gw=w/2;groups.forEach((G2,gi)=>{const gx=x+gi*gw;const n=gs[1]?2:1,bw=Math.min(40,(gw-30)/n);
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(gx+8,y+h);ctx.lineTo(gx+gw-8,y+h);ctx.stroke();
     for(let s=0;s<n;s++){const v=G2.v[s];if(!Number.isFinite(v))continue;const bh=clamp(v/G2.mx,0,1)*h,bx=gx+gw/2-n*bw/2-(n-1)*4+s*(bw+8);ctx.fillStyle=gs[s].c;ctx.fillRect(bx,y+h-bh,bw,bh);
       if(!compact)txt(ctx,G2.f(v),bx+bw/2,y+h-bh-5,{s:12*k,w:700,a:'center',c:PAL['cv-ink']});}
     txt(ctx,G2.l,gx+gw/2,y+h+18*k,{s:12.5*k,w:700,a:'center',c:PAL['cv-ink']});});}
-function legendChips(ctx,x,y,gs,k){let xx=x;gs.forEach(g=>{if(!g)return;ctx.fillStyle=g.c;ctx.beginPath();ctx.arc(xx+6,y-4,6,0,6.2832);ctx.fill();const s=g.f+' '+g.M.toFixed(1)+' g/mol';txt(ctx,s,xx+16,y+1,{s:12.5*k,w:600,c:PAL['cv-ink']});ctx.font='600 '+12.5*k+'px '+FONT;xx+=ctx.measureText(s).width+30;});}
+function legendChips(ctx,x,y,gs,k,compact){let xx=x;gs.forEach(g=>{if(!g)return;ctx.fillStyle=g.c;ctx.beginPath();ctx.arc(xx+6,y-4,6,0,6.2832);ctx.fill();const s=compact?g.f:g.f+' '+g.M.toFixed(1)+' g/mol';txt(ctx,s,xx+16,y+1,{s:12.5*k,w:600,c:PAL['cv-ink']});ctx.font='600 '+12.5*k+'px '+FONT;xx+=ctx.measureText(s).width+30;});}
 function drawK(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
   if(p.mode==='race')return drawRace(sim,ctx,k,compact,t);
   const box=p.mode==='dist'?BOXD:BOXE,eff=p.mode==='effuse';
@@ -262,7 +265,7 @@ function drawK(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,compact=k>1.3;ctx.fillSt
     if(gs[1]&&!compact){const r1=st.esc[1]>0?st.esc[0]/st.esc[1]:NaN;rr(ctx,520,330,268,92,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
       txt(ctx,'Graham’s law',534,354,{s:13.5*k,w:700});txt(ctx,'measured ratio: '+(Number.isFinite(r1)?r1.toFixed(2):'…'),534,378,{s:12.5*k});txt(ctx,'√('+gs[1].M.toFixed(1)+' ÷ '+gs[0].M.toFixed(1)+') = '+Math.sqrt(gs[1].M/gs[0].M).toFixed(2),534,402,{s:12.5*k,c:PAL['cv-soft']});}
     pill(ctx,Math.round(st.T)+' K',box.x0+44,box.y0+22,PAL['card'],PAL['cv-ink'],13*k);return;}
-  const gs=[gA(p),hasB(p)?gB(p):null];legendChips(ctx,528,48,gs,compact?k*0.9:k);
+  const gs=[gA(p),hasB(p)?gB(p):null];legendChips(ctx,528,48,gs,k,compact);
   miniHist(sim,ctx,528,84,256,compact?120:150,k,compact);
   energyBars(sim,ctx,528,compact?280:296,256,compact?92:104,k,compact);
   pill(ctx,Math.round(st.T)+' K',box.x0+44,box.y0+22,PAL['card'],PAL['cv-ink'],13*k);}

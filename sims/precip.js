@@ -149,7 +149,7 @@ const PRE={
     {id:'lim',label:'Limiting ion',unit:'',lvl:'ap',text:true,get:s=>s.st.mixed&&s.st.res.forms?s.st.res.lim:'—'},
     {id:'q',label:'Q compared with Ksp',unit:'',lvl:'ap',text:true,get:s=>{const r=s.st.res,o=r.o;if(!o.ppt||o.ppt.special==='feco3')return '—';return CL.sci(r.Q,'',2)+(r.Q>o.ppt.Ksp?' > ':' < ')+CL.sci(o.ppt.Ksp,'',2);}}
   ],
-  graphs:[{id:'ions',label:'Ions in solution before and after mixing (mmol)',lvl:'bio',custom:true}],defaultGraph:'ions',
+  graphs:[{id:'ions',label:'Ions before and after mixing (mmol)',lvl:'bio',custom:true}],defaultGraph:'ions',
   plot(sim,ctx,box,id){const r=sim.st.res,o=r.o,keys=Object.keys(r.mm);const after={};keys.forEach(k=>after[k]=r.mm[k]);
     if(o.ppt&&r.forms){after[o.pp.c]-=r.mol*o.ppt.x;after[o.pp.a]-=r.mol*o.ppt.y;}
     if(o.redox){after.I=Math.max(0,after.I-(o.redox.ppt?Math.min(r.mm.Cu*2,r.mm.I):Math.min(r.mm.Fe,r.mm.I)));if(o.redox.ppt)after.Cu=Math.max(0,after.Cu-Math.min(r.mm.Cu,r.mm.I/2));else{after.Fe2=Math.min(r.mm.Fe,r.mm.I);after.Fe-=after.Fe2;keys.push('Fe2');}}

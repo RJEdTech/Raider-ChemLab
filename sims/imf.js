@@ -240,8 +240,8 @@ function drawRace(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,v=sim.vis,T=p.temp;
     // escaping molecules
     const E=v.esc[key];const spawn=vol>0.001?clamp(Math.log10(rate*1000+1)*6,0,28):0;if(!RM&&vdt>0&&Math.random()<spawn*vdt)E.push({x:cx+(Math.random()-0.5)*dw*1.2*Math.sqrt(vol),y:dy-4,vx:(Math.random()-0.5)*30,vy:-40-Math.random()*40});
     E.forEach(e=>{e.x+=e.vx*vdt;e.y+=e.vy*vdt;});v.esc[key]=E.filter(e=>e.y>90);v.esc[key].forEach(e=>{ctx.fillStyle=col;ctx.globalAlpha=clamp((e.y-90)/150,0,1);ctx.beginPath();ctx.arc(e.x,e.y,4,0,6.29);ctx.fill();});ctx.globalAlpha=1;
-    pill(ctx,vol>0.001?vol.toFixed(2)+' mL left':'evaporated'+(done!==null?' in '+fmtT(done):''),cx,384,vol>0.001?PAL['card']:col,vol>0.001?PAL['cv-ink']:'#fff',15*k);
-    txt(ctx,ph==='gas'?'boils away at once':lc(s.imf)+', '+(rate<0.001?'< 0.001':rate.toFixed(3))+' mL/min',cx,416,{s:12*k,a:'center',c:PAL['cv-soft']});});
+    pill(ctx,vol>0.001?vol.toFixed(2)+' mL left':'evaporated'+(done!==null?' in '+fmtT(done):''),cx,378,vol>0.001?PAL['card']:col,vol>0.001?PAL['cv-ink']:'#fff',14*k);
+    txt(ctx,ph==='gas'?'boils away at once':lc(s.imf)+', '+(rate<0.001?'< 0.001':rate.toFixed(3))+' mL/min',cx,378+20+14*k,{s:12*k,a:'center',c:PAL['cv-soft']});});
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(400,118);ctx.lineTo(400,400);ctx.stroke();
   pill(ctx,T+' °C · '+fmtT(sim.t-st.t0),400,96,PAL['card'],PAL['cv-ink'],13*k);}
 const fmtT=m=>m<1?(m*60).toFixed(0)+' s':m<60?m.toFixed(1)+' min':(m/60).toFixed(1)+' h';
@@ -255,7 +255,7 @@ function drawVP(sim,ctx,vdt,k,t){const p=sim.p,T=p.temp;
     ctx.fillStyle=PAL['cv-soft'];rr(ctx,cx-24,62,48,16,4);ctx.fill();
     ctx.save();ctx.beginPath();ctx.moveTo(cx-100,330);ctx.lineTo(cx+100,330);ctx.lineTo(cx+84,352);ctx.lineTo(cx-84,352);ctx.closePath();ctx.fillStyle=col;ctx.globalAlpha=0.5;ctx.fill();ctx.restore();ctx.globalAlpha=1;
     // vapor molecules: count grows with P
-    const n=ph==='gas'?60:Math.round(clamp(4+18*Math.log10(1+P*60),1,60));for(let i=0;i<n;i++){const u=(i*0.6180339)%1,w=(i*0.3710+0.13)%1;const yy=140+w*176+(RM?0:Math.sin(t*1.5+i)*6),half=(yy-130)/200*82+12;
+    const n=ph==='gas'?60:Math.round(clamp(4+18*Math.log10(1+P*60),1,60));for(let i=0;i<n;i++){const hs=x=>{const v=Math.sin(x)*43758.5453;return v-Math.floor(v);};const u=hs(i*12.9898+1.7),w=hs(i*78.233+4.1);const yy=140+w*176+(RM?0:Math.sin(t*1.5+i)*6),half=(yy-130)/200*82+12;
       const xx=cx+(2*u-1)*half*0.88+(RM?0:Math.sin(t*2+i*1.3)*5);ctx.fillStyle=col;ctx.beginPath();ctx.arc(xx,yy,3.5,0,6.29);ctx.fill();}
         pill(ctx,ph==='gas'?'above 1 atm (past its bp)':(P*760).toFixed(P*760<10?1:0)+' torr',cx,384,col,'#fff',15*k);
     txt(ctx,'ΔHvap '+s.dH.toFixed(1)+' kJ/mol · bp '+fC(s.bp)+' °C',cx,414,{s:12*k,a:'center',c:PAL['cv-soft']});});

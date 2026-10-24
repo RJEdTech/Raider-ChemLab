@@ -304,7 +304,7 @@ function drawZoom(sim,ctx,cx,cy,R,vdt,k,t,c){const st=sim.st,v=sim.vis,h=HYD[st.
   const lx=cx-R-16;let ly=cy-34;const items=[[h.cat+'²⁺','#3f6fb0'],[h.an==='SO4'?'SO₄²⁻':'Cl⁻',h.an==='SO4'?'#d4a017':ChemLab.cpk('Cl')],['H₂O','w']];
   items.forEach(([l,col])=>{if(col==='w')drawWater(ctx,lx-6,ly,0);else{ctx.fillStyle=col;ctx.beginPath();ctx.arc(lx-6,ly,6,0,6.29);ctx.fill();}txt(ctx,l,lx-18,ly,{s:12.5*k,b:'middle',w:600,a:'right'});ly+=24*Math.max(1,k*0.85);});
   if(!st.h)txt(ctx,'Inside the crystals you will add',cx,cy+R+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});}
-function drawSteps(ctx,st,c,k){const x=578;let y=86;const lh=26*Math.max(1,k*0.85);
+function drawSteps(ctx,st,c,k){const x=k>1.3?552:578;let y=86;const lh=26*Math.max(1,k*0.85);
   const done=[!!c.e,!!c.f,st.heats>0,c.heated.length>0,c.constant];const L=['Weigh empty','Add + weigh','Heat','Cool + weigh','Constant mass'];
   const now=done.indexOf(false);txt(ctx,'Procedure',x,y-4,{s:12.5*k,w:700,c:PAL['cv-soft']});y+=lh*0.9;
   L.forEach((l,i)=>{const ok=done[i];ctx.strokeStyle=ok?PAL['s3']:PAL['cv-soft'];ctx.lineWidth=2;rr(ctx,x,y-7*k,14*k,14*k,3);ctx.stroke();

@@ -225,7 +225,7 @@ const LEWIS={
     // ion brackets
     if(m.q&&hon){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;xy.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});x0-=R+16;x1+=R+16;y0-=R+14;y1+=R+14;
       ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0+10,y0);ctx.lineTo(x0,y0);ctx.lineTo(x0,y1);ctx.lineTo(x0+10,y1);ctx.moveTo(x1-10,y0);ctx.lineTo(x1,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1-10,y1);ctx.stroke();
-      txt(ctx,CL.sup((Math.abs(m.q)>1?Math.abs(m.q):'')+(m.q>0?'+':'−')),x1+4,y0+6,{s:22*Math.min(k,1.4),w:700});}
+      txt(ctx,(Math.abs(m.q)>1?Math.abs(m.q):'')+(m.q>0?'+':'−'),x1+5,y0+8,{s:20*Math.min(k,1.4),w:800});}
     // selection highlight
     const nA=m.atoms.length;
     if(st.sel>=nA){const b=m.bonds[st.sel-nA],a=xy[b[0]],c=xy[b[1]];ctx.strokeStyle=PAL['rj'];ctx.globalAlpha=0.25;ctx.lineWidth=22;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(c[0],c[1]);ctx.stroke();ctx.globalAlpha=1;}
@@ -241,7 +241,7 @@ const LEWIS={
       txt(ctx,a.s,p[0],p[1]+1,{s:fs,w:800,a:'center',b:'middle'});
       const dirs=lpDirs(m,i,st.lp[i]);dirs.forEach(d=>{const cx=p[0]+Math.cos(d)*rL,cy=p[1]+Math.sin(d)*rL,nx=-Math.sin(d)*5.5,ny=Math.cos(d)*5.5;ctx.fillStyle=PAL['cv-ink'];
         [1,-1].forEach(sg=>{ctx.beginPath();ctx.arc(cx+nx*sg,cy+ny*sg,3.4,0,6.29);ctx.fill();});});
-      if(hon&&sim.p.fc&&v.left===0){const d=freeDir(m,i,st.lp[i]),fx=p[0]+Math.cos(d)*(rL+22*Math.min(k,1.3)),fy=p[1]+Math.sin(d)*(rL+22*Math.min(k,1.3)),f=v.fc[i];
+      if(hon&&sim.p.fc&&v.left===0){const d=freeDir(m,i,st.lp[i]),fx=p[0]+Math.cos(d)*(rL+12+13*Math.min(k,1.4)),fy=p[1]+Math.sin(d)*(rL+12+13*Math.min(k,1.4)),f=v.fc[i];
         if(f!==0||m.atoms.length<=6){ctx.fillStyle=f>0?PAL['s1']:f<0?PAL['s2']:PAL['card'];ctx.beginPath();ctx.arc(fx,fy,11*Math.min(k,1.4),0,6.29);ctx.fill();if(!f){ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();}
           txt(ctx,fcTxt(f),fx,fy+1,{s:12*Math.min(k,1.4),w:800,a:'center',b:'middle',c:f?'#fff':PAL['cv-soft']});}}});
     // budget panel

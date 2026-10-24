@@ -176,9 +176,9 @@ const RXT={
   aspect:ASP,timeless:true,animated:true,chChange:0.8,chReveal:6,
   controls:[
     {id:'rxn',label:'Lab station',type:'select',def:'alcu',lvl:'bio',options:ORDER.map((k,i)=>({v:k,l:(i+1)+'. '+R[k].name})),onChange:resetStation},
-    {id:'view',label:'Write the equation as',type:'seg',def:'word',lvl:'bio',options:[{v:'word',l:'Words'},{v:'skel',l:'Skeleton'},{v:'bal',l:'Balanced'}]},
+    {id:'view',label:'Write the equation as',type:'seg',def:'word',lvl:'bio',noTrial:true,options:[{v:'word',l:'Words'},{v:'skel',l:'Skeleton'},{v:'bal',l:'Balanced'}]},
     {id:'guess',label:'Your classification',type:'select',def:'none',lvl:'bio',options:[{v:'none',l:'Choose a type…'}].concat(Object.keys(TYPES).map(k=>({v:k,l:TYPES[k]}))),help:'Decide from the pattern of the equation, then check your answer in the panel below the stage.'},
-    {id:'amt',label:'Amount of reactant (times the standard amount)',type:'range',min:0.5,max:2,step:0.25,def:1,unit:'×',lvl:'honors',onChange:resetStation,help:'For solutions this changes the concentration (same volume).'}
+    {id:'amt',label:'Amount of reactant',type:'range',min:0.5,max:2,step:0.25,def:1,unit:'×',lvl:'honors',onChange:resetStation,help:'For solutions this changes the concentration (same volume).'}
   ],
   actions:[{id:'run',label:'Start the reaction',lvl:'bio',primary:true,run(sim){runIt(sim);}},{id:'again',label:'Reset this station',lvl:'bio',run(sim){resetStation(sim);}}],
   init(sim){return {run:false,t0:0,pick:null,zoom:buildZoom(sim.p.rxn)};},
@@ -188,11 +188,11 @@ const RXT={
     {id:'evid',label:'Evidence seen',unit:'',lvl:'bio',text:true,get:s=>{const e=seen(s);return e.length?e.map(x=>EV.find(v=>v[0]===x[0])[1]).join(', '):s.st.run?'Watching…':'Not started';}},
     {id:'T',label:'Temperature',unit:'°C',lvl:'bio',min:0,max:100,d:1,get:s=>{const d=dT(s);return Number.isFinite(d)?T0+d*prog(s):NaN;}},
     {id:'dT',label:'Temperature change',unit:'°C',lvl:'honors',min:-10,max:80,d:1,get:s=>{const d=dT(s);return Number.isFinite(d)?d*prog(s):NaN;}},
-    {id:'dH',label:'ΔH° of the reaction as written',unit:'kJ',lvl:'ap',min:-1300,max:100,d:1,get:s=>R[s.p.rxn].dH},
+    {id:'dH',label:'ΔH° of the reaction as written',unit:'kJ',lvl:'ap',min:-1300,max:100,d:0,get:s=>R[s.p.rxn].dH},
     {id:'q',label:'Heat released so far',unit:'kJ',lvl:'ap',min:0,max:null,d:2,get:s=>-R[s.p.rxn].dH*R[s.p.rxn].n*scale(s)*prog(s)},
     {id:'prod',label:'Product made',unit:'',lvl:'ap',text:true,get:s=>{const r=R[s.p.rxn],[f,c]=r.prod,mol=r.n*scale(s)*c*prog(s);return (mol*CL.molarMass(f)).toFixed(3)+' g '+CL.fmt(f)+' ('+(mol*1000).toFixed(2)+' mmol)';}}
   ],
-  graphs:[{id:'temp',label:'Temperature change at each station (standard amounts)',lvl:'bio',custom:true},{id:'heat',label:'ΔH° per mole of reaction',lvl:'ap',custom:true}],defaultGraph:'temp',
+  graphs:[{id:'temp',label:'Temperature change by station',lvl:'bio',custom:true},{id:'heat',label:'ΔH° by station',lvl:'ap',custom:true}],defaultGraph:'temp',
   plot(sim,ctx,box,id){if(id==='temp'){const ks=ORDER.filter(k=>R[k].vol),vals=ks.map(k=>-R[k].dH*1000*R[k].n/(R[k].vol*CL.K.cWater));const ax=axes(ctx,box,{xmin:0,xmax:ks.length,ymin:0,ymax:60,xcats:ks.map(k=>({h2o2:'H₂O₂',alcu:'Al + CuCl₂',znhcl:'Zn + HCl',agcl:'AgNO₃ + NaCl',neut:'HCl + NaOH'})[k]),yl:'ΔT (°C)'});
       vals.forEach((v,i)=>{const x0=ax.X(i+0.22),x1=ax.X(i+0.78);ctx.fillStyle=ks[i]===sim.p.rxn?serColor(1):serColor(0);ctx.fillRect(x0,ax.Y(v),x1-x0,ax.Y(0)-ax.Y(v));txt(ctx,'+'+v.toFixed(1),(x0+x1)/2,ax.Y(v)-5,{s:12,w:700,c:PAL.fg,a:'center'});});}
     else{const vals=ORDER.map(k=>R[k].dH);const ax=axes(ctx,box,{xmin:0,xmax:ORDER.length,ymin:-1300,ymax:200,xcats:ORDER.map((k,i)=>String(i+1)),yl:'ΔH° (kJ)'});
@@ -210,7 +210,7 @@ const RXT={
     return h;},
   bindInfo(sim,el){el.querySelectorAll('[data-pp]').forEach(b=>b.addEventListener('click',()=>{sim.st.pick=+b.dataset.pp;sim.infoDirty=true;}));},
   narrate(sim){const key=sim.p.rxn,r=R[key],st=sim.st,p=prog(sim),e=seen(sim),g=sim.p.guess,hon=atLeast('honors');
-    if(!st.run)return 'Station '+(ORDER.indexOf(key)+1)+': <b>'+r.name.toLowerCase()+'</b>. Read the equation, predict what you will see, then press Start the reaction.';
+    if(!st.run)return 'Station '+(ORDER.indexOf(key)+1)+': <b>'+r.name.charAt(0).toLowerCase()+r.name.slice(1)+'</b>. Read the equation, predict what you will see, then press Start the reaction.';
     if(p<1){const last=e[e.length-1];return last?'<b>Evidence:</b> '+last[2]+'. '+(r.vol&&hon?'The temperature is '+(T0+dT(sim)*p).toFixed(1)+' °C and rising.':'Keep watching the zoom: atoms are trading partners.'):'The reaction is starting. Watch the bench and the zoom.';}
     let s='<b>Done.</b> You saw '+e.map(x=>x[2]).join('; ')+'. ';
     if(g==='none')s+='Now classify it: does the equation fit A + B → AB, AB → A + B, A + BC → AC + B, AB + CD → AD + CB, or fuel + O₂?';
@@ -273,7 +273,7 @@ const RXT={
     ctx.fillStyle=PAL['card'];rr(ctx,8,8,784,48,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();txt(ctx,eq,400,33,{s:fs,w:700,a:'center',b:'middle'});
     // bench
     drawBench(ctx,sim,k,t);
-    txt(ctx,'Station '+(ORDER.indexOf(key)+1)+': '+r.name,16,80,{s:13*k,w:700,c:PAL['cv-soft']});
+    txt(ctx,'Station '+(ORDER.indexOf(key)+1)+(k<1.3?': '+r.name:''),16,80,{s:13*k,w:700,c:PAL['cv-soft']});
     // zoom
     const z=st.zoom,tt=sim.t,el=st.run?sim.t-st.t0:-1,D=r.D;
     ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.clip();

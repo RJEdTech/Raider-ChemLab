@@ -41,8 +41,8 @@ const LX0=360,LX1=560,yN=n=>n===Infinity?78:60+270/Math.pow(n,0.8);   // energy 
 const TX=630,TY=56,TW=160,TH=250;                      // discharge tube panel
 const SX0=40,SX1=770,SY=370,SH=32;                     // spectroscope strip
 const RX0=360;const sx0=sim=>sim.p.mode==='flame'?RX0:SX0;
-function sxOf(sim,nm){const x0=sx0(sim);if(sim.p.mode==='hydrogen'&&sim.p.range==='wide'){const a=Math.log10(90),b=Math.log10(2000);return x0+(Math.log10(nm)-a)/(b-a)*(SX1-x0);}return x0+(nm-380)/(750-380)*(SX1-x0);}
-const inStrip=(sim,nm)=>sim.p.mode==='hydrogen'&&sim.p.range==='wide'?nm>=90&&nm<=2000:nm>=380&&nm<=750;
+function sxOf(sim,nm){const x0=sx0(sim);if(sim.p.mode==='hydrogen'&&sim.p.range==='wide'){const a=Math.log10(90),b=Math.log10(2000);return x0+(Math.log10(nm)-a)/(b-a)*(SX1-x0);}return x0+(nm-380)/(780-380)*(SX1-x0);}
+const inStrip=(sim,nm)=>sim.p.mode==='hydrogen'&&sim.p.range==='wide'?nm>=90&&nm<=2000:nm>=380&&nm<=780;
 
 function sync(sim){const d=sim.def;if(!sim.ui||!sim.ui.sec)return;
   d.controls.forEach(c=>{const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||(c.show?!c.show(sim):false);});
@@ -255,7 +255,7 @@ function drawTube(sim,ctx,k,t,lines){const p=sim.p;rr(ctx,TX,TY,TW,TH,12);ctx.fi
 function drawStrip(sim,ctx,k,lines){const p=sim.p,wide=p.mode==='hydrogen'&&p.range==='wide',abs=p.mode==='hydrogen'&&p.spec==='absorption';
   const SX0=sx0(sim);txt(ctx,p.mode==='flame'?'Your sample':'Spectroscope',SX0,SY-12-16*k,{s:12*k,w:700,c:PAL['cv-soft']});
   ctx.fillStyle='#0b0b10';ctx.fillRect(SX0,SY,SX1-SX0,SH);
-  if(abs){if(!wide){for(let n=380;n<750;n+=2){ctx.fillStyle=nmRGB(n+1);ctx.fillRect(sxOf(sim,n),SY,sxOf(sim,n+2)-sxOf(sim,n)+0.6,SH);}}
+  if(abs){if(!wide){for(let n=380;n<780;n+=2){ctx.fillStyle=nmRGB(n+1);ctx.fillRect(sxOf(sim,n),SY,sxOf(sim,n+2)-sxOf(sim,n)+0.6,SH);}}
     else{ctx.fillStyle='#6b6b78';ctx.fillRect(SX0,SY,SX1-SX0,SH);for(let n=380;n<750;n+=2){ctx.fillStyle=nmRGB(n+1);ctx.fillRect(sxOf(sim,n),SY,sxOf(sim,n+2)-sxOf(sim,n)+0.6,SH);}}}
   else if(wide){ctx.strokeStyle='#555';ctx.setLineDash([3,3]);ctx.strokeRect(sxOf(sim,380),SY+1,sxOf(sim,750)-sxOf(sim,380),SH-2);ctx.setLineDash([]);}
   const hon=atLeast('honors');const labs=[];
@@ -267,8 +267,8 @@ function drawStrip(sim,ctx,k,lines){const p=sim.p,wide=p.mode==='hydrogen'&&p.ra
   // line labels above (visible range only), skipping any that would collide
   ctx.font='700 '+(12*k)+'px '+FONT;labs.sort((a,b)=>a.x-b.x);let lastR=-1e9;labs.forEach(l=>{const w=ctx.measureText(l.s).width;if(l.x-w/2<lastR+4)return;lastR=l.x+w/2;txt(ctx,l.s,l.x,SY-8,{s:12*k,w:700,a:'center',c:PAL['cv-ink']});});
   // ticks
-  const ticks=wide?[100,200,1000,2000]:[400,450,500,550,600,650,700];const ty=SY+SH+6+12*k;
-  ticks.forEach((n,i)=>{const x=sxOf(sim,n);ctx.strokeStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(x,SY+SH);ctx.lineTo(x,SY+SH+5);ctx.stroke();if(k>1.3&&!wide&&i%2===1)return;txt(ctx,n+(i===ticks.length-1?' nm':''),x,ty,{s:12*k,a:i===ticks.length-1&&wide?'right':'center',c:PAL['cv-soft']});});
+  const ticks=wide?[100,200,1000,2000]:k>1.3?[400,500,600,700]:[400,450,500,550,600,650,700,750];const ty=SY+SH+6+12*k;
+  ticks.forEach((n,i)=>{const x=sxOf(sim,n);ctx.strokeStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(x,SY+SH);ctx.lineTo(x,SY+SH+5);ctx.stroke();txt(ctx,n+(i===ticks.length-1?' nm':''),x,ty,{s:12*k,a:i===ticks.length-1&&wide?'right':'center',c:PAL['cv-soft']});});
   if(wide){txt(ctx,'UV',sxOf(sim,150),SY+SH/2,{s:12*k,w:700,a:'center',b:'middle',c:'#d8d0ff'});txt(ctx,'visible',(sxOf(sim,380)+sxOf(sim,750))/2,SY+SH+6+12*k,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});txt(ctx,'infrared',sxOf(sim,1350),SY+SH/2,{s:12*k,w:700,a:'center',b:'middle',c:'#ffd0c0'});}}
 function drawFlame(sim,ctx,k,t){const p=sim.p,st=sim.st,s=saltOf(sim),unk=p.salt==='unk'&&!st.revealed,hon=atLeast('honors');
   // burner
@@ -284,7 +284,7 @@ function drawFlame(sim,ctx,k,t){const p=sim.p,st=sim.st,s=saltOf(sim),unk=p.salt
   ctx.fillStyle='#6d5a43';rr(ctx,0,ly+34,26,14,4);ctx.fill();
   txt(ctx,unk?'Unknown sample':CL.fmt(s.f)+' in the flame',bx,base+44+12*k,{s:13*k,w:700,a:'center'});
   // reference strips
-  const RX1=SX1,ry=i=>44+i*34;const rx=nm=>RX0+(nm-380)/(750-380)*(RX1-RX0);
+  const RX1=SX1,ry=i=>44+i*34;const rx=nm=>RX0+(nm-380)/(780-380)*(RX1-RX0);
   txt(ctx,'Reference spectra',RX0,30,{s:12*k,w:700,c:PAL['cv-soft']});
   SK.forEach((key,i)=>{const r=SALTS[key],y=ry(i);ctx.fillStyle='#0b0b10';ctx.fillRect(RX0,y,RX1-RX0,20);
     r.lines.forEach(l=>{ctx.globalAlpha=clamp(l[1],0.3,1);ctx.fillStyle=nmRGB(l[0]);ctx.fillRect(rx(l[0])-1.5,y,3,20);ctx.globalAlpha=1;});

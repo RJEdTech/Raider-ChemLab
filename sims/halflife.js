@@ -51,7 +51,7 @@ const HL={
         honors:'Collect decay data, compare it with N = N₀(½)ⁿ, and use real half-lives to predict how much of an isotope is left.',
         ap:'Model decay as first-order kinetics: N = N₀e^(−kt), k = ln 2 / t½, and a straight-line plot of ln N vs t. Then date a sample by carbon-14.'},
   scale:{bio:'Candy lab: each candy stands for one radioactive atom. Real samples hold about 10²⁰ atoms, so their decay curves are perfectly smooth.',
-         honors:'Real isotope mode: 200 atoms, each step is a fraction of a half-life. A 1 g sample of carbon has about 6 × 10¹⁰ carbon-14 atoms.'},
+         honors:'Each candy or dot stands for one atom. One gram of carbon from a living thing holds about 6 × 10¹⁰ carbon-14 atoms, so real decay curves are smooth.'},
   timeless:true,animated:true,chChange:0.5,chReveal:2.6,
   controls:[
     {id:'mode',label:'Lab',type:'seg',def:'candy',lvl:'bio',noTrial:true,options:[{v:'candy',l:'Candy decay'},{v:'iso',l:'Real isotopes'},{v:'date',l:'Carbon dating'}]},
@@ -182,7 +182,7 @@ function drawCandy(sim,ctx,k,t){const st=sim.st;const jig=st.shakeT>0&&!RM?Math.
   st.items.forEach(it=>{if(it.alive){candy(ctx,it.x+jig+(st.shakeT>0&&!RM?Math.sin(t*40+it.a*5)*2:0),it.y,r,it.col,true,it.a*0.3);}
     else{const u=clamp(it.out,0,1),e=u*u*(3-2*u),px=330+(it.slot%cols)*dx,py=388-Math.floor(it.slot/cols)*dy;if(py<60)return;candy(ctx,lerp(it.x,px,e),lerp(it.y,py,e)-Math.sin(e*Math.PI)*60,r*0.85,'#9a9aa2',false,0);}});
   txt(ctx,'Cup: '+st.n+' undecayed',180,112,{s:13*k,w:700,a:'center'});
-  if(k<1.4)txt(ctx,'Decayed (blank side up): '+(st.N0-st.n),400,48,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});else txt(ctx,'Decayed: '+(st.N0-st.n),400,48,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});
+  txt(ctx,'Decayed: '+(st.N0-st.n),400,48,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});if(k<1.4)txt(ctx,'(blank side up)',400,64,{s:12,a:'center',c:PAL['cv-soft']});
   txt(ctx,'Shake '+st.k,18,32,{s:15*k,w:800});}
 function drawIso(sim,ctx,k,t){const st=sim.st,p=sim.p,I=isoOf(p);
   txt(ctx,I.name+' → '+I.d,18,32,{s:15*k,w:800});txt(ctx,'Time: '+fmtT(st.k*p.step*I.t,I.u),18,32+22*k,{s:13*k,w:700,c:PAL['rj']});
