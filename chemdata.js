@@ -165,8 +165,9 @@ CL.configText=function(Z,opts){opts=opts||{};let cfg=CL.config(Z);const nobles=[
   return core+cfg.map(o=>o.label+CL.sup(o.e)).join(' ');};
 
 /* ---------- formulas ---------- */
-/* Parse "Ca(OH)2", "CuSO4·5H2O", "CuSO4*5H2O", "Fe2(SO4)3", "[Cu(NH3)4]2+" → {Ca:1,O:2,H:2}. Charges and states are ignored. */
-CL.parse=function(f){f=String(f).replace(/\((aq|s|l|g)\)/g,'').replace(/[⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+$/,'').replace(/\^?\d*[+\-−]$/,'').trim();
+/* Charges: write them with ^ or a space ("SO4^2-", "SO4 2-"); a bare trailing sign ("MnO4-") is dropped and the digits are kept as a subscript.
+   Parse "Ca(OH)2", "CuSO4·5H2O", "CuSO4*5H2O", "Fe2(SO4)3", "[Cu(NH3)4]2+" → {Ca:1,O:2,H:2}. Charges and states are ignored. */
+CL.parse=function(f){f=String(f).replace(/\((aq|s|l|g)\)/g,'').replace(/[⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+$/,'').replace(/(\^\d*|\s+\d*)[+\-−]$/,'').replace(/[+\-−]$/,'').trim();
   f=f.replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>'₀₁₂₃₄₅₆₇₈₉'.indexOf(c));
   const parts=f.split(/[·*•]/);const total={};
   parts.forEach(p=>{let m=p.match(/^(\d+)(.*)$/),mult=1;if(m){mult=+m[1];p=m[2];}const c=parseGroup(p);for(const k in c)total[k]=(total[k]||0)+c[k]*mult;});
@@ -202,7 +203,9 @@ CL.sigFigs=function(str){str=String(str).trim().replace(/^[+\-−]/,'');let m=st
   if(!hasDot)digits=digits.replace(/0+$/,'');return digits.length;};
 CL.roundSig=(v,n)=>{if(!Number.isFinite(v)||v===0)return v;const d=Math.ceil(Math.log10(Math.abs(v)));const p=Math.pow(10,n-d);return Math.round(v*p)/p;};
 /* String with exactly n significant figures (keeps trailing zeros) */
-CL.toSig=(v,n)=>{if(!Number.isFinite(v))return '—';if(v===0)return (0).toFixed(Math.max(0,n-1));const e=Math.floor(Math.log10(Math.abs(v)));if(e>=n||e<-4)return CL.sci(v,'',n);return v.toFixed(Math.max(0,n-1-e));};
+CL.toSig=(v,n)=>{if(!Number.isFinite(v))return '—';if(v===0)return (0).toFixed(Math.max(0,n-1));v=CL.roundSig(v,n);let e=Math.floor(Math.log10(Math.abs(v)));
+  if(e>=n||e<-4){const m=v/Math.pow(10,e);return m.toFixed(n-1)+' × 10'+CL.sup(String(e).replace('-','−'));}
+  const s=v.toFixed(Math.max(0,n-1-e));return (e===n-1&&/0$/.test(s))?s+'.':s;};
 
 /* ---------- ions ---------- */
 /* Common monatomic ions: sym → [charges] (first = most common) */

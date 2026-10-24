@@ -175,8 +175,8 @@ function buildSim(sim){
     ui.gx.addEventListener('change',()=>{sim.gx=ui.gx.value;drawGraph(sim);});ui.gy.addEventListener('change',()=>{sim.gy=ui.gy.value;drawGraph(sim);});}
   // trials
   if(d.trials!==false){
-    sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={n:sim.trials.length+1};(d.controls||[]).forEach(c=>row[c.id]=sim.p[c.id]);allMetrics(sim).forEach(m=>row[m.id]=m.get(sim));
-      sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row.n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
+    sec.querySelector('[data-act=record]').addEventListener('click',()=>{const row={_n:sim.trials.length+1};(d.controls||[]).forEach(c=>row[c.id]=sim.p[c.id]);allMetrics(sim).forEach(m=>row[m.id]=m.get(sim));
+      sim.trials.push(row);saveTrials(sim);renderTable(sim);flash(sim,'Trial '+row._n+' recorded');if(sim.gmode==='trials')drawGraph(sim);});
     sec.querySelector('[data-act=clear]').addEventListener('click',()=>{sim.trials=[];saveTrials(sim);renderTable(sim);drawGraph(sim);});
     sec.querySelector('[data-act=copy]').addEventListener('click',()=>{const csv=toCSV(sim);if(!csv){flash(sim,'Record a trial first');return;}
       const fallback=()=>{let ta=sec.querySelector('.csv-fallback');if(!ta){ta=el('textarea',{class:'csv-fallback',readonly:'',id:id+'-csv','aria-label':'CSV data'});ui.tbl.after(ta);}ta.value=csv;ta.focus();ta.select();flash(sim,'Selected. Press Ctrl+C to copy');};
@@ -207,9 +207,9 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function renderTable(sim){if(!sim.ui.tbl)return;const cols=trialCols(sim);
   if(!sim.trials.length){sim.ui.tbl.innerHTML='<p class="empty">No trials yet. Set the variables, let the readings settle, then press Record trial.</p>';return;}
   sim.ui.tbl.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Trial</th>${cols.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${
-    sim.trials.map(r=>`<tr><td>${r.n}</td>${cols.map(c=>`<td>${esc(cellText(c,r[c.id]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+    sim.trials.map(r=>`<tr><td>${r._n!==undefined?r._n:r.n}</td>${cols.map(c=>`<td>${esc(cellText(c,r[c.id]))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function toCSV(sim){if(!sim.trials.length)return '';const cols=trialCols(sim),q=s=>/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
-  return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
+  return [['Trial',...cols.map(c=>c.label)].map(q).join(','),...sim.trials.map(r=>[r._n!==undefined?r._n:r.n,...cols.map(c=>cellText(c,r[c.id]))].map(x=>q(String(x))).join(','))].join('\n');}
 
 /* ---------- level-dependent refresh ---------- */
 function applyLevel(sim){const ui=sim.ui,d=sim.def;
@@ -224,6 +224,7 @@ function applyLevel(sim){const ui=sim.ui,d=sim.def;
   if(ui.gm){const go=graphOptions(sim);ui.gm.innerHTML=go.map(g=>`<option value="${g.id}">${g.label}</option>`).join('');
     if(!go.find(g=>g.id===sim.gMetric))sim.gMetric=(go.find(g=>g.id===d.defaultGraph)||go[0]||{}).id;if(sim.gMetric)ui.gm.value=sim.gMetric;
     if(!go.length){sim.gmode='trials';const tb=ui.sec.querySelector('[data-g=trials]');tb.setAttribute('aria-checked','true');ui.sec.querySelector('[data-g=live]').hidden=true;ui.sec.querySelector('.g-live').hidden=true;ui.sec.querySelector('.g-trials').hidden=false;}
+    else{const lb=ui.sec.querySelector('[data-g=live]');if(lb.hidden){lb.hidden=false;sim.gmode='live';lb.setAttribute('aria-checked','true');ui.sec.querySelector('[data-g=trials]').setAttribute('aria-checked','false');ui.sec.querySelector('.g-live').hidden=false;ui.sec.querySelector('.g-trials').hidden=true;}}
     const nc=trialCols(sim).filter(c=>c.num);const opts=nc.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');ui.gx.innerHTML=opts;ui.gy.innerHTML=opts;
     if(nc.length){if(!nc.find(c=>c.id===sim.gx))sim.gx=nc[0].id;if(!nc.find(c=>c.id===sim.gy))sim.gy=(nc.find(c=>c.id===d.defaultGraph)||nc[nc.length-1]).id;ui.gx.value=sim.gx;ui.gy.value=sim.gy;}}
   sim.ch={idx:0,phase:'ask',pick:null,changed:false};renderChallenge(sim);renderTable(sim);sim.infoDirty=true;}
