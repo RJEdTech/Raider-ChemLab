@@ -6,8 +6,8 @@ BioLab.setSections({
            5: 'Bonding and naming', 6: 'States of matter and intermolecular forces', 7: 'Chemical reactions', 8: 'The mole and stoichiometry',
            9: 'Gases', 10: 'Solutions', 11: 'Thermochemistry', 12: 'Kinetics', 13: 'Equilibrium', 14: 'Acids and bases',
            15: 'Thermodynamics and electrochemistry' },
-  extra: { 0: 'Lab skills and measurement', 16: 'Forensic chemistry', 17: 'Go further' },
-  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+  extra: { 0: 'Lab skills and measurement', 16: 'Forensic chemistry', 18: 'Digital forensics', 17: 'Go further' },
+  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 17],
   further: 17,
   unitPrefix: ''
 });
@@ -59,12 +59,15 @@ BioLab.COURSES = [
     ],
     further: ['orbitals', 'spectroscopy', 'nuclear'] },
   { id: 'forensic', name: 'Forensic Science',
-    blurb: 'Chemistry tools in the order Forensic Science covers them.',
+    blurb: 'Chemistry tools in the order Forensic Science covers them, then a digital forensics unit that ends in a full case to solve.',
     units: [
       { n: 'Unit', t: 'Fingerprinting', ids: ['fingerprints'] },
       { n: 'Unit', t: 'Poisons and toxicology', ids: ['toxicology', 'spottest'] },
       { n: 'Unit', t: 'Death, decomposition and time of death', ids: ['timeofdeath'] },
-      { n: 'Unit', t: 'Questioned documents and trace evidence', ids: ['chromatography', 'spectroscopy'] }
+      { n: 'Unit', t: 'Questioned documents and trace evidence', ids: ['chromatography', 'spectroscopy'] },
+      { n: 'Digital', t: 'Digital evidence: preserving and examining it', ids: ['hashing', 'filesig', 'metadata', 'recovery'] },
+      { n: 'Digital', t: 'Digital crime: how attacks leave clues', ids: ['passwords', 'phishing', 'stego'] },
+      { n: 'Case', t: 'Digital case file: put it all together', ids: ['casefile'] }
     ],
     further: ['halflife', 'separation', 'ph'] }
 ];
@@ -87,5 +90,6 @@ BioLab.TOPIC_ORDER = {
   14: ['ph', 'titration', 'buffers'],
   15: ['gibbs', 'galvanic'],
   16: ['fingerprints', 'toxicology', 'spottest', 'timeofdeath', 'chromatography', 'spectroscopy'],
-  17: ['orbitals']
+  17: ['orbitals'],
+  18: ['hashing', 'filesig', 'metadata', 'recovery', 'passwords', 'phishing', 'stego', 'casefile']
 };
