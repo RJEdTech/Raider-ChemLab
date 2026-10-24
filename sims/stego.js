@@ -120,7 +120,7 @@ function drawPic(ctx,cv,x,y,w,h){ctx.save();ctx.imageSmoothingEnabled=false;ctx.
 function fitText(ctx,s,max,size,w){ctx.font=(w||400)+' '+size+'px '+FONT;if(ctx.measureText(s).width<=max)return s;let t=s;while(t.length>1&&ctx.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…';}
 
 function drawImages(sim,ctx,k,t){const p=sim.p,st=sim.st,inv=p.mode==='investigate',I=curImgs(sim),ch=CH[p.channel]||0,pl=planeN(sim);
-  const S=3.4,w=W*S,h=H*S,x1=28,x2=800-28-w,y=46;
+  const S=3.6,w=W*S,h=H*S,x1=28,x2=800-28-w,y=44;
   const lt=inv?'Posted photo':(st.hidden?'Your photo, with message':'Your photo');
   txt(ctx,fitText(ctx,lt,w,15*k,700),x1,y-12,{s:15*k,w:700});
   drawPic(ctx,rgbCanvas(I.bk,I.b),x1,y,w,h);
@@ -143,7 +143,7 @@ function drawStrip(sim,ctx,k,y0){const p=sim.p,st=sim.st,I=curImgs(sim),ch=CH[p.
   const hide=p.mode==='hide',nb=hide?bitsN(sim):1;
   const n=8,gap=8,bw=(800-56-gap*(n-1))/n,x0=28;
   txt(ctx,fitText(ctx,'First 8 pixels of the top row: '+CHN[p.channel]+' values',744,13*k,600),x0,y0,{s:13*k,c:PAL['cv-soft'],w:600});
-  const by=y0+8;let bitsOut=[];const vy=by+16+18*k,showWas=hon&&!big,sq=Math.min(9,(bw-8)/8),sy=vy+(showWas?20:8);
+  const by=y0+8;let bitsOut=[];const vy=by+16+18*k,showWas=hon&&!big,sq=Math.min(10,(bw-8)/8),sy=vy+(showWas?20:8);
   for(let i=0;i<n;i++){const x=x0+i*(bw+gap),v=I.b[i*4+ch],v0=I.a[i*4+ch];
     rr(ctx,x,by,bw,14,4);ctx.fillStyle='rgb('+I.b[i*4]+','+I.b[i*4+1]+','+I.b[i*4+2]+')';ctx.fill();
     txt(ctx,String(v),x+bw/2,vy,{s:17*k,w:800,a:'center',c:v!==v0?PAL['s1']:PAL['cv-ink']});
@@ -376,11 +376,11 @@ const SIM={
   onClick(sim,x,y){if(sim.p.mode!=='subst')return;const h=(sim.vis.hits||[]).find(h=>x>=h.r[0]&&x<=h.r[0]+h.r[2]&&y>=h.r[1]&&y<=h.r[1]+h.r[3]);if(!h)return;
     if(h.k==='c')sim.st.sel=h.l;else if(sim.st.sel)mapLetter(sim,sim.st.sel,h.l);},
   tour:[
-    {title:'An ordinary photo?',text:'A suspect posted this harbor photo. Investigators also have the original from the suspect’s camera card. Side by side, the two look the same.',focus:[[20,20,350,282],[430,20,350,282]],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{mode:'investigate',view:'image',channel:'G',plane:0});}},
-    {title:'Pixels are numbers',text:{bio:'Every pixel stores three numbers from 0 to 255: how much red, green and blue. Each number is 8 bits. The lowest bit changes the value by only 1.',ap:'Each value is one byte: 8 bits worth 128, 64, 32, 16, 8, 4, 2 and 1. Bit 0, the least significant bit, is worth 1.'},focus:[18,296,764,150],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{channel:'R'});}},
-    {title:'Compare the two files',text:'The Difference view marks every pixel that is not identical. Only the top rows changed, each by 1 out of 255: far too small to see, but not random.',focus:[430,20,350,282],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'diff'});}},
-    {title:'Look at one bit plane',text:'This view shows only bit 0 of every red value: white for 1, black for 0. Camera noise makes static. The hidden text makes stripes across the top.',focus:[430,20,350,282],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'plane',channel:'R',plane:0});}},
-    {title:'Read the bits as letters',text:'Take bit 0 of each pixel in order. Every 8 bits make one byte, and each byte is a character code. The message comes out letter by letter, but it is scrambled.',focus:[18,296,764,150],speed:0.5,setup(sim){sim.def.actions.find(a=>a.id==='extract').run(sim);sim.infoDirty=true;}},
+    {title:'An ordinary photo?',text:'A suspect posted this harbor photo. Investigators also have the original from the suspect’s camera card. Side by side, the two look the same.',focus:[[18,16,366,266],[416,16,366,266]],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{mode:'investigate',view:'image',channel:'G',plane:0});}},
+    {title:'Pixels are numbers',text:{bio:'Every pixel stores three numbers from 0 to 255: how much red, green and blue. Each number is 8 bits. The lowest bit changes the value by only 1.',ap:'Each value is one byte: 8 bits worth 128, 64, 32, 16, 8, 4, 2 and 1. Bit 0, the least significant bit, is worth 1.'},focus:[16,282,768,160],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{channel:'R'});}},
+    {title:'Compare the two files',text:'The Difference view marks every pixel that is not identical. Only the top rows changed, each by 1 out of 255: far too small to see, but not random.',focus:[416,16,366,266],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'diff'});}},
+    {title:'Look at one bit plane',text:'This view shows only bit 0 of every red value: white for 1, black for 0. Camera noise makes static. The hidden text makes stripes across the top.',focus:[416,16,366,266],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'plane',channel:'R',plane:0});}},
+    {title:'Read the bits as letters',text:'Take bit 0 of each pixel in order. Every 8 bits make one byte, and each byte is a character code. The message comes out letter by letter, but it is scrambled.',focus:[16,282,768,160],speed:0.5,setup(sim){sim.def.actions.find(a=>a.id==='extract').run(sim);sim.infoDirty=true;}},
     {title:'Caesar cipher',text:'The suspect also shifted every letter by the same amount. The wheel shows the shift: outer ring plain, inner ring cipher. With only 25 shifts, trying them all takes a minute.',focus:[10,34,410,406],speed:1,setup(sim){BioLab.setValues(sim,{mode:'caesar',shift:7,dir:'enc'});}},
     {lvl:'honors',title:'Frequency analysis',text:'A substitution cipher swaps letters with a secret key. There are too many keys to try, but E is still the most common letter, so the tallest cipher bar probably means E.',focus:[20,10,760,250],speed:1,setup(sim){BioLab.setValues(sim,{mode:'subst'});}},
     {lvl:'ap',title:'Vigenère and key length',text:'A keyword shifts each letter by a different amount, which flattens the frequencies. Split the text into columns for each key length: at the right length, every column looks like English, and the IC jumps.',focus:[14,10,380,232],speed:1,setup(sim){BioLab.setValues(sim,{mode:'vig',klen:5});}}
