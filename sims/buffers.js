@@ -152,7 +152,7 @@ const BUF={
     const x=st.acid-st.base,acid=st.last==='acid',broke=acid?a.freeH>0:a.freeOH>0;
     let t='Water went from 7.00 to <b>'+c.pw.toFixed(2)+'</b>, because nothing in it can take up the '+(acid?'H₃O⁺':'OH⁻')+'. ';
     if(broke)t+='The buffer went from '+c.pb0.toFixed(2)+' to <b>'+c.pb.toFixed(2)+'</b>: it has <b>run out of '+(acid?s.a:s.ha)+'</b>, so the extra '+(acid?'H₃O⁺':'OH⁻')+' stays free. Its capacity is used up.';
-    else t+='The buffer only moved from '+c.pb0.toFixed(2)+' to <b>'+c.pb.toFixed(2)+'</b>: '+(acid?'its '+s.a+' grabs each H₃O⁺ and becomes '+s.ha:'its '+s.ha+' hands H⁺ to each OH⁻, making water and '+s.a)+'.'+(hon?' Left: '+fmm(a.A)+' mmol '+s.a+', '+fmm(a.HA)+' mmol '+s.ha+'.':'');
+    else{const big=Math.abs(c.pb-c.pb0)>=0.5;t+='The buffer '+(big?'moved':'only moved')+' from '+c.pb0.toFixed(2)+' to <b>'+c.pb.toFixed(2)+'</b>: '+(acid?'its '+s.a+' grabs each H₃O⁺ and becomes '+s.ha:'its '+s.ha+' hands H⁺ to each OH⁻, making water and '+s.a)+'.'+(big?' It is near its limit: the ratio of '+s.a+' to '+s.ha+' has changed a lot.':'')+(hon?' Left: '+fmm(a.A)+' mmol '+s.a+', '+fmm(a.HA)+' mmol '+s.ha+'.':'');}
     return t;},
   tour:[
     {title:'Two beakers, two pH meters',text:{bio:'On the left is pure water. On the right is a buffer made of acetic acid and sodium acetate. We will add exactly the same acid and base to both.',honors:'The buffer holds a weak acid (HC₂H₃O₂) and its conjugate base (C₂H₃O₂⁻) in equal amounts: 5.0 mmol of each.'},focus:[0,0,800,450],pause:true,setup(sim){BioLab.setValues(sim,{sys:'acetate',conc:0.1,ratio:1,dose:1});BioLab.reset(sim);}},

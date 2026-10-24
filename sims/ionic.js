@@ -4,7 +4,7 @@ const {clamp,lerp,rr,txt,pill,atLeast,PAL,FONT,RM,axes,legend}=BioLab.h;
 const CL=ChemLab;
 /* Ionic bonding: a metal atom gives valence electrons to nonmetal atoms (Lewis dots), the ions form (sizes to scale), charges balance
    into a formula unit (crisscross and reduce), the ions pack into a lattice, and Coulomb's law sets the lattice energy. */
-const S=0.27;                                    // px per pm in the transfer view
+const S=0.28;                                    // px per pm in the transfer view
 // Shannon ionic radii (pm, 6-coordinate) and thermochemical radii for polyatomic ions (Jenkins and Thakur, approximate)
 const RION={Li:76,Na:102,K:138,Rb:152,Mg:72,Ca:100,Sr:118,Ba:135,Al:53.5,Zn:74,Ag:115,'Fe2':78,'Fe3':64.5,'Cu1':77,'Cu2':73,NH4:148,
   F:133,Cl:181,Br:196,I:220,O:140,S:184,N:146,P:212,OH:133,NO3:179,SO4:258,CO3:178,PO4:238,C2H3O2:162};
@@ -31,8 +31,9 @@ const SLOT=[[0,-1,-1],[1,0,-1],[0,1,1],[-1,0,1],[0,-1,1],[1,0,1],[0,1,-1],[-1,0,
 function slotPos(x,y,r,i){const s=SLOT[i];const off=s[2]*7;return [x+s[0]*(r+9)+(s[0]?0:off),y+s[1]*(r+9)+(s[1]?0:off)];}
 /* ---------- animation timeline ---------- */
 const T_TR0=1.0,T_TR=2.6,T_ION=3.8,T_JOIN=5.0,T_END=6.4;
-function layout(c){const pos=[];const nC=c.nC,nA=c.nA;const ys=n=>n===1?[195]:n===2?[135,255]:[90,195,300];
-  ys(nC).forEach(y=>pos.push({kind:'c',x:200,y}));ys(nA).forEach(y=>pos.push({kind:'a',x:600,y}));
+function layout(c){const pos=[];const nC=c.nC,nA=c.nA;const rC=(c.m.poly?c.rc:CL.el(c.m.f).radius)*S,rA=(c.a.poly?c.ra:Math.max(CL.el(c.a.f).radius,c.ra))*S;
+  const ys=(n,r)=>{if(n===1)return [[0,200]];const sp=n===2?130:104,need=2*r+20,dx=sp>=need?0:Math.sqrt(need*need-sp*sp)/2;return n===2?[[-dx,200-sp/2],[dx,200+sp/2]]:[[-dx,200-sp],[dx,200],[-dx,200+sp]];};
+  ys(nC,rC).forEach(([dx,y])=>pos.push({kind:'c',x:200+dx,y}));ys(nA,rA).forEach(([dx,y])=>pos.push({kind:'a',x:600-dx,y}));
   // joined formula unit: alternate along a row
   const seq=[];let ci=0,ai=0;const big=nC>=nA?'c':'a';while(ci<nC||ai<nA){if(big==='c'){if(ci<nC)seq.push('c'+ci++);if(ai<nA)seq.push('a'+ai++);}else{if(ai<nA)seq.push('a'+ai++);if(ci<nC)seq.push('c'+ci++);}}
   const rad=k=>(k[0]==='c'?c.rc:c.ra)*S;let w=seq.reduce((s,k)=>s+2*rad(k),0);let x=400-w/2;const tgt={};seq.forEach(k=>{const r=rad(k);tgt[k]=[x+r,205];x+=2*r;});
@@ -115,11 +116,11 @@ const SIM={
     if(v==='lattice')return `<b>${CL.html(c.f)} has no separate molecules.</b> Each ion is surrounded by ions of the opposite charge, repeated in every direction. The formula only gives the ratio: ${c.nC} ${CL.html(m.f,m.q)} for every ${c.nA} ${CL.html(a.f,a.q)}.`;
     if(v==='energy')return `Coulomb’s law: attraction ∝ q₊q₋/d. Here q₊q₋ = ${c.m.q} × ${Math.abs(c.a.q)} = ${c.qq} and d = ${c.rc} + ${c.ra} = ${c.d} pm. ${c.lat?'Measured lattice energy: <b>'+c.lat[0]+' kJ/mol</b>, melting point '+c.lat[1]+' °C.':'No measured value is listed for this compound.'}`;
     if(a.poly||m.poly){if(at<T_JOIN)return `<b>Polyatomic ions arrive already charged.</b> ${CL.html(a.f,a.q)} is a group of atoms sharing ${Math.abs(a.q)===1?'one extra electron':Math.abs(a.q)+' extra electrons'}. Count ions until the charges cancel.`;
-      return `${c.nC} × (${'+'+m.q}) + ${c.nA} × (${a.q}) = 0, so the formula unit is <b>${CL.html(c.f)}</b>${c.nA>1&&a.poly||c.nC>1&&m.poly?', with parentheses around the polyatomic ion':''}.`;}
+      return `${c.nC} × (+${m.q}) + ${c.nA} × (−${Math.abs(a.q)}) = 0, so the formula unit is <b>${CL.html(c.f)}</b>${c.nA>1&&a.poly||c.nC>1&&m.poly?', with parentheses around the polyatomic ion':''}.`;}
     if(at<T_TR0)return `${mN.replace(/^./,x=>x.toUpperCase())} is a metal with ${m.q} valence electron${m.q>1?'s':''} (${m.tm?'a transition metal, shown without dots':'the dots'}). ${aN.replace(/^./,x=>x.toUpperCase())} has ${8-Math.abs(a.q)} and needs ${Math.abs(a.q)} more to make 8.`;
     if(at<T_ION)return `<b>Electrons move from metal to nonmetal.</b> ${c.nC>1?c.nC+' '+mN+' atoms':'The '+mN+' atom'} give${c.nC>1?'':'s'} up ${c.nC*m.q} electron${c.nC*m.q>1?'s':''} in all, and ${c.nA>1?'each of the '+c.nA+' '+aN+' atoms':'the '+aN+' atom'} takes ${Math.abs(a.q)}.`;
     if(at<T_JOIN)return `<b>Ions form.</b> ${CL.html(m.f,m.q)} shrinks because it lost its outer shell. ${CL.html(a.f,a.q)} grows because its extra electrons repel each other. Both now have a full octet.`;
-    return `<b>Opposite charges attract.</b> ${c.nC} × (+${m.q}) + ${c.nA} × (${a.q}) = 0, so the formula unit is ${CL.html(c.f)}.`;},
+    return `<b>Opposite charges attract.</b> ${c.nC} × (+${m.q}) + ${c.nA} × (−${Math.abs(a.q)}) = 0, so the formula unit is ${CL.html(c.f)}.`;},
   tour:[
     {title:'Two kinds of atoms',text:'Sodium is a metal with 1 valence electron. Chlorine is a nonmetal with 7. Each dot is a valence electron.',focus:[100,60,600,280],speed:0.5,pause:true,setup(sim){BioLab.setValues(sim,{view:'transfer',metal:'Na',anion:'Cl'});syncView(sim);sim.st.at=0.3;}},
     {title:'The electron moves',text:'Sodium holds its one outer electron loosely, and chlorine pulls hard. The electron moves from sodium to chlorine.',focus:[100,60,600,280],speed:0.35,setup(sim){sim.st.at=T_TR0-0.2;}},
@@ -147,18 +148,19 @@ function findCmpd(f){for(const m of METALS)for(const a of ANIONS){const c=cmpd({
 function fitT(ctx,s,maxW,size,min,w){let z=size;ctx.font=(w||400)+' '+z+'px '+FONT;while(ctx.measureText(s).width>maxW&&z>min){z-=0.5;ctx.font=(w||400)+' '+z+'px '+FONT;}return z;}
 function ionBall(ctx,x,y,r,sym,q,k,col,alpha){const lab=q===0?sym:CL.fmt(sym,q);CL.drawAtom(ctx,x,y,r,sym,{color:col,label:'',alpha});ctx.save();if(alpha!==undefined)ctx.globalAlpha=alpha;
   const fs=Math.max(12*k,Math.min(r*0.8,20));const w=(ctx.font=(700)+' '+fs+'px '+FONT,ctx.measureText(lab).width);
-  if(w<r*1.8)txt(ctx,lab,x,y+1,{s:fs,w:800,c:CL.inkOn(col),a:'center',b:'middle'});else{pill(ctx,lab,x+r*0.7,y-r-8,PAL['card'],PAL['cv-ink'],12*k);}ctx.restore();}
+  if(w<r*1.8)txt(ctx,lab,x,y+1,{s:fs,w:800,c:CL.inkOn(col),a:'center',b:'middle'});else{pill(ctx,lab,x,y+r+12*k,PAL['card'],PAL['cv-ink'],12*k);}ctx.restore();}
 const CATCOL='#5d7fb5',ANCOL='#3d9a62',POLYCOL='#b06a2f';
 function colFor(c,kind){if(kind==='c')return c.m.poly?POLYCOL:CATCOL;return c.a.poly?POLYCOL:ANCOL;}
 function drawTransfer(sim,ctx,k,t){const P=PAL,c=cmpd(sim.p),at=sim.st.at,pos=layout(c),trs=transfers(c);const mv=mainVal(c.m),qa=Math.abs(c.a.q),poly=c.a.poly||c.m.poly;
   const phase=poly?(at<T_JOIN?2:3):at<T_TR0?0:at<T_ION?1:at<T_JOIN?2:3;const titles=['1. Atoms and their valence electrons','2. Electrons move from metal to nonmetal','3. Ions form, each with a full octet','4. Opposite charges attract: '+CL.fmt(c.f)];
   const tt=poly&&phase<3?'Ions that arrive already charged':titles[phase];txt(ctx,tt,400,24,{s:fitT(ctx,tt,780,15*k,12*k,700),w:700,a:'center'});
   const fIon=poly?1:ease((at-T_ION+0.6)/0.8),fJoin=ease((at-T_JOIN)/1.0);
-  if(fJoin<0.05&&k<1.4){txt(ctx,c.m.poly?'Cation':'Metal',200,52,{s:13*k,w:700,c:P['cv-soft'],a:'center'});txt(ctx,c.a.poly?'Polyatomic anion':'Nonmetal',600,52,{s:13*k,w:700,c:P['cv-soft'],a:'center'});}
+  const topC=Math.min(...pos.map(p=>p.y-((p.kind==='c'?CL.el(c.m.poly?'N':c.m.f).radius:120)*S)));
+  if(fJoin<0.05&&k<1.4&&topC>72){txt(ctx,c.m.poly?'Cation':'Metal',200,52,{s:13*k,w:700,c:P['cv-soft'],a:'center'});txt(ctx,c.a.poly?'Polyatomic anion':'Nonmetal',600,52,{s:13*k,w:700,c:P['cv-soft'],a:'center'});}
   pos.forEach(p=>{const isC=p.kind==='c';const ra=isC?(c.m.poly?c.rc:CL.el(c.m.f).radius):(c.a.poly?c.ra:CL.el(c.a.f).radius),ri=isC?c.rc:c.ra;const r=lerp(ra,ri,fIon)*S;
     const x=lerp(p.x,p.tx,fJoin),y=lerp(p.y,p.ty,fJoin);p.cx=x;p.cy=y;p.r=r;
     const sym=isC?c.m.f:c.a.f,q=fIon>0.5?(isC?c.m.q:c.a.q):0;const col=colFor(c,p.kind);ionBall(ctx,x,y,r,sym,q,k,col);
-    if(fIon>0.5&&fJoin<0.6){ctx.save();ctx.globalAlpha=1-fJoin/0.6;ctx.strokeStyle=P['cv-soft'];ctx.lineWidth=2;const b=r+17;ctx.beginPath();ctx.moveTo(x-b+6,y-b);ctx.lineTo(x-b,y-b);ctx.lineTo(x-b,y+b);ctx.lineTo(x-b+6,y+b);ctx.moveTo(x+b-6,y-b);ctx.lineTo(x+b,y-b);ctx.lineTo(x+b,y+b);ctx.lineTo(x+b-6,y+b);ctx.stroke();ctx.restore();}});
+    if(fIon>0.5&&fJoin<0.6){ctx.save();ctx.globalAlpha=1-fJoin/0.6;ctx.strokeStyle=P['cv-soft'];ctx.lineWidth=2;const b=r+12;ctx.beginPath();ctx.moveTo(x-b+6,y-b);ctx.lineTo(x-b,y-b);ctx.lineTo(x-b,y+b);ctx.lineTo(x-b+6,y+b);ctx.moveTo(x+b-6,y-b);ctx.lineTo(x+b,y-b);ctx.lineTo(x+b,y+b);ctx.lineTo(x+b-6,y+b);ctx.stroke();ctx.restore();}});
   // dots
   if(!poly&&fJoin<0.6){const alpha=1-fJoin/0.6;ctx.save();ctx.globalAlpha=alpha;
     pos.filter(p=>p.kind==='a').forEach((p,j)=>{for(let s=0;s<8-qa;s++){const [x,y]=slotPos(p.cx,p.cy,p.r,s);dot(ctx,x,y,P['cv-ink']);}
@@ -169,16 +171,18 @@ function drawTransfer(sim,ctx,k,t){const P=PAL,c=cmpd(sim.p),at=sim.st.at,pos=la
       const [x0,y0]=mv===null?[pc.cx+pc.r,pc.cy]:slotPos(pc.cx,pc.cy,pc.r,tr.ki),[x1,y1]=slotPos(pa.cx,pa.cy,pa.r,tr.slot);const x=lerp(x0,x1,f),y=lerp(y0,y1,f)-Math.sin(f*Math.PI)*40;
       dot(ctx,x,y,P['s1'],true,6);if(k<1.4)txt(ctx,'e⁻',x+9,y-8,{s:12*k,w:700,c:P['s1']});});
     ctx.restore();}
-  if(phase===3){const s=c.nC+' × (+'+c.m.q+') + '+c.nA+' × ('+c.a.q+') = 0';txt(ctx,s,400,300,{s:fitT(ctx,s,760,14*k,12*k,700),w:700,a:'center',c:P['s3']});}
+  if(phase===3){const s=c.nC+' × (+'+c.m.q+') + '+c.nA+' × (−'+Math.abs(c.a.q)+') = 0';txt(ctx,s,400,300,{s:fitT(ctx,s,760,14*k,12*k,700),w:700,a:'center',c:P['s3']});}
   drawCross(ctx,c,k);}
 function dot(ctx,x,y,col,ring,r){ctx.beginPath();ctx.arc(x,y,r||4.2,0,6.29);ctx.fillStyle=col;ctx.fill();if(ring){ctx.strokeStyle=PAL['cv-bg'];ctx.lineWidth=1.2;ctx.stroke();}}
 function drawCross(ctx,c,k){const P=PAL,y0=372;rr(ctx,8,y0-6,784,82,10);ctx.fillStyle=P['card'];ctx.fill();ctx.strokeStyle=P['line'];ctx.lineWidth=1;ctx.stroke();
   const big=18*Math.min(k,1.5),cy=y0+34;const m=c.m,a=c.a;
   // ions with their charge numbers
-  const mt=m.poly?CL.fmt(m.f):m.f,atx=a.poly?CL.fmt(a.f):a.f;ctx.font='800 '+big+'px '+FONT;const wm=ctx.measureText(mt).width,wa=ctx.measureText(atx).width;const x1=30,x2=x1+wm+60;
-  txt(ctx,mt,x1,cy,{s:big,w:800,b:'middle'});txt(ctx,CL.sup(m.q+'+'),x1+wm+2,cy-big*0.45,{s:big*0.8,w:800,c:P['s2'],b:'middle'});
-  txt(ctx,atx,x2,cy,{s:big,w:800,b:'middle'});txt(ctx,CL.sup(Math.abs(a.q)+'-'),x2+wa+2,cy-big*0.45,{s:big*0.8,w:800,c:P['s1'],b:'middle'});
-  ctx.strokeStyle=P['cv-soft'];ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x1+wm+10,cy-big*0.2);ctx.lineTo(x2+wa*0.3,cy+big*0.75);ctx.moveTo(x2+wa+10,cy-big*0.2);ctx.lineTo(x1+wm*0.6,cy+big*0.75);ctx.stroke();
+  const mt=m.poly?CL.fmt(m.f):m.f,atx=a.poly?CL.fmt(a.f):a.f;ctx.font='800 '+big+'px '+FONT;const wm=ctx.measureText(mt).width,wa=ctx.measureText(atx).width;const x1=30,x2=x1+wm+big*3;
+  const sx1=x1+wm+big*0.3,sx2=x2+wa+big*0.3,sy=cy-big*0.55,by=cy+big*0.62;
+  ctx.strokeStyle=P['s4'];ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(sx1+4,sy+6);ctx.lineTo(sx2-2,by-4);ctx.moveTo(sx2-4,sy+6);ctx.lineTo(sx1+2,by-4);ctx.stroke();ctx.setLineDash([]);
+  const ko=(s,x,y,size,col)=>{ctx.font='800 '+size+'px '+FONT;ctx.textBaseline='middle';ctx.textAlign='left';ctx.lineWidth=6;ctx.strokeStyle=P['card'];ctx.lineJoin='round';ctx.strokeText(s,x,y);txt(ctx,s,x,y,{s:size,w:800,c:col||P['cv-ink'],b:'middle'});};
+  ko(mt,x1,cy,big);ko(atx,x2,cy,big);ko(CL.sup(m.q+'+'),x1+wm+2,sy,big*0.75,P['s2']);ko(CL.sup(Math.abs(a.q)+'-'),x2+wa+2,sy,big*0.75,P['s1']);
+  ko(String(Math.abs(a.q)),sx1-big*0.15,by,big*0.7,P['s4']);ko(String(m.q),sx2-big*0.15,by,big*0.7,P['s4']);
   const raw=(m.poly&&c.crossC>1?'('+m.f+')':m.f)+c.crossC+(a.poly&&c.crossA>1?'('+a.f+')':a.f)+c.crossA;const rawT=CL.fmt(raw);let x=x2+wa+46;
   const z=Math.min(big,fitT(ctx,'→ '+rawT+' → '+CL.fmt(c.f),790-x,big,12*k,800));const red=c.crossC!==c.nC;
   txt(ctx,'→ '+rawT,x,cy,{s:z,w:700,c:P['cv-soft'],b:'middle'});ctx.font='700 '+z+'px '+FONT;x+=ctx.measureText('→ '+rawT).width+14;
@@ -204,11 +208,11 @@ function drawLattice(sim,ctx,k){const P=PAL,c=cmpd(sim.p);const s=0.2;const rc=c
   let x=20;lg.forEach(it=>{const y=394;if(it.col){CL.drawAtom(ctx,x+10,y,10,'',{color:it.col,label:''});}else{ctx.strokeStyle=P['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+10,y,10,0,6.29);ctx.stroke();}
     const z=fitT(ctx,it.l,240,13*k,12*k,600);txt(ctx,it.l,x+26,y+1,{s:z,w:600,b:'middle'});ctx.font='600 '+z+'px '+FONT;x+=ctx.measureText(it.l).width+58;});
   if(k<1.4)txt(ctx,one?'Each ion touches four of the opposite charge in this layer (six in 3D).':'Ratio kept at '+c.nC+' : '+c.nA+'. Real crystals are 3D, so this is a sketch.',400,430,{s:12*k,c:P['cv-soft'],a:'center'});}
-function draw3D(sim,ctx,k,c){const P=PAL,s=0.62,rc=c.rc*s*0.7,ra=c.ra*s*0.7,d=(c.rc+c.ra)*s*0.62;const a=sim.st.rot,b=0.45;const pts=[];
-  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let l=-1;l<=1;l++){const cat=((i+j+l)%2+2)%2===0;let x=i*d,y=j*d,z=l*d;let x1=x*Math.cos(a)+z*Math.sin(a),z1=-x*Math.sin(a)+z*Math.cos(a);let y1=y*Math.cos(b)-z1*Math.sin(b),z2=y*Math.sin(b)+z1*Math.cos(b);pts.push({x:400+x1,y:215+y1,z:z2,cat});}
-  pts.sort((u,v)=>u.z-v.z);pts.forEach(p=>{const r=(p.cat?rc:ra)*(1+p.z/900);CL.drawAtom(ctx,p.x,p.y,r,p.cat?c.m.f:c.a.f,{color:colFor(c,p.cat?'c':'a'),label:r>=12*k*0.9?(p.cat?c.m.f:c.a.f):'',s:Math.max(12*k*0.9,r*0.6)});});
-  txt(ctx,'Rock-salt structure of '+CL.fmt(c.f)+': every ion has 6 neighbors of the opposite charge',400,26,{s:fitT(ctx,'Rock-salt structure of '+CL.fmt(c.f)+': every ion has 6 neighbors of the opposite charge',780,14*k,12*k,700),w:700,a:'center'});
-  txt(ctx,'Ions shrunk to 70% so you can see inside',400,432,{s:12*k,c:P['cv-soft'],a:'center'});}
+function draw3D(sim,ctx,k,c){const P=PAL,D=105,sc=D/(c.rc+c.ra),rc=c.rc*sc*0.55,ra=c.ra*sc*0.55;const a=sim.st.rot,b=0.5;const pts=[];
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(let l=-1;l<=1;l++){const cat=((i+j+l)%2+2)%2===0;const x=i*D,y=j*D,z=l*D;const x1=x*Math.cos(a)+z*Math.sin(a),z1=-x*Math.sin(a)+z*Math.cos(a);const y1=y*Math.cos(b)-z1*Math.sin(b),z2=y*Math.sin(b)+z1*Math.cos(b);pts.push({x:400+x1,y:232+y1,z:z2,cat});}
+  pts.sort((u,v)=>u.z-v.z);pts.forEach(p=>{const r=(p.cat?rc:ra)*(1+p.z/700);CL.drawAtom(ctx,p.x,p.y,r,p.cat?c.m.f:c.a.f,{color:colFor(c,p.cat?'c':'a'),label:r>=12*k*0.9?(p.cat?c.m.f:c.a.f):'',s:Math.max(12*k*0.9,r*0.6)});});
+  const t1='Rock-salt structure of '+CL.fmt(c.f)+': each ion has 6 neighbors of the opposite charge';txt(ctx,t1,400,22,{s:fitT(ctx,t1,780,14*k,12*k,700),w:700,a:'center'});
+  txt(ctx,'Ions drawn at 55% of their size so you can see inside',400,440,{s:12*k,c:P['cv-soft'],a:'center'});}
 function drawEnergy(sim,ctx,k){const P=PAL,c=cmpd(sim.p);const s=0.55;const rc=c.rc*s,ra=c.ra*s;const cx=60+rc,ax=cx+rc+ra,cy=170;
   ionBall(ctx,cx,cy,rc,c.m.f,c.m.q,k,colFor(c,'c'));ionBall(ctx,ax,cy,ra,c.a.f,c.a.q,k,colFor(c,'a'));
   const yb=cy+Math.max(rc,ra)+24;ctx.strokeStyle=P['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,yb-6);ctx.lineTo(cx,yb+6);ctx.moveTo(ax,yb-6);ctx.lineTo(ax,yb+6);ctx.moveTo(cx,yb);ctx.lineTo(ax,yb);ctx.stroke();
