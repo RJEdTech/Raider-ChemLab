@@ -59,7 +59,7 @@ BioLab.COURSES = [
     ],
     further: ['orbitals', 'spectroscopy', 'nuclear'] },
   { id: 'forensic', name: 'Forensic Science',
-    blurb: 'Chemistry tools in the order Forensic Science covers them, then a digital forensics unit that ends in a full case to solve.',
+    blurb: 'The chemistry tools for Forensic Science, in course order. The whole course, including blood spatter, DNA and digital forensics, is in <a href="https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic">Raider ForensicsLab</a>.',
     units: [
       { n: 'Unit', t: 'Fingerprinting', ids: ['fingerprints'] },
       { n: 'Unit', t: 'Poisons and toxicology', ids: ['toxicology', 'spottest'] },
@@ -69,7 +69,9 @@ BioLab.COURSES = [
       { n: 'Digital', t: 'Digital crime: how attacks leave clues', ids: ['passwords', 'phishing', 'stego'] },
       { n: 'Case', t: 'Digital case file: put it all together', ids: ['casefile'] }
     ],
-    further: ['halflife', 'separation', 'ph'] }
+    further: ['halflife', 'separation', 'ph'],
+    furtherLinks: [{ href: 'https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic', title: 'The whole course in Raider ForensicsLab', label: 'Raider ForensicsLab',
+      text: 'Crime scenes, blood spatter, DNA, hair and fiber, handwriting, forensic anthropology, digital forensics and cybercrime, all in Forensic Science order.', kind: 'Forensic Science' }] }
 ];
 
 BioLab.TOPIC_ORDER = {
