@@ -290,12 +290,13 @@ function drawCard(sim,ctx,k,small,e,pr){const P=PAL,B=CARD;rr(ctx,B.x,B.y,B.w,B.
   const tx=B.x+bw+20,tw=B.w-bw-30;const hon=atLeast('honors'),ap=atLeast('ap');
   const lines=[{t:e.name,s:18,w:800,c:P['cv-ink']},{t:CL.CAT_NAMES[e.cat]+(e.synthetic?' · synthetic':''),s:13,w:600,c:P['cv-soft']}];
   if(small){lines.push({t:(e.cat==='lanthanide'||e.cat==='actinide'?'f block':'Group '+e.group)+' · Period '+e.period,s:13,c:P['cv-soft']});}
-  else{lines.push({t:(e.cat==='lanthanide'||e.cat==='actinide'?'f block':'Group '+e.group)+' · Period '+e.period+' · '+e.mass+' g/mol',s:13,c:P['cv-ink']});
+  else{lines.push({t:(e.cat==='lanthanide'||e.cat==='actinide'?'f block':'Group '+e.group)+' · Period '+e.period+' · '+e.mass+' g/mol',s:13,c:P['cv-ink'],drop:atLeast('honors')});
     if(sim.p.color==='state'){const s=stateAt(e.Z,sim.p.temp),m=mpbp(e.Z);lines.push({t:(s==='u'?'State not known':STATE[s].n)+' at '+sim.p.temp+' °C'+(m.sub?' · sublimes '+m.mp+' °C':m.mp!==null?' · mp '+m.mp+' °C'+(m.bp!==null?', bp '+m.bp+' °C':''):''),s:13,w:700,c:P['cv-ink']});}
     if(hon)lines.push({t:'Valence e⁻: '+(valenceOf(e)===null?'varies':valenceOf(e))+' · Ions: '+ionText(e),s:13,c:P['cv-ink']});
     if(hon)lines.push({t:CL.configText(e.Z,{noble:true}),s:13,c:P['cv-ink']});
     if(ap)lines.push({t:'EN '+(e.en===null?'—':e.en)+' · r '+(e.radius===null?'—':e.radius+' pm')+' · IE₁ '+(e.ie1===null?'—':e.ie1+' kJ/mol'),s:13,c:P['cv-ink']});}
-  const kk=small?k:1;let y=B.y+8;const avail=B.h-12;let tot=lines.reduce((a,l)=>a+Math.max(l.s,12)*kk*1.22,0);const shrink=tot>avail?avail/tot:1;
-  lines.forEach(l=>{const z=Math.max(12*kk,l.s*kk*shrink);const zz=fitTxt(ctx,l.t,tw,z,Math.min(z,11));y+=z*1.2;txt(ctx,l.t,tx,y-z*0.25,{s:zz,w:l.w||400,c:l.c});});}
+  const kk=small?k:1;let y=B.y+8;const avail=B.h-10;const H=l=>Math.max(l.s===18?16:12,l.s)*kk*1.2;
+  if(!small){lines.forEach(l=>{if(l.s===13)l.s=12;});lines[0].s=16;}while(lines.length>2&&lines.reduce((a,l)=>a+H(l),0)>avail){const i=lines.findIndex(l=>l.drop);lines.splice(i>=0?i:lines.length-1,1);}
+  lines.forEach(l=>{const z=Math.max(12*kk,l.s*kk);const zz=fitTxt(ctx,l.t,tw,z,Math.min(z,11));y+=z*1.2;txt(ctx,l.t,tx,y-z*0.25,{s:zz,w:l.w||400,c:l.c});});}
 BioLab.register(SIM);
 })();

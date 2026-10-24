@@ -97,7 +97,7 @@ const SIM={
     {id:'ravg',label:'Average distance ⟨r⟩',unit:'pm',lvl:'ap',min:0,max:null,d:0,get:s=>{const o=OB[s.p.orb];return avgR(o.n,o.l,s.p.Z)*A0;}},
     {id:'E',label:'Energy of this level, Eₙ = −2.178 × 10⁻¹⁸ J · Z²/n²',lvl:'ap',text:true,noTrial:true,get:s=>{const o=OB[s.p.orb];return CL.sci(-2.178e-18*s.p.Z*s.p.Z/(o.n*o.n),'J');}}
   ],
-  graphs:[{id:'P',label:'Radial probability r²R² vs distance',lvl:'bio',custom:true},{id:'cmp',label:'Compare 1s, 2s, 3s and 4s',lvl:'honors',custom:true},{id:'R',label:'Radial wavefunction R(r) (sign changes = nodes)',lvl:'ap',custom:true}],
+  graphs:[{id:'P',label:'Radial probability r²R²',lvl:'bio',custom:true},{id:'cmp',label:'Compare 1s to 4s',lvl:'honors',custom:true},{id:'R',label:'Wavefunction R(r)',lvl:'ap',custom:true}],
   defaultGraph:'P',
   plot(sim,ctx,box,id){const p=sim.p,o=OB[p.orb],rad=sim.st.rad;
     if(id==='cmp'){const curves=[1,2,3,4].map(n=>radial(n,0,p.Z));const xmax=curves[3].rmax*A0*0.75;let ymax=0;curves.forEach(c=>{for(let i=0;i<=GRID;i++)ymax=Math.max(ymax,c.P[i]/A0);});

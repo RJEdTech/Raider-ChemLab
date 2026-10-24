@@ -8,7 +8,7 @@ const ION={Ag:{q:1,col:'#9aa7b4',r:12,name:'silver'},Na:{q:1,col:'#8e44ad',r:11,
   Ba:{q:2,col:'#00897b',r:14,name:'barium'},Cu:{q:2,col:'#1976d2',r:11,name:'copper(II)'},Fe:{q:3,col:'#a1561c',r:11,name:'iron(III)'},Fe2:{s:'Fe',q:2,col:'#689f38',r:11,name:'iron(II)'},
   NO3:{q:-1,col:'#7d8a2e',r:14,name:'nitrate'},Cl:{q:-1,col:'#2e9d4a',r:13,name:'chloride'},I:{q:-1,col:'#6a1b9a',r:15,name:'iodide'},SO4:{q:-2,col:'#b8860b',r:15,name:'sulfate'},
   OH:{q:-1,col:'#e65100',r:12,name:'hydroxide'},CO3:{q:-2,col:'#455a64',r:14,name:'carbonate'}};
-Object.keys(ION).forEach(k=>{const o=ION[k];o.k=k;o.s=o.s||k;o.txt=CL.fmt(o.s,o.q);o.html=CL.html(o.s,o.q);});
+Object.keys(ION).forEach(k=>{const o=ION[k];o.k=k;o.r+=1;o.s=o.s||k;o.txt=CL.fmt(o.s,o.q);o.html=CL.html(o.s,o.q);});
 const SOL={AgNO3:{f:'AgNO3',name:'silver nitrate',cat:'Ag',an:'NO3'},NaCl:{f:'NaCl',name:'sodium chloride',cat:'Na',an:'Cl'},
   PbNO3:{f:'Pb(NO3)2',name:'lead(II) nitrate',cat:'Pb',an:'NO3'},KI:{f:'KI',name:'potassium iodide',cat:'K',an:'I'},BaCl2:{f:'BaCl2',name:'barium chloride',cat:'Ba',an:'Cl'},
   Na2SO4:{f:'Na2SO4',name:'sodium sulfate',cat:'Na',an:'SO4'},CuSO4:{f:'CuSO4',name:'copper(II) sulfate',cat:'Cu',an:'SO4',col:'#5aa9e6'},NaOH:{f:'NaOH',name:'sodium hydroxide',cat:'Na',an:'OH'},
@@ -85,7 +85,7 @@ function amounts(sim){const p=sim.p,ap=atLeast('ap');const va=ap?p.va:25,vb=ap?p
 /* ---------- particles ---------- */
 const ZX=598,ZY=196,ZR=152;
 function rebuild(sim){const st=sim.st;if(!st)return;const r=amounts(sim),A=SOL[sim.p.a],B=SOL[sim.p.b];
-  const per=Math.max(2.5/6,(r.ca*r.va*(A.nc+A.na)+r.cb*r.vb*(B.nc+B.na))/110);const fa=Math.max(1,Math.round(r.ca*r.va/per)),fb=Math.max(1,Math.round(r.cb*r.vb/per));
+  const per=Math.max(2.5/9,(r.ca*r.va*(A.nc+A.na)+r.cb*r.vb*(B.nc+B.na))/110);const fa=Math.max(1,Math.round(r.ca*r.va/per)),fb=Math.max(1,Math.round(r.cb*r.vb/per));
   st.per=per;st.fa=fa;st.fb=fb;st.mixed=false;st.mixT=0;st.parts=[];
   const mk=(ion,src,i)=>{const a=Math.random()*6.283,d=Math.sqrt(Math.random())*(ZR-22);const yb=ZY-ZR*0.82+Math.random()*ZR*0.45,xb=ZX+(Math.random()*2-1)*Math.sqrt(Math.max(0,ZR*ZR-(yb-ZY)*(yb-ZY)))*0.8;
     return {ion,src,x:src==='A'?ZX+Math.cos(a)*d:xb,y:src==='A'?ZY+Math.sin(a)*d:yb,vx:randn()*20,vy:src==='B'?50+Math.random()*40:randn()*20,lock:null,t0:0,al:1,gone:false};};

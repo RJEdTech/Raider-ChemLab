@@ -53,8 +53,8 @@ function buildZoom(sim){const st=sim.st,m=sim.p.metal,s=sim.p.sol,key=wkey(m,s),
   [ZY+ZR-30,ZY+ZR-30-2*AR*0.88].forEach((y,ri)=>{const half=Math.sqrt(ZR*ZR-(y-ZY)*(y-ZY))-AR-4;for(let x=ZX-half+(ri?AR:0);x<=ZX+half;x+=2*AR)z.atoms.push({x,y,top:ri===1});});
   const nCat=s==='H'?8:6,nAn=s==='H'?8:6*S.q;let seed=(m.charCodeAt(0)*31+s.charCodeAt(0)*7)%997;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
   const place=()=>{for(let tries=0;tries<30;tries++){const a=rnd()*6.283,d=Math.sqrt(rnd())*(ZR-24),x=ZX+Math.cos(a)*d,y=ZY+Math.sin(a)*d;if(y<ZY+ZR-30-2*AR*1.8-14)return [x,y];}return [ZX,ZY-40];};
-  for(let i=0;i<nCat;i++){const [x,y]=place();z.ions.push({hx:x,hy:y,ph:rnd()*6.28,kind:'cat',sym:S.ion,q:S.q,col:s==='H'?'#d22d68':MET[S.ion].icol,r:s==='H'?8:11});}
-  for(let i=0;i<nAn;i++){const [x,y]=place();z.ions.push({hx:x,hy:y,ph:rnd()*6.28,kind:'an',sym:s==='H'?'Cl':'NO3',q:-1,col:s==='H'?'#2e9d4a':'#7d8a2e',r:s==='H'?12:13});}
+  for(let i=0;i<nCat;i++){const [x,y]=place();z.ions.push({hx:x,hy:y,ph:rnd()*6.28,kind:'cat',sym:S.ion,q:S.q,col:s==='H'?'#d22d68':MET[S.ion].icol,r:s==='H'?9:13});}
+  for(let i=0;i<nAn;i++){const [x,y]=place();z.ions.push({hx:x,hy:y,ph:rnd()*6.28,kind:'an',sym:s==='H'?'Cl':'NO3',q:-1,col:s==='H'?'#2e9d4a':'#7d8a2e',r:s==='H'?14:14});}
   if(R.go){const tops=z.atoms.filter(a=>a.top).sort((a,b)=>Math.abs(a.x-ZX)-Math.abs(b.x-ZX));const cats=z.ions.filter(q=>q.kind==='cat');const nE=Math.min(4,Math.floor(cats.length/R.j),tops.length);
     const dt=clamp(2.2/R.rate,1.2,5);
     for(let i=0;i<nE;i++){const at=tops[i*2%tops.length]||tops[i];const e={t:1.2+i*dt,atom:at,ions:cats.slice(i*R.j,i*R.j+R.j),k:R.k};at.ev=e;
