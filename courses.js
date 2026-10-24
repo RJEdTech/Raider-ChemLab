@@ -6,8 +6,8 @@ BioLab.setSections({
            5: 'Bonding and naming', 6: 'States of matter and intermolecular forces', 7: 'Chemical reactions', 8: 'The mole and stoichiometry',
            9: 'Gases', 10: 'Solutions', 11: 'Thermochemistry', 12: 'Kinetics', 13: 'Equilibrium', 14: 'Acids and bases',
            15: 'Thermodynamics and electrochemistry' },
-  extra: { 0: 'Lab skills and measurement', 16: 'Forensic chemistry', 18: 'Digital forensics', 17: 'Go further' },
-  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 17],
+  extra: { 0: 'Lab skills and measurement', 18: 'Digital forensics', 17: 'Go further' },
+  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 17],
   further: 17,
   unitPrefix: ''
 });
@@ -57,21 +57,15 @@ BioLab.COURSES = [
       { n: 'Unit 8', t: 'Acids and bases', ids: ['ph', 'titration', 'buffers'] },
       { n: 'Unit 9', t: 'Thermodynamics and electrochemistry', ids: ['gibbs', 'galvanic'] }
     ],
-    further: ['orbitals', 'spectroscopy', 'nuclear'] },
+    further: ['orbitals', 'nuclear'],
+    furtherLinks: [{ href: 'https://rjedtech.github.io/Raider-ForensicsLab/#spectroscopy', title: 'IR and mass spectroscopy', label: 'Spectroscopy',
+      text: 'Identify unknowns from their IR bands and mass spectra, in Raider ForensicsLab.', kind: 'Go further' }] },
   { id: 'forensic', name: 'Forensic Science',
-    blurb: 'The chemistry tools for Forensic Science, in course order. The whole course, including blood spatter, DNA and digital forensics, is in <a href="https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic">Raider ForensicsLab</a>.',
-    units: [
-      { n: 'Unit', t: 'Fingerprinting', ids: ['fingerprints'] },
-      { n: 'Unit', t: 'Poisons and toxicology', ids: ['toxicology', 'spottest'] },
-      { n: 'Unit', t: 'Death, decomposition and time of death', ids: ['timeofdeath'] },
-      { n: 'Unit', t: 'Questioned documents and trace evidence', ids: ['chromatography', 'spectroscopy'] },
-      { n: 'Digital', t: 'Digital evidence: preserving and examining it', ids: ['hashing', 'filesig', 'metadata', 'recovery'] },
-      { n: 'Digital', t: 'Digital crime: how attacks leave clues', ids: ['passwords', 'phishing', 'stego'] },
-      { n: 'Case', t: 'Digital case file: put it all together', ids: ['casefile'] }
-    ],
-    further: ['halflife', 'separation', 'ph'],
-    furtherLinks: [{ href: 'https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic', title: 'The whole course in Raider ForensicsLab', label: 'Raider ForensicsLab',
-      text: 'Crime scenes, blood spatter, DNA, hair and fiber, handwriting, forensic anthropology, digital forensics and cybercrime, all in Forensic Science order.', kind: 'Forensic Science' }] }
+    blurb: 'Forensic Science has its own site now: <a href="https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic">Raider ForensicsLab</a>, with every unit of the course in order, from the crime scene and fingerprints to toxicology, blood spatter, DNA and digital forensics.',
+    units: [],
+    further: [],
+    furtherLinks: [{ href: 'https://rjedtech.github.io/Raider-ForensicsLab/#path-forensic', title: 'Open Raider ForensicsLab', label: 'Raider ForensicsLab',
+      text: 'Crime scenes, fingerprints, toxicology, chromatography, spectroscopy, blood spatter, DNA, forensic anthropology, digital forensics and cybercrime.', kind: 'Forensic Science' }] }
 ];
 
 BioLab.TOPIC_ORDER = {
@@ -91,7 +85,6 @@ BioLab.TOPIC_ORDER = {
   13: ['equilibrium', 'ksp'],
   14: ['ph', 'titration', 'buffers'],
   15: ['gibbs', 'galvanic'],
-  16: ['fingerprints', 'toxicology', 'spottest', 'timeofdeath', 'chromatography', 'spectroscopy'],
   17: ['orbitals'],
   18: ['hashing', 'filesig', 'metadata', 'recovery', 'passwords', 'phishing', 'stego', 'casefile']
 };

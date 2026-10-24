@@ -131,7 +131,7 @@ function drawImages(sim,ctx,k,t){const p=sim.p,st=sim.st,inv=p.mode==='investiga
   txt(ctx,fitText(ctx,rt.charAt(0).toUpperCase()+rt.slice(1),w,15*k,700),x2,y-12,{s:15*k,w:700});
   drawPic(ctx,rc,x2,y,w,h);
   // extraction scan line
-  if(st.anim>0&&st.anim<1){const rows=Math.max(1,Math.ceil(((st.inv.ext||st.read||{bytes:[]}).bytes.length*8+8)/W));const yy=y+Math.min(rows,H)*S*st.anim;ctx.fillStyle='rgba(255,210,63,.55)';ctx.fillRect(x1,yy-2,w,4);}
+  if(st.anim>0&&st.anim<1){const src=inv?st.inv.ext:st.read,nbits=src?(src.bytes.length+1)*8/(inv?1:(src.bits||1)):8,rows=Math.max(1,Math.ceil(nbits/W));const yy=y+Math.min(rows,H)*S*st.anim;ctx.fillStyle='rgba(255,210,63,.55)';ctx.fillRect(x1,yy-2,w,4);}
   // how far the message reaches (once found)
   const show=(inv&&(st.inv.found||st.inv.diff))||(!inv&&st.hidden);
   if(show&&p.view!=='image'){const nb=inv?asciiBytes(INV_CIPHER).length+1:st.hidden.len+1,bitsPer=inv?1:st.hidden.bits,rows=Math.ceil(nb*8/bitsPer/W);
@@ -139,103 +139,98 @@ function drawImages(sim,ctx,k,t){const p=sim.p,st=sim.st,inv=p.mode==='investiga
     pill(ctx,(inv?'pattern: rows 1–':'message: rows 1–')+rows,x2+w/2,yb+14*k,PAL['s4'],'#fff',12*k);}
   return {y:y+h};}
 
-function drawStrip(sim,ctx,k,y0){const p=sim.p,st=sim.st,I=curImgs(sim),ch=CH[p.channel]||0,pl=planeN(sim),ap=atLeast('ap'),hon=atLeast('honors');
+function drawStrip(sim,ctx,k,y0){const p=sim.p,st=sim.st,I=curImgs(sim),ch=CH[p.channel]||0,pl=planeN(sim),ap=atLeast('ap'),hon=atLeast('honors'),big=k>1.3;
   const hide=p.mode==='hide',nb=hide?bitsN(sim):1;
   const n=8,gap=8,bw=(800-56-gap*(n-1))/n,x0=28;
-  txt(ctx,'Zoom: the first 8 pixels of the top row, '+CHN[p.channel]+' values (0–255)',x0,y0,{s:13*k,c:PAL['cv-soft'],w:600});
-  const by=y0+10;let bitsOut=[];
+  txt(ctx,fitText(ctx,'First 8 pixels of the top row: '+CHN[p.channel]+' values',744,13*k,600),x0,y0,{s:13*k,c:PAL['cv-soft'],w:600});
+  const by=y0+8;let bitsOut=[];const vy=by+16+18*k,showWas=hon&&!big,sq=Math.min(9,(bw-8)/8),sy=vy+(showWas?20:8);
   for(let i=0;i<n;i++){const x=x0+i*(bw+gap),v=I.b[i*4+ch],v0=I.a[i*4+ch];
-    rr(ctx,x,by,bw,24,5);ctx.fillStyle='rgb('+I.b[i*4]+','+I.b[i*4+1]+','+I.b[i*4+2]+')';ctx.fill();
-    txt(ctx,String(v),x+bw/2,by+50*Math.min(k,1.25),{s:17*k,w:800,a:'center'});
-    if(v!==v0&&hon)txt(ctx,'was '+v0,x+bw/2,by+50*Math.min(k,1.25)+15*k,{s:12*k,a:'center',c:PAL['s1'],w:700});
-    const sq=Math.min(9,(bw-8)/8),sy=by+50*Math.min(k,1.25)+(hon?22:8)*k;
+    rr(ctx,x,by,bw,14,4);ctx.fillStyle='rgb('+I.b[i*4]+','+I.b[i*4+1]+','+I.b[i*4+2]+')';ctx.fill();
+    txt(ctx,String(v),x+bw/2,vy,{s:17*k,w:800,a:'center',c:v!==v0?PAL['s1']:PAL['cv-ink']});
+    if(v!==v0&&showWas)txt(ctx,'was '+v0,x+bw/2,vy+15,{s:12*k,a:'center',c:PAL['s1'],w:700});
     for(let b=7;b>=0;b--){const bx=x+bw/2-4*sq+(7-b)*sq,on=(v>>b)&1,sel=hide?b<nb:b===pl;
-      ctx.fillStyle=on?PAL['cv-ink']:PAL['cv-bg2'];ctx.fillRect(bx+0.5,sy,sq-1,sq);if(sel){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.strokeRect(bx,sy-1.5,sq,sq+3);}}
+      ctx.fillStyle=on?PAL['cv-ink']:PAL['cv-bg2'];ctx.fillRect(bx+0.5,sy,sq-1,sq);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.strokeRect(bx+0.5,sy,sq-1,sq);
+      if(sel){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.strokeRect(bx,sy-1.5,sq,sq+3);}}
     if(hide){for(let b=nb-1;b>=0;b--)bitsOut.push((v>>b)&1);}else bitsOut.push((v>>pl)&1);}
-  const ly=by+50*Math.min(k,1.25)+(hon?22:8)*k+9+22*k;
+  const ly=sy+sq+22*k;
   const byte=bitsOut.slice(0,8),val=byte.reduce((a,b)=>a*2+b,0);
-  let s=(hide?'Lowest '+nb+' bit'+(nb>1?'s':'')+' (orange boxes)':'Bit '+pl+' of each pixel (orange box)')+' → '+byte.join(' ');
+  let s=big?(hide?'Lowest '+nb:'Bit '+pl)+' → '+byte.join(''):(hide?'Lowest '+nb+' bit'+(nb>1?'s':'')+' of each (orange)':'Bit '+pl+' of each pixel (orange)')+' → '+byte.join(' ');
   if(byte.length===8){s+=' = '+(ap?val+' = 0x'+val.toString(16).toUpperCase().padStart(2,'0')+' = ':'')+(val>=32&&val<127?'“'+String.fromCharCode(val)+'”':'not a letter');}
   txt(ctx,fitText(ctx,s,744,14*k,700),x0,ly,{s:14*k,w:700});
   return ly;}
 
-function drawCaesar(sim,ctx,k,vdt){const p=sim.p,st=sim.st,sh=shiftN(sim),ap=atLeast('ap'),hon=atLeast('honors'),dec=p.dir==='dec';
+function drawCaesar(sim,ctx,k,vdt){const p=sim.p,st=sim.st,sh=shiftN(sim),ap=atLeast('ap'),hon=atLeast('honors'),dec=p.dir==='dec',big=k>1.3;
   const tgt=-sh*2*Math.PI/26;let a=st.wheelA===undefined?tgt:st.wheelA;let d=tgt-a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;a=RM||!vdt?tgt:a+d*Math.min(1,vdt*6);st.wheelA=a;
-  const cx=212,cy=236,R1=196,R2=150,R3=104;
+  const cx=212,cy=232,R1=200,R2=152,R3=104;
   ctx.beginPath();ctx.arc(cx,cy,R1,0,6.2832);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
   ctx.beginPath();ctx.arc(cx,cy,R2,0,6.2832);ctx.fillStyle=PAL['cv-bg2'];ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.arc(cx,cy,R3,0,6.2832);ctx.fillStyle=PAL['card'];ctx.fill();ctx.stroke();
-  const fs=Math.min(16*k,24);
-  for(let i=0;i<26;i++){const th=-Math.PI/2+i*2*Math.PI/26;const top=i===0;
+  const fs=Math.min(16*k,24),off=a-tgt;
+  for(let i=0;i<26;i++){const th=-Math.PI/2+i*2*Math.PI/26,top=i===0;
     txt(ctx,A[i],cx+Math.cos(th)*(R1+R2)/2,cy+Math.sin(th)*(R1+R2)/2,{s:fs,w:top?800:600,a:'center',b:'middle',c:top?PAL['s2']:PAL['cv-ink']});
-    const th2=th+a+sh*2*Math.PI/26;const j=mod(i+sh,26);
-    txt(ctx,A[j],cx+Math.cos(th+ (a-tgt))*(R2+R3)/2,cy+Math.sin(th+(a-tgt))*(R2+R3)/2,{s:fs,w:top?800:600,a:'center',b:'middle',c:top?PAL['s1']:PAL['cv-ink']});}
-  ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;rr(ctx,cx-22,cy-R1-2,44,R1-R3+4,10);ctx.stroke();
-  txt(ctx,'shift',cx,cy-14*k,{s:14*k,a:'center',c:PAL['cv-soft'],w:600});txt(ctx,String(sh),cx,cy+20*k,{s:34*k,w:800,a:'center'});
-  // right side
-  const X=448,RW=332;txt(ctx,'Outer ring: plain letter',X,62,{s:13*k,c:PAL['s2'],w:700});txt(ctx,'Inner ring: cipher letter',X,62+18*k,{s:13*k,c:PAL['s1'],w:700});
-  pill(ctx,'A → '+A[sh]+'    B → '+A[(sh+1)%26]+'    Z → '+A[(sh+25)%26],X+RW/2,62+48*k,PAL['card2'],PAL['cv-ink'],15*k);
+    txt(ctx,A[mod(i+sh,26)],cx+Math.cos(th+off)*(R2+R3)/2,cy+Math.sin(th+off)*(R2+R3)/2,{s:fs,w:top?800:600,a:'center',b:'middle',c:top?PAL['s1']:PAL['cv-ink']});}
+  ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;rr(ctx,cx-21,cy-R1+2,42,R1-R3-4,10);ctx.stroke();
+  txt(ctx,'shift',cx,cy-16*k,{s:14*k,a:'center',c:PAL['cv-soft'],w:600});txt(ctx,String(sh),cx,cy+22*k,{s:34*k,w:800,a:'center'});
+  const X=448,RW=332;let y=48;
+  txt(ctx,'Outer ring: plain letter',X,y,{s:13*k,c:PAL['s2'],w:700});y+=18*k;txt(ctx,'Inner ring: cipher letter',X,y,{s:13*k,c:PAL['s1'],w:700});y+=30*k;
+  pill(ctx,big?'A → '+A[sh]+'   Z → '+A[(sh+25)%26]:'A → '+A[sh]+'    B → '+A[(sh+1)%26]+'    Z → '+A[(sh+25)%26],X+RW/2,y,PAL['card2'],PAL['cv-ink'],15*k);y+=36*k;
   const inp=String(st.ctext||'').toUpperCase(),out=dec?caesar(inp,-sh):caesar(inp,sh);
-  const cell=Math.max(19,13*k*1.15),nfit=Math.floor(RW/cell),yb=62+92*k;
-  txt(ctx,dec?'Cipher text in':'Your message',X,yb,{s:13*k,c:PAL['cv-soft'],w:600});
-  const row=(s,y,col)=>{for(let i=0;i<Math.min(nfit,s.length);i++){ctx.font='700 '+(17*k)+'px '+MONO;ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s[i],X+cell*(i+0.5),y);}if(s.length>nfit)txt(ctx,'…',X+RW-4,y,{s:16*k,a:'right',b:'middle',c:PAL['cv-soft']});};
-  row(inp,yb+18*k,dec?PAL['s1']:PAL['s2']);
-  txt(ctx,dec?'Plain text out':'Cipher text',X,yb+46*k,{s:13*k,c:PAL['cv-soft'],w:600});row(out,yb+64*k,dec?PAL['s2']:PAL['s1']);
-  let fy=yb+100*k;
-  if(hon){txt(ctx,'Only 25 useful shifts: try them all.',X,fy,{s:14*k,w:700});fy+=22*k;}
+  const cell=Math.max(19,17*k*0.68),nfit=Math.floor((RW-14)/cell);
+  const row=(s,y,col)=>{ctx.font='700 '+(17*k)+'px '+MONO;ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';for(let i=0;i<Math.min(nfit,s.length);i++)ctx.fillText(s[i],X+cell*(i+0.5),y);if(s.length>nfit)txt(ctx,'…',X+RW,y,{s:16*k,a:'right',b:'middle',c:PAL['cv-soft']});};
+  txt(ctx,dec?'Cipher text in':'Your message',X,y,{s:13*k,c:PAL['cv-soft'],w:600});row(inp,y+20*k,dec?PAL['s1']:PAL['s2']);y+=48*k;
+  txt(ctx,dec?'Plain text out':'Cipher text',X,y,{s:13*k,c:PAL['cv-soft'],w:600});row(out,y+20*k,dec?PAL['s2']:PAL['s1']);y+=52*k;
+  if(hon&&!ap){txt(ctx,fitText(ctx,'Only 25 useful shifts: try them all.',RW,14*k,700),X,y,{s:14*k,w:700});}
   if(ap){const m=inp.match(/[A-Z]/);const L=m?m[0]:'M',P=idx(L),C=dec?mod(P-sh,26):mod(P+sh,26);
-    txt(ctx,fitText(ctx,dec?'P = (C − '+sh+') mod 26':'C = (P + '+sh+') mod 26',RW,15*k,700),X,fy,{s:15*k,w:700,c:PAL['s5']});
-    txt(ctx,fitText(ctx,L+' = '+P+' → '+(dec?P+' − '+sh:P+' + '+sh)+' → '+C+' = '+A[C],RW,14*k,600),X,fy+20*k,{s:14*k,c:PAL['cv-soft'],w:600});}}
+    txt(ctx,fitText(ctx,dec?'P = (C − '+sh+') mod 26':'C = (P + '+sh+') mod 26',RW,15*k,700),X,y,{s:15*k,w:700,c:PAL['s5']});
+    txt(ctx,fitText(ctx,L+' = '+P+' → '+(dec?P+' − '+sh:P+' + '+sh)+' → '+C+' = '+A[C],RW,14*k,600),X,y+22*k,{s:14*k,c:PAL['cv-soft'],w:600});}}
 
-function drawSubst(sim,ctx,k){const st=sim.st,ranked=subRanked(sim),maxn=ranked[0].n,used=new Set(Object.values(st.map));
-  const L=30,R=770,sw=(R-L)/26,hits=[];
-  txt(ctx,'Cipher letters in the intercepted note, most common first',L,30,{s:14*k,w:700});
+function drawSubst(sim,ctx,k){const st=sim.st,ranked=subRanked(sim),maxn=ranked[0].n,used=new Set(Object.values(st.map)),kk=Math.min(k,1.4);
+  const L=30,R=770,sw=(R-L)/26,hits=[],lf=Math.min(15*k,sw*0.85);
+  txt(ctx,fitText(ctx,'Cipher letters in the note, most common first',740,14*k,700),L,30,{s:14*k,w:700});
   const T1=46,B1=176;
   ranked.forEach((r,i)=>{const x=L+i*sw,h=(B1-T1)*r.n/maxn,sel=st.sel===r.l;
     ctx.fillStyle=sel?PAL['s4']:PAL['s1'];ctx.fillRect(x+3,B1-h,sw-6,h);
-    if(sel){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;rr(ctx,x+1,T1-6,sw-2,B1-T1+62*Math.min(k,1.4),6);ctx.stroke();}
-    txt(ctx,r.l,x+sw/2,B1+17*Math.min(k,1.4),{s:Math.min(15*k,sw*0.85),w:800,a:'center',c:PAL['s1']});
-    const m=st.map[r.l];txt(ctx,m||'?',x+sw/2,B1+40*Math.min(k,1.4),{s:Math.min(15*k,sw*0.85),w:800,a:'center',c:m?PAL['s3']:PAL['muted']});
+    if(sel){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;rr(ctx,x+1,T1-6,sw-2,B1-T1+62*kk,6);ctx.stroke();}
+    txt(ctx,r.l,x+sw/2,B1+17*kk,{s:lf,w:800,a:'center',c:PAL['s1']});
+    const m=st.map[r.l];txt(ctx,m||'·',x+sw/2,B1+40*kk,{s:lf,w:800,a:'center',c:m?PAL['s3']:PAL['muted']});
     hits.push({k:'c',l:r.l,r:[x,T1-6,sw,B1-T1+62]});});
-  txt(ctx,'↑ cipher letter',R,B1+17*Math.min(k,1.4),{s:12*k,a:'right',c:PAL['cv-soft']});
-  const T2=290,B2=388;
-  txt(ctx,'Letters in ordinary English, most common first',L,T2-24,{s:14*k,w:700});
+  const T2=292,B2=388;
+  txt(ctx,fitText(ctx,'Letters in ordinary English, most common first',740,14*k,700),L,T2-26,{s:14*k,w:700});
   ENG_ORDER.forEach((l,i)=>{const x=L+i*sw,f=ENG[idx(l)],h=(B2-T2)*f/12.7,u=used.has(l);
     ctx.fillStyle=u?PAL['line']:PAL['s2'];ctx.fillRect(x+3,B2-h,sw-6,h);
-    txt(ctx,l,x+sw/2,B2+18*Math.min(k,1.4),{s:Math.min(15*k,sw*0.85),w:800,a:'center',c:u?PAL['muted']:PAL['s2']});
+    txt(ctx,l,x+sw/2,B2+18*kk,{s:lf,w:800,a:'center',c:u?PAL['muted']:PAL['s2']});
     hits.push({k:'p',l,r:[x,T2-4,sw,B2-T2+26]});});
-  txt(ctx,st.sel?'Selected cipher letter '+st.sel+': click an English letter to map it':'Click a cipher bar, then an English letter',L,442,{s:13*k,c:PAL['cv-soft'],w:600});
+  txt(ctx,fitText(ctx,st.sel?'Cipher '+st.sel+' selected: click the English letter it stands for':'Click a cipher bar, then the English letter it stands for',740,13*k,600),L,444,{s:13*k,c:PAL['cv-soft'],w:600});
   sim.vis.hits=hits;}
 
-function drawVig(sim,ctx,k){const p=sim.p,st=sim.st,L=klenN(sim),c=colN(sim),sh=mod(Math.round(p.cshift||0),26);
-  // IC chart
-  const box={L:46,T:44,W:330,H:142};txt(ctx,'Average IC of the columns, by key length',24,26,{s:14*k,w:700});
+function drawVig(sim,ctx,k){const p=sim.p,st=sim.st,L=klenN(sim),c=colN(sim),sh=mod(Math.round(p.cshift||0),26),kk=Math.min(k,1.4);
+  const box={L:78,T:52,W:300,H:136};txt(ctx,'Average IC by key length',24,28,{s:14*k,w:700});
   const ymax=0.08,Y=v=>box.T+box.H-v/ymax*box.H,bw=box.W/8;
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(box.L,box.T);ctx.lineTo(box.L,box.T+box.H);ctx.lineTo(box.L+box.W,box.T+box.H);ctx.stroke();
   IC_BY_L.forEach((v,i)=>{const x=box.L+i*bw,sel=i+1===L;ctx.fillStyle=sel?PAL['s4']:PAL['s2'];ctx.fillRect(x+6,Y(v),bw-12,box.T+box.H-Y(v));
-    txt(ctx,String(i+1),x+bw/2,box.T+box.H+16*Math.min(k,1.3),{s:13*k,a:'center',w:sel?800:500,c:sel?PAL['s4']:PAL['cv-soft']});});
-  [[0.066,'English 0.066',PAL['s3']],[0.038,'random 0.038',PAL['muted']]].forEach(r=>{ctx.strokeStyle=r[2];ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(box.L,Y(r[0]));ctx.lineTo(box.L+box.W,Y(r[0]));ctx.stroke();ctx.setLineDash([]);
-    txt(ctx,r[1],box.L-4,Y(r[0]),{s:12*k,a:'right',b:'middle',c:r[2],w:700});});
-  txt(ctx,'key length',box.L+box.W/2,box.T+box.H+34*Math.min(k,1.3),{s:12*k,a:'center',c:PAL['cv-soft']});
-  // Kasiski + key
-  const X=430;panel(ctx,X-12,14,800-X,204);
-  txt(ctx,'Repeated letter groups (Kasiski)',X,38,{s:14*k,w:700});
-  const reps=KASISKI.reps.filter(r=>r.d.length>1).concat(KASISKI.reps.filter(r=>r.d.length===1)).slice(0,k>1.3?2:3);
-  reps.forEach((r,i)=>txt(ctx,fitText(ctx,r.g+' repeats '+r.d.join(', ')+' letters apart',340,13*k,600),X,62+i*20*k,{s:13*k,w:600,c:PAL['cv-soft']}));
+    txt(ctx,String(i+1),x+bw/2,box.T+box.H+17*kk,{s:13*k,a:'center',w:sel?800:500,c:sel?PAL['s4']:PAL['cv-soft']});});
+  ctx.strokeStyle=PAL['s3'];ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(box.L,Y(0.066));ctx.lineTo(box.L+box.W,Y(0.066));ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'0.066',box.L-6,Y(0.066),{s:12*k,a:'right',b:'middle',c:PAL['s3'],w:700});txt(ctx,'English',box.L+6,Y(0.066)-6,{s:12*k,c:PAL['s3'],w:700});
+  txt(ctx,'0',box.L-6,box.T+box.H,{s:12*k,a:'right',b:'middle',c:PAL['cv-soft']});
+  const X=430;panel(ctx,X-12,12,800-X,212);let y=36;
+  txt(ctx,'Repeats (Kasiski test)',X,y,{s:14*k,w:700});y+=24*k;
+  const reps=KASISKI.reps.slice(0,k>1.3?1:3);
+  reps.forEach(r=>{txt(ctx,fitText(ctx,r.g+': '+r.d.join(', ')+' letters apart',344,13*k,600),X,y,{s:13*k,w:600,c:PAL['cv-soft']});y+=20*k;});
   const best=Object.entries(KASISKI.f).sort((a,b)=>b[1]-a[1])[0];
-  const ky=62+reps.length*20*k+6;txt(ctx,fitText(ctx,'Most spacings divide by '+best[0]+' ('+best[1]+' of them)',340,13*k,700),X,ky,{s:13*k,w:700,c:PAL['s4']});
-  txt(ctx,'Your key',X,ky+30*k,{s:13*k,c:PAL['cv-soft'],w:600});
-  const key=vigKey(sim),kw=Math.min(40,300/L);
-  for(let i=0;i<L;i++){const x=X+i*kw,sel=i+1===c;rr(ctx,x,ky+38*k,kw-4,30*k,6);ctx.fillStyle=sel?PAL['s4']:PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
-    txt(ctx,key[i],x+(kw-4)/2,ky+53*k,{s:Math.min(17*k,kw*0.7),w:800,a:'center',b:'middle',c:sel?'#fff':PAL['cv-ink']});}
-  // column chart
-  const col=vigColumns(L)[c-1],cc=counts(caesar(col,-sh)),Nn=col.length,cl=30,cr=770,sw=(cr-cl)/26,T=268,B=398;
-  txt(ctx,fitText(ctx,'Column '+c+' of '+L+' ('+Nn+' letters) shifted back by '+sh+' ('+A[sh]+'), against English',740,14*k,700),cl,250,{s:14*k,w:700});
+  txt(ctx,fitText(ctx,'Most spacings divide by '+best[0],344,13*k,700),X,y,{s:13*k,w:700,c:PAL['s4']});y+=14*k;
+  const key=vigKey(sim),kw=Math.min(40,(344-60*k)/L),bh=26*k;
+  txt(ctx,'Key',X,y+bh/2+2,{s:13*k,c:PAL['cv-soft'],w:700,b:'middle'});
+  for(let i=0;i<L;i++){const x=X+50*k+i*kw,sel=i+1===c;rr(ctx,x,y,kw-4,bh,6);ctx.fillStyle=sel?PAL['s4']:PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
+    txt(ctx,key[i],x+(kw-4)/2,y+bh/2+1,{s:Math.min(17*k,kw*0.75),w:800,a:'center',b:'middle',c:sel?'#fff':PAL['cv-ink']});}
+  const col=vigColumns(L)[c-1],cc=counts(caesar(col,-sh)),Nn=col.length,cl=30,cr=770,sw=(cr-cl)/26,T=272,B=404;
+  txt(ctx,'Column '+c+' of '+L+', shift '+sh+' ('+A[sh]+')',cl,254,{s:14*k,w:700});
+  ctx.font='700 '+(12*k)+'px '+FONT;const w2=ctx.measureText('English').width,w1=ctx.measureText('column').width;let lx=cr-w2;
+  txt(ctx,'English',lx,254,{s:12*k,w:700,c:PAL['s3']});lx-=16*k+6;ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.strokeRect(lx,254-11*k,14*k,11*k);
+  lx-=w1+18;txt(ctx,'column',lx,254,{s:12*k,w:700,c:PAL['s5']});ctx.fillStyle=PAL['s5'];ctx.fillRect(lx-16*k-6,254-11*k,14*k,11*k);
   const mx=Math.max(...cc.map(v=>v/Nn*100),12.7);
   for(let i=0;i<26;i++){const x=cl+i*sw,h=(B-T)*(cc[i]/Nn*100)/mx,he=(B-T)*ENG[i]/mx;
     ctx.fillStyle=PAL['s5'];ctx.fillRect(x+4,B-h,sw-8,h);ctx.strokeStyle=PAL['s3'];ctx.lineWidth=2;ctx.strokeRect(x+2,B-he,sw-4,he);
-    txt(ctx,A[i],x+sw/2,B+17*Math.min(k,1.4),{s:Math.min(14*k,sw*0.8),a:'center',w:700,c:PAL['cv-soft']});}
-  legend(ctx,cl,438,[{label:'column letters',color:PAL['s5']},{label:'English',color:PAL['s3']}]);}
+    txt(ctx,A[i],x+sw/2,B+18*kk,{s:Math.min(14*k,sw*0.8),a:'center',w:700,c:PAL['cv-soft']});}}
 
 /* ---------- the definition ---------- */
 const SIM={
@@ -385,7 +380,7 @@ const SIM={
     {title:'Pixels are numbers',text:{bio:'Every pixel stores three numbers from 0 to 255: how much red, green and blue. Each number is 8 bits. The lowest bit changes the value by only 1.',ap:'Each value is one byte: 8 bits worth 128, 64, 32, 16, 8, 4, 2 and 1. Bit 0, the least significant bit, is worth 1.'},focus:[18,296,764,150],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{channel:'R'});}},
     {title:'Compare the two files',text:'The Difference view marks every pixel that is not identical. Only the top rows changed, each by 1 out of 255: far too small to see, but not random.',focus:[430,20,350,282],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'diff'});}},
     {title:'Look at one bit plane',text:'This view shows only bit 0 of every red value: white for 1, black for 0. Camera noise makes static. The hidden text makes stripes across the top.',focus:[430,20,350,282],speed:1,pause:true,setup(sim){BioLab.setValues(sim,{view:'plane',channel:'R',plane:0});}},
-    {title:'Read the bits as letters',text:'Take bit 0 of each pixel in order. Every 8 bits make one byte, and each byte is a character code. The message comes out letter by letter, but it is scrambled.',focus:[18,296,764,150],speed:0.5,setup(sim){BioLab.runAction?0:0;sim.def.actions[0].run(sim);sim.infoDirty=true;}},
+    {title:'Read the bits as letters',text:'Take bit 0 of each pixel in order. Every 8 bits make one byte, and each byte is a character code. The message comes out letter by letter, but it is scrambled.',focus:[18,296,764,150],speed:0.5,setup(sim){sim.def.actions.find(a=>a.id==='extract').run(sim);sim.infoDirty=true;}},
     {title:'Caesar cipher',text:'The suspect also shifted every letter by the same amount. The wheel shows the shift: outer ring plain, inner ring cipher. With only 25 shifts, trying them all takes a minute.',focus:[10,34,410,406],speed:1,setup(sim){BioLab.setValues(sim,{mode:'caesar',shift:7,dir:'enc'});}},
     {lvl:'honors',title:'Frequency analysis',text:'A substitution cipher swaps letters with a secret key. There are too many keys to try, but E is still the most common letter, so the tallest cipher bar probably means E.',focus:[20,10,760,250],speed:1,setup(sim){BioLab.setValues(sim,{mode:'subst'});}},
     {lvl:'ap',title:'Vigenère and key length',text:'A keyword shifts each letter by a different amount, which flattens the frequencies. Split the text into columns for each key length: at the right length, every column looks like English, and the IC jumps.',focus:[14,10,380,232],speed:1,setup(sim){BioLab.setValues(sim,{mode:'vig',klen:5});}}
@@ -420,7 +415,7 @@ const SIM={
   about:'<p>The photos are generated in the page: 96 × 64 pixels of real 8-bit RGB values, with random sensor-like noise (about ±2) so the low bit planes look like static, as they do in real camera images. Hiding uses least-significant-bit (LSB) replacement: the message is converted to ASCII bytes plus a 0 byte at the end, and each bit, most significant first, overwrites the lowest bit (or bits) of one color in reading order. Extraction reverses this exactly. Real images are usually stored as JPEG, which would destroy LSB data; LSB hiding survives only in lossless formats such as PNG.</p><p>English letter frequencies are standard published values (E 12.7%, T 9.1%, A 8.2% …). The index of coincidence and χ² are computed from the actual cipher text. Every person, site and message is fictional. These classical ciphers are taught because they show how investigators reason about patterns. Modern encryption such as AES-128 has 2¹²⁸ keys and output that looks statistically random, so frequency analysis, Kasiski tests and bit-plane tricks do not work on it.</p>',
   initVis(sim){sim.vis.hits=[];},
   draw(sim,ctx,vdt,k,t){const p=sim.p;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
-    if(p.mode==='investigate'||p.mode==='hide'){const r=drawImages(sim,ctx,k,t);drawStrip(sim,ctx,k,r.y+28*Math.min(k,1.3)+12);return;}
+    if(p.mode==='investigate'||p.mode==='hide'){const r=drawImages(sim,ctx,k,t);drawStrip(sim,ctx,k,r.y+20*k+4);return;}
     if(p.mode==='caesar'){drawCaesar(sim,ctx,k,vdt);return;}
     if(p.mode==='subst'){drawSubst(sim,ctx,k);return;}
     drawVig(sim,ctx,k);},

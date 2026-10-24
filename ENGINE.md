@@ -20,7 +20,6 @@ ChemLab shares the Raider BioLab engine (the global is still called `BioLab`). C
 | 13 | Equilibrium |
 | 14 | Acids and bases |
 | 15 | Thermodynamics and electrochemistry |
-| 16 | Forensic chemistry |
 | 18 | Digital forensics (shown before Go further) |
 | 17 | Go further |
 
