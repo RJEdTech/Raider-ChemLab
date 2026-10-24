@@ -82,9 +82,9 @@ const TOD={
     {id:'ta',label:'Air temperature',type:'range',min:0,max:35,step:1,def:20,unit:' °C',lvl:'bio',modes:['cool','insects']},
     {id:'cloth',label:'Covering',type:'seg',def:'none',lvl:'honors',modes:['cool'],options:Object.keys(CLOTH).map(k=>({v:k,l:CLOTH[k].l})),help:'Henssge’s corrective factor: unclothed 1.0, light 1.1, heavy 1.4, thick blanket 1.8.'},
     {id:'mass',label:'Body mass',type:'range',min:40,max:120,step:5,def:70,unit:' kg',lvl:'honors',modes:['cool']},
-    {id:'found',label:'Oldest insect stage found',type:'select',def:'l3',lvl:'bio',modes:['insects'],options:STAGES.map(s=>({v:s.id,l:s.l}))},
+    {id:'found',label:'Oldest insect stage found',type:'select',def:'l3',lvl:'bio',noTrial:true,modes:['insects'],options:STAGES.map(s=>({v:s.id,l:s.l}))},
     {id:'swing',label:'Day–night swing (±)',type:'range',min:0,max:10,step:1,def:0,unit:' °C',lvl:'ap',modes:['insects'],help:'Air temperature rises and falls around the average each day.'},
-    {id:'cs',label:'Case',type:'select',def:'c1',lvl:'bio',modes:['case'],options:Object.keys(CASES).map(k=>({v:k,l:CASES[k].l}))}
+    {id:'cs',label:'Case',type:'select',def:'c1',lvl:'bio',noTrial:true,modes:['case'],options:Object.keys(CASES).map(k=>({v:k,l:CASES[k].l}))}
   ],
   actions:[{id:'restart',label:'Restart the clock',lvl:'bio',primary:true,modes:['cool','insects'],run(sim){const st=sim.st;st.h=0;st.Tc=T0;st.Ts=T0;st.trace=[[0,T0]];st.ih=0;st.hold=false;}},
     {id:'reveal',label:'Reveal the true time',lvl:'bio',modes:['case'],run(sim){sim.st.reveal=!sim.st.reveal;}}],
