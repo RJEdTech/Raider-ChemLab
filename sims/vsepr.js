@@ -111,7 +111,7 @@ function bindDrag(sim){const cv=sim.ui&&sim.ui.stage;if(!cv||cv._vsepr)return;cv
   cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
 
 const ATOMC={X:'#d7dbe2'};
-const ballR=s=>s==='X'?19:clamp(0.32*CL.el(s).radius,14,34);
+const ballR=s=>s==='X'?22:clamp(0.36*CL.el(s).radius,15,38);
 const CX=400,CY=246;
 
 const VS={
@@ -224,7 +224,7 @@ const VS={
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     const g=ctx.createRadialGradient(CX,CY,20,CX,CY,260);g.addColorStop(0,PAL['cv-bg2']);g.addColorStop(1,PAL['cv-bg']);ctx.fillStyle=g;ctx.fillRect(0,0,800,450);
     const cf=v.cf||config(sim),real=p.mode==='real';
-    const Lb=128/(1+(k-1)*0.4);let maxSum=1;const cR=real?ballR(cf.c):24;
+    const Lb=162/(1+(k-1)*0.12);let maxSum=1;const cR=real?ballR(cf.c):30;
     if(real)maxSum=Math.max(...cf.lig.map(s=>CL.el(s).radius+CL.el(cf.c).radius));
     const blen=d=>real&&d.s!=='X'?Lb*(CL.el(d.s).radius+CL.el(cf.c).radius)/maxSum:Lb;
     const P3=(u,L)=>{const w=mul(R,u),f=900/(900-w[2]*L);return {x:CX+w[0]*L*f,y:CY-w[1]*L*f,z:w[2],f};};
@@ -232,7 +232,7 @@ const VS={
     // ghost ideal bonds
     if(hon&&p.ghost&&cf.nl&&cf.nb>1){const gI=construct(cf.nb,cf.nl,{},true);gI.B.forEach(u=>{const a=P3(u,cR*0.9),b=P3(u,Lb);items.push({z:-2,f(){ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=0.55;ctx.setLineDash([6,5]);ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}});});}
     (v.D||[]).forEach(d=>{const gr=clamp(d.g,0,1);if(gr<0.02)return;
-      if(d.t==='B'){const L=blen(d)*gr,a=P3(d.u,cR*0.85),b=P3(d.u,L),mid=P3(d.u,L*0.55),rb=(real?ballR(d.s):17)*b.f*(0.4+0.6*gr);
+      if(d.t==='B'){const L=blen(d)*gr,a=P3(d.u,cR*0.85),b=P3(d.u,L),mid=P3(d.u,L*0.55),rb=(real?ballR(d.s):22)*b.f*(0.4+0.6*gr);
         items.push({z:mid.z-0.01,f(){bondStick(ctx,a,b,d.bo||1,d.u,R);}});
         items.push({z:b.z,f(){const col=real?CL.cpk(d.s):ATOMC.X;CL.drawAtom(ctx,b.x,b.y,rb,real?d.s:'',{color:col,label:real?d.s:'',s:Math.max(12*k,Math.min(rb*0.9,24)),alpha:gr<1?gr:undefined});}});}
       else if(hon?p.lps:true){const L=Lb*0.62*gr,c=P3(d.u,L*0.55),tip=P3(d.u,L),dx=tip.x-c.x,dy=tip.y-c.y,len=Math.hypot(dx,dy),ang=Math.atan2(dy,dx);
@@ -243,13 +243,13 @@ const VS={
     items.sort((a,b)=>a.z-b.z).forEach(it=>it.f());
     // bond-angle arcs
     if(p.angles){const {D,cls}=angleClasses(sim);const shown=cls.length>1?cls.filter(c=>c.a<179.4):cls;const used=[];
-      shown.slice(0,3).forEach((c,ci)=>{let best=null,bz=-9;c.list.forEach(o=>{const mid=nrm([D[o.i].u[0]+D[o.j].u[0],D[o.i].u[1]+D[o.j].u[1],D[o.i].u[2]+D[o.j].u[2]]);const z=mul(R,mid)[2]+(v.arc[ci]===o.i+'-'+o.j?0.25:0);if(z>bz){bz=z;best=o;}});
-        if(!best)return;v.arc[ci]=best.i+'-'+best.j;const a=D[best.i].u,b=D[best.j].u,ra=Lb*(0.36+0.07*ci);const pts=[];
+      shown.slice(0,3).forEach((c,ci)=>{let best=null,bz=-9;c.list.forEach(o=>{const A=mul(R,D[o.i].u),B2=mul(R,D[o.j].u);const vis=Math.hypot(A[0]-B2[0],A[1]-B2[1])+0.35*(A[2]+B2[2])+(v.arc[ci]===o.i+'-'+o.j?0.3:0);if(vis>bz){bz=vis;best=o;}});
+        if(!best)return;v.arc[ci]=best.i+'-'+best.j;const a=D[best.i].u,b=D[best.j].u,ra=Lb*(0.4+0.08*ci);const pts=[];
         let perp=null;if(c.a>179){perp=nrm(mul([R[0],R[3],R[6],R[1],R[4],R[7],R[2],R[5],R[8]],[0,0,1]));}
         for(let s=0;s<=24;s++){const tt=s/24;let w;if(perp){const th=tt*Math.PI;const q=[perp[1]*a[2]-perp[2]*a[1],perp[2]*a[0]-perp[0]*a[2],perp[0]*a[1]-perp[1]*a[0]];let qq=nrm(q);w=[a[0]*Math.cos(th)+qq[0]*Math.sin(th),a[1]*Math.cos(th)+qq[1]*Math.sin(th),a[2]*Math.cos(th)+qq[2]*Math.sin(th)];}
           else{const th=c.a*D2R,s1=Math.sin((1-tt)*th)/Math.sin(th),s2=Math.sin(tt*th)/Math.sin(th);w=[a[0]*s1+b[0]*s2,a[1]*s1+b[1]*s2,a[2]*s1+b[2]*s2];}pts.push(P3(w,ra));}
         ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2.5;ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();
-        const m=pts[12];let lx=CX+(m.x-CX)*1.55,ly=CY+(m.y-CY)*1.55;if(Math.hypot(m.x-CX,m.y-CY)<12){lx=m.x+30;ly=m.y-30;}
+        const m=pts[12];const dm=Math.hypot(m.x-CX,m.y-CY);let lx,ly;if(dm<10){lx=m.x+34*k;ly=m.y-30*k;}else{const off=ra*0.32+20*k;lx=m.x+(m.x-CX)/dm*off;ly=m.y+(m.y-CY)/dm*off;}
         used.forEach(u=>{if(Math.abs(u[0]-lx)<64*k&&Math.abs(u[1]-ly)<22*k)ly+=(ly>u[1]?1:-1)*24*k;});used.push([lx,ly]);
         pill(ctx,c.a.toFixed(1)+'°',lx,ly,PAL['s4'],'#fff',13*k);});}
     // labels

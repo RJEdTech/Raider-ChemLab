@@ -87,7 +87,7 @@ function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.mode,d=si
 
 /* ---------- layout ---------- */
 const EV={x:45,y:74,w:270,h:332},PS=1.25,PCX=180,PCY=238;
-const ZX=598,ZY=168,ZR=120;
+let ZX=598,ZY=168,ZR=120;
 
 const FP={
   id:'fingerprints',hash:'fingerprints',apUnit:16,order:1,tab:'Fingerprints',kind:'Virtual lab',next:['spottest','chromatography'],
@@ -230,7 +230,7 @@ function drawEvidence(ctx,p,st,k){const x=EV.x,y=EV.y,w=EV.w,h=EV.h,s=p.surface;
     ctx.fillStyle='rgba(150,190,205,.22)';rr(ctx,x+16,y+16,w-32,h-32,8);ctx.fill();ctx.strokeStyle='rgba(120,170,190,.8)';ctx.lineWidth=2;rr(ctx,x+16,y+16,w-32,h-32,8);ctx.stroke();
     ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+36,y+40);ctx.lineTo(x+70,y+28);ctx.moveTo(x+36,y+60);ctx.lineTo(x+96,y+36);ctx.stroke();}
   ctx.restore();}
-function drawDevelop(sim,ctx,k,t){const p=sim.p,st=sim.st,c=getCase(sim),pr=c.print,M=model(p),hon=atLeast('honors'),ap=atLeast('ap');
+function drawDevelop(sim,ctx,k,t){if(k>1.35){ZX=604;ZY=146;ZR=104;}else{ZX=598;ZY=168;ZR=120;}const p=sim.p,st=sim.st,c=getCase(sim),pr=c.print,M=model(p),hon=atLeast('honors'),ap=atLeast('ap');
   drawEvidence(ctx,p,st,k);
   // background staining (powder caught in paper fibers, iodine yellowing)
   if(p.surface==='paper'&&p.method==='powder'){ctx.fillStyle='rgba(60,60,60,'+(0.42*st.C/Math.max(0.05,Q0.powder.paper)*0.55).toFixed(3)+')';rr(ctx,EV.x,EV.y,EV.w,EV.h,4);ctx.fill();}
@@ -248,16 +248,22 @@ function drawDevelop(sim,ctx,k,t){const p=sim.p,st=sim.st,c=getCase(sim),pr=c.pr
   const done=p.method==='iodine'?st.tDev>=FUME:st.C>0.95*M.Q;
   pill(ctx,st.tDev<0.15?'Latent: invisible':p.method==='iodine'&&st.tDev>=FUME?'Fading: iodine escaping':done?'Fully developed':'Developing…',PCX,EV.y+EV.h+22,PAL['card'],PAL['cv-ink'],13*k);
   // equation panel
-  const bx=392,by=336,bw=396,bh=104;rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
+  const phn=k>1.35,bx=phn?322:392,by=phn?328:336,bw=788-bx,bh=440-by;rr(ctx,bx,by,bw,bh,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   const E={powder:['Physical: grains stick to moisture and oils','No reaction. Powder: carbon black or aluminum flakes'],
     iodine:['I₂(s) → I₂(g), then I₂ dissolves in the oils','Physical and reversible, so the print fades'],
     ninhydrin:['2 ninhydrin + amino acid →','Ruhemann’s purple + RCHO + CO₂ + 3 H₂O'],
     cyano:['n CH₂=C(CN)COOC₂H₅ → polymer','H₂O (OH⁻) on the ridges starts the chain']}[p.method];
-  txt(ctx,METH[p.method].l,bx+14,by+24,{s:14*k,w:700});
-  txt(ctx,hon?E[0]:{powder:'Grains stick to the damp, oily ridges',iodine:'Vapor dissolves in the oils on the ridges',ninhydrin:'Reacts with amino acids: turns purple',cyano:'Glue vapor builds white plastic on the ridges'}[p.method],bx+14,by+48,{s:13*k,c:PAL['cv-ink']});
-  if(hon)txt(ctx,E[1],bx+14,by+70,{s:13*k,c:PAL['cv-soft']});
-  if(ap)txt(ctx,{powder:'Room conditions · k = 3.0 min⁻¹ (done in about a minute)',iodine:'Iodine at '+M.T+' °C: P(I₂) = '+Math.round(pI2(M.T))+' Pa · k = '+M.k.toFixed(2)+' min⁻¹',ninhydrin:M.T+' °C · '+M.RH+'% RH · k = '+M.k.toFixed(3)+' min⁻¹',cyano:M.RH+'% RH · k = '+M.k.toFixed(3)+' min⁻¹'}[p.method],bx+14,by+93,{s:12.5*k,c:PAL['cv-soft']});
-  else if(!hon)txt(ctx,'Target: '+TARGET[p.method].split(' (')[0],bx+14,by+72,{s:13*k,c:PAL['cv-soft']});}
+  const SHORT={powder:'Powder dusting',iodine:'Iodine fuming',ninhydrin:'Ninhydrin spray',cyano:'Super glue fuming'};
+  const lines=[[SHORT[p.method],14,700,PAL['cv-ink']],[hon?E[0]:{powder:'Grains stick to the damp, oily ridges',iodine:'Vapor dissolves in the oils on the ridges',ninhydrin:'Reacts with amino acids: turns purple',cyano:'Glue vapor builds white plastic on the ridges'}[p.method],13,400,PAL['cv-ink']]];
+  if(hon)lines.push([E[1],13,400,PAL['cv-soft']]);else lines.push(['Target: '+TARGET[p.method].split(' (')[0],13,400,PAL['cv-soft']]);
+  if(ap)lines.push([{powder:'Room conditions · k = 3.0 min⁻¹',iodine:'Iodine at '+M.T+' °C: P(I₂) = '+Math.round(pI2(M.T))+' Pa',ninhydrin:M.T+' °C · '+M.RH+'% RH · k = '+M.k.toFixed(3)+' min⁻¹',cyano:M.RH+'% RH · k = '+M.k.toFixed(3)+' min⁻¹'}[p.method],12.5,400,PAL['cv-soft']]);
+  let ly=by+8;for(const L of lines){const sz=Math.max(L[1]*(phn?0.92:1),12)*k;const ws=wrapLines(ctx,L[0],bw-26,sz,L[2]);for(const w of ws){if(ly+sz*1.18>by+bh-4)break;ly+=sz*1.22;txt(ctx,w,bx+13,ly-sz*0.22,{s:sz,w:L[2],c:L[3]});}}}
+function wrapLines(ctx,s,maxW,sz,w){ctx.font=(w||400)+' '+sz+'px '+FONT;if(ctx.measureText(s).width<=maxW)return [s];const words=s.split(' '),out=[];let cur='';
+  for(const wd of words){const t=cur?cur+' '+wd:wd;if(ctx.measureText(t).width>maxW&&cur){out.push(cur);cur=wd;}else cur=t;}if(cur)out.push(cur);return out;}
+function legendRow(ctx,items,x0,y0,maxX,k,center){ctx.font='400 '+(12*k)+'px '+FONT;const ws=items.map(it=>ctx.measureText(it[1]).width+24*k);
+  const rows=[[]];let w=0;items.forEach((it,i)=>{if(w+ws[i]>maxX-x0&&rows[rows.length-1].length){rows.push([]);w=0;}rows[rows.length-1].push(i);w+=ws[i];});
+  rows.forEach((row,ri)=>{const tot=row.reduce((a,i)=>a+ws[i],0);let lx=center?Math.max(x0,(x0+maxX)/2-tot/2):x0;const ly=y0+ri*18*k;
+    row.forEach(i=>{const it=items[i],cx=lx+6*k;it[0](cx,ly);txt(ctx,it[1],cx+10*k,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});lx+=ws[i];});});return y0+rows.length*18*k;}
 function drawZoom(sim,ctx,k,t,M){const p=sim.p,st=sim.st,por=SURF[p.surface].porous,r=M.r,prog=M.Q>0?clamp(st.C/Math.max(M.Q,0.05),0,1):0,anim=RM?0:t;
   ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,TAU);ctx.clip();ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(ZX-ZR,ZY-ZR,2*ZR,2*ZR);
   const ys=ZY+34;const R=rng(11);const inkS=p.surface==='bag'?'#f2f2f2':p.surface==='paper'?'#3a3328':PAL['cv-ink'];
@@ -293,30 +299,27 @@ function drawZoom(sim,ctx,k,t,M){const p=sim.p,st=sim.st,por=SURF[p.surface].por
     if(prog<0.97){for(let i=0;i<10;i++){const x=ZX-ZR+24+((i*47+anim*14)%(2*ZR-48)),y=ZY-ZR+20+((Math.sin(anim+i)*0.5+0.5)*(ys-ZY+ZR-90));ctx.save();ctx.translate(x,y);ctx.rotate(anim*0.8+i);ctx.fillStyle='#f4f4f4';ctx.strokeStyle='#8a8f96';ctx.lineWidth=1;rr(ctx,-6,-2.2,12,4.4,2);ctx.fill();ctx.stroke();ctx.restore();}}}
   // labels inside the zoom
   ridges.forEach(rx=>{if(por)txt(ctx,'ridge',rx,ys-14,{s:12*k,w:700,a:'center',c:PAL['cv-ink']});else{ctx.strokeStyle=inkS;ctx.globalAlpha=0.6;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(rx-40,ys+6);ctx.lineTo(rx-40,ys+10);ctx.lineTo(rx+40,ys+10);ctx.lineTo(rx+40,ys+6);ctx.stroke();ctx.globalAlpha=1;txt(ctx,'ridge',rx,ys+25,{s:12*k,w:700,a:'center',c:inkS});}});
-  txt(ctx,'valley',ZX,ys+(por?-14:-6),{s:12*k,a:'center',c:PAL['cv-soft']});
+  if(k<=1.35)txt(ctx,'valley',ZX,ys+(por?-14:-6),{s:12*k,a:'center',c:PAL['cv-soft']});
   txt(ctx,por?'paper fibers':p.surface==='bag'?'plastic':'glass',ZX,ys+(por?66:58),{s:12*k,w:700,a:'center',c:inkS});
   ctx.restore();ctx.strokeStyle=PAL['line'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,TAU);ctx.stroke();
   // legend under the zoom
-  const items=[['#4a8fd6','water'],['#e0b23a','oils'],['sq#3f9e4f','amino acids']];
-  if(p.method==='ninhydrin')items.push(['#7a2aa0','purple product']);else if(p.method==='cyano')items.push(['#f4f4f4','polymer']);else if(p.method==='iodine')items.push(['dumb','I₂']);else items.push([p.surface==='bag'?'#d8dce2':'#2a2a2e','powder']);
-  ctx.font='400 '+(12*k)+'px '+FONT;let tot=0;const ws=items.map(it=>{const w=ctx.measureText(it[1]).width+22*k;tot+=w;return w;});
-  let lx=ZX-tot/2,ly=ZY+ZR+16;if(tot>396){lx=Math.max(398,ZX-tot/2);}
-  items.forEach((it,i)=>{if(lx+ws[i]>796){lx=ZX-tot/2;ly+=18*k;lx=Math.max(398,lx);}const cx=lx+6*k;
-    if(it[0]==='dumb')dumbbell(ctx,cx,ly,0);else if(it[0].startsWith('sq')){ctx.fillStyle=it[0].slice(2);ctx.fillRect(cx-4,ly-4,8,8);}else{ctx.fillStyle=it[0];ctx.beginPath();ctx.arc(cx,ly,4.5,0,TAU);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=0.8;ctx.stroke();}
-    txt(ctx,it[1],cx+10*k,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});lx+=ws[i];});}
+  const dot=c=>(x,y)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,4.5,0,TAU);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=0.8;ctx.stroke();};
+  const items=[[dot('#4a8fd6'),'water'],[dot('#e0b23a'),'oils'],[(x,y)=>{ctx.fillStyle='#3f9e4f';ctx.fillRect(x-4,y-4,8,8);},'amino acids']];
+  if(p.method==='ninhydrin')items.push([dot('#7a2aa0'),'purple product']);else if(p.method==='cyano')items.push([dot('#f4f4f4'),'polymer']);else if(p.method==='iodine')items.push([(x,y)=>dumbbell(ctx,x,y,0),'I₂']);else items.push([dot(p.surface==='bag'?'#d8dce2':'#2a2a2e'),'powder']);
+  legendRow(ctx,items,k>1.35?330:400,ZY+ZR+16,796,k,true);}
 function grain(ctx,x,y,p){ctx.fillStyle=p.surface==='bag'?'#d8dce2':'#2a2a2e';ctx.beginPath();ctx.arc(x,y,2.8,0,TAU);ctx.fill();}
 function dumbbell(ctx,x,y,a){const dx=Math.cos(a)*3.4,dy=Math.sin(a)*3.4;ctx.fillStyle='#8e44ad';ctx.beginPath();ctx.arc(x-dx,y-dy,3.2,0,TAU);ctx.arc(x+dx,y+dy,3.2,0,TAU);ctx.fill();}
 function mixHex(a,b,f){const h=s=>[1,3,5].map(i=>parseInt(s.slice(i,i+2),16));const A=h(a),B=h(b);return 'rgb('+A.map((v,i)=>Math.round(lerp(v,B[i],f))).join(',')+')';}
 
 /* ---------- compare view ---------- */
-const CA={x:40,y:84,s:1.15},CB={x:290,y:84,s:1.15};
+const CA={x:34,y:74,s:1.1},CB={x:262,y:74,s:1.1};
 function drawPrintCard(ctx,pr,x,y,s,rgb,cut,label,k,bg){const w=W*s,h=H*s;ctx.fillStyle=bg||'#fbfbf8';rr(ctx,x-8,y-8,w+16,h+16,8);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   ctx.drawImage(printImg(pr,rgb,cut),x,y,w,h);if(label)txt(ctx,label,x+w/2,y-18,{s:13*k,w:700,a:'center'});}
 const imgXY=(o,q)=>[o.x+(q[0]+1)*W/2*o.s,o.y+(q[1]+1)*H/2*o.s];
 function mark(ctx,x,y,type,col,k){ctx.strokeStyle=col;ctx.lineWidth=2.2;if(type==='bif')ctx.strokeRect(x-6,y-6,12,12);else{ctx.beginPath();ctx.arc(x,y,6.5,0,TAU);ctx.stroke();}}
 function drawCompare(sim,ctx,k,t){const p=sim.p,c=getCase(sim),hon=atLeast('honors'),si=p.suspect,S=c.suspects[si],m=matches(c,si);
-  drawPrintCard(ctx,c.print,CA.x,CA.y,CA.s,[40,40,46],c.cut,'Scene print (partial)',k,'#ecedef');
-  drawPrintCard(ctx,S,CB.x,CB.y,CB.s,[20,20,24],null,'Suspect '+LET[si]+' (inked card)',k);
+  const phn=k>1.35;drawPrintCard(ctx,c.print,CA.x,CA.y,CA.s,[40,40,46],c.cut,phn?'Scene print':'Scene print (partial)',k,'#ecedef');
+  drawPrintCard(ctx,S,CB.x,CB.y,CB.s,[20,20,24],null,phn?'Suspect '+LET[si]:'Suspect '+LET[si]+' (inked card)',k);
   // markers
   const ok=PAL['s3'],bad=PAL['s1'];
   m.vis.forEach(q=>{const a=imgXY(CA,[q.x,q.y]);const hit=m.list.includes(q);mark(ctx,a[0],a[1],hon?q.t:'end',hit?ok:bad,k);});
@@ -325,18 +328,17 @@ function drawCompare(sim,ctx,k,t){const p=sim.p,c=getCase(sim),hon=atLeast('hono
   if(p.marks&&hon){[[c.print,CA],[S,CB]].forEach(([pr,o])=>{if(pr.core){const a=imgXY(o,pr.core);ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(a[0],a[1],6,0,TAU);ctx.fill();}
     pr.deltas.forEach(d=>{const a=imgXY(o,d);ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.moveTo(a[0],a[1]-8);ctx.lineTo(a[0]+7,a[1]+5);ctx.lineTo(a[0]-7,a[1]+5);ctx.closePath();ctx.fill();});});}
   // suspect thumbnails
-  const tx=600,ty=40,th=118;
-  c.suspects.forEach((s,i)=>{const y=ty+i*(th+12),sel=i===si,mm=matches(c,i);ctx.fillStyle=PAL['card'];rr(ctx,tx-10,y,196,th,10);ctx.fill();ctx.strokeStyle=sel?PAL['rj']:PAL['line'];ctx.lineWidth=sel?3:1;ctx.stroke();
+  const tx=488,ty=30,th=122;
+  c.suspects.forEach((s,i)=>{const y=ty+i*(th+12),sel=i===si,mm=matches(c,i);ctx.fillStyle=PAL['card'];rr(ctx,tx-10,y,310,th,10);ctx.fill();ctx.strokeStyle=sel?PAL['rj']:PAL['line'];ctx.lineWidth=sel?3:1;ctx.stroke();
     ctx.fillStyle='#fbfbf8';rr(ctx,tx-2,y+8,70,th-16,4);ctx.fill();ctx.drawImage(printImg(s,[20,20,24]),tx+2,y+12,62,th-24);
     txt(ctx,'Suspect '+LET[i],tx+78,y+30,{s:14*k,w:700});txt(ctx,s.type,tx+78,y+52,{s:13*k,c:PAL['cv-soft']});
     txt(ctx,mm.n+'/'+mm.of+' match',tx+78,y+74,{s:13*k,w:700,c:mm.n===mm.of?PAL['s3']:PAL['cv-soft']});});
   // verdict line
   const v=m.n===m.of&&m.of>0?'Identified: all '+m.of+' visible minutiae agree':S.type!==c.type?'Excluded: different pattern type':'Excluded: only '+m.n+' of '+m.of+' minutiae agree';
   pill(ctx,v,(CA.x+CB.x+W*CB.s)/2,CA.y+H*CA.s+34,m.n===m.of&&m.of>0?PAL['s3']:PAL['card2'],m.n===m.of&&m.of>0?'#fff':PAL['cv-ink'],13*k);
-  if(hon){const ly=CA.y+H*CA.s+62;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(CA.x+8,ly,6,0,TAU);ctx.stroke();txt(ctx,'ridge ending',CA.x+20,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});
-    ctx.strokeRect(CA.x+128,ly-6,12,12);txt(ctx,'bifurcation',CA.x+146,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});
-    if(p.marks){ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(CA.x+256,ly,6,0,TAU);ctx.fill();txt(ctx,'core',CA.x+266,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});
-      ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.moveTo(CA.x+326,ly-7);ctx.lineTo(CA.x+333,ly+5);ctx.lineTo(CA.x+319,ly+5);ctx.closePath();ctx.fill();txt(ctx,'delta',CA.x+340,ly,{s:12*k,c:PAL['cv-soft'],b:'middle'});}}}
+  if(hon){const items=[[(x,y)=>{ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,6,0,TAU);ctx.stroke();},'ridge ending'],[(x,y)=>{ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.strokeRect(x-6,y-6,12,12);},'bifurcation']];
+    if(p.marks)items.push([(x,y)=>{ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(x,y,6,0,TAU);ctx.fill();},'core'],[(x,y)=>{ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+7,y+5);ctx.lineTo(x-7,y+5);ctx.closePath();ctx.fill();},'delta']);
+    legendRow(ctx,items,CA.x-6,CA.y+H*CA.s+64,CB.x+W*CB.s+12,k,true);}}
 FP.onLevel=syncMode;FP.controls[0].onChange=sim=>{syncMode(sim);sim.infoDirty=true;};
 BioLab.register(FP);
 })();

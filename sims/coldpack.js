@@ -46,7 +46,8 @@ function levelY(V){return CBOT-6-(CBOT-RIM-24)*clamp(V/260,0.1,1);}
 function cupHW(y){return lerp(HWT,HWB,(y-RIM)/(CBOT-RIM));}
 
 /* ---------- drawing helpers ---------- */
-function panel(ctx,lines,k){let w=0;lines.forEach(l=>{ctx.font=(l.w||400)+' '+l.s*k+'px '+FONT;w=Math.max(w,ctx.measureText(l.t).width);});
+function panel(ctx,lines,k){let w=0;lines=lines.map(l=>{let s=l.s;ctx.font=(l.w||400)+' '+s*k+'px '+FONT;while(s>12&&ctx.measureText(l.t).width>740){s-=0.5;ctx.font=(l.w||400)+' '+s*k+'px '+FONT;}return Object.assign({},l,{s});});
+  lines.forEach(l=>{ctx.font=(l.w||400)+' '+l.s*k+'px '+FONT;w=Math.max(w,ctx.measureText(l.t).width);});
   const lh=lines.map(l=>l.s*k*1.35),h=lh.reduce((a,b)=>a+b,0)+14;rr(ctx,12,10,Math.min(776,w+28),h,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   let y=18;lines.forEach((l,i)=>{y+=lh[i];txt(ctx,l.t,26,y-lh[i]*0.28,{s:l.s*k,w:l.w||400,c:l.c||PAL['cv-ink']});});return 10+h;}
 function arrowV(ctx,x,y1,y2,c,w,brk){const dir=Math.sign(y2-y1)||1,h=11;ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=w;ctx.lineCap='round';
@@ -94,7 +95,7 @@ function drawPackZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=salt(p);if(!sim
     else{const A=RM?0:0.6+1.6*clamp((st.T+10)/60,0,1);q.x=q.x0+Math.sin(t*17+i)*A;q.y=q.y0+Math.cos(t*21+i*1.3)*A;}
     CL.drawAtom(ctx,q.x,q.y,q.cat?10:12,'',{color:q.cat?CAT_COL:AN_COL,label:q.cat?'+':'−',s:13});});
   ctx.restore();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.stroke();
-  txt(ctx,'Particle view',ZX,ZY-ZR-12,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
+  if(!st.limit)txt(ctx,'Particle view',ZX,ZY-ZR-12,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
   legend2(ctx,k,[[CAT_COL,CL.fmt(S.cat[0],S.cat[1])],[AN_COL,CL.fmt(S.an[0],S.an[1])]]);}
 function legend2(ctx,k,items){ctx.font='700 '+13*k+'px '+FONT;const gap=18*k;let w=0;items.forEach(it=>w+=ctx.measureText(it[1]).width+16*k);w+=gap*(items.length-1);let x=ZX-w/2;const y=ZY+ZR+20*k;
   items.forEach(it=>{ctx.fillStyle=it[0];ctx.beginPath();ctx.arc(x+6*k,y,6*k,0,6.29);ctx.fill();txt(ctx,it[1],x+16*k,y,{s:13*k,w:700,b:'middle'});x+=ctx.measureText(it[1]).width+16*k+gap;});}
@@ -122,27 +123,25 @@ function drawNeutZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st;if(!sim.vis.N||si
   legend2(ctx,k,[['#c2185b','H₃O⁺'],['#3949ab','OH⁻'],['#8a8f98','Na⁺, Cl⁻']]);}
 
 /* Energy diagram on the right */
-function drawDiagram(sim,ctx,k){const p=sim.p,hn=hon(),SC=1.15;
-  txt(ctx,'Energy',DX+DW/2,132,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
-  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;arrowV(ctx,DX+6,380,150,PAL['cv-soft'],1.5,false);
+function drawDiagram(sim,ctx,k){const p=sim.p,hn=hon(),SC=1.6;
+  txt(ctx,'Energy',DX+8,118,{s:13*k,w:700,c:PAL['cv-soft']});arrowV(ctx,DX+8,384,132,PAL['cv-soft'],1.5,false);
   const lev=(x1,x2,y,c)=>{ctx.strokeStyle=c||PAL['cv-ink'];ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();};
-  if(p.mode==='neut'){const y0=210,y1=y0-DH_NEUT*SC;lev(DX+26,DX+120,y0);lev(DX+130,DX+224,y1);arrowV(ctx,DX+126,y0,y1,PAL['s2'],4,false);
-    txt(ctx,'H₃O⁺ + OH⁻',DX+73,y0-14,{s:13*k,w:700,a:'center'});txt(ctx,'2 H₂O',DX+177,y1+24*k,{s:13*k,w:700,a:'center'});
-    txt(ctx,'heat out',DX+140,(y0+y1)/2,{s:12*k,w:700,c:PAL['s2'],b:'middle'});
-    if(hn)pill(ctx,'ΔH = '+sgn(DH_NEUT,1)+' kJ/mol',DX+DW/2,372,PAL['card'],PAL['cv-ink'],13*k);return;}
-  const S=salt(p),yB=252,yT=168,yF=yB-S.dH*SC;
-  lev(DX+24,DX+84,yB);lev(DX+92,DX+156,yT);lev(DX+166,DX+228,yF,S.dH>0?PAL['s2']:PAL['s1']);
-  arrowV(ctx,DX+88,yB,yT,PAL['s1'],4,true);arrowV(ctx,DX+162,yT,yF,PAL['s2'],4,true);
-  txt(ctx,'solid',DX+54,yB+20*k,{s:12*k,w:700,a:'center'});txt(ctx,'ions apart',DX+124,yT-12,{s:12*k,w:700,a:'center'});
-  txt(ctx,'dissolved',DX+197,yF+(S.dH<0?20*k:-12),{s:12*k,w:700,a:'center'});
-  txt(ctx,'in',DX+80,yT+38,{s:12*k,w:700,c:PAL['s1'],a:'right'});txt(ctx,'out',DX+170,yT+38,{s:12*k,w:700,c:PAL['s2']});
-  // net change, dashed
-  ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(DX+84,yB);ctx.lineTo(DX+228,yB);ctx.stroke();ctx.setLineDash([]);
-  const lab=hn?'ΔH_soln = '+sgn(S.dH,1)+' kJ/mol':(S.dH>0?'Endothermic: net energy in':'Exothermic: net energy out');
-  pill(ctx,lab,DX+DW/2,372,S.dH>0?PAL['s2']:PAL['s1'],'#fff',12.5*k);}
+  if(p.mode==='neut'){const y0=190,y1=y0-DH_NEUT*SC;lev(DX+30,DX+130,y0);lev(DX+140,DX+236,y1);arrowV(ctx,DX+135,y0,y1,PAL['s2'],4,false);
+    txt(ctx,'H₃O⁺ + OH⁻',DX+80,y0-14,{s:13*k,w:700,a:'center'});txt(ctx,'2 H₂O',DX+188,y1+22*k,{s:13*k,w:700,a:'center'});
+    txt(ctx,'heat out',DX+142,(y0+y1)/2,{s:12*k,w:700,c:PAL['s2'],b:'middle'});
+    if(hn)pill(ctx,'ΔH = '+sgn(DH_NEUT,1)+' kJ/mol',DX+DW/2,88,PAL['s1'],'#fff',12.5*k);return;}
+  const S=salt(p),endo=S.dH>0,yT=152,yB=endo?336:214,yF=yB-S.dH*SC,xs=DX+22,xa=DX+96,xd=DX+170;
+  lev(xs,xa-4,yB);lev(xa+2,xd-2,yT);lev(xd+4,DX+238,yF,endo?PAL['s2']:PAL['s1']);
+  arrowV(ctx,xa,yB,yT,PAL['s1'],4,true);arrowV(ctx,xd,yT,yF,PAL['s2'],4,true);
+  ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xa,yB);ctx.lineTo(DX+238,yB);ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'solid',(xs+xa)/2,yB+20*k,{s:12*k,w:700,a:'center'});txt(ctx,'ions apart',(xa+xd)/2,yT-12,{s:12*k,w:700,a:'center'});
+  txt(ctx,'dissolved',DX+238,yF+20*k,{s:12*k,w:700,a:'right'});
+  txt(ctx,'in',xa-10,(yB+yT)/2+18,{s:12*k,w:700,c:PAL['s1'],a:'right',b:'middle'});txt(ctx,'out',xd+10,(yT+Math.min(yF,yB))/2+18,{s:12*k,w:700,c:PAL['s2'],b:'middle'});
+  const lab=hn?'ΔH_soln = '+sgn(S.dH,1)+' kJ/mol':(endo?'Endothermic: net energy in':'Exothermic: net energy out');
+  pill(ctx,lab,DX+DW/2,88,endo?PAL['s2']:PAL['s1'],'#fff',12.5*k);}
 
 function drawPack(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=salt(p),hn=hon(),n=p.mass/S.M;
-  const L=[{t:p.mass.toFixed(1)+' g '+F(S.f)+(hn?' ('+n.toFixed(3)+' mol)':'')+' into '+p.water.toFixed(1)+' g water at '+p.T0.toFixed(1)+' °C',s:14,w:700}];
+  const L=[{t:p.mass.toFixed(1)+' g '+F(S.f)+' into '+p.water.toFixed(0)+' mL water at '+p.T0.toFixed(1)+' °C',s:14,w:700}];
   const q=qSol(sim);
   if(!hn)L.push({t:sim.t<DROP?'Watch the thermometer when the salt goes in.':'The solution is now '+st.T.toFixed(1)+' °C: it got '+(st.T<p.T0-0.05?'colder.':st.T>p.T0+0.05?'warmer.':'no warmer or colder.'),s:13,c:PAL['cv-soft']});
   else{L.push({t:'q_solution = '+(p.water+p.mass).toFixed(1)+' g × 4.18 J/g·°C × '+sgn(st.T-p.T0,1)+' °C = '+sgn(q,0)+' J',s:13,c:PAL['cv-soft']});
@@ -163,11 +162,11 @@ function drawPack(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=salt(p),hn=hon(),n=
   pill(ctx,'Solid left '+Math.max(0,solid).toFixed(1)+' g',ZX,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   zoomLink(ctx,CX,CBOT-22,15);
   drawPackZoom(sim,ctx,vdt,k,t);drawDiagram(sim,ctx,k);
-  if(st.limit)pill(ctx,st.limit,ZX,ZY-ZR-40,PAL['s4'],'#fff',12*k);
-  panel(ctx,L,k);}
+  if(st.limit)pill(ctx,st.limit.split(':')[0],ZX,ZY-ZR-42,PAL['s4'],'#fff',12*k);
+  panel(ctx,L.slice(0,1),k);}
 
 function drawNeut(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,{nA,nB,n}=neutMoles(p),hn=hon();
-  const L=[{t:p.vA.toFixed(1)+' mL '+p.cA.toFixed(2)+' M HCl + '+p.vB.toFixed(1)+' mL '+p.cB.toFixed(2)+' M NaOH, both at '+p.T0.toFixed(1)+' °C',s:14,w:700},
+  const L=[{t:p.vA.toFixed(0)+' mL '+p.cA.toFixed(2)+' M HCl + '+p.vB.toFixed(0)+' mL '+p.cB.toFixed(2)+' M NaOH at '+p.T0.toFixed(1)+' °C',s:14,w:700},
     {t:'H₃O⁺(aq) + OH⁻(aq) → 2 H₂O(l)    water formed: '+(n*st.e).toFixed(4)+' mol',s:13,c:PAL['cv-soft']}];
   const q=qSol(sim);if(hn)L.push({t:'q = '+(p.vA+p.vB).toFixed(1)+' g × 4.18 J/g·°C × '+sgn(st.T-p.T0,1)+' °C = '+sgn(q,0)+' J   ΔH_neut = −q / n = '+(st.e>0.02?sgn(-q/(n*st.e)/1000,1):'—')+' kJ/mol',s:13,c:PAL['cv-soft']});
   const mixed=sim.t>=DROP,V=mixed?p.vA+p.vB:p.vA;drawCup(ctx,V);
@@ -180,7 +179,23 @@ function drawNeut(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,{nA,nB,n}=neutMoles(p
   ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,BENCH,800,50);
   pill(ctx,'Solution '+st.T.toFixed(1)+' °C',CX,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
   pill(ctx,(nA<nB-1e-9?'HCl':nB<nA-1e-9?'NaOH':'Neither')+' is limiting',ZX,BENCH+25,PAL['card'],PAL['cv-ink'],13*k);
-  zoomLink(ctx,CX,CBOT-30,15);drawNeutZoom(sim,ctx,vdt,k,t);drawDiagram(sim,ctx,k);panel(ctx,L,k);}
+  zoomLink(ctx,CX,CBOT-30,15);drawNeutZoom(sim,ctx,vdt,k,t);drawDiagram(sim,ctx,k);panel(ctx,L.slice(0,1),k);}
+
+
+const MU='<span style="color:var(--muted);font-size:14px">';
+function calcHTML(sim){const p=sim.p,st=sim.st,hn=hon(),row=(a,b)=>'<p>'+a+(b?'<br>'+MU+b+'</span>':'')+'</p>';let h='<h3>Your calculation</h3>';
+  if(p.mode==='neut'){const {nA,nB,n}=neutMoles(p),m=p.vA+p.vB,dT=st.T-p.T0,q=qSol(sim),nf=n*st.e;
+    h+=row('<b>Moles</b>: HCl = '+(p.vA/1000).toFixed(4)+' L × '+p.cA.toFixed(2)+' M = '+nA.toFixed(4)+' mol; NaOH = '+(p.vB/1000).toFixed(4)+' L × '+p.cB.toFixed(2)+' M = '+nB.toFixed(4)+' mol',
+      'H₃O⁺ + OH⁻ → 2H₂O reacts 1 : 1, so '+(nA<nB-1e-9?'HCl':nB<nA-1e-9?'NaOH':'neither')+' is limiting and '+n.toFixed(4)+' mol of water can form.');
+    h+=row('<b>q<sub>solution</sub></b> = m·c·ΔT = '+m.toFixed(1)+' g × 4.18 J/g·°C × '+sgn(dT,1)+' °C = <b>'+sgn(q,0)+' J</b>','Mass of solution = total volume × 1.00 g/mL.');
+    h+=row('<b>ΔH<sub>neut</sub></b> = −q ÷ n = '+sgn(-q,0)+' J ÷ '+nf.toFixed(4)+' mol = <b>'+(nf>1e-5?sgn(-q/nf/1000,1):'—')+' kJ/mol</b>','Accepted value about −57 kJ/mol for a strong acid with a strong base.');return h;}
+  const S=salt(p),m=p.water+p.mass,dT=st.T-p.T0,q=qSol(sim),nd=st.md/S.M;
+  if(sim.t<DROP)return h+row('The water starts at '+p.T0.toFixed(1)+' °C. Watch the thermometer as the salt dissolves.');
+  if(!hn)return h+row('<b>Temperature change</b> = '+st.T.toFixed(1)+' °C − '+p.T0.toFixed(1)+' °C = <b>'+sgn(dT,1)+' °C</b>',dT<-0.05?'Negative: the water lost heat to the dissolving salt (endothermic).':dT>0.05?'Positive: the dissolving salt gave heat to the water (exothermic).':'');
+  h+=row('<b>Moles dissolved</b> = '+st.md.toFixed(2)+' g ÷ '+S.M.toFixed(2)+' g/mol = <b>'+nd.toFixed(4)+' mol</b>',st.md<p.mass-0.01?(p.mass-st.md).toFixed(2)+' g is still solid and does not count.':'All of the salt has dissolved.');
+  h+=row('<b>q<sub>solution</sub></b> = m·c·ΔT = '+m.toFixed(1)+' g × 4.18 J/g·°C × '+sgn(dT,1)+' °C = <b>'+sgn(q,0)+' J</b>','Mass of solution = water + salt.');
+  h+=row('<b>ΔH<sub>soln</sub></b> = −q ÷ n = '+sgn(-q,0)+' J ÷ '+nd.toFixed(4)+' mol = <b>'+(nd>1e-4?sgn(-q/nd/1000,1):'—')+' kJ/mol</b>','Accepted value: '+sgn(S.dH,1)+' kJ/mol.');
+  return h;}
 
 const PACK=['pack'],NEUT=['neut'];
 const CP={
@@ -208,7 +223,7 @@ const CP={
   ],
   actions:[{id:'again',label:'Run the trial again',lvl:'bio',primary:true,run(sim){restart(sim);}}],
   init(sim){const p=sim.p;return {T:p.T0,md:0,e:0,Tx:p.T0,limit:'',rate:0};},
-  step(sim,dt){const p=sim.p,st=sim.st;if(sim.t<DROP){st.T=p.T0;st.Tx=p.T0;return;}
+  step(sim,dt){const p=sim.p,st=sim.st;sim.infoDirty=true;if(sim.t<DROP){st.T=p.T0;st.Tx=p.T0;return;}
     if(p.mode==='neut'){st.e+=(1-st.e)*dt/(p.stir?2.5:9);const {n}=neutMoles(p);st.T=p.T0-n*st.e*DH_NEUT*1000/((p.vA+p.vB)*CS);st.Tx=Math.max(st.Tx,st.T);return;}
     const S=salt(p),solid=p.mass-st.md;if(solid<=1e-9){st.rate=0;return;}
     const conc=st.md/p.water*100,sat=solAt(S,st.T),room=1-conc/sat;
@@ -223,7 +238,7 @@ const CP={
     {id:'solid',label:'Salt still solid',unit:'g',lvl:'bio',min:0,max:40,d:1,modes:PACK,get:s=>s.p.mode==='pack'?Math.max(0,s.p.mass-s.st.md):NaN},
     {id:'kind',label:'This process is',unit:'',lvl:'bio',text:true,get:s=>{if(s.p.mode==='neut')return 'Exothermic: heat released';const d=salt(s.p).dH;return Math.abs(d)<5?'Barely '+(d>0?'endothermic':'exothermic'):d>0?'Endothermic: heat absorbed':'Exothermic: heat released';}},
     {id:'q',label:'q for the solution = mcΔT',unit:'J',lvl:'honors',min:-8000,max:8000,d:0,get:s=>qSol(s)},
-    {id:'n',label:'Salt dissolved',unit:'mol',lvl:'honors',min:0,max:1,d:4,modes:PACK,get:s=>s.p.mode==='pack'?s.st.md/salt(s.p).M:NaN},
+    {id:'nd',label:'Salt dissolved',unit:'mol',lvl:'honors',min:0,max:1,d:4,modes:PACK,get:s=>s.p.mode==='pack'?s.st.md/salt(s.p).M:NaN},
     {id:'dH',label:'ΔH_soln from your data',unit:'kJ/mol',lvl:'honors',min:-100,max:40,d:1,modes:PACK,get:s=>{if(s.p.mode!=='pack')return NaN;const nd=s.st.md/salt(s.p).M;return nd>1e-4?-qSol(s)/nd/1000:NaN;}},
     {id:'cost',label:'Cost of the salt',unit:'$',lvl:'honors',min:0,max:3,d:2,modes:PACK,get:s=>s.p.mode==='pack'?s.p.mass*salt(s.p).price/100:NaN},
     {id:'goal',label:'Design check',unit:'',lvl:'honors',text:true,modes:PACK,get:s=>{const p=s.p,st=s.st;if(p.target==='none')return 'Choose a design goal';const lim=TARGET[p.target],ok=p.target==='cold'?st.Tx<=lim:st.Tx>=lim;
@@ -235,6 +250,7 @@ const CP={
   ],
   graphs:[{id:'T',label:'Solution temperature',lvl:'bio',lines:['T']},{id:'solid',label:'Salt still solid',lvl:'bio',lines:['solid']}],
   defaultGraph:'T',
+  infoPanel:calcHTML,
   narrate(sim){const p=sim.p,st=sim.st,hn=hon();
     if(p.mode==='neut'){const {nA,nB}=neutMoles(p);if(sim.t<DROP)return 'The cup holds hydrochloric acid. Sodium hydroxide is about to be poured in.';
       return '<b>H₃O⁺ and OH⁻ ions combine to form water and release heat</b>, so the solution warms to '+st.T.toFixed(1)+' °C. Na⁺ and Cl⁻ are spectator ions and do nothing.'+(Math.abs(nA-nB)>1e-9?' '+(nA<nB?'HCl':'NaOH')+' runs out first, so the extra '+(nA<nB?'NaOH':'HCl')+' adds no heat.':'');}
@@ -249,7 +265,7 @@ const CP={
     {title:'Water surrounds each ion',text:'Each loose ion gets a shell of water molecules. The partly negative oxygen ends face the + ions, and the partly positive hydrogen ends face the − ions. Forming these attractions releases energy.',focus:[ZX-ZR-10,ZY-ZR-30,2*ZR+20,2*ZR+60],speed:0.5},
     {title:'Which energy is bigger?',text:{bio:'For ammonium nitrate, breaking the solid apart takes more energy than hydration gives back. The difference comes out of the water, so it gets colder: endothermic.',honors:'Both steps are hundreds of kJ/mol, so the diagram breaks the axis. For NH₄NO₃ the difference is +25.7 kJ/mol: endothermic. The energy comes from the water’s motion, so the temperature falls.'},focus:[DX-4,118,DW+8,280],speed:1},
     {title:'A hand warmer instead',text:'Switch to calcium chloride. Now hydration releases more energy than breaking the solid takes, so the extra energy heats the water: exothermic.',focus:[[DX-4,118,DW+8,280],[CX-HWT-30,200,2*HWT+60,BENCH-200+50]],speed:1,setup(sim){BioLab.setValues(sim,{salt:'cacl2'});restart(sim);}},
-    {lvl:'honors',title:'From temperature to ΔH',text:'q_solution = m·c·ΔT uses the mass of the whole solution. The salt’s enthalpy change is the opposite: ΔH_soln = −q_solution ÷ moles dissolved.',focus:[8,6,784,112],pause:true},
+    {lvl:'honors',title:'From temperature to ΔH',text:'Your calculation panel below the graph shows the math: q_solution = m·c·ΔT uses the mass of the whole solution. The salt’s enthalpy change is the opposite: ΔH_soln = −q_solution ÷ moles dissolved.',focus:[DX-4,118,DW+8,280],speed:1},
     {lvl:'honors',title:'Acid meets base',text:'In the Acid + base experiment, H₃O⁺ and OH⁻ combine to make water. Every mole of water formed releases about 57 kJ, so the limiting reactant sets the heat.',focus:[ZX-ZR-10,ZY-ZR-30,2*ZR+20,2*ZR+60],speed:0.5,setup(sim){BioLab.setValues(sim,{mode:'neut'});restart(sim);}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{mode:'pack',salt:'nh4no3',mass:10,water:100});restart(sim);},
@@ -257,7 +273,7 @@ const CP={
   challenges:[
     {lvl:'bio',q:'You stir 10 g of ammonium nitrate into 100 mL of water at 22 °C. What will the thermometer do?',choices:['Go up','Go down','Stay the same'],correct:1,
      baseline:{mode:'pack',salt:'nh4no3',mass:10,water:100},watch:'T',
-     explain:{bio:'The temperature falls to about 16.4 °C. Breaking the solid apart takes energy, and that energy comes out of the water. The salt does not add “cold”; it takes heat away.'}},
+     explain:{bio:'The temperature falls about 7 °C, to 15.0 °C. Breaking the solid apart takes energy, and that energy comes out of the water. The salt does not add “cold”; it takes heat away.'}},
     {lvl:'bio',q:'10 g of calcium chloride warms 100 mL of water by about 16 °C. What happens if you dissolve the same 10 g in 200 mL of water?',choices:['It warms by about 32 °C','It warms by about 8 °C','It warms by about 16 °C again'],correct:1,
      baseline:{mode:'pack',salt:'cacl2',mass:10,water:100},change:{water:200},changeText:'Water changed to 200 mL',watch:'T',
      explain:{bio:'The same amount of salt releases the same amount of heat. Spread over twice as much water, it raises the temperature only about half as much: about 8 °C.'}},
@@ -268,7 +284,7 @@ const CP={
      explain:{honors:'The model is now set to CaCl₂. On the energy diagram, the “out” arrow (hydration) is longer than the “in” arrow, so the dissolved ions end up lower in energy: ΔH_soln = −81.3 kJ/mol. Small, highly charged Ca²⁺ attracts water strongly.'}},
     {lvl:'honors',q:'You add 40 g of potassium nitrate to 100 mL of water at 22 °C. KNO₃ dissolves up to 34 g per 100 g of water at 22 °C. Does it all dissolve?',choices:['Yes, all 40 g dissolves','No, but about 34 g dissolves','No, and only about half of it dissolves'],correct:2,
      baseline:{mode:'pack',salt:'kno3',mass:40,water:100},reveal:150,watch:'solid',
-     explain:{honors:'Dissolving KNO₃ is endothermic, so the solution cools as it dissolves. KNO₃ is much less soluble in cold water (13 g per 100 g at 0 °C), so the solution saturates near 9 °C with only about 21 g dissolved. The rest stays solid.'}},
+     explain:{honors:'Dissolving KNO₃ is endothermic, so the solution cools as it dissolves. KNO₃ is much less soluble in cold water (13 g per 100 g at 0 °C), so the solution saturates near 9 °C with only about 22 g dissolved. The rest stays solid.'}},
     {lvl:'honors',q:'50 mL of 1.0 M HCl and 50 mL of 1.0 M NaOH warm by about 6.8 °C. What if you use 100 mL of each instead?',choices:['ΔT doubles to about 13.7 °C','ΔT stays about 6.8 °C','ΔT halves'],correct:1,
      baseline:{mode:'neut',vA:50,vB:50,cA:1,cB:1},change:{vA:100,vB:100},changeText:'Both volumes doubled to 100 mL',watch:'T',
      explain:{honors:'Twice as much water forms, so twice the heat is released (5.71 kJ instead of 2.86 kJ). But it heats twice the mass of solution, so ΔT stays about 6.8 °C. Concentration, not volume, sets ΔT here.'}},
@@ -280,7 +296,7 @@ const CP={
     {lvl:'ap',instant:true,set:{mode:'pack',salt:'nh4no3',mass:10,water:100},q:'Dissolving NH₄NO₃ absorbs energy, yet it dissolves on its own. Why?',choices:['The ions spread out among the water, so entropy increases enough to make ΔG negative','The water releases more energy than the salt absorbs, so it is really exothermic','It only dissolves because you stir it'],correct:0,
      explain:{ap:'ΔH_soln = +25.7 kJ/mol, but ΔS_soln = +108.7 J/mol·K. At 298 K, TΔS = 32.4 kJ/mol, so ΔG = 25.7 − 32.4 = −6.7 kJ/mol: spontaneous. The Gibbs free energy tool explores this.'}}
   ],
-  lab:{bio:'<p><b>Question:</b> Which salt makes the best instant cold pack?</p><ol><li>Use 10 g of salt and 100 mL of water.</li><li>Dissolve each salt in turn: NH₄NO₃, NH₄Cl, CaCl₂ and NaCl. Record a trial when the salt has all dissolved.</li><li>Sort the salts into “gets colder” (endothermic) and “gets warmer” (exothermic).</li></ol><p>Which salt would you put in a cold pack? Which in a hand warmer? Use your temperature data to explain.</p><p class="help">Safety: in a real lab wear goggles and gloves, and never taste chemicals. Ammonium nitrate is an oxidizer: keep it away from heat and fuels.</p>',
+  lab:{bio:'<p><b>Question:</b> Which salt makes the best instant cold pack?</p><ol><li>Use 10 g of salt and 100 mL of water.</li><li>Dissolve each salt in turn: NH₄NO₃, NH₄Cl, CaCl₂ and NaCl. Record a trial when the salt has all dissolved.</li><li>Sort the salts into “gets colder” (endothermic) and “gets warmer” (exothermic).</li></ol><p>Which salt would you put in a cold pack? Which in a hand warmer? Use your temperature data to explain.</p><p style="color:var(--muted);font-size:14px">Safety: in a real lab wear goggles and gloves, and never taste chemicals. Ammonium nitrate is an oxidizer: keep it away from heat and fuels.</p>',
        honors:'<p><b>Question:</b> What is ΔH_soln for each salt, and what is the cheapest pack that meets the goal?</p><ol><li>Dissolve 10.0 g of each salt in 100 mL of water. Record q and ΔH_soln.</li><li>Set the design goal to <b>Cold pack</b>. Find the cheapest salt and mass that reach 5 °C in 100 mL of water.</li><li>Repeat for the <b>Hand warmer</b> goal (45 °C).</li><li>Switch to <b>Acid + base</b>. Mix 50 mL of 1.0 M HCl and 50 mL of 1.0 M NaOH and find ΔH_neut.</li></ol><p>Draw an energy diagram for one cold-pack salt and one hand-warmer salt. Explain the sign of ΔH_soln using lattice breaking and hydration.</p>',
        ap:'<p><b>Question:</b> How do solubility and limiting reactants cap the heat you can get? (Hot Pack Inquiry)</p><ol><li>Dissolve 10, 20, 30 and 40 g of KNO₃ in 100 mL. Record the coldest temperature and the mass left undissolved.</li><li>Repeat with NH₄NO₃. Plot ΔT against mass for both salts.</li><li>In Acid + base, hold HCl at 50 mL of 1.0 M and vary NaOH from 0.5 to 2.0 M. Plot ΔT against [NaOH].</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why each graph levels off. Use the solubility readout and the limiting-reactant readout as evidence.</p>'},
   terms:[{t:'Endothermic',d:'A process that absorbs heat from its surroundings, so the surroundings (the water) get colder.'},{t:'Exothermic',d:'A process that releases heat to its surroundings, so the surroundings get warmer.'},{t:'Dissolving',d:'Ions or molecules separate from a solid and spread through the water.'},{t:'System and surroundings',d:'The system is the salt dissolving; the surroundings are the water and the cup that you measure with the thermometer.'},

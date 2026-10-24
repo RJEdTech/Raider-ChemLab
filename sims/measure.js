@@ -2,16 +2,23 @@
 'use strict';
 const {clamp,rng,randn,rr,txt,pill,atLeast,PAL,FONT,RM,lvText}=BioLab.h;
 const CL=window.ChemLab;
+const SUPD={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const supE=e=>String(e).split('').map(c=>SUPD[c]||c).join('');
+/* always scientific notation with n significant figures */
+function sciA(v,n){if(!Number.isFinite(v))return '—';if(v===0)return '0';let e=Math.floor(Math.log10(Math.abs(v)));let m=v/Math.pow(10,e);if(Math.abs(+m.toFixed(n-1))>=10){e++;m=v/Math.pow(10,e);}return m.toFixed(Math.max(0,n-1))+' × 10'+supE(e);}
+/* n significant figures, written so the digits show exactly n (trailing decimal point or scientific notation when needed) */
+function sigStr(v,n){if(!Number.isFinite(v))return '—';if(v===0)return (0).toFixed(Math.max(0,n-1));const r=CL.roundSig(v,n),e=Math.floor(Math.log10(Math.abs(r)));
+  if(e>=n||e<-3)return sciA(r,n);if(e===n-1){const s=r.toFixed(0);return /0$/.test(s)?s+'.':s;}return r.toFixed(n-1-e);}
 const MONO='Consolas,"Courier New",ui-monospace,monospace';
 
 /* ---------- instruments ---------- */
 const INST={
-  c10:{n:'10 mL graduated cylinder',kind:'cyl',lo:0,hi:10,div:0.1,lab:1,mid:0.5,dp:2,unit:'mL',win:1.0,vlo:2,vhi:9.4,gran:0.01},
-  c50:{n:'50 mL graduated cylinder',kind:'cyl',lo:0,hi:50,div:1,lab:5,mid:5,dp:1,unit:'mL',win:8,vlo:12,vhi:46,gran:0.1},
-  c100:{n:'100 mL graduated cylinder',kind:'cyl',lo:0,hi:100,div:1,lab:10,mid:5,dp:1,unit:'mL',win:13,vlo:16,vhi:92,gran:0.1},
-  buret:{n:'50 mL buret',kind:'buret',lo:0,hi:50,div:0.1,lab:1,mid:0.5,dp:2,unit:'mL',win:1.1,vlo:1.2,vhi:47,gran:0.01},
+  c10:{n:'10 mL graduated cylinder',kind:'cyl',olab:1,lo:0,hi:10,div:0.1,lab:1,mid:0.5,dp:2,unit:'mL',win:1.0,vlo:2,vhi:9.4,gran:0.01},
+  c50:{n:'50 mL graduated cylinder',kind:'cyl',olab:5,lo:0,hi:50,div:1,lab:5,mid:5,dp:1,unit:'mL',win:8,vlo:12,vhi:46,gran:0.1},
+  c100:{n:'100 mL graduated cylinder',kind:'cyl',olab:10,lo:0,hi:100,div:1,lab:10,mid:5,dp:1,unit:'mL',win:13,vlo:16,vhi:92,gran:0.1},
+  buret:{n:'50 mL buret',kind:'buret',olab:5,lo:0,hi:50,div:0.1,lab:1,mid:0.5,dp:2,unit:'mL',win:1.1,vlo:1.2,vhi:47,gran:0.01},
   ruler:{n:'Centimeter ruler',kind:'ruler',lo:0,hi:15,div:0.1,lab:1,mid:0.5,dp:2,unit:'cm',win:1.3,vlo:3,vhi:13,gran:0.01},
-  thermo:{n:'Thermometer',kind:'thermo',lo:-10,hi:110,div:1,lab:10,mid:5,dp:1,unit:'°C',win:9,vlo:14,vhi:88,gran:0.1},
+  thermo:{n:'Thermometer',kind:'thermo',olab:10,lo:-10,hi:110,div:1,lab:10,mid:5,dp:1,unit:'°C',win:9,vlo:14,vhi:88,gran:0.1},
   balance:{n:'Electronic balance',kind:'balance',lo:0,hi:200,div:0.01,dp:2,unit:'g',vlo:5,vhi:160,gran:0.01}
 };
 const dpOf=s=>{const m=String(s).trim().match(/\.(\d*)$/)||String(s).trim().match(/\.(\d+)/);return m?m[1].length:0;};
@@ -45,9 +52,9 @@ function classify(str){str=String(str||'').trim().replace(/^[+−-]/,'').replace
   const n=chars.filter(x=>x.t==='nz'||x.t==='cap'||x.t==='trail').length;return {chars,n,ex,man,hasDot};}
 const RULES={nz:{l:'Nonzero digits always count',sig:true},cap:{l:'Zeros between nonzero digits count',sig:true},trail:{l:'Trailing zeros count when there is a decimal point',sig:true},lead:{l:'Leading zeros never count (they only place the decimal)',sig:false},amb:{l:'Trailing zeros with no decimal point do not count',sig:false}};
 function numValue(c){if(!c)return NaN;return parseFloat(c.man)*(c.ex!==null?Math.pow(10,c.ex):1);}
-function sciOf(c){const v=numValue(c);if(!Number.isFinite(v)||v===0)return '—';return CL.sci(v,'',Math.max(1,c.n)).replace(/^(\d(?:\.\d+)?)$/,'$1 × 10⁰');}
+function sciOf(c){const v=numValue(c);if(!Number.isFinite(v)||v===0)return '—';return sciA(v,Math.max(1,c.n));}
 function shown(c){return c?(c.man+(c.ex!==null?' × 10'+CL.sup(String(c.ex).replace('-','−')):'')):'';}
-function roundStr(v,n){if(!Number.isFinite(v)||v===0)return '—';const e=Math.floor(Math.log10(Math.abs(v)));if(e>=n||e<-3)return CL.sci(v,'',n);return CL.toSig(v,n);}
+function roundStr(v,n){if(!Number.isFinite(v)||v===0)return '—';return sigStr(v,n);}
 
 /* ---------- sig-fig math ---------- */
 const TPL={mul:{sym:'×',u:['cm','cm'],ru:'cm²',ctx:'Area of a rectangle: length × width'},div:{sym:'÷',u:['g','mL'],ru:'g/mL',ctx:'Density: mass ÷ volume'},
@@ -62,15 +69,17 @@ function newProb(sim,op){const st=sim.st;op=op||sim.p.op;const r=rng(st.seed=(st
 function solve(prob){const v=prob.vals.map(parseFloat),op=prob.op;let raw;
   if(op==='mul')raw=v[0]*v[1];else if(op==='div')raw=v[0]/v[1];else if(op==='add')raw=v.reduce((a,b)=>a+b,0);else raw=v[0]-v[1];
   const sfs=prob.vals.map(s=>CL.sigFigs(s)),dps=prob.vals.map(dpOf);let ans,rule,lim;
-  if(op==='mul'||op==='div'){lim=Math.min(...sfs);ans=CL.toSig(raw,lim);rule='× and ÷: keep the fewest significant figures ('+lim+')';}
+  if(op==='mul'||op==='div'){lim=Math.min(...sfs);ans=sigStr(raw,lim);rule='× and ÷: keep the fewest significant figures ('+lim+')';}
   else{lim=Math.min(...dps);ans=raw.toFixed(lim);rule='+ and −: keep the fewest decimal places ('+lim+')';}
   const us=prob.vals.map(s=>Math.pow(10,-dpOf(s)));let unc,uncText;
   if(op==='mul'||op==='div'){const rel=us.reduce((a,u,i)=>a+u/v[i],0);unc=rel*Math.abs(raw);uncText='±'+(rel*100).toFixed(1)+'% (relative uncertainties add) = ±'+CL.toSig(unc,1)+' '+TPL[op].ru;}
   else{unc=us.reduce((a,b)=>a+b,0);uncText='±'+CL.toSig(unc,1)+' '+TPL[op].ru+' (absolute uncertainties add)';}
   return {raw,ans,rule,lim,sfs,dps,unc,uncText};}
-function gradeMath(sim){const st=sim.st,S=solve(st.prob),s=String(st.ans||'').trim();const v=parseFloat(s);
+function parseNum(s){s=String(s).trim().replace(/−/g,'-');const RS={'⁻':'-','⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};s=s.replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]/g,c=>RS[c]);
+  s=s.replace(/\s*[×x\*]\s*10\^?\s*/,'e');return {v:parseFloat(s),man:s.split(/[eE]/)[0]};}
+function gradeMath(sim){const st=sim.st,S=solve(st.prob),P0=parseNum(st.ans||''),s=P0.man;const v=P0.v;
   if(!s||!Number.isFinite(v)){st.res={k:'bad',m:'Type your rounded answer, such as '+S.ans.replace(/\d/g,'#')+'.'};return;}
-  const same=Math.abs(v-parseFloat(S.ans))<=Math.abs(parseFloat(S.ans))*1e-9+1e-12;const mul=st.prob.op==='mul'||st.prob.op==='div';
+  const A=parseNum(S.ans).v;const same=Math.abs(v-A)<=Math.abs(A)*1e-9+1e-12;const mul=st.prob.op==='mul'||st.prob.op==='div';
   const okDigits=mul?CL.sigFigs(s)===S.lim:dpOf(s)===S.lim;
   if(same&&okDigits){st.res={k:'ok',m:'Right: '+S.ans+' '+TPL[st.prob.op].ru+'. '+S.rule+'.'};st.showAns=true;}
   else if(Math.abs(v-S.raw)<Math.abs(S.raw)*0.02)st.res={k:'few',m:'The value is right, but the digits are not. '+S.rule+'.'};
@@ -175,7 +184,7 @@ const SIM={
   narrate(sim){const p=sim.p,st=sim.st;
     if(p.mode==='read'){const I=INST[p.inst];if(st.res)return '<b>'+(st.res.k==='ok'?'Correct.':'Not yet.')+'</b> '+st.res.m;if(st.reveal)return 'The accepted reading is <b>'+fixd(st.val,I.dp)+' '+I.unit+'</b>. Press New sample to try another.';
       if(I.kind==='balance')return 'A digital balance does the estimating for you: its last digit is the estimated one. <b>Record every digit shown</b>, including trailing zeros.';
-      return 'This '+I.n.toLowerCase()+' is marked every <b>'+I.div+' '+I.unit+'</b>, so you can be certain to the '+placeName(I.dp-1)+' and estimate the <b>'+placeName(I.dp)+'</b>. '+(I.kind==='cyl'||I.kind==='buret'?'Read the bottom of the meniscus at eye level.':'')+(I.kind==='buret'?' A buret reads from the top down.':'');}
+      return 'This '+I.n.charAt(0).toLowerCase()+I.n.slice(1)+' is marked every <b>'+I.div+' '+I.unit+'</b>, so you can be certain to the '+placeName(I.dp-1)+' and estimate the <b>'+placeName(I.dp)+'</b>. '+(I.kind==='cyl'||I.kind==='buret'?'Read the bottom of the meniscus at eye level.':'')+(I.kind==='buret'?' A buret reads from the top down.':'');}
     if(p.mode==='acc'){const S=stats(st),v=verdict(st);if(S.n<2)return 'Press <b>Take 10 measurements</b> to weigh the 25.00 g standard mass ten times.';
       return '<b>'+v+'.</b> The mean is '+S.mean.toFixed(2)+' g ('+(Math.abs(S.mean-ACCEPT)/ACCEPT*100).toFixed(1)+'% error). '+(Math.abs(p.bias)>0.15?'The bias shifts every measurement the same way: a <b>systematic error</b>. Averaging more trials does not remove it.':p.spread>0.15?'The spread is <b>random error</b>: more trials make the mean more reliable.':'Small bias and small spread: good technique on a calibrated balance.');}
     if(p.mode==='sig'){const c=classify(st.custom||p.num);if(!c)return 'Type a number to count its significant figures.';const has=t=>c.chars.some(x=>x.t===t);
@@ -222,7 +231,7 @@ function drawRead(sim,ctx,k,t){const p=sim.p,st=sim.st,I=INST[p.inst],v=st.val;
     else{ctx.beginPath();ctx.moveTo(x-w/2,top);ctx.lineTo(x-w/2,bot);ctx.lineTo(x+w/2,bot);ctx.lineTo(x+w/2,top);ctx.save();ctx.globalAlpha=0.35;ctx.fillStyle=PAL['cv-bg2'];ctx.fill();ctx.restore();
       ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle='#5aa7dd';if(I.kind==='buret')ctx.fillRect(x-w/2,Y(v),w,bot-Y(v));else ctx.fillRect(x-w/2,Y(v),w,bot-Y(v));ctx.restore();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.4;ctx.stroke();
       if(I.kind==='cyl'){ctx.fillStyle=PAL['cv-glass'];ctx.fillRect(x-w/2-14,bot,w+28,8);}else{ctx.fillStyle='#2c6db0';rr(ctx,x-14,bot+2,28,7,3);ctx.fill();}}
-    ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;const step=I.lab;for(let u=I.lo;u<=I.hi+1e-9;u+=step){const y=Y(u);ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w/2+8,y);ctx.stroke();
+    ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;const step=I.olab;for(let u=I.lo;u<=I.hi+1e-9;u+=step){const y=Y(u);ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w/2+8,y);ctx.stroke();
       if(k<1.3||(Math.round(u/step)%2===0))txt(ctx,String(+u.toFixed(1)),x+w/2+12,y,{s:12*k,c:PAL['cv-soft'],b:'middle'});}
     const zw=I.win,zy0=Y(v-zw/2),zy1=Y(v+zw/2);zoomRect=[x-w/2-6,Math.min(zy0,zy1),w+12,Math.abs(zy1-zy0)];}
   else if(I.kind==='ruler'){const x0=34,pxcm=17.5,ry=250;ctx.fillStyle=PAL['cv-ruler'];ctx.fillRect(x0-8,ry,15*pxcm+16,34);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.strokeRect(x0-8,ry,15*pxcm+16,34);

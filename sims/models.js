@@ -94,7 +94,7 @@ const M={
       if(th){st.fired++;const b=BINS.findIndex((x,i)=>th.th>=x&&th.th<BINS[i+1]);if(b>=0)st.hist[b]++;}}
     st.lab.forEach(a=>a.age+=dt);st.lab=st.lab.filter(a=>{if(a.age>1.55&&!a.hit){a.hit=true;st.flash.push({th:a.th*a.s,age:0});}return a.age<1.6;});
     st.flash.forEach(f=>f.age+=dt);st.flash=st.flash.filter(f=>f.age<1.4);if(st.flash.length>80)st.flash.splice(0,st.flash.length-80);
-    st.zacc+=dt;if(st.zacc>0.42){st.zacc=0;if(st.zoom.length<9){const b=(st.r()*2-1)*FIELD*0.42;st.zoom.push({b,pts:P.nuc?zoomPath(P,b):null,age:0});}}
+    st.zacc+=dt;if(st.zacc>0.42){st.zacc=0;if(st.zoom.length<9){const u=st.r(),b=(st.r()<0.5?-1:1)*FIELD*0.42*Math.pow(u,1.4);st.zoom.push({b,pts:P.nuc?zoomPath(P,b):null,age:0});}}
     st.zoom.forEach(z=>z.age+=dt);st.zoom=st.zoom.filter(z=>z.age<3.4);},
   metrics:[
     {id:'fired',label:'Alphas fired',unit:'',lvl:'bio',min:0,max:null,d:0,modes:['foil'],get:s=>s.st.fired},
@@ -115,7 +115,7 @@ const M={
       const b90=P.d/2;ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['muted'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(ax.X(b90),ax.Y(0));ctx.lineTo(ax.X(b90),ax.Y(90));ctx.lineTo(ax.X(0),ax.Y(90));ctx.stroke();ctx.setLineDash([]);
       txt(ctx,'b = d/2 = '+b90.toFixed(1)+' fm gives 90°',ax.X(b90)+8,ax.Y(90)-8,{s:13,c:PAL['cv-ink'],w:600});
       legend(ctx,box.L+150,box.T+12,[{label:'tan(θ/2) = d / 2b',color:serColor(0)}]);return;}
-    const n=BINS.length-1,ymax=Math.max(1,...st.hist,st.fired*(P.Pgt(0)-P.Pgt(2)));const top=Math.ceil(Math.log10(ymax+1))+0.3;
+    const n=BINS.length-1,ymax=Math.max(1,...st.hist,st.fired*(P.Pgt(0)-P.Pgt(2)));const top=Math.max(3,Math.ceil(Math.log10(ymax+1)+0.25));
     const ax=axes(ctx,box,{xmin:0,xmax:n,ymin:0,ymax:top,xcats:BINS.slice(0,-1).map((b,i)=>b+'–'+BINS[i+1]+'°'),yl:'log₁₀(count + 1)',yd:0});
     st.hist.forEach((c,i)=>{const v=Math.log10(c+1),x0=ax.X(i+0.2),x1=ax.X(i+0.8);ctx.fillStyle=i>=6?PAL['s1']:serColor(1);ctx.fillRect(x0,ax.Y(v),x1-x0,ax.Y(0)-ax.Y(v));
       txt(ctx,c>=1e5?CL.roundSig(c,3).toExponential(1).replace('e+',' × 10^'):String(c),(x0+x1)/2,ax.Y(v)-5,{s:12,c:PAL['cv-ink'],a:'center',w:600});});
@@ -189,13 +189,13 @@ const M={
     // lab: detector ring
     ctx.strokeStyle=PAL['cv-soft'];ctx.globalAlpha=0.5;ctx.lineWidth=10;ctx.beginPath();ctx.arc(FX,FY,RD,Math.PI+0.11,Math.PI-0.11+2*Math.PI);ctx.stroke();ctx.globalAlpha=1;
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;[0,30,60,90,120,150].forEach(a=>{[-1,1].forEach(sg=>{const r=a*D2R*sg;ctx.beginPath();ctx.moveTo(FX+Math.cos(r)*(RD-8),FY-Math.sin(r)*(RD-8));ctx.lineTo(FX+Math.cos(r)*(RD+8),FY-Math.sin(r)*(RD+8));ctx.stroke();});});
-    txt(ctx,'0°',FX+RD+12,FY,{s:12*k,c:PAL['cv-soft'],b:'middle'});txt(ctx,'90°',FX,FY-RD-14,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'90°',FX,FY+RD+22,{s:12*k,c:PAL['cv-soft'],a:'center'});
-    txt(ctx,'Detector screen',FX+RD*0.72,FY+RD*0.72+26,{s:12*k,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,'0°',FX+RD+12,FY,{s:12*k,c:PAL['cv-soft'],b:'middle'});txt(ctx,'90°',FX,FY-RD-14,{s:12*k,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,'Detector screen (glows where an α lands)',FX,FY+RD+26,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'180°',FX-RD-8,FY-14,{s:12*k,c:PAL['cv-soft'],a:'right'});
     // flashes on the screen
     st.flash.forEach(f=>{const r=f.th*D2R,a=clamp(1-f.age/1.4,0,1);const x=FX+Math.cos(r)*RD,y=FY-Math.sin(r)*RD;ctx.fillStyle=PAL['s3'];ctx.globalAlpha=a;ctx.beginPath();ctx.arc(x,y,4+5*(1-a),0,6.29);ctx.fill();ctx.globalAlpha=1;});
     // source box
     ctx.fillStyle=PAL['cv-lamp'];rr(ctx,SX-30,SY-24,58,48,6);ctx.fill();ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(SX-6,SY,8,0,6.29);ctx.fill();
-    txt(ctx,'α source',SX-2,SY+44,{s:12*k,w:700,a:'center'});txt(ctx,'in lead',SX-2,SY+44+15*k,{s:12*k,a:'center',c:PAL['cv-soft']});
+    txt(ctx,'α source',12,SY+44,{s:12*k,w:700});txt(ctx,'in lead',12,SY+44+15*k,{s:12*k,c:PAL['cv-soft']});
     // foil
     ctx.fillStyle='#d4a017';ctx.fillRect(FX-2.5,FY-52,5,104);txt(ctx,P.m.name+' foil',FX,FY-64,{s:12*k,w:700,a:'center'});
     // beam and alphas
@@ -203,9 +203,9 @@ const M={
     const L1=FX-SX-28,v1=L1/0.95;st.lab.forEach(a=>{if(a.age<0)return;let x,y;if(a.age<0.95){x=SX+28+v1*a.age;y=SY+a.y0*(a.age/0.95)*0.3;}else{const u=clamp((a.age-0.95)/0.6,0,1),r=a.th*a.s*D2R;x=FX+Math.cos(r)*RD*u;y=FY-Math.sin(r)*RD*u;}
       ctx.fillStyle=a.th>90?PAL['s1']:PAL['s4'];ctx.beginPath();ctx.arc(x,y,a.th>90?4.5:3,0,6.29);ctx.fill();});
     // tally box
-    const back=st.hist.slice(6).reduce((a,b)=>a+b,0);rr(ctx,12,12,270,hon?58:40,8);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
+    const back=st.hist.slice(6).reduce((a,b)=>a+b,0);if(k<1.4){rr(ctx,12,12,270,hon?58:40,8);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
     txt(ctx,'Fired '+st.fired.toLocaleString('en-US')+'   Back past 90°: '+back,22,36,{s:13*k,w:700});
-    if(hon)txt(ctx,'Predicted: '+(P.nuc?fmtOneIn(P.C):'none')+' past 90°',22,58,{s:12*k,c:PAL['cv-soft']});
+    if(hon)txt(ctx,'Predicted: '+(P.nuc?fmtOneIn(P.C):'none')+' past 90°',22,58,{s:12*k,c:PAL['cv-soft']});}
     // close-up circle
     ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=PAL['cv-bg2'];ctx.fill();ctx.clip();
     if(P.nuc){const s=2*ZR/FIELD;
@@ -217,18 +217,18 @@ const M={
       if(ap){ctx.strokeStyle=PAL['s5'];ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ZX,ZY,P.d*s,0,6.29);ctx.stroke();ctx.setLineDash([]);
         txt(ctx,'d = '+P.d.toFixed(0)+' fm',ZX,ZY-P.d*s-8,{s:12*k,w:700,a:'center',c:PAL['s5']});}
       ctx.restore();
-      txt(ctx,'Close-up near one '+P.m.name+' nucleus, 320 fm across',ZX,ZY+ZR+22,{s:12*k,w:700,a:'center'});
-      txt(ctx,'+'+P.m.Z+' nucleus',ZX+12,ZY+22,{s:12*k,w:700,c:PAL['s1']});}
+      txt(ctx,k<1.4?'Close-up near one '+P.m.name+' nucleus, 320 fm across':'Close-up: one nucleus',ZX,ZY+ZR+22,{s:12*k,w:700,a:'center'});
+      txt(ctx,'+'+P.m.Z+' nucleus',ZX,ZY+(ap?P.d*2*ZR/FIELD:10)+20*k,{s:12*k,w:700,a:'center',c:PAL['s1']});}
     else{const R=ZR*0.8;const g=ctx.createRadialGradient(ZX,ZY,R*0.2,ZX,ZY,R);g.addColorStop(0,'rgba(232,120,140,0.40)');g.addColorStop(1,'rgba(232,120,140,0.18)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(ZX,ZY,R,0,6.29);ctx.fill();
       ctx.strokeStyle='rgba(200,80,100,0.6)';ctx.lineWidth=1.5;ctx.stroke();const R2=rng(11);
       for(let i=0;i<22;i++){const a=R2()*6.28,r=R*Math.sqrt(R2())*0.9;ctx.fillStyle=CL.FILL.electron;ctx.beginPath();ctx.arc(ZX+Math.cos(a)*r,ZY+Math.sin(a)*r,4,0,6.29);ctx.fill();}
       st.zoom.forEach(z=>{const y=ZY+z.b*0.8,x0=ZX-ZR,u=clamp(z.age/2.6,0,1),x=lerp(x0,ZX+ZR,u);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.globalAlpha=0.75;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x,y);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(x,y,4.5,0,6.29);ctx.fill();});
       ctx.restore();
-      txt(ctx,'Close-up of one atom, about 0.3 nm across',ZX,ZY+ZR+22,{s:12*k,w:700,a:'center'});
-      txt(ctx,'spread-out + charge, electrons as “plums”',ZX,ZY-ZR-10,{s:12*k,a:'center',c:PAL['cv-soft']});}
+      txt(ctx,k<1.4?'Close-up of one atom, about 0.3 nm across':'Close-up: one atom',ZX,ZY+ZR+22,{s:12*k,w:700,a:'center'});
+      if(k<1.4)txt(ctx,'spread-out + charge, electrons as “plums”',ZX,ZY-ZR-10,{s:12*k,a:'center',c:PAL['cv-soft']});}
     ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.stroke();
-    ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(FX+3,FY-10);ctx.lineTo(ZX-ZR*0.92,ZY-ZR*0.4);ctx.moveTo(FX+3,FY+10);ctx.lineTo(ZX-ZR*0.92,ZY+ZR*0.4);ctx.stroke();ctx.setLineDash([]);
-    if(P.nuc&&hon)txt(ctx,'Each orange path is computed from Coulomb repulsion',ZX,ZY-ZR-10,{s:12*k,a:'center',c:PAL['cv-soft']});
+    ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(FX+3,FY-16);ctx.lineTo(ZX-ZR*0.92,ZY-ZR*0.4);ctx.moveTo(FX+3,FY+16);ctx.lineTo(ZX-ZR*0.92,ZY+ZR*0.4);ctx.stroke();ctx.setLineDash([]);
+    if(P.nuc&&hon&&k<1.4)txt(ctx,'Each orange path is computed from Coulomb repulsion',ZX,ZY-ZR-10,{s:12*k,a:'center',c:PAL['cv-soft']});
   },
   thumbSetup(sim){sim.p.model='nuclear';sim.st.zacc=0.4;},
   thumbFrames:60

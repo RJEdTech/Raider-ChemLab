@@ -61,7 +61,7 @@ function relabel(sim){if(!sim.ui||!sim.ui.sec)return;const R=RX[sim.p.rx],u=unit
 function changed(sim){if(sim.st)BioLab.reset(sim);relabel(sim);}
 
 function spawn(st,sp,x,y,r){const a=r()*6.283,v=26+r()*30;return {sp,x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,rot:r()*6.28,w:(r()-0.5)*1.5,state:'free'};}
-function sz(sp){return sp==='C3H8'?20:sp==='Gc'||sp==='Sm'?18:16;}
+function sz(sp){return (sp==='C3H8'?20:sp==='Gc'||sp==='Sm'?18:16)*1.55;}
 
 const SIM={
   id:'stoich',hash:'stoich',apUnit:8,order:4,tab:'Stoichiometry and limiting reactants',kind:'Simulation',prereq:['mole','balance'],next:['airbag','gasstoich','precip'],
@@ -217,17 +217,17 @@ const SIM={
     ctx.fillStyle=PAL['cv-bg2'];rr(ctx,BOX.x,BOX.y,BOX.w,BOX.h,12);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
     txt(ctx,m.disc?'Every '+(R.analogy?'piece':R.word==='particles'?'particle':'molecule')+' is drawn':'1 drawn '+(R.word==='particles'?'particle':'molecule')+' = '+m.uD+' mol',BOX.x+12,BOX.y+BOX.h-12,{s:12.5*k,c:PAL['cv-soft'],w:600});
     st.fl.forEach(e=>{ctx.strokeStyle=PAL['s4'];ctx.globalAlpha=1-e.t/0.6;ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,8+e.t*50,0,6.29);ctx.stroke();ctx.globalAlpha=1;});
-    st.parts.forEach(q=>drawSp(ctx,q.sp,q.x,q.y,q.rot,1));
+    st.parts.forEach(q=>drawSp(ctx,q.sp,q.x,q.y,q.rot,1.55));
     if(f>=1&&m.E===0&&m.nIn.every(n=>n>0))pill(ctx,'Not enough for even one batch',BOX.x+BOX.w/2,BOX.y+BOX.h/2,PAL['s4'],'#fff',14*k);
     if(f>=1&&m.nIn.every(v=>v>0)&&m.E>0){const L=m.lim.length>1?'Both ran out together':m.lim.map(i=>fm(R.re[i]))[0]+' ran out: limiting';pill(ctx,L,BOX.x+BOX.w/2,BOX.y+20,m.lim.length>1?PAL['s3']:PAL['s1'],'#fff',13*k);}
     // bars panel
-    const sp=[...R.re,...R.pr],n=sp.length,x0=540,x1=792,cw=(x1-x0)/n,top=96,bot=298,stag=k>1.25&&n>2;
-    txt(ctx,'Amount ('+word(m)+')',(x0+x1)/2,72,{s:13*k,w:700,a:'center'});
+    const sp=[...R.re,...R.pr],n=sp.length,x0=540,x1=792,cw=(x1-x0)/n,top=74+18*k,bot=298,stag=k>1.25&&n>2;
+    txt(ctx,'Amount ('+word(m)+')',(x0+x1)/2,70,{s:13*k,w:700,a:'center'});
     const a0=amounts(sim,0),a=amounts(sim,f),a1=amounts(sim,1);const vb=[...a0.re.map((v,i)=>inUnit(m,R.re[i],v)),...R.pr.map((s,j)=>inUnit(m,s,a1.pr[j]))];
     const vn=[...a.re.map((v,i)=>inUnit(m,R.re[i],v)),...a.pr.map((v,j)=>inUnit(m,R.pr[j],v))];const vmax=Math.max(1e-9,...vb);
     ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,bot+0.5);ctx.lineTo(x1,bot+0.5);ctx.stroke();
-    const arrowX=x0+cw*R.re.length;txt(ctx,'→',arrowX,top-4,{s:16*k,w:700,a:'center',c:PAL['cv-soft']});ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(arrowX,top+6);ctx.lineTo(arrowX,bot);ctx.stroke();ctx.setLineDash([]);
-    sp.forEach((s,i)=>{const cx=x0+cw*(i+0.5),bw=Math.min(34,cw*0.55),H=bot-top-14*k-8,hB=H*vb[i]/vmax,hN=H*vn[i]/vmax;
+    const arrowX=x0+cw*R.re.length;ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(arrowX,top+6);ctx.lineTo(arrowX,bot);ctx.stroke();ctx.setLineDash([]);
+    sp.forEach((s,i)=>{const cx=x0+cw*(i+0.5),bw=Math.min(34,cw*0.55),H=bot-top-14*k-6,hB=H*vb[i]/vmax,hN=H*vn[i]/vmax;
       if(i<R.re.length){ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.strokeRect(cx-bw/2,bot-hB,bw,hB);ctx.setLineDash([]);}
       ctx.fillStyle=serColor(i);ctx.fillRect(cx-bw/2,bot-hN,bw,hN);
       txt(ctx,fmtU(m,vn[i]),cx,bot-Math.max(hN,i<R.re.length?hB:0)-6,{s:12*k,w:700,a:'center'});

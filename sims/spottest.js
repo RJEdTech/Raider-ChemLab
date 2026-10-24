@@ -94,12 +94,13 @@ const SPOT={
     {id:'clean',label:'Clean this test’s wells',run(sim){sim.st.w[sim.p.test]={};sim.st.drops=[];}},
     {id:'newev',label:'New evidence powder',run(sim){const st=sim.st;st.round++;pickEvidence(sim);TKEYS.forEach(r=>{if(st.w[r])delete st.w[r].ev;});delete st.res.ev;sim.infoDirty=true;}}
   ],
-  init(sim){const st={round:(sim.st&&sim.st.round)||1,ev:'bakingsoda',w:{},res:{},drops:[]};sim.st=st;pickEvidence(sim);return st;},
+  init(sim){const st={round:(sim.st&&sim.st.round)||1,ev:'bakingsoda',w:{},res:{},drops:[]};sim.st=st;pickEvidence(sim);
+    if(!sim._opened){sim._opened=true;st.w.iodine={};wells(sim).forEach(k=>{st.w.iodine[k]={t:5,delay:0,heat:0};record(sim,'iodine',k);});}return st;},
   step(sim,dt){const st=sim.st;TKEYS.forEach(r=>{const W=st.w[r];if(!W)return;Object.keys(W).forEach(k=>{const w=W[k];w.t+=dt;const pr=progress(sim,r,w,spOf(sim,k));if(pr.done)record(sim,r,k);});});
     st.drops=st.drops.filter(d=>(d.t+=dt)<0.7+d.delay);},
   onLevel(sim){if(!wells(sim).includes(sim.p.sample))BioLab.setValues(sim,{sample:'ev'});},
   metrics:[
-    {id:'sel',label:'Selected powder',unit:'',lvl:'bio',text:true,get:s=>nameOf(s,s.p.sample)},
+    {id:'sel',label:'Selected powder',unit:'',lvl:'bio',text:true,noTrial:true,get:s=>nameOf(s,s.p.sample)},
     {id:'res',label:'Result',unit:'',lvl:'bio',text:true,get:s=>{const o=selRes(s);if(o)return o.txt;const W=s.st.w[s.p.test];return W&&W[s.p.sample]?'Reacting…':'Not tested yet';}},
     {id:'done',label:'Evidence table',unit:'',lvl:'bio',text:true,noTrial:true,get:s=>{const ks=wells(s),ts=testsVis();let n=0;ks.forEach(k=>ts.forEach(r=>{if(resOf(s,k,r))n++;}));return n+' of '+ks.length*ts.length+' results recorded';}},
     {id:'ph',label:'pH of the solution',unit:'',lvl:'ap',min:0,max:14,d:1,get:s=>{const o=resOf(s,s.p.sample,'ph');return o?o.pH:null;}},
@@ -193,7 +194,7 @@ const SPOT={
   onClick(sim,x,y){const ws=wells(sim);ws.forEach((k,i)=>{const P=wellPos(i,ws.length);if(Math.hypot(x-P.x,y-P.y)<34)BioLab.setValues(sim,{sample:k});});},
   draw(sim,ctx,vdt,k,t){const st=sim.st,r=sim.p.test,T=TESTS[r],ws=wells(sim),selK=sim.p.sample,W=st.w[r]||{},small=k>1.4;
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,386,800,64);
-    txt(ctx,T.name.replace(' (heated)','')+' · tests for '+T.tests.replace(' such as sodium',''),20,32,{s:14*k,w:700});
+    txt(ctx,small?T.name.replace(/ \(.*\)/,'').replace(' solution',''):T.name.replace(' (heated)','')+' · tests for '+T.tests.replace(' such as sodium','').replace(' (fizzing)',''),20,32,{s:14*k,w:700});
     // spot plate
     ctx.fillStyle='rgba(0,0,0,.12)';rr(ctx,20,58,486,320,16);ctx.fill();ctx.fillStyle='#f6f6f2';rr(ctx,16,54,486,320,16);ctx.fill();ctx.strokeStyle='#cfcfc6';ctx.lineWidth=1.5;ctx.stroke();
     ws.forEach((key,i)=>{const P=wellPos(i,ws.length),sp=spOf(sim,key),w=W[key];
@@ -202,7 +203,7 @@ const SPOT={
         ctx.fillStyle=sp.powder;ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(P.x,P.y+4,15,10,0,0,6.29);ctx.fill();ctx.stroke();
         ctx.fillStyle='rgba(0,0,0,.07)';for(let j=0;j<7;j++){ctx.beginPath();ctx.arc(P.x-9+((j*37)%19),P.y+((j*23)%11)-1,1.3,0,6.29);ctx.fill();}}
       else{const pr=progress(sim,r,w,sp),o=pr.o,tt=w.t-w.delay;
-        if(r==='flame'){ctx.fillStyle='#e9e3d9';ctx.beginPath();ctx.ellipse(P.x,P.y+4,15,10,0,0,6.29);ctx.fill();if(tt>0){const c=pr.dev>0?mixC('#5b8fd9',o.flame,pr.dev):'#5b8fd9';drawFlame(ctx,P.x,P.y+10,10,26,c,t+i);}}
+        if(r==='flame'){ctx.fillStyle='#e9e3d9';ctx.beginPath();ctx.ellipse(P.x,P.y+4,15,10,0,0,6.29);ctx.fill();if(tt>0){const c=pr.dev>0?mixC('#5b8fd9',o.flame,pr.dev):'#5b8fd9';drawFlame(ctx,P.x,P.y+12,12,40,c,t+i);}}
         else if(r==='ph'){ctx.fillStyle='#dfeef6';ctx.beginPath();ctx.arc(P.x,P.y,22,0,6.29);ctx.fill();if(tt>0){ctx.fillStyle=mixC(T.col,o.col,pr.mix);ctx.fillRect(P.x-6,P.y-24,12,40);ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;ctx.strokeRect(P.x-6,P.y-24,12,40);}}
         else{const base=mixC(sp.powder,T.col,Math.min(1,pr.mix*1.6));let c=mixC(base,o.col,r==='benedict'||o.slow?pr.dev:pr.mix);if(tt<=0)c=sp.powder;
           ctx.fillStyle=c;ctx.beginPath();ctx.arc(P.x,P.y,22,0,6.29);ctx.fill();
@@ -243,7 +244,7 @@ function equation(sim){const r=sim.p.test,k=sim.p.sample,sp=spOf(sim,k),tested=!
 /* particle view: a stateless scene drawn from the test, the powder and its progress */
 function drawParticles(sim,ctx,k,t){const r=sim.p.test,key=sim.p.sample,sp=spOf(sim,key),w=(sim.st.w[r]||{})[key],pr=w?progress(sim,r,w,sp):null,o=pr?pr.o:null,on=pr&&w.t-w.delay>0;
   const CX=652,CY=146,R=100,tt=RM?0:t;const leg=[];
-  ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,6.29);ctx.clip();ctx.fillStyle=on&&r!=='flame'?PAL['cv-water']:PAL['cv-bg2'];ctx.fillRect(CX-R,CY-R,2*R,2*R);
+  ctx.save();ctx.beginPath();ctx.arc(CX,CY,R,0,6.29);ctx.clip();ctx.fillStyle=on&&r!=='flame'?'#dcebf4':'#efede6';ctx.fillRect(CX-R,CY-R,2*R,2*R);
   const P=(i,n,spread)=>{const a=i*2.399+0.3,rad=Math.sqrt((i+0.5)/n)*R*0.86*spread;return [CX+Math.cos(a)*rad+Math.sin(tt*0.9+i)*4,CY+Math.sin(a)*rad+Math.cos(tt*0.8+i*1.3)*4];};
   const dot=(x,y,rad,c)=>{ctx.fillStyle=c;ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,rad,0,6.29);ctx.fill();ctx.stroke();};
   const hexm=(x,y,s,c)=>{ctx.fillStyle=c;ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=1;ctx.beginPath();for(let j=0;j<6;j++){const a=j*Math.PI/3;ctx[j?'lineTo':'moveTo'](x+Math.cos(a)*s,y+Math.sin(a)*s);}ctx.closePath();ctx.fill();ctx.stroke();};
@@ -254,13 +255,13 @@ function drawParticles(sim,ctx,k,t){const r=sim.p.test,key=sim.p.sample,sp=spOf(
     if(ionic)leg.push(['#8e5ac8','Na⁺ ion'],[sp.an==='Cl⁻'?'#2e8b57':'#c0392b',(sp.an||'anion')+' ion']);else leg.push([molc,sp.starch?'starch chains':sp.prot?'protein chains':'whole molecules']);};
   if(!on){sampleParts(0.5,20);leg.length=0;leg.push(['#df741a','dry powder: particles packed tight']);}
   else if(r==='water'){const sol=o.pos;sampleParts(sol?1:0.5,sol?18:20);water(26);leg.push(['#5dade2','H₂O']);}
-  else if(r==='iodine'){if(sp.starch){ctx.strokeStyle='#c9b27a';ctx.lineWidth=9;for(let j=0;j<2;j++){const y0=CY-34+j*64;ctx.beginPath();for(let x=CX-R;x<=CX+R;x+=4)ctx[x===CX-R?'moveTo':'lineTo'](x,y0+Math.sin(x*0.09)*12);ctx.stroke();
+  else if(r==='iodine'){if(sp.starch){for(let j=0;j<2;j++){const y0=CY-34+j*64;ctx.strokeStyle='#c9b27a';ctx.lineWidth=9;ctx.beginPath();for(let x=CX-R;x<=CX+R;x+=4)ctx[x===CX-R?'moveTo':'lineTo'](x,y0+Math.sin(x*0.09)*12);ctx.stroke();
         for(let q=0;q<6;q++){const x=CX-80+q*32+Math.sin(tt+q)*2;if(q/6<pr.mix){dot(x-5,y0+Math.sin(x*0.09)*12,3.5,'#24204a');dot(x,y0+Math.sin(x*0.09)*12,3.5,'#24204a');dot(x+5,y0+Math.sin(x*0.09)*12,3.5,'#24204a');}}}
-      leg.push(['#c9b27a','starch helix'],['#24204a','I₃⁻ trapped inside: blue-black']);}
+      leg.push(['#c9b27a','starch helix'],['#24204a','trapped I₃⁻ (blue-black)']);}
     else{sampleParts(sp.sol==='insol'?0.5:1,12);for(let i=0;i<8;i++){const [x,y]=P(i+20,30,1);dot(x-5,y,3.5,'#b0701c');dot(x,y,3.5,'#b0701c');dot(x+5,y,3.5,'#b0701c');}leg.push(['#b0701c','free I₃⁻: amber-brown']);}}
   else if(r==='vinegar'){for(let i=0;i<9;i++){const [x,y]=P(i+12,24,1);hexm(x,y,6,'#9ccc65');}leg.push(['#9ccc65','CH₃COOH']);
     if(sp.carb){for(let i=0;i<8;i++){const [x,y]=P(i,18,0.9);dot(x,y,6,'#c0392b');}leg.push(['#c0392b','HCO₃⁻']);const n=Math.round(9*sp.carb*pr.mix);
-      for(let i=0;i<n;i++){const ph=(tt*0.5+i*0.13)%1,x=CX-70+((i*47)%140),y=CY+R-ph*2*R;ctx.strokeStyle=PAL['cv-bstroke'];ctx.fillStyle=PAL['cv-bubble'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,7+(i%3)*2,0,6.29);ctx.fill();ctx.stroke();}leg.push([PAL['cv-bubble'],'CO₂ gas bubbles']);}
+      for(let i=0;i<n;i++){const ph=(tt*0.5+i*0.13)%1,x=CX-70+((i*47)%140),y=CY+R-ph*2*R;ctx.strokeStyle='#6f97ab';ctx.fillStyle='#ffffff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,7+(i%3)*2,0,6.29);ctx.fill();ctx.stroke();}leg.push(['#ffffff','CO₂ gas bubbles']);}
     else sampleParts(sp.sol==='insol'?0.5:1,10);}
   else if(r==='ph'){const pH=o.pH,nH=Math.round(clamp(5+(7-pH)*3,1,22)),nO=Math.round(clamp(5+(pH-7)*4,1,22));water(24);
     for(let i=0;i<nH;i++){const [x,y]=P(i*2,nH*2+2,1);dot(x,y,6,PAL['cv-h']);}for(let i=0;i<nO;i++){const [x,y]=P(i*2+1,nO*2+2,1);dot(x,y,6,'#2d6bd2');}
@@ -282,9 +283,7 @@ function drawParticles(sim,ctx,k,t){const r=sim.p.test,key=sim.p.sample,sp=spOf(
     else if(o.slow){for(let i=0;i<12;i++){const [x,y]=P(i,16,0.9);hexm(x,y,6,mixC('#df741a','#5a3a1a',pr.dev));}leg.push(['#5a3a1a','sugar slowly charring']);}
     else{sampleParts(sp.sol==='insol'?0.5:1,10);}}
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(CX,CY,R,0,6.29);ctx.stroke();
-  txt(ctx,'Particle view',CX,CY-R-12,{s:13*k,w:700,a:'center'});
-  // lead line from the selected well
-  const ws=wells(sim),i=ws.indexOf(key);if(i>=0){const W=wellPos(i,ws.length);ctx.save();ctx.globalAlpha=0.45;ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([4,4]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(W.x+30,W.y);ctx.lineTo(CX-R,CY);ctx.stroke();ctx.restore();}
+  txt(ctx,k>1.4?'Particle view':'Particle view: '+(key==='ev'?'evidence':SAMP[key].lab.join(' ').replace('- ','').toLowerCase()),CX,CY-R-12,{s:13*k,w:700,a:'center'});
   let ly=CY+R+26;const rh=19*Math.min(k,1.4);leg.slice(0,k>1.4?2:3).forEach(([c,l])=>{ctx.font='600 '+(12*k)+'px '+FONT;let s=l;while(ctx.measureText(s).width>236&&s.length>6)s=s.slice(0,-2);if(s!==l)s=s.replace(/[\s:,]+$/,'')+'…';
     ctx.fillStyle=c;ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(538,ly-4,6,0,6.29);ctx.fill();ctx.stroke();txt(ctx,s,550,ly,{s:12*k,w:600,c:PAL['cv-ink']});ly+=rh;});}
 

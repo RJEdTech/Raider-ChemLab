@@ -177,19 +177,19 @@ function drawMacro(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,s=SOL(sim),v=sim.vis
     if(sz==='crystal'){const e=clamp(10*Math.cbrt(left),5,40);ctx.fillStyle='#f4f6f8';ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;const cx=bx+bw/2+30,cy=by+bh-6;
       ctx.beginPath();ctx.moveTo(cx-e/2,cy);ctx.lineTo(cx+e/2,cy);ctx.lineTo(cx+e/2+e*0.3,cy-e*0.3);ctx.lineTo(cx+e/2+e*0.3,cy-e*1.25);ctx.lineTo(cx-e/2+e*0.3,cy-e*1.25);ctx.lineTo(cx-e/2,cy-e*0.95);ctx.closePath();ctx.fill();ctx.stroke();
       ctx.beginPath();ctx.moveTo(cx-e/2,cy-e*0.95);ctx.lineTo(cx+e/2,cy-e*0.95);ctx.lineTo(cx+e/2,cy);ctx.moveTo(cx+e/2,cy-e*0.95);ctx.lineTo(cx+e/2+e*0.3,cy-e*1.25);ctx.stroke();}
-    else{const n=Math.round(clamp(Math.sqrt(left)*(sz==='powder'?14:7),1,110)),g=sz==='powder'?2.2:4.5;let row=0,inRow=0,cap=Math.round(bw*0.7/(g*2+1));
-      for(let i=0;i<n;i++){if(inRow>=cap){row++;inRow=0;cap=Math.max(2,cap-3);}const x=bx+bw/2+(inRow-(cap-1)/2)*(g*2+1)+((i*5)%3)-1,y=by+bh-6-row*(g*1.6);inRow++;
+    else{const g=sz==='powder'?2.2:4.5,cmax=Math.floor(bw*0.85/(g*2+1)),n=Math.round(clamp(left*(sz==='powder'?4:0.9),1,cmax*cmax/4));let row=0,inRow=0,cap=Math.min(cmax,Math.ceil(2*Math.sqrt(n)));
+      for(let i=0;i<n;i++){if(inRow>=cap){row++;inRow=0;cap=Math.max(1,cap-2);}const x=bx+bw/2+(inRow-(cap-1)/2)*(g*2+1)+((i*5)%3)-1,y=by+bh-6-row*(g*1.7);inRow++;
         ctx.fillStyle='#f4f6f8';ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=sz==='powder'?0.5:1;ctx.fillRect(x-g,y-g,g*2,g*2);ctx.strokeRect(x-g,y-g,g*2,g*2);}}}
   if(s.kind==='oil'&&p.mass>0){const th=clamp(p.mass*1.6,4,46);
     if(p.stir){for(let i=0;i<22;i++){const a=v.stirA*0.3+i*2.4,r=20+((i*37)%70);ctx.fillStyle='#e8c33a';ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(bx+bw/2+Math.cos(a)*r,liq.y+30+((i*53)%(bh*0.6)),3+(i%4)*1.5,0,6.29);ctx.fill();}ctx.globalAlpha=1;
       ctx.fillStyle='#e8c33a';ctx.fillRect(bx+2,liq.y,bw-4,th*0.3);}
     else{ctx.fillStyle='#e8c33a';ctx.fillRect(bx+2,liq.y,bw-4,th);ctx.strokeStyle='#a5861a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+2,liq.y+th);ctx.lineTo(bx+bw-2,liq.y+th);ctx.stroke();}
-    txt(ctx,'oil layer',bx+bw-8,liq.y-8,{s:12*k,w:600,c:PAL['cv-soft'],a:'right'});}
+    txt(ctx,'oil layer',bx+8,liq.y-8,{s:12*k,w:600,c:PAL['cv-soft']});}
   // conductivity tester: two electrodes, wires to a battery and bulb
   const e1=bx+80,e2=bx+150,ey=by-40,b=glow(sim),blx=(e1+e2)/2,bly=88;
   ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(e1-3,ey,6,by+bh*0.72-ey);ctx.fillRect(e2-3,ey,6,by+bh*0.72-ey);
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e1,ey);ctx.lineTo(e1,bly+40);ctx.lineTo(blx-12,bly+40);ctx.moveTo(e2,ey);ctx.lineTo(e2,bly+40);ctx.lineTo(blx+12,bly+40);ctx.stroke();
-  rr(ctx,e2+14,bly+20,34,40,4);ctx.fillStyle=PAL['cv-lamp'];ctx.fill();txt(ctx,'+',e2+31,bly+33,{s:12,w:700,c:'#fff',a:'center',b:'middle'});txt(ctx,'9 V',e2+31,bly+50,{s:11,w:700,c:'#fff',a:'center',b:'middle'});
+  rr(ctx,e2+14,bly+20,34,40,4);ctx.fillStyle=PAL['cv-lamp'];ctx.fill();ctx.fillRect(e2+24,bly+15,14,6);
   if(b>0.01){const gr=ctx.createRadialGradient(blx,bly,4,blx,bly,26+56*b);gr.addColorStop(0,'rgba(255,214,64,'+(0.85*b+0.1)+')');gr.addColorStop(1,'rgba(255,214,64,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(blx,bly,26+56*b,0,6.29);ctx.fill();}
   ctx.beginPath();ctx.arc(blx,bly,18,0,6.29);ctx.fillStyle=b>0.01?'rgb(255,'+Math.round(200+40*b)+','+Math.round(60+100*(1-b))+')':PAL['card'];ctx.fill();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(blx-9,bly+16,18,14);
@@ -216,7 +216,7 @@ function ethGlyph(ctx,x,y,a){const c=Math.cos(a),s=Math.sin(a);ball(ctx,x-c*9,y-
 function aceGlyph(ctx,x,y,a,ion){const c=Math.cos(a),s=Math.sin(a);ball(ctx,x-c*8,y-s*8,{c:'#555b61',r:6});ball(ctx,x+c*3,y+s*3,{c:'#555b61',r:6});ball(ctx,x+c*10-s*7,y+s*10+c*7,{c:'#e53935',r:5.5});ball(ctx,x+c*10+s*7,y+s*10-c*7,{c:'#e53935',r:5.5});
   if(!ion){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+c*16+s*9,y+s*16-c*9,3,0,6.29);ctx.fill();}else{ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x+c*3,y+s*3,19,0,6.29);ctx.stroke();}}
 function hclGlyph(ctx,x,y,a){const c=Math.cos(a),s=Math.sin(a);ball(ctx,x+c*4,y+s*4,{c:'#2fae4e',r:11});ctx.fillStyle='#fff';ctx.strokeStyle='#8f9aa1';ctx.beginPath();ctx.arc(x-c*10,y-s*10,4,0,6.29);ctx.fill();ctx.stroke();}
-function sites(s){const out=[];const liquidPool=!solid(s);const sp=s.kind==='ionic'||s.kind==='strong'?23:28,rowH=s.kind==='ionic'||s.kind==='strong'?22:24;
+function sites(s){const out=[];const liquidPool=!solid(s);const sp=s.kind==='ionic'||s.kind==='strong'?23:s.kind==='molec'?38:30,rowH=s.kind==='ionic'||s.kind==='strong'?22:s.kind==='molec'?25:24;
   for(let r=0;r<8;r++){const y=liquidPool?ZY-ZR+40+r*rowH:ZY+ZR-24-r*rowH,dy=y-ZY,half=Math.sqrt(Math.max(0,(ZR-14)*(ZR-14)-dy*dy));const n=Math.min(liquidPool?8:10,Math.floor((half*2-6)/sp));
     for(let c=0;c<n;c++)out.push({x:ZX+(c-(n-1)/2)*sp,y,r,c});}return out;}
 function drawZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,s=SOL(sim),v=sim.vis,hon=atLeast('honors');
@@ -226,7 +226,7 @@ function drawZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,s=SOL(sim),v=sim.vis,
   const S=sites(s);
   // targets: dissolved units and undissolved units in view
   let tD=Math.round(st.md/s.M*s.Q);if(st.md>1e-4&&s.kind!=='oil')tD=Math.max(1,tD);tD=Math.min(s.cap,tD);
-  const left=Math.max(0,p.mass-st.md);let tL=Math.round(left/s.M*s.Q);if(left>0.02)tL=Math.max(1,tL);tL=Math.min(Math.floor(S.length/per),tL);
+  const left=Math.max(0,p.mass-st.md);let tL=Math.round(left/s.M*s.Q*(solid(s)?3:1));if(left>0.02)tL=Math.max(1,tL);tL=Math.min(Math.floor(S.length/per),tL);
   if(s.kind==='oil'){tD=0;tL=0;}
   v.acc+=vdt;const tick=v.acc>0.07;if(tick)v.acc=0;
   const curD=v.free.length;
@@ -262,15 +262,21 @@ function drawZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,s=SOL(sim),v=sim.vis,
   // legend and scale under the zoom
   const ly=ZY+ZR+22;const items=[];
   if(ionic)items.push([s.cat.l,()=>0,s.cat],[s.an.l,()=>0,s.an]);
-  else if(s.kind==='molec')items.push(['C₁₂H₂₂O₁₁','sugar']);else if(s.kind==='misc')items.push(['C₂H₅OH','eth']);else if(s.kind==='weak')items.push(['HC₂H₃O₂','ace'],['H₃O⁺',null,{c:'#c2185b',r:8}]);else items.push(['oil molecule','oil']);
-  items.push(['H₂O'+(hon?' (O δ−, H δ+)':''),'water']);
-  ctx.font='700 '+(12*k)+'px '+FONT;let w=0;const ws=items.map(it=>{const x=ctx.measureText(it[0]).width+34;w+=x;return x;});let x=ZX-w/2;
-  items.forEach((it,i)=>{const cx=x+12;if(it[1]==='water')drawWater(ctx,cx,ly,-1.57);else if(it[1]==='sugar')sugarGlyph(ctx,cx,ly,0);else if(it[1]==='eth')ethGlyph(ctx,cx,ly,0);else if(it[1]==='ace')aceGlyph(ctx,cx,ly,0,false);else if(it[1]==='oil'){ctx.strokeStyle='#d4a017';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx-10,ly+3);ctx.lineTo(cx-4,ly-3);ctx.lineTo(cx+2,ly+3);ctx.lineTo(cx+8,ly-3);ctx.stroke();}else ball(ctx,cx,ly,{c:it[2].c,r:Math.min(9,it[2].r)});
-    txt(ctx,it[0],x+26,ly,{s:12*k,w:700,b:'middle'});x+=ws[i];});
+  else if(s.kind==='molec')items.push(['C₁₂H₂₂O₁₁','sugar']);else if(s.kind==='misc')items.push(['C₂H₅OH','eth']);else if(s.kind==='weak')items.push(['HC₂H₃O₂','ace'],['H₃O⁺',null,{c:'#c2185b',r:8}],['C₂H₃O₂⁻ (ringed)','acei']);else items.push(['oil molecule','oil']);
+  items.push(['H₂O'+(hon&&k<1.3?' (O δ−, H δ+)':''),'water']);
+  ctx.font='700 '+(12*k)+'px '+FONT;const ws=items.map(it=>ctx.measureText(it[0]).width+34);const rows=[[]];let rw=0;
+  items.forEach((it,i)=>{if(rw+ws[i]>2*ZR+30&&rows[rows.length-1].length){rows.push([]);rw=0;}rows[rows.length-1].push(i);rw+=ws[i];});
+  rows.forEach((row,ri)=>{const y=ly+ri*20*k;let x=ZX-row.reduce((a,i)=>a+ws[i],0)/2;row.forEach(i=>{const it=items[i],cx=x+12;
+    if(it[1]==='water')drawWater(ctx,cx,y,-1.57);else if(it[1]==='sugar')sugarGlyph(ctx,cx,y,0);else if(it[1]==='eth')ethGlyph(ctx,cx,y,0);else if(it[1]==='ace')aceGlyph(ctx,cx,y,0,false);
+    else if(it[1]==='acei'){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx,y,8,0,6.29);ctx.stroke();}
+    else if(it[1]==='oil'){ctx.strokeStyle='#d4a017';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx-10,y+3);ctx.lineTo(cx-4,y-3);ctx.lineTo(cx+2,y+3);ctx.lineTo(cx+8,y-3);ctx.stroke();}
+    else ball(ctx,cx,y,{c:it[2].c,r:Math.min(9,it[2].r)});
+    txt(ctx,it[0],x+26,y,{s:12*k,w:700,b:'middle'});x+=ws[i];});});
+  const legRows=rows.length;
   const S2=solid(s)?s.fn(p.T):null;
-  let head=s.kind==='oil'?'Oil stays separate':solid(s)?(st.md>=S2-0.05&&left>0.05?'Saturated: ':'Dissolved: ')+f1(st.md)+' of '+f1(S2)+' g possible':'Dissolved: '+f1(st.md)+' g (mixes in any amount)';
-  pill(ctx,head,ZX,26,PAL['card2'],PAL['cv-ink'],13*k);
-  if(s.kind==='weak'&&hon)txt(ctx,'Real: '+(100*alpha(sim)).toFixed(2)+'% ionized; '+nIon+' of '+v.free.length+' drawn',ZX,ZY+ZR+44*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}
+  let head=s.kind==='oil'?'Oil stays separate':solid(s)?(st.md>=S2-0.05&&left>0.05?'Saturated: ':'Dissolved: ')+f1(st.md)+' of '+f1(S2)+' g possible':'Dissolved: '+f1(st.md)+' g';
+  ctx.font='700 '+(13*k)+'px '+FONT;const hw=ctx.measureText(head).width+16*k;pill(ctx,head,Math.min(ZX,796-hw/2),26,PAL['card2'],PAL['cv-ink'],13*k);
+  if(s.kind==='weak'&&hon)txt(ctx,'Real: '+(100*alpha(sim)).toFixed(2)+'% ionized; '+nIon+' of '+v.free.length+' drawn',ZX,ly+legRows*20*k+4,{s:12*k,c:PAL['cv-soft'],a:'center'});}
 function hbWaters(ctx,q,t,R,n){n=n||2;for(let j=0;j<n;j++){const ang=q.ph+j*Math.PI+(RM?0:t*0.3);const wx=q.x+Math.cos(ang)*R,wy=q.y+Math.sin(ang)*R;
   ctx.strokeStyle=PAL['cv-soft'];ctx.setLineDash([2,3]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(q.x+Math.cos(ang)*(R-12),q.y+Math.sin(ang)*(R-12));ctx.lineTo(wx-Math.cos(ang)*6,wy-Math.sin(ang)*6);ctx.stroke();ctx.setLineDash([]);
   drawWater(ctx,wx,wy,ang+Math.PI);}}

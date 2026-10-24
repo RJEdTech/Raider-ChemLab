@@ -48,6 +48,7 @@ const SUPC={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','
 const sup=n=>String(n).split('').map(c=>SUPC[c]||c).join('');
 /* Always scientific notation: 2.5 × 10⁻¹³ */
 function sx(v,sig){if(!Number.isFinite(v)||v<=0)return '—';sig=sig||2;let e=Math.floor(Math.log10(v)+1e-9),m=v/Math.pow(10,e);if(+m.toFixed(sig-1)>=10){m/=10;e++;}return e===0?m.toFixed(sig-1):m.toFixed(sig-1)+' × 10'+sup(e);}
+const big=f=>{const r=+f.toPrecision(2);return r>=1000?r.toLocaleString('en-US'):String(r);};
 function calc(p){
   const s=SOLB[p.sol]||SOLB.lemon,pH=s.pH,h=Math.pow(10,-pH);
   const C=+p.conc,wa=WEAK[p.weak]||WEAK.HC2H3O2;
@@ -179,13 +180,13 @@ const PH={
   narrate(sim){const p=sim.p,r=calc(p),hon=atLeast('honors');
     if(p.mode==='scale'){const s=r.s,L=liquid(p.ind,s.pH,s.col);let t;
       if(s.id==='water')t='Pure water sits at <b>pH 7.00, neutral</b>: water makes equal amounts of H₃O⁺ and OH⁻, '+sx(1e-7,2)+' M each.';
-      else if(s.pH<7){const f=Math.pow(10,7-s.pH);t=s.n+' (pH '+s.pH.toFixed(1)+') is <b>acidic</b>: it has about '+(f>=1000?Math.round(f).toLocaleString('en-US'):f.toPrecision(2))+' times more H₃O⁺ than pure water'+(hon?', from '+s.note+'.':'.');}
-      else{const f=Math.pow(10,s.pH-7);t=s.n+' (pH '+s.pH.toFixed(1)+') is <b>basic</b>: it has about '+(f>=1000?Math.round(f).toLocaleString('en-US'):f.toPrecision(2))+' times more OH⁻ than pure water'+(hon?', from '+s.note+'.':'.');}
-      if(p.ind!=='none')t+=' '+IND[p.ind].n+' turns it '+L[1]+'.';
+      else if(s.pH<7){const f=Math.pow(10,7-s.pH);t=s.n+' (pH '+s.pH.toFixed(1)+') is <b>acidic</b>: it has about '+big(f)+' times more H₃O⁺ than pure water'+(hon?' ('+s.note+').':'.');}
+      else{const f=Math.pow(10,s.pH-7);t=s.n+' (pH '+s.pH.toFixed(1)+') is <b>basic</b>: it has about '+big(f)+' times more OH⁻ than pure water'+(hon?' ('+s.note+').':'.');}
+      if(p.ind!=='none')t+=' '+IND[p.ind].n+(L[1]==='colorless'?' stays colorless in it.':' turns it '+L[1]+'.');
       if(s.pH>=11.5||s.pH<=2.0)t+=' In a real lab: goggles and gloves, and never mix bleach with ammonia.';
       return t;}
     const n0=nIon(sim.vis.U?sim.vis.U[1]:[]);
-    let t='<b>HCl ionizes completely</b>: every HCl in the zoom became H₃O⁺ and Cl⁻, so pH = '+r.pHs.toFixed(2)+'. '+r.wa.f+' at the same '+cLabel(r.C)+' <b>ionizes only '+(100*r.alpha).toPrecision(2)+'%</b>, so it has far fewer H₃O⁺ and a higher pH, '+r.pHw.toFixed(2)+'.';
+    let t='<b>HCl ionizes completely</b>: every HCl in the zoom became H₃O⁺ and Cl⁻, so pH = '+r.pHs.toFixed(2)+'. '+(r.alpha<0.3?r.wa.f+' at the same '+cLabel(r.C)+' <b>ionizes only '+(100*r.alpha).toPrecision(2)+'%</b>, so it has far fewer H₃O⁺ and a higher pH, '+r.pHw.toFixed(2)+'.':r.wa.f+' is so dilute that it <b>ionizes '+(100*r.alpha).toPrecision(2)+'%</b>, so its pH ('+r.pHw.toFixed(2)+') gets close to the strong acid’s. Diluting a weak acid raises its percent ionized.');
     if(hon)t+=' The weak acid is at equilibrium: molecules keep ionizing and re-forming ('+n0+' of 40 are ionized right now).';
     return t;},
   tour:[
@@ -194,7 +195,7 @@ const PH={
     {title:'Both ions are always there',text:{bio:'Even bleach has a few H₃O⁺ ions, and even lemon juice has a few OH⁻. When one goes up, the other goes down.',honors:'[H₃O⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ at 25 °C, so pH + pOH = 14. The two bars always add up to the same total height.'},focus:[178,18,340,428],pause:true,setup(sim){BioLab.setValues(sim,{sol:'bleach'});}},
     {title:'Indicators show pH by color',text:'An indicator is a dye that changes color at a certain pH. Universal indicator is a mix of dyes, so it shows a different color across the whole scale. Dark drinks like cola hide the color, which is why labs also use pH meters.',focus:[4,50,170,384],pause:true,setup(sim){BioLab.setValues(sim,{sol:'vinegar',ind:'uni'});}},
     {title:'A strong acid ionizes completely',text:'Now two beakers at the same concentration, 0.10 M. In HCl, every molecule has given its H⁺ to water: 40 H₃O⁺ (pink) and 40 Cl⁻ (green) in view, and no HCl molecules left.',focus:[[ZC[0][0]-ZR-6,ZC[0][1]-ZR-6,2*ZR+12,2*ZR+12]],speed:0.5,setup(sim){BioLab.setValues(sim,{mode:'compare',conc:0.1,weak:'HC2H3O2',ind:'none'});}},
-    {title:'A weak acid mostly stays intact',text:{bio:'In acetic acid, almost every molecule is still whole (an orange ball with its small white H). Only about 1 in 75 gives up its H⁺ at any moment, so the pH is higher: 2.87 instead of 1.00.',honors:'HC₂H₃O₂ + H₂O ⇌ H₃O⁺ + C₂H₃O₂⁻ sits far to the left. Watch: a molecule ionizes, and an ion pair finds each other and re-forms. That is dynamic equilibrium.'},focus:[[ZC[1][0]-ZR-6,ZC[1][1]-ZR-6,2*ZR+12,2*ZR+12]],speed:0.5},
+    {title:'A weak acid mostly stays intact',text:{bio:'In acetic acid, almost every molecule is still whole (an orange ball with its small white H). Only about 1 in 75 gives up its H⁺ at any moment, so the pH is higher: 2.88 instead of 1.00.',honors:'HC₂H₃O₂ + H₂O ⇌ H₃O⁺ + C₂H₃O₂⁻ sits far to the left. Watch: a molecule ionizes, and an ion pair finds each other and re-forms. That is dynamic equilibrium.'},focus:[[ZC[1][0]-ZR-6,ZC[1][1]-ZR-6,2*ZR+12,2*ZR+12]],speed:0.5},
     {title:'Dilute both 10×',text:{bio:'At 0.010 M, HCl goes from pH 1 to pH 2: one step per 10× dilution. The weak acid’s pH rises by only about half a step.',ap:'Strong acid: pH rises 1.00 per 10× dilution. Weak acid: [H₃O⁺] ≈ √(Ka·C), so pH rises about 0.5, and the percent ionized goes up from 1.3% to 4.2%.'},focus:[0,300,800,150],pause:true,setup(sim){BioLab.setValues(sim,{conc:0.01});}},
     {lvl:'ap',title:'Finding Ka',text:'Ka = [H₃O⁺][A⁻]/[HA]. Measure the pH, take [H₃O⁺] = 10⁻ᵖᴴ, and the ICE table gives [A⁻] = [H₃O⁺] and [HA] = C − [H₃O⁺]. The table under the graph does it for the current acid.',focus:[[ZC[1][0]-ZR-6,ZC[1][1]-ZR-6,2*ZR+12,2*ZR+12],[400,300,400,80]],pause:true,setup(sim){BioLab.setValues(sim,{conc:0.1});}}
   ],
@@ -245,17 +246,17 @@ function drawScale(sim,ctx,r,k,hon,ap){const p=sim.p,s=r.s;
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(122,124);ctx.lineTo(122,316);ctx.stroke();
   ctx.fillStyle=PAL['cv-glass'];rr(ctx,116,300,12,40,5);ctx.fill();
   meter(ctx,12,62,150,s.pH.toFixed(2),k,'pH');
-  txt(ctx,s.n,bx+bw/2,by+bh+26,{s:15*k,w:700,a:'center'});
-  if(p.ind!=='none')txt(ctx,cname,bx+bw/2,by+bh+26+19*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
+  ctx.font='700 '+(14*k)+'px '+FONT;const nw=ctx.measureText(s.n).width;txt(ctx,s.n,Math.max(bx+bw/2,nw/2+6),by+bh+26,{s:14*k,w:700,a:'center'});
+  if(p.ind!=='none')txt(ctx,cname,Math.max(bx+bw/2,nw/2+6),by+bh+26+19*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
   // log-scale ladder of [H3O+] and [OH-]
   const T=66,B=350,X0=352,Y=e=>T+(-e)/14*(B-T); // e = exponent 0..-14
   txt(ctx,'Concentration (mol/L), log scale',X0,34,{s:13*k,w:700,a:'center'});
   const step=k>1.3?4:2;ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;
-  for(let e=0;e>=-14;e-=1){const y=Y(e);ctx.beginPath();ctx.moveTo(X0-52,y);ctx.lineTo(X0+52,y);ctx.globalAlpha=e%2?0.35:0.8;ctx.stroke();ctx.globalAlpha=1;
+  for(let e=0;e>=-14;e-=1){const y=Y(e);ctx.beginPath();ctx.moveTo(X0-54,y);ctx.lineTo(X0+54,y);ctx.globalAlpha=e%2?0.35:0.8;ctx.stroke();ctx.globalAlpha=1;
     if((-e)%step===0)txt(ctx,'10'+sup(e),X0-60,y,{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});}
   const bar=(x,e,c)=>{const y=Y(e);ctx.fillStyle=c;rr(ctx,x,y,32,Math.max(2,B-y),4);ctx.fill();};
-  bar(X0-42,-s.pH,'#d22d68');bar(X0+10,s.pH-14,'#2f6fd0');
-  txt(ctx,'H₃O⁺',X0-26,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-h']});txt(ctx,'OH⁻',X0+26,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-sub']});
+  bar(X0-50,-s.pH,'#d22d68');bar(X0+18,s.pH-14,'#2f6fd0');
+  txt(ctx,'H₃O⁺',X0-34,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-h']});txt(ctx,'OH⁻',X0+34,B+20,{s:14*k,w:700,a:'center',c:PAL['cv-sub']});
   drawValue(ctx,sx(r.h,2),X0-6,B+22+19*k,'right',k);drawValue(ctx,sx(r.oh,2),X0+6,B+22+19*k,'left',k);
   if(k<1.3){if(ap)txt(ctx,'[H₃O⁺][OH⁻] = 1.0 × 10⁻¹⁴',X0,B+86,{s:12*k,c:PAL['cv-soft'],a:'center'});
     else if(hon)txt(ctx,'pH + pOH = '+s.pH.toFixed(1)+' + '+(14-s.pH).toFixed(1)+' = 14',X0,B+86,{s:12*k,c:PAL['cv-soft'],a:'center'});}
@@ -286,10 +287,10 @@ function drawCompare(sim,ctx,r,k,t,hon,ap){const p=sim.p,v=sim.vis;if(!v.U)retur
   halves.forEach((h,i)=>{const x0=i*400,[cx,cy]=ZC[i];
     txt(ctx,'Beaker '+h.tag+': '+h.name+', '+h.sub,x0+200,58,{s:14*k,w:700,a:'center'});
     // small beaker with indicator color
-    const [col]=liquid(p.ind,h.pH,null);const B=CL.drawBeaker(ctx,{x:x0+22,y:220,w:84,h:84,fill:0.7,liquid:col,ticks:false});
+    const [col]=liquid(p.ind,h.pH,null);const B=CL.drawBeaker(ctx,{x:x0+22,y:200,w:84,h:84,fill:0.7,liquid:col,ticks:false});
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x0+64,B.y+10);ctx.lineTo(cx-ZR*0.9,cy-ZR*0.4);ctx.moveTo(x0+64,B.y+10);ctx.lineTo(cx-ZR*0.6,cy+ZR*0.8);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=PAL['cv-glass'];ctx.beginPath();ctx.arc(x0+64,B.y+10,3.5,0,6.29);ctx.fill();
-    txt(ctx,cLabel(r.C),x0+64,320,{s:12*k,c:PAL['cv-soft'],a:'center'});
+    txt(ctx,cLabel(r.C),x0+64,306,{s:12*k,c:PAL['cv-soft'],a:'center'});
     drawZoom(ctx,cx,cy,h.U,h.col,k,t,v.water);
     const n=nIon(h.U);
     pill(ctx,'pH '+h.pH.toFixed(2),x0+200,338,i?'#2f6fd0':'#c2185b','#fff',16*k);

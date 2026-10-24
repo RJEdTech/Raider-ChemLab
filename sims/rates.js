@@ -66,7 +66,7 @@ const RATES={
         honors:'Collision theory in action: count the collisions, see which ones clear the activation energy on the Maxwell–Boltzmann curve, and see why only some of them react.',
         ap:'Measure rate = Z × f × p for yourself: the collision frequency Z, the fraction f with E ≥ Eₐ, and the orientation factor p. Then check your numbers against the Arrhenius equation.'},
   scale:{bio:'A zoomed-in view of a tiny drop of solution, a few nanometers across. Each ball is one particle.',
-         ap:'A 2-D slice a few nanometers across. 80 particles in the box stand for 1 mol/L. Energies are in kJ/mol, so each particle’s energy is shown as if it were a mole of them.'},
+         ap:'A 2-D slice a few nanometers across. 80 A or B particles stand for 1 mol/L (30 H⁺ ions in the Mg + HCl box). Energies are in kJ/mol, as if each particle were a mole of them.'},
   aspect:1.6,timeScale:1,dtMax:0.01,sampleDt:0.25,window:120,unit:'s',chChange:4,chReveal:8,
   controls:[
     {id:'rxn',label:'Reaction',type:'seg',def:'gas',lvl:'bio',options:[{v:'gas',l:'A + B → AB'},{v:'mg',l:'Mg + HCl'}],noTrial:false},
@@ -135,9 +135,9 @@ const RATES={
     if(mg&&Number.isNaN(st.done)&&!st.mg.some(m=>!m.gone))st.done=sim.t-st.t0;},
   metrics:[
     {id:'rate',label:'Reaction rate',unit:'M/s',lvl:'bio',min:0,max:null,d:4,modes:['gas'],get:s=>model(s).rate/PPM},
-    {id:'cA',label:'A left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mA/PPM},
-    {id:'cB',label:'B left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mB/PPM},
-    {id:'cC',label:'AB made',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mC/PPM},
+    {id:'nA',label:'A left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mA/PPM},
+    {id:'nB',label:'B left',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mB/PPM},
+    {id:'nC',label:'AB made',unit:'M',lvl:'bio',min:0,max:1,d:2,modes:['gas'],get:s=>s.st.mC/PPM},
     {id:'half',label:'Time to react halfway',unit:'s',lvl:'bio',min:0,max:null,d:1,modes:['gas'],get:s=>s.st.half},
     {id:'bub',label:'H₂ bubbles per second',unit:'/s',lvl:'bio',min:0,max:null,d:2,modes:['mg'],get:s=>model(s).rate/2},
     {id:'mgl',label:'Mg atoms left',unit:'of 12',lvl:'bio',min:0,max:12,d:0,modes:['mg'],get:s=>s.st.mg.filter(m=>!m.gone).length},
@@ -153,7 +153,7 @@ const RATES={
   defaultGraph:'conc',
   plot(sim,ctx,box,id){const st=sim.st,mg=sim.p.rxn==='mg',rows=sim.hist.filter(r=>r.t>=st.t0-1e-9);
     const el=Math.max(0,sim.t-st.t0),xmax=Math.max(30,Math.ceil(el/10)*10);
-    if(id==='conc'){const ser=mg?[{id:'cH',l:'[H⁺]',c:PAL['cv-h']},{id:'mg2',l:'[Mg²⁺]',c:PAL['cv-soft']}]:[{id:'cA',l:'[A]',c:PAL['cv-sub']},{id:'cB',l:'[B]',c:PAL['cv-prod']},{id:'cC',l:'[AB]',c:PAL['s5']}];
+    if(id==='conc'){const ser=mg?[{id:'cH',l:'[H⁺]',c:PAL['cv-h']},{id:'mg2',l:'[Mg²⁺]',c:PAL['cv-soft']}]:[{id:'nA',l:'[A]',c:PAL['cv-sub']},{id:'nB',l:'[B]',c:PAL['cv-prod']},{id:'nC',l:'[AB]',c:PAL['s5']}];
       const ymax=mg?Math.max(1,sim.p.cH)*1.05:Math.max(sim.p.cA,sim.p.cB,0.2)*1.1;
       box.T=34;box.H=box.ch-34-40;const ax=BioLab.h.axes(ctx,box,{xmin:0,xmax,ymin:0,ymax,xl:'Time since mixing (s)',yl:'Concentration (M)'});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();
@@ -162,8 +162,7 @@ const RATES={
     else{const key=mg?'bub':'rate';const vals=rows.map(r=>r.v[key]).filter(Number.isFinite);const ymax=Math.max(mg?1:0.02,...vals)*1.15;
       const ax=BioLab.h.axes(ctx,box,{xmin:0,xmax,ymin:0,ymax,xl:'Time since mixing (s)',yl:mg?'H₂ bubbles per second':'Rate (M/s)'});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=PAL['g-line'];ctx.lineWidth=2.5;ctx.beginPath();let n=0;
-      rows.forEach(r=>{const v=r.v[key];if(!Number.isFinite(v))return;const X=ax.X(r.t-st.t0),Y=ax.Y(v);n++?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();ctx.restore();
-      txt(ctx,'Averaged over the last '+WIN+' s',box.L+box.W,box.T+14,{s:12,c:PAL['muted'],a:'right'});}},
+      rows.forEach(r=>{const v=r.v[key];if(!Number.isFinite(v))return;const X=ax.X(r.t-st.t0),Y=ax.Y(v);n++?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();ctx.restore();}},
   narrate(sim){const p=sim.p,st=sim.st,x=model(sim),hon=atLeast('honors'),ap=atLeast('ap'),mg=p.rxn==='mg';
     const ea=eaNow(p),pc=v=>v<0.1?v.toFixed(2):v.toFixed(1);
     const warm=p.T>=380?' At '+p.T+' K the particles move fast, so many more of them carry enough energy.':p.T<=250?' At '+p.T+' K the particles are slow, and very few carry enough energy.':'';
@@ -179,7 +178,7 @@ const RATES={
     return s;},
   tour:[
     {title:'Particles in a box',text:{bio:'You are zoomed in on a tiny drop of solution. Blue balls are A, orange balls are B. They fly around, bounce off the walls and off each other.',ap:'Each particle has a speed drawn from the Maxwell–Boltzmann distribution at the box temperature. A water bath (a thermostat) keeps that distribution steady.'},focus:[BX,BY,BW,BH],speed:0.5,setup(sim){BioLab.setValues(sim,{rxn:'gas',cA:0.5,cB:0.5,T:300,cat:false});restart(sim);}},
-    {title:'Most collisions just bounce',text:'Watch for the rings. A gray ring is a collision that was too gentle. A yellow flash is a collision that worked: A and B join into one purple-and-orange AB molecule.',focus:[BX,BY,BW,BH],speed:0.2},
+    {title:'Most collisions just bounce',text:{bio:'Watch for the rings. A gray ring is a collision that was too gentle. A yellow flash is a collision that worked: A and B join into one AB molecule (a blue-and-orange pair with a purple ring).',honors:'A gray ring was too gentle. A purple ring had enough energy but hit the light side of B. A yellow flash worked: A and B joined into one AB molecule.'},focus:[BX,BY,BW,BH],speed:0.2},
     {title:'The energy hill',text:{bio:'To react, particles must hit hard enough to get over an energy hill. The height of that hill is the energy needed to react.',honors:'The peak of the hill is the transition state. Its height above the reactants is the activation energy, Eₐ. ΔH is the energy difference between reactants and products.'},focus:[PX,286,PW,196],speed:0.5},
     {title:'Who has enough energy?',text:{bio:'The curve shows how many particles have each amount of energy. Only the ones in the shaded tail, past the red line, can climb the hill.',honors:'The Maxwell–Boltzmann curve shows the spread of kinetic energies. The shaded area past Eₐ is the fraction of molecules that can react if they collide the right way.'},focus:[PX,BY,PW,218],speed:0.5},
     {title:'Heat it up',text:{bio:'At 450 K the curve flattens and spreads to the right. The shaded tail gets much bigger, so many more collisions work.',honors:'Raising T increases the collision rate only a little (speed ∝ √T), but the fraction past Eₐ grows a lot. That is why rate climbs steeply with temperature.'},focus:[[PX,BY,PW,218],[BX,BY,BW,BH]],speed:0.5,setup(sim){BioLab.setValues(sim,{T:450});}},
@@ -249,7 +248,7 @@ const RATES={
     ctx.lineWidth=3;ctx.strokeStyle=PAL['cv-glass'];rr(ctx,BX,BY,BW,BH,12);ctx.stroke();
     // right panel
     drawMB(ctx,sim,k,hon);
-    drawProfile(ctx,sim,k,hon,ap);
+    if(mg)drawKey(ctx,k,hon);else drawProfile(ctx,sim,k,hon,ap);
   },
   thumbSetup(sim){sim.p.T=420;},thumbFrames:60
 };
@@ -264,7 +263,7 @@ function drawHeader(ctx,p,k,hon){const y=30,s=15*k;
     const word=w=>{txt(ctx,w,x,y,{s,w:700,b:'middle'});ctx.font='700 '+s+'px '+FONT;x+=ctx.measureText(w).width+7;};
     ball(PAL['cv-sub'],8*Math.min(k,1.3));word('A');word('+');ball(PAL['cv-prod'],8*Math.min(k,1.3));word('B');word('→');
     const r=8*Math.min(k,1.3);ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(x+r,y,r,0,6.29);ctx.fill();ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(x+2.4*r,y,r,0,6.29);ctx.fill();x+=3.4*r+5;word('AB');}
-  const tc=p.T-273.15;pill(ctx,p.T+' K ('+tc.toFixed(0)+' °C)'+(p.cat&&p.rxn==='gas'?' · catalyst':''),PX+PW-90*Math.min(k,1.3),y,PAL['card2'],PAL['cv-ink'],13*k);}
+  const tc=p.T-273.15,lab=p.T+' K'+(k>1.35?'':' ('+tc.toFixed(0)+' °C)')+(p.cat&&p.rxn==='gas'?(k>1.35?' · cat.':' · catalyst'):'');ctx.font='700 '+13*k+'px '+FONT;pill(ctx,lab,PX+PW-ctx.measureText(lab).width/2-8*k,y,PAL['card2'],PAL['cv-ink'],13*k);}
 function drawP(ctx,q,phi,mg){const x=q.x,y=q.y;
   if(q.k==='A'){ctx.fillStyle=PAL['cv-sub'];ctx.beginPath();ctx.arc(x,y,q.r,0,6.29);ctx.fill();}
   else if(q.k==='B'){ctx.fillStyle=PAL['cv-prod'];ctx.beginPath();ctx.arc(x,y,q.r,0,6.29);ctx.fill();
@@ -280,7 +279,7 @@ function drawMg(ctx,x,y){const g=ctx.createRadialGradient(x-4,y-4,2,x,y,MGR);g.a
 function card(ctx,x,y,w,h){rr(ctx,x,y,w,h,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();}
 function drawMB(ctx,sim,k,hon){const p=sim.p,st=sim.st,mg=p.rxn==='mg',T=p.T,Ea=eaNow(p),Ea0=mg?EA_MG:p.Ea;
   const y0=BY,h=218;card(ctx,PX,y0,PW,h);const fs=12*k;
-  txt(ctx,hon?'Kinetic energy distribution':'How much energy particles have',PX+12,y0+10+fs,{s:13*k,w:700});
+  txt(ctx,k>1.35?'Particle energies':hon?'Kinetic energy distribution':'How much energy particles have',PX+12,y0+10+fs,{s:13*k,w:700});
   const L=PX+14,R=PX+PW-14,B=y0+h-14-fs*1.25-fs,Tp=y0+22+fs*1.6;const Emax=mg?16:30;const X=E=>L+E/Emax*(R-L);
   // energies of the reacting particles
   const ks=mg?['H']:['A','B'];const es=[];st.ps.forEach(q=>{if(ks.includes(q.k))es.push(0.5*q.m*(q.vx*q.vx+q.vy*q.vy+q.vz*q.vz)*EU);});
@@ -301,13 +300,14 @@ function drawMB(ctx,sim,k,hon){const p=sim.p,st=sim.st,mg=p.rxn==='mg',T=p.T,Ea=
   // Ea lines
   const eaLine=(E,c,lab,dash,row)=>{ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash(dash?[5,4]:[]);ctx.beginPath();ctx.moveTo(X(E),Tp-2);ctx.lineTo(X(E),B);ctx.stroke();ctx.setLineDash([]);
     txt(ctx,lab,X(E)+5,Tp+fs*0.9+row*fs*1.25,{s:fs,w:700,c});};
-  eaLine(Ea0,PAL['s1'],hon?'Eₐ':'energy needed',false,0);
-  if(!mg&&p.cat)eaLine(Ea,PAL['s3'],hon?'Eₐ with catalyst':'with catalyst',true,1.15);
-  const share=tail(Ea,T)*100;txt(ctx,(share<1?share.toFixed(2):share.toFixed(1))+'% past '+(hon?'Eₐ':'the line'),R,B-8,{s:fs,w:700,c:PAL['s1'],a:'right'});
-  if(T!==300&&hon)legendMini(ctx,R,Tp+fs*0.9,k);}
+  eaLine(Ea0,PAL['s1'],hon?'Eₐ':k>1.35?'needed':'energy needed',false,0);
+  if(!mg&&p.cat)eaLine(Ea,PAL['s3'],k>1.35?'':hon?'Eₐ with catalyst':'with catalyst',true,1.15);
+  const share=tail(Ea,T)*100;const stxt=(share<1?share.toFixed(2):share.toFixed(1))+'% past'+(k>1.35?'':hon?' Eₐ':' the line');ctx.font='700 '+fs+'px '+FONT;const sw=ctx.measureText(stxt).width,xr=R-sw<X(Ea0)+6&&X(Ea0)-6-sw>L+20?X(Ea0)-6:R;
+  txt(ctx,stxt,xr,Tp+fs*0.9+2.5*fs*1.25,{s:fs,w:700,c:PAL['s1'],a:'right'});
+  if(T!==300&&hon&&k<=1.35)legendMini(ctx,R,Tp+fs*0.9+fs*1.25,k);}
 function legendMini(ctx,R,y,k){const fs=12*k;ctx.font=fs+'px '+FONT;const s='dashed: 300 K';const w=ctx.measureText(s).width;txt(ctx,s,R-w,y+fs*1.25*2.3,{s:fs,c:PAL['cv-soft']});}
 function drawProfile(ctx,sim,k,hon,ap){const p=sim.p,mg=p.rxn==='mg',y0=BY+228,h=BH-228;card(ctx,PX,y0,PW,h);const fs=12*k;
-  txt(ctx,hon?'Energy diagram':'The energy hill',PX+12,y0+10+fs,{s:13*k,w:700});
+  txt(ctx,hon&&k<=1.35?'Energy diagram':'The energy hill',PX+12,y0+10+fs,{s:13*k,w:700});
   const L=PX+18,R=PX+PW-16,Tp=y0+24+fs*2.2,B=y0+h-14-fs*1.2;
   const sc=mg?1.6:0.6,Ea0=mg?EA_MG:p.Ea,Ea=eaNow(p),dH=mg?-14:DH_GAS*sc,top=12.5,bot=dH-1;   // drawing units
   const Y=E=>Tp+(top-E)/(top-bot)*(B-Tp),x1=L+44,x2=R-54,xm=(x1+x2)/2;
@@ -318,11 +318,16 @@ function drawProfile(ctx,sim,k,hon,ap){const p=sim.p,mg=p.rxn==='mg',y0=BY+228,h
   const ya=Y(0),peak=Y(Ea0*sc);
   ctx.strokeStyle=PAL['s1'];ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x1-6,ya);ctx.lineTo(xm+10,ya);ctx.stroke();ctx.setLineDash([]);
   arrow(ctx,xm,ya,xm,peak+3,PAL['s1']);
-  txt(ctx,hon?'Eₐ = '+Ea0+' kJ/mol':'energy needed',xm+8,(ya+peak)/2+fs*0.4,{s:fs,w:700,c:PAL['s1']});
-  if(!mg&&p.cat)txt(ctx,'catalyst path',xm,Y(Ea*sc)+fs*1.3,{s:fs,w:700,c:PAL['s3'],a:'center'});
+  txt(ctx,hon?'Eₐ = '+Ea0+' kJ/mol':'energy needed',R,peak-5,{s:fs,w:700,c:PAL['s1'],a:'right'});
+  if(!mg&&p.cat&&k<=1.35)txt(ctx,'catalyst path',xm,Y(Ea*sc)+fs*1.3,{s:fs,w:700,c:PAL['s3'],a:'center'});
   txt(ctx,mg?'Mg + 2H⁺':'A + B',L,ya-7,{s:fs,w:700});
   txt(ctx,mg?'Mg²⁺ + H₂':'AB',R,Y(dH)-7,{s:fs,w:700,a:'right'});
   txt(ctx,ap?(mg?'ΔH = −467 kJ/mol, not to scale':'ΔH = '+DH_GAS+' kJ/mol'):'reaction progress →',R,B+fs*1.1,{s:fs,c:PAL['cv-soft'],a:'right'});}
+function drawKey(ctx,k,hon){const y0=BY+228,h=BH-228;card(ctx,PX,y0,PW,h);const fs=12*k;txt(ctx,'Key',PX+12,y0+10+fs,{s:13*k,w:700});
+  const items=[['H','H⁺ ion (from HCl)'],['Cl','Cl⁻ ion (spectator)'],['Mg','Mg atom in the metal'],['Mg2','Mg²⁺ ion'],['H2','H₂ gas bubble']];
+  const gap=Math.min(34,(h-30-fs*1.6)/items.length);items.forEach((it,i)=>{const y=y0+26+fs*1.4+i*gap+gap/2,x=PX+30;
+    if(it[0]==='Mg')drawMg(ctx,x,y);else drawP(ctx,{k:it[0],x,y,r:SP[it[0]].r,a:0},0,true);
+    txt(ctx,it[1],x+24,y,{s:fs,b:'middle'});});}
 function arrow(ctx,x1,y1,x2,y2,c){const a=Math.atan2(y2-y1,x2-x1),h=8;ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*h*0.7,y2-Math.sin(a)*h*0.7);ctx.stroke();
   ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-Math.cos(a-0.5)*h,y2-Math.sin(a-0.5)*h);ctx.lineTo(x2-Math.cos(a+0.5)*h,y2-Math.sin(a+0.5)*h);ctx.closePath();ctx.fill();}
 RATES.controls[0].onChange=sim=>syncMode(sim);

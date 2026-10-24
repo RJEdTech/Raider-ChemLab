@@ -91,7 +91,7 @@ function evaluate(st){const m=st.m,s=solve(m),A=m.atoms,n=A.length;const bs=new 
     bestAbs:s.best.length?s.best[0].fc.reduce((x,y)=>x+Math.abs(y),0):0};}
 
 /* ---------- layout ---------- */
-const BL=104,CX=285,CY=250;
+const BL=124,CX=280,CY=252;
 const ANG={1:[0],2:[180,0],3:[270,30,150],4:[270,0,90,180],5:[270,342,54,126,198],6:[270,330,30,90,150,210]};
 function layout(m){if(m._xy)return m._xy;let pts;
   if(m.c){const nt=m.t.length,s=solve(m),lp0=s.best.length?s.best[0].lp[0]:0;const ang=(nt===3&&lp0>0)?[180,0,90]:ANG[nt];
@@ -153,13 +153,13 @@ const LEWIS={
     {id:'bp',label:'Bonding pairs',unit:'',lvl:'honors',d:0,get:s=>s.st.bo.reduce((x,y)=>x+y,0)},
     {id:'lpc',label:'Lone pairs on the central atom',unit:'',lvl:'honors',d:0,get:s=>s.st.m.center>=0?s.st.lp[s.st.m.center]:null},
     {id:'dom',label:'Electron domains on the central atom',unit:'',lvl:'ap',d:0,get:s=>{const m=s.st.m;if(m.center<0)return null;return solve(m).deg[m.center]+s.st.lp[m.center];}},
-    {id:'fcs',label:'Sum of formal charges',unit:'',lvl:'ap',d:0,get:s=>evaluate(s.st).fc.reduce((x,y)=>x+y,0)}
+    {id:'fcs',label:'Sum of formal charges',unit:'',lvl:'ap',d:0,get:s=>{const v=evaluate(s.st);return v.left===0?v.fc.reduce((x,y)=>x+y,0):null;}}
   ],
   infoPanel(sim){const st=sim.st,m=st.m,v=evaluate(st),s=solve(m),hon=atLeast('honors'),ap=atLeast('ap');
     const SH={full:'full',short:'needs more',over:'too many',exc:'incomplete octet (allowed for '+m.atoms.map(a=>a.s).filter(x=>DEFIC.includes(x))[0]+')',exp:'expanded octet'};
-    const rows=m.atoms.map((a,i)=>`<tr${st.sel===i?' style="outline:2px solid var(--rj)"':''}><td>${atomName(m,i)}</td><td>${s.V[i]}</td><td>${v.bs[i]}</td><td>${st.lp[i]}</td><td>${v.e[i]} (${SH[v.shell[i]]})</td>${hon?`<td>${fcTxt(v.fc[i])}</td>`:''}</tr>`).join('');
+    const rows=m.atoms.map((a,i)=>`<tr${st.sel===i?' style="outline:2px solid var(--rj)"':''}><td>${atomName(m,i)}</td><td>${s.V[i]}</td><td>${v.bs[i]}</td><td>${st.lp[i]}</td><td>${v.e[i]} (${SH[v.shell[i]]})</td>${hon?`<td>${v.left===0?fcTxt(v.fc[i]):'—'}</td>`:''}</tr>`).join('');
     let h=`<h3>${htmlF(m)}: atom by atom</h3><div class="tbl-wrap"><table><thead><tr><th>Atom</th><th>Valence e⁻</th><th>Bonds</th><th>Lone pairs</th><th>Electrons around it</th>${hon?'<th>Formal charge</th>':''}</tr></thead><tbody>${rows}</tbody></table></div>`;
-    if(hon)h+=`<p style="margin-top:8px"><b>Formal charge</b> = valence e⁻ − lone-pair e⁻ − bonds. ${v.correct?'':'The best structure has formal charges that add to '+(m.q?'the ion’s charge ('+fcTxt(m.q)+')':'zero')+' and are as close to zero as possible.'}</p>`;
+    if(hon)h+=`<p style="margin-top:8px"><b>Formal charge</b> = valence e⁻ − lone-pair e⁻ − bonds${v.left===0?'':' (shown once every electron is placed)'}. ${v.correct?'':'The best structure has formal charges that add to '+(m.q?'the ion’s charge ('+fcTxt(m.q)+')':'zero')+' and are as close to zero as possible.'}</p>`;
     if(hon&&s.best.length>1)h+=`<p><b>Resonance:</b> ${htmlF(m)} has ${s.best.length} equally good structures. The real ${m.q?'ion':'molecule'} is a blend of them: every ${bondKind(m,s)} bond is identical, partway between a single and a double bond. Press <b>Next resonance structure</b> to see each one.</p>`;
     if(ap&&s.alt.length)h+=`<p class="help">An expanded-octet structure for ${htmlF(m)} has smaller formal charges. Both are accepted on the AP exam; many textbooks show the octet structures with resonance.</p>`;
     h+=`<p class="help">Click an atom to add a lone pair (it cycles back to zero). Click a bond to change it from single to double to triple. Or use Select next part, then Add and Remove.</p>`;
@@ -241,7 +241,7 @@ const LEWIS={
       txt(ctx,a.s,p[0],p[1]+1,{s:fs,w:800,a:'center',b:'middle'});
       const dirs=lpDirs(m,i,st.lp[i]);dirs.forEach(d=>{const cx=p[0]+Math.cos(d)*rL,cy=p[1]+Math.sin(d)*rL,nx=-Math.sin(d)*5.5,ny=Math.cos(d)*5.5;ctx.fillStyle=PAL['cv-ink'];
         [1,-1].forEach(sg=>{ctx.beginPath();ctx.arc(cx+nx*sg,cy+ny*sg,3.4,0,6.29);ctx.fill();});});
-      if(hon&&sim.p.fc){const d=freeDir(m,i,st.lp[i]),fx=p[0]+Math.cos(d)*(rL+22*Math.min(k,1.3)),fy=p[1]+Math.sin(d)*(rL+22*Math.min(k,1.3)),f=v.fc[i];
+      if(hon&&sim.p.fc&&v.left===0){const d=freeDir(m,i,st.lp[i]),fx=p[0]+Math.cos(d)*(rL+22*Math.min(k,1.3)),fy=p[1]+Math.sin(d)*(rL+22*Math.min(k,1.3)),f=v.fc[i];
         if(f!==0||m.atoms.length<=6){ctx.fillStyle=f>0?PAL['s1']:f<0?PAL['s2']:PAL['card'];ctx.beginPath();ctx.arc(fx,fy,11*Math.min(k,1.4),0,6.29);ctx.fill();if(!f){ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();}
           txt(ctx,fcTxt(f),fx,fy+1,{s:12*Math.min(k,1.4),w:800,a:'center',b:'middle',c:f?'#fff':PAL['cv-soft']});}}});
     // budget panel
@@ -250,28 +250,28 @@ const LEWIS={
   thumbSetup(sim){sim.p.mol='NO3';sim.st=newState(BYID.NO3);setAnswer(sim.st,0);}
 };
 const atomR=k=>symS(k)*0.62+8;
-const symS=k=>26*Math.min(k,1.35);
+const symS=k=>30*Math.min(k,1.3);
 function fcTxt(f){return f>0?'+'+f:f<0?'−'+(-f):'0';}
 function bondKind(m,s){const t=m.atoms.filter((a,i)=>i!==m.center).map(a=>a.s);return m.atoms[m.center>=0?m.center:0].s+'–'+t[0];}
 function mkCh(lvl,mol,q,choices,ans,explain,draw){const m=BYID[mol];const a=ans(m);const correct=choices.indexOf(a);
   return {lvl,q,choices,correct,instant:true,set:mol,draw,explain:{[lvl]:explain}};}
-function drawBudget(ctx,sim,v,s,k){const m=sim.st.m,hon=atLeast('honors');const x0=556,W=236,ks=Math.min(k,1.75),lh=18*ks;let y=18;
+function drawBudget(ctx,sim,v,s,k){const m=sim.st.m,hon=atLeast('honors');const x0=552,W=240,ks=Math.min(k,1.75),lh=21*ks;let y=18;
   const counts={};m.atoms.forEach(a=>counts[a.s]=(counts[a.s]||0)+1);const rows=Object.keys(counts);
-  const nDots=v.total,per=Math.max(6,Math.floor((W-20)/(9.5*ks))),dotRows=Math.ceil(nDots/per);
-  const H=lh*(rows.length+(m.q?1:0)+2.2)+dotRows*9.5*ks+lh*(hon?4.6:3.6)+16;
-  rr(ctx,x0,y,W,Math.min(H,430),12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
-  y+=lh+4;txt(ctx,'Electron budget',x0+12,y,{s:13*k,w:700,c:PAL['cv-soft']});
-  rows.forEach(sym=>{y+=lh;txt(ctx,sym,x0+12,y,{s:13*k,w:700});txt(ctx,counts[sym]+' × '+VAL(sym)+' = '+counts[sym]*VAL(sym),x0+W-12,y,{s:13*k,a:'right'});});
-  if(m.q){y+=lh;txt(ctx,'charge '+fcTxt(m.q),x0+12,y,{s:13*k,c:PAL['cv-soft']});txt(ctx,(m.q<0?'+':'−')+Math.abs(m.q),x0+W-12,y,{s:13*k,a:'right'});}
+  const nDots=v.total,per=Math.max(6,Math.floor((W-24)/(8.6*ks))),dotRows=Math.ceil(nDots/per);
+  const H=lh*(rows.length+(m.q?1:0)+2.2)+dotRows*8.6*ks+lh*(hon?4.6:3.6)+14;
+  rr(ctx,x0,y,W,Math.min(H,432),12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=v.correct?PAL['s3']:PAL['line'];ctx.lineWidth=v.correct?3:1;ctx.stroke();
+  y+=lh+4;txt(ctx,v.correct?'Correct structure':'Electron budget',x0+12,y,{s:14*k,w:800,c:v.correct?PAL['s3']:PAL['cv-soft']});
+  rows.forEach(sym=>{y+=lh;txt(ctx,sym,x0+12,y,{s:15*k,w:700});txt(ctx,counts[sym]+' × '+VAL(sym)+' = '+counts[sym]*VAL(sym),x0+W-12,y,{s:15*k,a:'right'});});
+  if(m.q){y+=lh;txt(ctx,'charge '+fcTxt(m.q),x0+12,y,{s:15*k,c:PAL['cv-soft']});txt(ctx,(m.q<0?'+':'−')+Math.abs(m.q),x0+W-12,y,{s:15*k,a:'right'});}
   y+=lh*1.1;ctx.strokeStyle=PAL['line'];ctx.beginPath();ctx.moveTo(x0+12,y-lh*0.72);ctx.lineTo(x0+W-12,y-lh*0.72);ctx.stroke();
-  txt(ctx,'Total',x0+12,y,{s:14*k,w:800});txt(ctx,v.total+' e⁻',x0+W-12,y,{s:14*k,w:800,a:'right'});
-  y+=lh*0.6;const ds=9.5*ks;for(let i=0;i<nDots;i++){const cx=x0+16+(i%per)*ds,cy=y+Math.floor(i/per)*ds+4;ctx.beginPath();ctx.arc(cx,cy,3.2*ks,0,6.29);
+  txt(ctx,'Total',x0+12,y,{s:16*k,w:800});txt(ctx,v.total+' e⁻',x0+W-12,y,{s:16*k,w:800,a:'right'});
+  y+=lh*0.6;const ds=8.6*ks;for(let i=0;i<nDots;i++){const cx=x0+16+(i%per)*ds,cy=y+Math.floor(i/per)*ds+4;ctx.beginPath();ctx.arc(cx,cy,3*ks,0,6.29);
     if(i<v.placed){ctx.fillStyle=PAL['cv-ink'];ctx.fill();}else{ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.stroke();}}
   y+=dotRows*ds+lh*0.7;
-  const over=v.placed>v.total;txt(ctx,'Placed '+v.placed+(over?' (too many)':'  ·  left '+Math.max(0,v.left)),x0+12,y,{s:13*k,w:700,c:over?PAL['s1']:PAL['cv-ink']});
+  const over=v.placed>v.total;txt(ctx,'Placed '+v.placed+(over?' (too many)':'  ·  left '+Math.max(0,v.left)),x0+12,y,{s:14*k,w:700,c:over?PAL['s1']:PAL['cv-ink']});
   const items=[[v.left===0,'Electrons used'],[v.shellsOK,'Full shells']];if(hon)items.push([v.best||v.alt,'Formal charges']);
   items.forEach(([ok,l])=>{y+=lh*1.05;ctx.fillStyle=ok?PAL['s3']:PAL['card2'];ctx.strokeStyle=ok?PAL['s3']:PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x0+20,y-5*ks,7*ks,0,6.29);ctx.fill();ctx.stroke();
-    if(ok)txt(ctx,'✓',x0+20,y-4*ks,{s:11*ks,w:800,c:'#fff',a:'center',b:'middle'});txt(ctx,l,x0+34,y,{s:13*k,c:ok?PAL['cv-ink']:PAL['cv-soft'],w:ok?700:400});});
-  if(v.correct){y+=lh*1.2;pill(ctx,'Correct!',x0+W/2,y-4,PAL['s3'],'#fff',14*Math.min(k,1.5));}}
+    if(ok)txt(ctx,'✓',x0+20,y-4*ks,{s:11*ks,w:800,c:'#fff',a:'center',b:'middle'});txt(ctx,l,x0+34,y,{s:14*k,c:ok?PAL['cv-ink']:PAL['cv-soft'],w:ok?700:400});});
+}
 BioLab.register(LEWIS);
 })();

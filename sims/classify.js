@@ -36,7 +36,7 @@ const SAMPLES={
       why:'Each particle is an O₂ molecule: two atoms bonded together, but both are oxygen. A molecule made of one kind of atom is still an <b>element</b>.'},
   cu:{l:'Copper wire',comps:[{lat:['Cu'],ph:'s'}],cls:'element',sub:'atoms',macro:'wire',sym:'Cu(s)',
       why:'The wire is a solid grid of copper atoms and nothing else. One kind of atom, so copper is an <b>element</b>.'},
-  h2o:{l:'Pure water',comps:[{f:'H2O',n:34,ph:'l'}],cls:'compound',macro:'beaker',sym:'H₂O(l)',
+  h2o:{l:'Pure water',comps:[{f:'H2O',n:40,ph:'l',reg:{y0:-0.42}}],cls:'compound',macro:'beaker',sym:'H₂O(l)',
       why:'Every particle is the same H₂O molecule, so water is one substance. Each molecule holds two kinds of atoms bonded in a fixed ratio, so it is a <b>compound</b>.'},
   co2:{l:'Carbon dioxide gas',comps:[{f:'CO2',n:10,ph:'g'}],cls:'compound',macro:'flask',sym:'CO₂(g)',
       why:'Every particle is a CO₂ molecule: one carbon and two oxygen atoms bonded together. One substance made of two elements is a <b>compound</b>.'},
@@ -44,7 +44,7 @@ const SAMPLES={
       why:'This flask holds the same atoms as water, but they are not bonded into H₂O. H₂ and O₂ molecules are two different substances spread evenly, so it is a <b>homogeneous mixture</b> of two elements.'},
   air:{l:'Air',comps:[{f:'N2',n:13,ph:'g'},{f:'O2',n:3,ph:'g'},{f:'Ar',n:1,ph:'g'}],cls:'homog',mixOf:'elements',macro:'flask',sym:'N₂(g) + O₂(g) + Ar(g)',vary:{c:1,min:1,max:8},
       why:'N₂, O₂ and Ar particles are three substances mixed evenly all the way down to single particles, so air is a <b>homogeneous mixture</b>.'},
-  salt:{l:'Salt water',comps:[{f:'H2O',n:30,ph:'l'},{f:'Na+',n:3,ph:'l',as:'NaCl'},{f:'Cl-',n:3,ph:'l',as:'NaCl',nc:true}],cls:'homog',mixOf:'compounds',macro:'beaker',sym:'NaCl(aq)',vary:{c:[1,2],min:1,max:6},
+  salt:{l:'Salt water',comps:[{f:'H2O',n:36,ph:'l',reg:{y0:-0.42}},{f:'Na+',n:3,ph:'l',as:'NaCl',reg:{y0:-0.42}},{f:'Cl-',n:3,ph:'l',as:'NaCl',nc:true,reg:{y0:-0.42}}],cls:'homog',mixOf:'compounds',macro:'beaker',sym:'NaCl(aq)',vary:{c:[1,2],min:1,max:6},
       why:'Water molecules and dissolved Na⁺ and Cl⁻ ions are spread evenly, and every drop looks the same. Two substances mixed evenly make a <b>homogeneous mixture</b>, also called a solution.'},
   sand:{l:'Sand in water',comps:[{f:'H2O',n:18,ph:'l',reg:{y0:-0.55,y1:0.38}},{lat:['Si','Ox'],alt:true,ph:'s',reg:{y0:0.42,y1:1}}],cls:'heter',mixOf:'compounds',macro:'sandy',sym:'SiO₂(s) + H₂O(l)',vary:{sand:true},
       why:'The sand (SiO₂) sits in its own solid layer and the water is above it. You can see different parts, so it is a <b>heterogeneous mixture</b>.'},
@@ -71,7 +71,7 @@ const PROCS={
   boil:{l:'Boiling water',phys:true,eq:'H₂O(l) → H₂O(g)',macro:'boil',before:[{f:'H2O',n:22,ph:'l',reg:{y0:-0.4,y1:1}}],after:[{f:'H2O',n:22,ph:'g'}],
         what:'The H₂O molecules break away from each other and fly apart as a gas. Bonds inside each molecule never break.'},
   dissolve:{l:'Dissolving salt in water',phys:true,eq:'NaCl(s) → Na⁺(aq) + Cl⁻(aq)',macro:'dissolve',
-        before:[{lat:['Na+','Cl-'],alt:true,grid:[4,2],at:[0,0.62],ph:'s'},{f:'H2O',n:20,ph:'l',reg:{y0:-0.55,y1:0.38}}],after:[{f:'Na+',n:4,ph:'l'},{f:'Cl-',n:4,ph:'l'},{f:'H2O',n:20,ph:'l'}],
+        before:[{lat:['Na+','Cl-'],alt:true,grid:[4,2],at:[0,0.62],ph:'s'},{f:'H2O',n:20,ph:'l',reg:{y0:-0.55,y1:0.38}}],after:[{f:'Na+',n:4,ph:'l',reg:{y0:-0.55}},{f:'Cl-',n:4,ph:'l',reg:{y0:-0.55}},{f:'H2O',n:20,ph:'l',reg:{y0:-0.55}}],
         what:'Water pulls the Na⁺ and Cl⁻ ions out of the crystal and spreads them through the water. Evaporate the water and you get the same NaCl back.'},
   electro:{l:'Electrolysis of water',phys:false,eq:'2H₂O(l) → 2H₂(g) + O₂(g)',macro:'electro',before:[{f:'H2O',n:8,ph:'l',reg:{y0:-0.4,y1:1}}],after:[{f:'H2',n:8,ph:'g',reg:{x0:-1,x1:-0.04}},{f:'O2',n:4,ph:'g',reg:{x0:0.04,x1:1}}],
         what:'Electricity breaks the bonds inside H₂O. The same H and O atoms regroup into two new substances: H₂ gas and O₂ gas, twice as much H₂ as O₂.'},
@@ -223,7 +223,7 @@ function drawMacro(ctx,kind,e,t,k){const x=34,y=150,w=118,h=180,P=PAL;ctx.save()
   if(kind==='flask'){ctx.strokeStyle=P['cv-glass'];ctx.lineWidth=3;ctx.fillStyle=P['cv-bg2'];ctx.beginPath();ctx.moveTo(x+w/2-12,y+10);ctx.lineTo(x+w/2-12,y+60);ctx.lineTo(x+6,y+h-8);ctx.lineTo(x+w-6,y+h-8);ctx.lineTo(x+w/2+12,y+60);ctx.lineTo(x+w/2+12,y+10);ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle=P['cv-soft'];rr(ctx,x+w/2-15,y,30,14,3);ctx.fill();ctx.restore();return [x+w/2,y+125];}
   if(kind==='wire'){ctx.strokeStyle='#c4743a';ctx.lineWidth=6;ctx.beginPath();for(let i=0;i<=60;i++){const a=i/60*6.283*3,px=x+20+i*1.3+Math.cos(a)*16,py=y+90+Math.sin(a)*40;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();ctx.restore();return [x+w/2,y+90];}
-  if(kind==='beaker'){beaker(0.7);ctx.restore();return [x+w/2,y+130];}
+  if(kind==='beaker'){const L=beaker(0.7);ctx.restore();return [x+w/2,L.y+6];}
   if(kind==='sandy'){const L=beaker(0.75);ctx.fillStyle='#c9a66b';ctx.fillRect(x+2,y+h-44,w-4,42);ctx.fillStyle='#a8844d';for(let i=0;i<26;i++)ctx.fillRect(x+6+(i*37)%(w-12),y+h-40+(i*13)%34,3,3);ctx.restore();return [x+w/2,y+h-48];}
   if(kind==='layers'){const L=beaker(0.75);ctx.fillStyle='rgba(222,181,40,.75)';ctx.fillRect(L.x+2,L.y,w-4,34);ctx.restore();return [x+w/2,L.y+34];}
   if(kind==='powder'){ctx.fillStyle=P['cv-glass'];ctx.globalAlpha=0.5;ctx.beginPath();ctx.ellipse(x+w/2,y+150,60,14,0,0,6.283);ctx.fill();ctx.globalAlpha=1;

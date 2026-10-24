@@ -106,7 +106,7 @@ function allowed(cat,an){const f=an.f;
   if(cat.f==='Al'&&['CO3','SO3','HCO3','CrO4','Cr2O7','SO4H'].includes(f))return false;
   if(cat.f==='Ag'&&['OH','HCO3','O2'].includes(f))return false;
   if(cat.type===2){const r=cat.rule;
-    if(r==='mono'&&an.poly)return f==='CN'&&cat.f==='Cu';
+    if(r==='mono'&&an.poly)return f==='CN'&&cat.f==='Cu';if(cat.f==='Co'&&cat.q===3&&['I','S','Br'].includes(f))return false;if(cat.f==='Cu'&&cat.q===1&&f==='F')return false;
     if(r==='four')return ['O','F','Cl','Br'].includes(f);
     if(r==='ox')return f==='O';if(r==='hal')return ['Cl','Br'].includes(f);if(r==='ti')return ['O','Cl'].includes(f);
     if(r==='nofe3'&&['I','CO3','SO3','HCO3','S','CN'].includes(f))return false;
@@ -119,19 +119,21 @@ function allowed(cat,an){const f=an.f;
 const NODES={
   q1:{x:400,y:120,w:400,h:44,t:'Is the first part a metal, or the ammonium ion NH₄⁺?',s:'Metal or NH₄⁺ first?'},
   q3:{x:205,y:200,w:376,h:46,t:'Can this metal have more than one charge? (most transition metals, Sn, Pb)',s:'More than one charge?'},
-  t1:{x:108,y:276,w:182,h:54,t:'No: write the metal’s name (sodium, zinc)',s:'Metal’s name'},
-  t2:{x:302,y:276,w:182,h:54,t:'Yes: add its charge as a Roman numeral, iron(III)',s:'Roman numeral'},
-  q4:{x:205,y:352,w:376,h:44,t:'Is the negative ion polyatomic (a group of atoms)?',s:'Polyatomic ion?'},
-  mon:{x:108,y:426,w:182,h:54,t:'No: root of the nonmetal + -ide (oxide)',s:'-ide ending'},
-  poly:{x:302,y:426,w:182,h:54,t:'Yes: use the ion’s name (sulfate, nitrate)',s:'Ion’s name'},
-  bal:{x:205,y:496,w:376,h:40,t:'Writing the formula? Charges must add to zero',s:'Charges add to 0'},
-  hyd:{x:205,y:550,w:376,h:40,t:'Hydrate (·xH₂O)? Add a prefix + hydrate',s:'+ prefix + hydrate',lvl:'honors'},
+  t1:{x:108,y:284,w:182,h:54,t:'No: write the metal’s name (sodium, zinc)',s:'Metal’s name'},
+  t2:{x:302,y:284,w:182,h:54,t:'Yes: add its charge as a Roman numeral, iron(III)',s:'Roman numeral'},
+  q4:{x:205,y:360,w:376,h:44,t:'Is the negative ion polyatomic (a group of atoms)?',s:'Polyatomic ion?'},
+  mon:{x:108,y:440,w:182,h:54,t:'No: root of the nonmetal + -ide (oxide)',s:'-ide ending'},
+  poly:{x:302,y:440,w:182,h:54,t:'Yes: use the ion’s name (sulfate, nitrate)',s:'Ion’s name'},
+  bal:{x:205,y:508,w:376,h:40,t:'Writing the formula? Charges must add to zero',s:'Charges add to 0'},
+  hyd:{x:205,y:558,w:376,h:40,t:'Hydrate (·xH₂O)? Add a prefix + hydrate',s:'+ prefix + hydrate',lvl:'honors'},
   q2:{x:600,y:200,w:376,h:46,t:'Does it start with H, dissolved in water (aq)?',s:'H first, in water?'},
-  mol:{x:504,y:336,w:184,h:150,t:'No: molecular (two nonmetals). Prefixes give each count. Skip mono- on the first element. End with -ide.',s:'Molecular: use prefixes'},
-  q5:{x:694,y:276,w:180,h:54,t:'Yes, an acid. Is there oxygen in the anion?',s:'Acid: any oxygen?'},
-  bin:{x:680,y:358,w:150,h:54,t:'No: hydro- + root + -ic acid',s:'hydro-…-ic'},
-  oxy:{x:694,y:442,w:180,h:58,t:'Yes: -ate becomes -ic acid, -ite becomes -ous acid',s:'-ate → -ic, -ite → -ous'}
+  mol:{x:504,y:350,w:184,h:156,t:'No: molecular (two nonmetals). Prefixes give each count. Skip mono- on the first element. End with -ide.',s:'Molecular: use prefixes'},
+  q5:{x:694,y:284,w:180,h:54,t:'Yes, an acid. Is there oxygen in the anion?',s:'Acid: any oxygen?'},
+  bin:{x:680,y:368,w:150,h:54,t:'No: hydro- + root + -ic acid',s:'hydro-…-ic'},
+  oxy:{x:694,y:454,w:180,h:58,t:'Yes: -ate becomes -ic acid, -ite becomes -ous acid',s:'-ate → -ic, -ite → -ous'}
 };
+const PREFBOX={x:412,y:492,w:376,h:86};
+function fr(){const ids=[...arguments];let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;ids.forEach(id=>{const n=NODES[id];x0=Math.min(x0,n.x-n.w/2);y0=Math.min(y0,n.y-n.h/2);x1=Math.max(x1,n.x+n.w/2);y1=Math.max(y1,n.y+n.h/2);});return [x0-6,y0-6,x1-x0+12,y1-y0+12];}
 const EDGES=[['q1','q3','yes: ionic'],['q1','q2','no'],['q3','t1','no'],['q3','t2','yes'],['t1','q4',''],['t2','q4',''],['q4','mon','no'],['q4','poly','yes'],
   ['mon','bal',''],['poly','bal',''],['bal','hyd',''],['q2','mol','no'],['q2','q5','yes'],['q5','bin','no'],['q5','oxy','yes']];
 function pathFor(c,dir){const p=[];
@@ -333,34 +335,30 @@ function setQuestion(sim,c,dir,reveal){const st=sim.st;const r=rng(7);st.q={c,di
 function drillPool(p){let L=PA.filter(a=>lvOK(a.lvl)).concat(POSIONS.filter(a=>lvOK(a.lvl)));
   if(p.ionset==='1')L=L.filter(a=>a.q===-1);else if(p.ionset==='2')L=L.filter(a=>a.q===-2);else if(p.ionset==='3')L=L.filter(a=>a.q===-3);else if(p.ionset==='pos')L=L.filter(a=>a.q>0);
   return L;}
-function ionFormulaNorm(s){s=String(s||'').replace(/[₀-₉]/g,c=>SUBS.indexOf(c)).replace(/[⁰-⁹]/g,c=>'^'+SUPS.indexOf(c)).replace(/[¹²³]/g,c=>'^'+' ¹²³'.indexOf(c)).replace(/⁺/g,'^+').replace(/⁻/g,'^-')
-  .replace(/[−–]/g,'-').replace(/\s+/g,' ').trim();
-  // forms: NO3-, NO3^-, NO3 -, SO4 2-, SO4^2-, SO4-2, SO4^-2, SO4(2-), SO4²⁻ (→ SO4^2^-)
-  s=s.replace(/\^/g,' ').replace(/[()]/g,' ').replace(/\s+/g,' ').trim();
-  let m=s.match(/^([A-Za-z0-9]+?)\s*(\d?)\s*([+-])$/)||s.match(/^([A-Za-z0-9]+?)\s*([+-])\s*(\d)$/);
-  const out=[];
-  if(m){let f,mag,sg;if(/[+-]/.test(m[2])){f=m[1];sg=m[2];mag=m[3];}else{f=m[1];mag=m[2];sg=m[3];}
-    const q=(sg==='+'?1:-1)*(mag?+mag:1);out.push({f:f.replace(/\s/g,''),q});
-    // "SO42-" typed with no space: also try the last digit of the formula as the charge
-    if(!mag&&/\d$/.test(f)&&!/\s/.test(m[0].slice(f.length))){}
-    const tight=s.match(/^([A-Za-z0-9]*[A-Za-z])(\d*)(\d)([+-])$/);if(tight)out.push({f:tight[1]+tight[2],q:(tight[4]==='+'?1:-1)*(+tight[3])});}
-  else if(/^[A-Za-z0-9]+$/.test(s))out.push({f:s,q:0,nocharge:true});
+function ionFormulaNorm(s){s=String(s||'').trim().replace(/[₀-₉]/g,c=>SUBS.indexOf(c)).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+/g,run=>'^'+run.replace(/./g,c=>{const i=SUPS.indexOf(c);return i>=0?String(i):c==='⁺'?'+':'-';}))
+    .replace(/[−–—]/g,'-').replace(/\s+/g,' ');
+  // every reasonable reading: "NO3-", "NO3^-", "SO4 2-", "SO4^2-", "SO4-2", "SO4(2-)", "SO42-" (tight: last digit may be the charge)
+  const out=[];let m;const sg=x=>x==='+'?1:-1;
+  if((m=s.match(/^([A-Za-z][A-Za-z0-9]*)\s*(?:\^|\s|\()\s*(\d*)\s*([+-])\s*\)?$/)))out.push({f:m[1],q:sg(m[3])*(m[2]?+m[2]:1)});
+  if((m=s.match(/^([A-Za-z][A-Za-z0-9]*)\s*(?:\^|\s|\()?\s*([+-])\s*(\d+)\s*\)?$/)))out.push({f:m[1],q:sg(m[2])*(+m[3])});
+  if((m=s.match(/^([A-Za-z][A-Za-z0-9]*)([+-])$/))){out.push({f:m[1],q:sg(m[2])});const t=m[1].match(/^(.*[A-Za-z].*?)(\d)$/);if(t)out.push({f:t[1],q:sg(m[2])*(+t[2])});}
+  if(!out.length&&/^[A-Za-z][A-Za-z0-9]*$/.test(s))out.push({f:s,q:0,nocharge:true});
   return out;}
 function checkIon(ion,dir,input){if(!String(input||'').trim())return {empty:true,msg:dir==='f2n'?'Type the ion’s name first.':'Type the formula with its charge first.'};
-  if(dir==='f2n'){const s=normName(input);if(s===ion.name||s===ALTNAME[ion.name])return {ok:true};
-    const other=PA.concat(POSIONS).find(a=>a.name===s);if(other){if(other.fam&&other.fam===ion.fam)return {msg:`That is ${CL.fmt(other.f,other.q)}. Count the oxygens: ${CL.fmt(ion.f,ion.q)} is ${ion.name}.`};return {msg:`${other.name} is ${CL.fmt(other.f,other.q)}. ${CL.fmt(ion.f,ion.q)} is ${ion.name}.`};}
+  if(dir==='f2n'){const s=normName(input);if(s===normName(ion.name)||s===ALTNAME[ion.name])return {ok:true};
+    const other=PA.concat(POSIONS).find(a=>a.name===s);if(other){if(other.fam&&other.fam===ion.fam)return {msg:`That is ${CL.fmt(other.f,other.q)}. Count the oxygens: ${CL.fmt(ion.f,ion.q)} is ${ion.name}.`};return {msg:`${cap(other.name)} is ${CL.fmt(other.f,other.q)}. ${CL.fmt(ion.f,ion.q)} is ${ion.name}.`};}
     if(/ide$/.test(s)&&ion.ox)return {msg:`Ions with oxygen end in -ate or -ite, not -ide: ${ion.name}.`};
     return {msg:`${CL.fmt(ion.f,ion.q)} is ${ion.name}.`};}
   const cands=ionFormulaNorm(input);const alt=ion.f==='C2H3O2'?['C2H3O2','CH3COO']:[ion.f];
   for(const c of cands)if(alt.includes(c.f)&&c.q===ion.q)return {ok:true};
-  const c=cands[0];if(!c)return {msg:'Type the formula and charge, like NO3- or SO4 2- (or SO4^2-).'};
-  if(cands.some(c=>alt.includes(c.f))){if(c.nocharge)return {msg:`Right atoms. Now add the charge: ${CL.fmt(ion.f,ion.q)}.`};return {msg:`Right atoms, wrong charge: ${ion.name} is ${CL.fmt(ion.f,ion.q)}.`};}
-  const other=PA.concat(POSIONS).find(a=>cands.some(x=>x.f===a.f));if(other)return {msg:`${CL.fmt(other.f,other.q)} is ${other.name}. ${ion.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(ion.f,ion.q)}.`};
+  if(!cands.length)return {msg:'Type the formula and charge, like NO3- or SO4 2- (or SO4^2-).'};const c=cands.find(x=>alt.includes(x.f))||cands[0];
+  if(alt.includes(c.f)){if(c.nocharge)return {msg:`Right atoms. Now add the charge: ${CL.fmt(ion.f,ion.q)}.`};return {msg:`Right atoms, wrong charge: ${ion.name} is ${CL.fmt(ion.f,ion.q)}.`};}
+  const other=PA.concat(POSIONS).find(a=>cands.some(x=>x.f===a.f&&x.q===a.q))||PA.concat(POSIONS).find(a=>cands.some(x=>x.f===a.f));if(other)return {msg:`${CL.fmt(other.f,other.q)} is ${other.name}. ${ion.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(ion.f,ion.q)}.`};
   return {msg:`${ion.name.replace(/^./,m=>m.toUpperCase())} is ${CL.fmt(ion.f,ion.q)}.`};}
 function ionChoices(ion,dir,r){const pool=PA.concat(POSIONS);let w=[];const fam=ion.fam?pool.filter(a=>a.fam===ion.fam&&a!==ion):[];
   if(dir==='f2n'){w=fam.map(a=>a.name);const at=CL.parse(ion.f),main=Object.keys(at).find(k=>k!=='O'&&k!=='H');if(main&&CL.anionName[main])w.push(CL.anionName[main]);
     (SIMILAR[ion.f]||[]).forEach(x=>w.push(x));pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(a.name));}
-  else{fam.forEach(a=>w.push(CL.fmt(a.f,a.q)));w.push(CL.fmt(ion.f,ion.q>0?ion.q+1:ion.q===-1?-2:-1));pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(CL.fmt(a.f,a.q)));}
+  else{fam.forEach(a=>w.push(CL.fmt(a.f,a.q)));({NH4:['NH₃','NH₄⁻'],H3O:['OH⁻','H₂O⁺'],Hg2:['Hg⁺','Hg²⁺','Hg₂⁺']}[ion.f]||[]).forEach(x=>w.push(x));w.push(CL.fmt(ion.f,ion.q>0?ion.q+1:ion.q===-1?-2:-1));pool.filter(a=>a.q===ion.q&&a!==ion).forEach(a=>w.push(CL.fmt(a.f,a.q)));}
   const right=dir==='f2n'?ion.name:CL.fmt(ion.f,ion.q);const seen=new Set([right]),out=[];w.forEach(x=>{if(!seen.has(x)){seen.add(x);out.push(x);}});
   const ch=[right,...out.slice(0,3)];for(let i=ch.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[ch[i],ch[j]]=[ch[j],ch[i]];}return {list:ch,correct:ch.indexOf(right)};}
 function newIon(sim){const st=sim.st,p=sim.p;st.qn++;const r=rng(st.seed*31+st.qn*7177);const pool=drillPool(p);
@@ -468,7 +466,7 @@ const SIM={
         honors:'Practice the whole unit: Type I and Type II ionic compounds, polyatomic ions, molecular prefixes, acids and hydrates, from formula to name and back.',
         ap:'Add the full oxyanion families (per-ate, -ate, -ite, hypo-ite for Cl, Br and I) and the acids built from them.'},
   scale:'Symbolic level: names and formulas on paper. Each formula unit or molecule is a few hundred picometers across.',
-  aspect:4/3,timeless:true,animated:true,graph:false,controlsTitle:'Practice',
+  aspect:5/4,timeless:true,graph:false,controlsTitle:'Practice',
   prereq:['ionic'],next:['balance','hydrate','ptable'],
   controls:[
     {id:'mode',label:'Practice',type:'seg',def:'flow',lvl:'bio',noTrial:true,options:[{v:'flow',l:'Name compounds'},{v:'drill',l:'Polyatomic ion drill'}],onChange:sim=>{syncMode(sim);if(sim.p.mode==='drill')newIon(sim);else newQuestion(sim);}},
@@ -530,8 +528,8 @@ const SIM={
     if(!shown&&!q.done)h+=`<p>${q.dir==='f2n'?'Start at the top of the flowchart. First question: is the first part a metal (or NH₄⁺)?':'Find what kind of compound the name describes. A metal or ammonium first means ionic: you will need charges.'} Press <b>Hint: next step</b> to light up one step at a time.</p>`;
     h+='<ol style="margin:0 0 8px;padding-left:22px">'+q.steps.slice(0,q.done?99:shown).map((s,i)=>`<li style="margin:3px 0${q.res&&!q.res.ok&&!q.res.shown&&q.res.node===s.n?';color:var(--bad)':''}">${s.h}</li>`).join('')+'</ol>';
     if(q.done)h+=`<p><b>${q.dir==='f2n'?'Name':'Formula'}:</b> ${q.dir==='f2n'?esc(c.name):CL.html(c.formula)} &nbsp;·&nbsp; <b>${q.dir==='f2n'?'Formula':'Name'}:</b> ${q.dir==='f2n'?CL.html(c.formula)+(c.kind==='acid'?'(aq)':''):esc(c.name)}</p>`;
-    if(atLeast('ap')&&c.kind==='ionic'&&c.an.fam){const fam=familyOf(c.an);if(fam&&fam.length>1)h+=`<p class="help">Oxyanion family: ${fam.map(a=>CL.html(a.f,a.q)+' '+esc(a.name)).join(' · ')}</p>`;}
-    if(atLeast('ap')&&c.kind==='acid'&&c.an.fam){const fam=familyOf(c.an);if(fam&&fam.length>1)h+=`<p class="help">Acid family: ${fam.map(a=>CL.html(mkAcid(a).formula)+' '+esc(acidName(a))).join(' · ')}</p>`;}
+    if(q.done&&atLeast('ap')&&c.kind==='ionic'&&c.an.fam){const fam=familyOf(c.an);if(fam&&fam.length>1)h+=`<p class="help">Oxyanion family: ${fam.map(a=>CL.html(a.f,a.q)+' '+esc(a.name)).join(' · ')}</p>`;}
+    if(q.done&&atLeast('ap')&&c.kind==='acid'&&c.an.fam){const fam=familyOf(c.an);if(fam&&fam.length>1)h+=`<p class="help">Acid family: ${fam.map(a=>CL.html(mkAcid(a).formula)+' '+esc(acidName(a))).join(' · ')}</p>`;}
     return h;},
   narrate(sim){const st=sim.st;
     if(sim.p.mode==='drill'){const d=st.d;if(!d)return '';const ion=d.ion;
@@ -544,14 +542,14 @@ const SIM={
     return c.kind==='ionic'?(q.dir==='f2n'?`The first question decides everything: a metal (or NH₄⁺) at the front means <b>ionic</b>, named from its ions. Two nonmetals mean <b>molecular</b>, named with prefixes.`:`The name starts with a metal or ammonium, so this is <b>ionic</b>: find each ion’s charge and balance them to zero.`):
       c.kind==='acid'?`Acids are named for the anion they contain. Ask whether that anion has <b>oxygen</b>.`:`Look at the first element: is it a metal? If not, ask whether it is an <b>acid</b> in water.`;},
   tour:[
-    {title:'Start at the top',text:'Every name starts with one question: is the first part a metal, or the ammonium ion? If yes, the compound is ionic and is named from its ions. Here, Na is a metal.',focus:[198,92,404,56],pause:true,setup(sim){BioLab.setValues(sim,{mode:'flow',dir:'f2n'});tourQ(sim,mkIonic(catBySym('Na',1),anionByF('Cl')),'f2n',1);}},
-    {title:'One charge, or more than one?',text:'Sodium only forms Na⁺, so its name is just “sodium.” The anion Cl⁻ is one atom, so it becomes chloride: sodium chloride.',focus:[[14,174,384,130],[14,402,384,54]],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Na',1),anionByF('Cl')),'f2n',5);}},
-    {title:'Transition metals get a Roman numeral',text:'Iron can be Fe²⁺ or Fe³⁺, so the name says which. In Fe₂O₃, three O²⁻ make 6−. Two irons share 6+, so each is 3+: iron(III) oxide.',focus:[[14,174,384,56],[208,246,190,62]],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Fe',3),anionByF('O')),'f2n',3);}},
-    {title:'Polyatomic ions keep their names',text:'A group of atoms with one charge, like nitrate NO₃⁻, keeps its name. More than one of them needs parentheses: Ca(NO₃)₂ is calcium nitrate.',focus:[[14,328,384,48],[208,398,190,58]],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Ca',2),anionByF('NO3')),'f2n',5);}},
-    {title:'Writing a formula: charges add to zero',text:'Going from a name to a formula, find each ion’s charge, then use enough of each ion that the charges cancel. Crisscross the charge numbers and reduce: Al³⁺ and O²⁻ give Al₂O₃.',focus:[14,474,384,44],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Al',3),anionByF('O')),'n2f',6);}},
-    {title:'Two nonmetals: prefixes',text:'No metal and no acid means a molecular compound. Prefixes count the atoms: N₂O₄ is dinitrogen tetroxide. Skip mono- on the first element, and drop a vowel before “oxide.”',focus:[410,258,188,232],pause:true,setup(sim){tourQ(sim,mkMol(MOLS.find(m=>m.a==='N'&&m.na===2&&m.nb===4)),'f2n',3);}},
-    {title:'Acids: H first, in water',text:'HCl(aq) has no oxygen, so it is hydro- + chlor + -ic acid. H₂SO₄(aq) comes from sulfate: -ate becomes -ic, so sulfuric acid. Sulfite would give sulfurous acid.',focus:[[410,174,380,56],[600,246,190,224]],pause:true,setup(sim){tourQ(sim,mkAcid(anionByF('SO4')),'f2n',4);}},
-    {lvl:'honors',title:'Hydrates',text:'A dot and water at the end means a hydrate. Name the salt, then add a prefix + hydrate: CuSO₄·5H₂O is copper(II) sulfate pentahydrate, the blue crystals from the hydrate lab.',focus:[14,528,384,46],pause:true,setup(sim){tourQ(sim,hydrate(HYD[0]),'f2n',99);}}
+    {title:'Start at the top',text:'Every name starts with one question: is the first part a metal, or the ammonium ion? If yes, the compound is ionic and is named from its ions. Here, Na is a metal.',focus:()=>fr('q1'),pause:true,setup(sim){BioLab.setValues(sim,{mode:'flow',dir:'f2n'});tourQ(sim,mkIonic(catBySym('Na',1),anionByF('Cl')),'f2n',1);}},
+    {title:'One charge, or more than one?',text:'Sodium only forms Na⁺, so its name is just “sodium.” The anion Cl⁻ is one atom, so it becomes chloride: sodium chloride.',focus:()=>[fr('q3','t1'),fr('mon')],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Na',1),anionByF('Cl')),'f2n',5);}},
+    {title:'Transition metals get a Roman numeral',text:'Iron can be Fe²⁺ or Fe³⁺, so the name says which. In Fe₂O₃, three O²⁻ make 6−. Two irons share 6+, so each is 3+: iron(III) oxide.',focus:()=>[fr('q3'),fr('t2')],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Fe',3),anionByF('O')),'f2n',3);}},
+    {title:'Polyatomic ions keep their names',text:'A group of atoms with one charge, like nitrate NO₃⁻, keeps its name. More than one of them needs parentheses: Ca(NO₃)₂ is calcium nitrate.',focus:()=>[fr('q4'),fr('poly')],pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Ca',2),anionByF('NO3')),'f2n',5);}},
+    {title:'Writing a formula: charges add to zero',text:'Going from a name to a formula, find each ion’s charge, then use enough of each ion that the charges cancel. Crisscross the charge numbers and reduce: Al³⁺ and O²⁻ give Al₂O₃.',focus:()=>fr('bal'),pause:true,setup(sim){tourQ(sim,mkIonic(catBySym('Al',3),anionByF('O')),'n2f',6);}},
+    {title:'Two nonmetals: prefixes',text:'No metal and no acid means a molecular compound. Prefixes count the atoms: N₂O₄ is dinitrogen tetroxide. Skip mono- on the first element, and drop a vowel before “oxide.”',focus:()=>[fr('mol'),[PREFBOX.x-6,PREFBOX.y-6,PREFBOX.w+12,PREFBOX.h+12]],pause:true,setup(sim){tourQ(sim,mkMol(MOLS.find(m=>m.a==='N'&&m.na===2&&m.nb===4)),'f2n',3);}},
+    {title:'Acids: H first, in water',text:'HCl(aq) has no oxygen, so it is hydro- + chlor + -ic acid. H₂SO₄(aq) comes from sulfate: -ate becomes -ic, so sulfuric acid. Sulfite would give sulfurous acid.',focus:()=>[fr('q2'),fr('q5','bin','oxy')],pause:true,setup(sim){tourQ(sim,mkAcid(anionByF('SO4')),'f2n',4);}},
+    {lvl:'honors',title:'Hydrates',text:'A dot and water at the end means a hydrate. Name the salt, then add a prefix + hydrate: CuSO₄·5H₂O is copper(II) sulfate pentahydrate, the blue crystals from the hydrate lab.',focus:()=>fr('hyd'),pause:true,setup(sim){tourQ(sim,hydrate(HYD[0]),'f2n',99);}}
   ],
   onTourExit(sim){newQuestion(sim);},
   lab:{bio:'<p><b>Question:</b> Which kind of compound is hardest for you to name?</p><ol><li>Choose <b>Binary ionic, one charge</b>. Answer 10 compounds without hints, then press <b>Record trial</b>.</li><li>Press <b>Reset score</b>, then do the same for <b>Transition metals</b>, <b>Polyatomic ions</b>, <b>Molecular</b> and <b>Acids</b>.</li><li>Compare your accuracy for each type in the table.</li></ol><p>Which flowchart step caused most of your mistakes? Write the rule for that step in your own words.</p>',
@@ -563,7 +561,7 @@ const SIM={
     {lvl:'honors',t:'Type I and Type II metals',d:'Type I metals form one ion (Na⁺, Ca²⁺, Al³⁺, Zn²⁺, Ag⁺). Type II metals form more than one (Fe²⁺/Fe³⁺, Cu⁺/Cu²⁺) and need a Roman numeral.'},{lvl:'honors',t:'Hydrate',d:'A crystal with water molecules locked in it, written with a dot: CuSO₄·5H₂O. Named with a prefix + hydrate.'},{lvl:'honors',t:'Anhydrous',d:'The compound left after a hydrate’s water is driven off by heating.'},
     {lvl:'ap',t:'Oxyanion',d:'A polyatomic anion containing oxygen. For one element: per-…-ate (most O), -ate, -ite, hypo-…-ite (fewest O), all with the same charge.'},{lvl:'ap',t:'Oxyacid',d:'An acid made from an oxyanion, such as HClO₄ (perchloric acid) or HClO (hypochlorous acid).'}],
   about:'<p>The tool runs the same rules taught in RJ’s nomenclature unit and on its naming flowchart. Every name and formula on the page is built by those rules from a list of ions (charges from the standard tables), real molecular compounds, real acids and real hydrates. Formulas come from ChemLab’s charge-balancing function, so they match the rest of the site.</p><p>When an answer is wrong, the tool compares it with the correct one, piece by piece (cation, Roman numeral, anion, hydrate prefix, acid ending, prefixes), and names the first flowchart step that differs. It accepts common alternatives: bicarbonate and bisulfate, “tetraoxide” for tetroxide, CH₃COO⁻ for acetate, and “aluminium.”</p><p>Simplifications: the ionic generator pairs ions by the naming rules and skips most combinations that are not stable compounds, but a few worksheet-style combinations remain. Nickel is treated as needing a Roman numeral, which most textbooks do. Hg₂²⁺ is named mercury(I). Organic compounds and complex ions are not included. Element names use American spelling.</p>',
-  draw(sim,ctx,vdt,k,t){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,600);if(sim.p.mode==='drill'){drawDrill(sim,ctx,k);return;}drawFlow(sim,ctx,k);},
+  draw(sim,ctx,vdt,k,t){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,640);if(sim.p.mode==='drill'){drawDrill(sim,ctx,k);return;}drawFlow(sim,ctx,k);},
   thumbSetup(sim){setQuestion(sim,mkIonic(catBySym('Fe',3),anionByF('O')),'f2n',true);}
 };
 function newIonSilent(sim){const save=sim.st.qn;newIon(sim);sim.st.qn=save;}
@@ -580,7 +578,7 @@ function drawBanner(ctx,k,lead,main,sub){const P=PAL;rr(ctx,12,10,776,70,12);ctx
 function drawFlow(sim,ctx,k){const st=sim.st,q=st.q,P=PAL;if(!q)return;const c=q.c,small=k>1.3;
   const prompt=q.dir==='f2n'?CL.fmt(c.formula)+(c.kind==='acid'?'(aq)':''):c.name;
   drawBanner(ctx,k,q.dir==='f2n'?'Name it:':'Formula?',q.done?prompt+'  →  '+(q.dir==='f2n'?c.name:CL.fmt(c.formula)):prompt,small?'':(st.tries?st.right+' of '+st.tries+' correct':''));
-  const shown=q.done?q.path.length:Math.min(q.hint,q.steps.length);const lit=new Set(q.steps.slice(0,shown).map(s=>s.n));if(q.done)q.path.forEach(n=>lit.add(n));
+  const shown=q.done?q.path.length:Math.min(q.hint,q.steps.length);let li=-1;q.steps.slice(0,shown).forEach(s=>{li=Math.max(li,q.path.indexOf(s.n));});const lit=new Set(q.path.slice(0,li+1));if(q.done)q.path.forEach(n=>lit.add(n));
   const bad=q.done&&q.res&&!q.res.ok&&!q.res.shown?q.res.node:null;const okAll=q.done&&q.res&&q.res.ok;
   const showHyd=atLeast('honors');
   // edges
@@ -599,12 +597,15 @@ function drawFlow(sim,ctx,k){const st=sim.st,q=st.q,P=PAL;if(!q)return;const c=q
     const lh=fs*1.16,y0=n.y-(lines.length-1)*lh/2;lines.forEach((ln,i)=>txt(ctx,ln,n.x,y0+i*lh+1,{s:fs,w:small?700:(on||isBad?600:500),c:ink,a:'center',b:'middle'}));});
   // column tags
   if(!small){txt(ctx,'IONIC',18,163,{s:12*k,w:800,c:P['cv-soft']});txt(ctx,'NOT IONIC',782,163,{s:12*k,w:800,c:P['cv-soft'],a:'right'});}
+  // prefix reference
+  {const B=PREFBOX;rr(ctx,B.x,B.y,B.w,B.h,10);ctx.fillStyle=P['card2'];ctx.fill();ctx.strokeStyle=P['line'];ctx.lineWidth=1;ctx.stroke();
+    const fs=small?12*k:13*k;const list=PREF.slice(1).map((p,i)=>(i+1)+' '+p).join(' · ');const lines=wrapLines(ctx,'Prefixes: '+list,B.w-20,fs,600);
+    const lh=fs*1.2,y0=B.y+B.h/2-(lines.length-1)*lh/2;lines.slice(0,4).forEach((ln,i)=>txt(ctx,ln,B.x+10,y0+i*lh+1,{s:fs,w:600,c:P['cv-ink'],b:'middle'}));}
   // status strip
   let msg='',col=P['cv-soft'];
-  if(q.done&&q.res){if(q.res.ok){msg='Correct. The green path is the route you took.';col=P['s3'];}else if(q.res.shown){msg='Answer shown. Follow the green path.';}else{msg='Not quite. Red box: '+(NODE_SHORT[q.res.node]||'');col=P['s1'];}}
-  else if(shown)msg='Hint '+shown+' of '+q.steps.length+'. The dashed box is the next step.';else msg=small?'Answer below, or press Hint.':'Answer at the right, or press Hint to light up one step at a time.';
-  if(small&&showHyd){}
-  const sy=showHyd?586:566;const z=fitText(ctx,msg,770,14*k,12*k,700);if(!(showHyd&&small&&false))txt(ctx,msg,400,showHyd?NODES.hyd.y+NODES.hyd.h/2+(600-NODES.hyd.y-NODES.hyd.h/2)/2+1:sy,{s:z,w:700,c:col,a:'center',b:'middle'});}
+  if(q.done&&q.res){if(q.res.ok){msg='Correct. The green path is the route you took.';col=P['s3'];}else if(q.res.shown){msg='Answer shown. Follow the green path.';}else{msg='Not quite. Red box: '+(NODE_SHORT[q.res.node]||'check the rules');col=P['s1'];}}
+  else if(shown)msg='Hint '+shown+' of '+q.steps.length+'. The dashed box is the next step.';else msg=small?'Answer below the stage, or press Hint.':'Answer at the right, or press Hint to light up one step at a time.';
+  rr(ctx,12,596,776,36,10);ctx.fillStyle=P['card'];ctx.fill();const z=fitText(ctx,msg,760,14*k,12*k,700);txt(ctx,msg,400,615,{s:z,w:700,c:col,a:'center',b:'middle'});}
 function drawDrill(sim,ctx,k){const st=sim.st,d=st.d,P=PAL;if(!d)return;const ion=d.ion,small=k>1.3;
   const prompt=d.dir==='f2n'?CL.fmt(ion.f,ion.q):ion.name;drawBanner(ctx,k,d.dir==='f2n'?'Name this ion:':'Formula and charge:',d.done?prompt+'  =  '+(d.dir==='f2n'?ion.name:CL.fmt(ion.f,ion.q)):prompt,small?'':(st.tries?st.right+' of '+st.tries+' correct':''));
   // ion picture (always for formula→name; after answering for name→formula)
@@ -621,12 +622,17 @@ function drawDrill(sim,ctx,k){const st=sim.st,d=st.d,P=PAL;if(!d)return;const io
       const ink=me?'#fff':P['cv-ink'];txt(ctx,CL.fmt(a.f,a.q),fx+20,y+1,{s:Math.min(16*k,rh*0.7),w:700,c:ink,b:'middle'});txt(ctx,a.name,fx+fw-16,y+1,{s:Math.min(14*k,rh*0.62),w:me?700:500,c:ink,a:'right',b:'middle'});});}
   else{const lines=wrapLines(ctx,d.done?(ion.q>0?'One of the few positive polyatomic ions. It pairs with anions just like a metal ion does.':'This ion has no -ate/-ite family partner in the drill. Memorize it on its own.'):'Answer to see where this ion fits in its family.',fw-28,13*k,500);
     lines.forEach((ln,i)=>txt(ctx,ln,fx+14,fy+28+i*16*k,{s:13*k,c:P['cv-soft']}));}
-  // progress chips
-  const pool=drillPool(sim.p);const top=small?458:396,cols=small?6:9,cw=776/cols,chh=small?44:38;
-  txt(ctx,'Your progress in this set',14,top-8,{s:12*k,w:700,c:P['cv-soft']});
-  pool.forEach((a,i)=>{const r=Math.floor(i/cols),cI=i%cols,x=12+cI*cw,y=top+r*(chh+6);if(y+chh>598)return;const kn=st.known[a.f]||0;
+  // progress: chips on wide screens, a bar on phones
+  const pool=drillPool(sim.p),top=small?470:408;const nk=pool.filter(a=>(st.known[a.f]||0)>=1).length,nm=pool.filter(a=>(st.known[a.f]||0)<0).length;
+  txt(ctx,'Your progress in this set: '+nk+' of '+pool.length+' answered right',14,top-10,{s:12*k,w:700,c:P['cv-soft']});
+  if(small){const bw=776,by=top+6;rr(ctx,12,by,bw,40,10);ctx.fillStyle=P['card'];ctx.fill();ctx.strokeStyle=P['line'];ctx.stroke();
+    const seg=bw/pool.length;pool.forEach((a,i)=>{const kn=st.known[a.f]||0;if(!kn)return;ctx.fillStyle=kn>=1?'#1b7339':'#b3261e';ctx.fillRect(12+i*seg+1,by+3,seg-2,34);});
+    txt(ctx,nm?nm+' to review (red)':'Red marks an ion to review.',14,by+70,{s:12*k,c:P['cv-soft']});
+    const i=pool.indexOf(ion);if(i>=0){ctx.strokeStyle=P['s4'];ctx.lineWidth=3;ctx.strokeRect(12+i*seg,by,seg,40);}return;}
+  const cols=10,cw=776/cols,rows=Math.ceil(pool.length/cols),chh=Math.min(40,(636-top)/rows-6);
+  pool.forEach((a,i)=>{const r=Math.floor(i/cols),cI=i%cols,x=12+cI*cw,y=top+r*(chh+6);const kn=st.known[a.f]||0;
     rr(ctx,x+3,y,cw-6,chh,8);ctx.fillStyle=kn>=1?'#1b7339':kn<0?'#b3261e':P['card'];ctx.fill();ctx.strokeStyle=a===ion?P['s4']:P['line'];ctx.lineWidth=a===ion?3:1;ctx.stroke();
-    const lab=kn!==0?CL.fmt(a.f,a.q):'?';const z=fitText(ctx,lab,cw-14,14*k,10,700);txt(ctx,lab,x+cw/2,y+chh/2+1,{s:Math.max(z,Math.min(12*k,cw/5)),w:700,c:kn!==0?'#fff':P['cv-soft'],a:'center',b:'middle'});});}
+    const lab=kn!==0?CL.fmt(a.f,a.q):'?';const z=fitText(ctx,lab,cw-12,14*k,12*k,700);txt(ctx,lab,x+cw/2,y+chh/2+1,{s:z,w:700,c:kn!==0?'#fff':P['cv-soft'],a:'center',b:'middle'});});}
 
 BioLab.register(SIM);
 /* expose the model for testing in Node */

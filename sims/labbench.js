@@ -229,13 +229,13 @@ const SIM={
   init(){return {seen:{},task:0,res:null,done:{},right:0,tried:0,found:[],safe:[],fa:0,last:null,reveal:false};},
   step(){},
   metrics:[
-    {id:'seen',label:'Pieces explored',unit:'',lvl:'bio',text:true,modes:['identify'],get:s=>Object.keys(s.st.seen).length+' of '+LIST.length},
-    {id:'cat',label:'Type of tool',unit:'',lvl:'honors',text:true,modes:['identify','prec'],get:s=>{const i=IT[s.p.item];return i?CATS[i.cat]:'Choose a piece';}},
+    {id:'seen',label:'Pieces explored',unit:'',lvl:'bio',text:true,noTrial:true,modes:['identify'],get:s=>Object.keys(s.st.seen).length+' of '+LIST.length},
+    {id:'cat',label:'Type of tool',unit:'',lvl:'honors',text:true,noTrial:true,modes:['identify','prec'],get:s=>{const i=IT[s.p.item];return i?CATS[i.cat]:'Choose a piece';}},
     {id:'taskn',label:'Task',unit:'',lvl:'bio',text:true,modes:['pick'],get:s=>(s.st.task+1)+' of '+TASKS.length},
     {id:'score',label:'Best tool on the first try',unit:'',lvl:'bio',text:true,modes:['pick'],get:s=>s.st.right+' of '+s.st.tried+' tried'},
     {id:'found',label:'Hazards found',unit:'',lvl:'bio',text:true,modes:['safety'],get:s=>s.st.found.length+' of '+NHZ},
     {id:'fa',label:'Safe things checked',unit:'',lvl:'bio',text:true,modes:['safety'],get:s=>String(s.st.fa)},
-    {id:'reads',label:'Reads to',unit:'',lvl:'ap',text:true,modes:['identify','prec'],get:s=>{const i=IT[s.p.item];return i?(i.rd||'Not a measuring tool'):'Choose a piece';}}
+    {id:'reads',label:'Reads to',unit:'',lvl:'ap',text:true,noTrial:true,modes:['identify','prec'],get:s=>{const i=IT[s.p.item];return i?(i.rd||'Not a measuring tool'):'Choose a piece';}}
   ],
   onClick(sim,x,y){const m=sim.p.mode;
     if(m==='safety'){const s=SPOTS.find(s=>x>=s.r[0]&&x<=s.r[0]+s.r[2]&&y>=s.r[1]&&y<=s.r[1]+s.r[3]);if(s)BioLab.setValues(sim,{spot:s.id});return;}
@@ -257,7 +257,7 @@ const SIM={
       return h;}
     if(!i){let h='<div class="p-head"><h3>Explore the bench</h3></div><p>Click any piece of equipment, or choose one from the list, to learn its name and its job. Turn on <b>Show labels</b> to see every name.</p>';
       if(p.labels&&sim.vis.badges)h+='<ol>'+LIST.map(x=>'<li>'+x.n+'</li>').join('')+'</ol>';
-      if(hon){h+='<div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Equipment</th></tr></thead><tbody>'+Object.keys(CATS).map(c=>'<tr><td>'+CATS[c]+'</td><td style="white-space:normal;text-align:left">'+LIST.filter(x=>x.cat===c).map(x=>x.n).join(', ')+'</td></tr>').join('')+'</tbody></table></div>';}
+      if(hon){h+='<div class="tbl-wrap"><table><thead><tr><th style="text-align:left">Type</th><th style="text-align:left">Equipment</th></tr></thead><tbody>'+Object.keys(CATS).map(c=>'<tr><td style="text-align:left">'+CATS[c]+'</td><td style="white-space:normal;text-align:left">'+LIST.filter(x=>x.cat===c).map(x=>x.n).join(', ')+'</td></tr>').join('')+'</tbody></table></div>';}
       return h;}
     let h='<div class="p-head"><h3>'+i.n+'</h3></div><p>'+i.use+'</p>';if(hon)h+='<p><b>Tip:</b> '+i.tip+'</p>';if(ap)h+='<p><b>Precision:</b> '+i.prec+'</p>';return h;},
   narrate(sim){const p=sim.p,st=sim.st;
@@ -319,7 +319,7 @@ function drawBench(sim,ctx,k,t){const p=sim.p,st=sim.st,touring=sim.tour&&sim.to
     else{const lab=placeLabels(ctx,ls.map(i=>({text:i.n,r:i.r,pref:i.lp})),12);
       lab.forEach((L,j)=>{if(L.ok)pill(ctx,L.text,L.x,L.y,PAL['card'],PAL['cv-ink'],12);else{const i=ls[j];pill(ctx,String(LIST.indexOf(i)+1),i.r[0]+i.r[2]/2,i.r[1]+i.r[3]/2,PAL['card'],PAL['cv-ink'],12);}});}}
   if(sel){const r=sel.id==='stand'?[16,180,104,222]:sel.r;hl(ctx,r,PAL['rj'],false,t);if(sel.id==='stand')hl(ctx,IT.stand2.r,PAL['rj'],false,t);
-    const L=placeLabels(ctx,[{text:sel.n,r,pref:r[1]>200?['above','below','mid']:['below','above','mid']}],14*k)[0];pill(ctx,L.text,L.x,L.y,PAL['rj'],'#fff',14*k);}
+    const L=placeLabels(ctx,[{text:sel.n,r,pref:r[1]>150?['above','below','mid']:['below','above','mid']}],14*k)[0];pill(ctx,L.text,L.x,L.y,PAL['rj'],'#fff',14*k);}
   else if(!p.labels&&!touring&&!(q&&q.target&&sim.ch.phase==='ask'))txt(ctx,'Click any piece of equipment',788,26,{s:13*k,c:PAL['cv-soft'],a:'right'});
 }
 

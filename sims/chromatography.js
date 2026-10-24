@@ -144,9 +144,9 @@ const CHROM={
   plot(sim,ctx,box,id){const g=geom(sim),st=sim.st;
     if(id==='svf'){const ss=spots(sim,selIdx(sim)),fm=Math.max(10,g.F);const ax=axes(ctx,box,{xmin:0,xmax:10,ymin:0,ymax:10,xl:'Solvent front distance (cm)',yl:'Spot distance (cm)'});
       ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();
-      ss.forEach((s,i)=>{ctx.strokeStyle=serColor(i+1);ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));ctx.lineTo(ax.X(10),ax.Y(10*s.rf));ctx.stroke();ctx.setLineDash([]);
-        ctx.fillStyle=serColor(i+1);ctx.beginPath();ctx.arc(ax.X(g.F),ax.Y(s.d),5.5,0,6.29);ctx.fill();});ctx.restore();
-      legend(ctx,box.L+10,box.T+10,ss.slice(0,3).map((s,i)=>({label:(sim.p.mode==='tlc'?s.name.split(' ')[0]:s.fam)+': slope = Rf = '+s.rf.toFixed(2),color:serColor(i+1),dash:true})));return;}
+      const lc=s=>s.col==='#f2c200'?'#c99a00':s.col;ss.forEach((s,i)=>{ctx.strokeStyle=lc(s);ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));ctx.lineTo(ax.X(10),ax.Y(10*s.rf));ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle=lc(s);ctx.beginPath();ctx.arc(ax.X(g.F),ax.Y(s.d),5.5,0,6.29);ctx.fill();});ctx.restore();
+      legend(ctx,box.L+10,box.T+10,ss.slice(0,3).map(s=>({label:(sim.p.mode==='tlc'?s.name.split(' ')[0]:s.fam)+' Rf '+s.rf.toFixed(2),color:lc(s),dash:true})));txt(ctx,'slope of each line = Rf',box.L+box.W-6,box.T+box.H-10,{s:13,c:PAL['muted'],a:'right'});return;}
     const D=g.tlc?TP.D:SOLV[sim.p.solvent].D,tmax=Math.max(5,Math.pow(g.max-g.depth,2)/D*1.05),ymax=Math.pow(g.max-g.depth,2)*1.05;
     const ax=axes(ctx,box,{xmin:0,xmax:tmax,ymin:0,ymax,xl:'Run time (min)',yl:'(front height above solvent)² (cm²)'});
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=PAL['muted'];ctx.setLineDash([5,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));ctx.lineTo(ax.X(tmax),ax.Y(D*tmax));ctx.stroke();ctx.setLineDash([]);
@@ -307,34 +307,34 @@ function drawZoom(sim,ctx,g,k,vdt,t,sel){const p=sim.p,st=sim.st,v=sim.vis,tl=g.
   const pick=[ss[st.spot%ss.length]];const other=ss.filter(s=>s!==pick[0]).sort((a,b)=>Math.abs(b.rf-pick[0].rf)-Math.abs(a.rf-pick[0].rf))[0];if(other)pick.push(other);
   const key=pick.map(s=>s.key).join('|')+(tl?'t':'p');
   const lanesX=tl?[-70,-20,30,80]:[-62,-2,58];
-  if(!v.mol||v.key!==key){v.key=key;v.mol=[];for(let j=0;j<pick.length;j++)for(let i=0;i<14;i++){const c=i%lanesX.length;v.mol.push({d:j,y:ZY-ZR+((i*53+j*29)%(2*ZR)),ch:c,side:(i%2?1:-1),free:false,x:ZX+lanesX[c]+(i%2?14:-14)});}
+  if(!v.mol||v.key!==key){v.key=key;v.mol=[];for(let j=0;j<pick.length;j++)for(let i=0;i<14;i++){const c=i%lanesX.length;v.mol.push({d:j,y0:i*13+j*7,y:ZY-ZR+((i*53+j*29)%(2*ZR)),ch:tl?i:c,side:(i%2?1:-1),free:false,x:ZX+lanesX[c]+(i%2?14:-14)});}
     v.flow=[];for(let i=0;i<26;i++)v.flow.push({x:ZX-ZR+((i*61)%(2*ZR)),y:ZY-ZR+((i*37)%(2*ZR))});}
   const moving=!st.done&&g.F>0&&!(washed(sim)&&!tl);const wet=g.F>0||g.yF>=g.org;
   ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.clip();
-  ctx.fillStyle=wet?PAL['cv-water']:PAL['cv-bg2'];ctx.fillRect(ZX-ZR,ZY-ZR,2*ZR,2*ZR);
+  ctx.fillStyle=wet?'#d9eaf4':'#efeae0';ctx.fillRect(ZX-ZR,ZY-ZR,2*ZR,2*ZR);
   if(!tl){[-92,-32,28,88].forEach((dx,i)=>{const x=ZX+dx;ctx.fillStyle='#e4d9b8';ctx.beginPath();ctx.moveTo(x-11,ZY-ZR);for(let y=ZY-ZR;y<=ZY+ZR;y+=12)ctx.lineTo(x-11+Math.sin(y*0.05+i)*3,y);ctx.lineTo(x+11,ZY+ZR);for(let y=ZY+ZR;y>=ZY-ZR;y-=12)ctx.lineTo(x+11+Math.sin(y*0.05+i)*3,y);ctx.closePath();ctx.fill();
       ctx.strokeStyle='#c9b98d';ctx.lineWidth=1;ctx.stroke();});}
   else{for(let i=0;i<5;i++)for(let j=0;j<5;j++){const x=ZX-ZR+20+i*48+(j%2)*24,y=ZY-ZR+18+j*46;ctx.fillStyle='#e6e6df';ctx.beginPath();ctx.arc(x,y,17,0,6.29);ctx.fill();ctx.strokeStyle='#bdbdb3';ctx.lineWidth=1;ctx.stroke();}}
   if(moving&&!RM){v.flow.forEach(f=>{f.y-=60*vdt;if(f.y<ZY-ZR)f.y+=2*ZR;});}
-  if(wet){ctx.fillStyle=PAL['cv-glass'];ctx.globalAlpha=0.6;v.flow.forEach(f=>{ctx.beginPath();ctx.arc(f.x,f.y,2,0,6.29);ctx.fill();});ctx.globalAlpha=1;}
+  if(wet){ctx.fillStyle='#7f9fb0';ctx.globalAlpha=0.6;v.flow.forEach(f=>{ctx.beginPath();ctx.arc(f.x,f.y,2,0,6.29);ctx.fill();});ctx.globalAlpha=1;}
   const kt=2.2;v.mol.forEach(m=>{const s=pick[m.d];if(!s)return;
     if(moving&&!RM&&vdt>0){if(m.free){if(Math.random()<kt*(1-s.rf)*vdt)m.free=false;}else if(Math.random()<kt*s.rf*vdt)m.free=true;}else if(!moving)m.free=false;
-    const bx=ZX+lanesX[m.ch]+(tl?m.side*22:m.side*14),fx=ZX+lanesX[m.ch]+(tl?0:m.side*0)+(tl?m.side*2:30*(m.side>0?0:-1)+15);
-    const target=m.free?(tl?ZX+lanesX[m.ch]+m.side*4:ZX+lanesX[m.ch]+(m.side>0?30:-30)):bx;
+    const hx=tl?ZX-ZR+16+((m.ch*67+m.d*41+(m.side>0?23:0)+Math.round(m.y0||0))%(2*ZR-32)):0;
+    const target=tl?hx:(m.free?ZX+lanesX[m.ch]+m.side*6:ZX+lanesX[m.ch]+m.side*17);
     m.x+=(target-m.x)*Math.min(1,vdt*8||0);if(m.free&&!RM){m.y-=60*vdt;if(m.y<ZY-ZR-8)m.y+=2*ZR+16;}
     ctx.fillStyle=s.col;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(m.x,m.y,m.free?6.5:6,0,6.29);ctx.fill();ctx.stroke();});
   ctx.restore();
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.stroke();
-  txt(ctx,tl?'Particle view: silica gel':'Particle view: paper fibers',ZX,ZY-ZR-12,{s:13*k,w:700,a:'center'});
+  txt(ctx,k>1.4?'Particle view':tl?'Particle view: silica gel':'Particle view: paper fibers',ZX,ZY-ZR-12,{s:13*k,w:700,a:'center'});
   // lead lines from the selected strip
-  const sx=(tl?XL(sel)+32:XS(sel)+SW/2+(atLeast('honors')?26:4)),sy=(tl?yT:yP)(g.org+pick[0].d);
+  const sx=488,sy=(tl?yT:yP)(g.org+pick[0].d);
   ctx.save();ctx.globalAlpha=0.45;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ZX-ZR*0.71,ZY-ZR*0.71);ctx.moveTo(sx,sy);ctx.lineTo(ZX-ZR*0.71,ZY+ZR*0.71);ctx.stroke();ctx.restore();
   // legend
-  let ly=ZY+ZR+24;pick.forEach(s=>{const nm=tl?s.name.split(' ')[0]:s.fam+' dye',long=nm+': in the solvent '+Math.round(s.rf*100)+'% of the time',short=nm+' · '+Math.round(s.rf*100)+'% moving';
-    ctx.font='600 '+(12*k)+'px '+FONT;const L=ctx.measureText(long).width<250?long:short;
+  let ly=ZY+ZR+24;ctx.font='600 '+(12*k)+'px '+FONT;const longs=pick.map(s=>(tl?s.name.split(' ')[0]:s.fam+' dye')+': in the solvent '+Math.round(s.rf*100)+'% of the time'),useLong=longs.every(l=>ctx.measureText(l).width<250);
+  const ABB={caf:'Caf',asp:'Asp',acet:'Acet',X:'X'};pick.forEach((s,i)=>{let L=useLong?longs[i]:(tl?s.name.split(' ')[0]:s.fam+' dye')+' · '+Math.round(s.rf*100)+'% moving';if(ctx.measureText(L).width>250)L=(tl?ABB[s.key]:s.fam)+' · '+Math.round(s.rf*100)+'% moving';
     ctx.fillStyle=s.col;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.arc(530,ly-4,6,0,6.29);ctx.fill();ctx.stroke();txt(ctx,L,542,ly,{s:12*k,w:600,c:PAL['cv-ink']});ly+=19*Math.min(k,1.35);});
   if(!moving)txt(ctx,st.done?'Run over: nothing is moving now':'Dry paper: nothing moves yet',ZX,ly+2,{s:12*k,c:PAL['cv-soft'],a:'center'});
-  else if(atLeast('honors')){const sp=pick[0],m=measured(sp,g.F);if(ly+4<396)txt(ctx,'Rf = '+m.dm.toFixed(1)+' cm ÷ '+m.Fm.toFixed(1)+' cm = '+m.rf.toFixed(2),ZX,ly+4,{s:13*k,w:700,a:'center',c:PAL['cv-ink']});}}
+  else if(atLeast('honors')){const sp=pick[0],m=measured(sp,g.F);if(ly+4<396)txt(ctx,'Rf = '+m.dm.toFixed(1)+(k>1.4?' ÷ ':' cm ÷ ')+m.Fm.toFixed(1)+(k>1.4?' = ':' cm = ')+m.rf.toFixed(2),ZX,ly+4,{s:13*k,w:700,a:'center',c:PAL['cv-ink']});}}
 
 CHROM.onLevel=syncMode;
 BioLab.register(CHROM);
