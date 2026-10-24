@@ -114,7 +114,7 @@ const IM={
         const y=vp(s,p.temp);if(y<2){ctx.fillStyle=c;ctx.beginPath();ctx.arc(ax.X(p.temp),ax.Y(y),5,0,6.29);ctx.fill();}});ctx.restore();
       txt(ctx,'1 atm: normal boiling point',box.L+box.W-6,ax.Y(1)-6,{s:12,c:PAL['muted'],a:'right'});legend(ctx,box.L+10,box.T+10,[{label:'A: '+fmtF(A),color:colA()},{label:'B: '+fmtF(B),color:colB()}]);return;}
     // boiling points ranked
-    const list=S.filter(s=>atLeast(s.lvl)).slice().sort((x,y)=>x.bp-y.bp);const ax=axes(ctx,box,{xmin:0,xmax:list.length,ymin:-300,ymax:200,xcats:list.map(s=>fmtF(s)),yl:'Boiling point (°C)'});
+    const list=S.filter(s=>atLeast(s.lvl)).slice().sort((x,y)=>x.bp-y.bp);const ax=axes(ctx,box,{xmin:0,xmax:list.length,ymin:-300,ymax:200,xcats:list.map(s=>box.W/list.length>44||s.id===p.a||s.id===p.b?fmtF(s):''),yl:'Boiling point (°C)'});
     list.forEach((s,i)=>{const x0=ax.X(i+0.2),x1=ax.X(i+0.8);ctx.fillStyle=s.id===p.a?colA():s.id===p.b?colB():PAL['line'];const y0=ax.Y(0),y1=ax.Y(s.bp);ctx.fillRect(x0,Math.min(y0,y1),x1-x0,Math.abs(y1-y0));});},
   narrate(sim){const p=sim.p,A=SB[p.a],B=SB[p.b],hon=atLeast('honors'),ap=atLeast('ap'),FA=CL.html(A.f),FB=CL.html(B.f);
     const hi=A.bp>=B.bp?A:B,lo=hi===A?B:A,Fh=CL.html(hi.f),Fl=CL.html(lo.f);

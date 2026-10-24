@@ -95,8 +95,8 @@ const BUF={
   lede:{bio:'Add the same acid or base to plain water and to a buffer. Watch the pH meters, then zoom in to see what the buffer does with the H₃O⁺ and OH⁻.',
         honors:'A buffer is a weak acid and its conjugate base together. Compare buffer systems and concentrations, and find out how much acid a buffer can take before it breaks.',
         ap:'Set the base : acid ratio and predict pH with Henderson–Hasselbalch, pick a buffer for a target pH, and see why the blood’s bicarbonate buffer needs your lungs.'},
-  scale:{bio:'Two beakers of 100 mL each. Every addition is 1.0 M HCl or 1.0 M NaOH from a dropper. In the zooms, one particle stands for 0.5 mmol.',
-         ap:'Two 100.0 mL beakers; additions of 1.0 M HCl or NaOH (1 mL = 1.0 mmol). Zoom particles: 1 = 0.5 mmol (about 3 × 10²⁰ ions). Spectator Na⁺ and Cl⁻ are not drawn.'},
+  scale:{bio:'Two beakers of 100 mL each, both with a few drops of universal indicator. Every addition is 1.0 M HCl or 1.0 M NaOH from a dropper. In the zooms, one particle stands for 0.5 mmol.',
+         ap:'Two 100.0 mL beakers with universal indicator; additions of 1.0 M HCl or NaOH (1 mL = 1.0 mmol). Zoom particles: 1 = 0.5 mmol (about 3 × 10²⁰ ions). Spectator Na⁺ and Cl⁻ are not drawn.'},
   timeless:true,animated:true,chChange:0.8,chReveal:3.5,
   controls:[
     {id:'dose',label:'Amount per addition (1.0 M)',type:'seg',def:1,lvl:'bio',options:[{v:0.2,l:'4 drops (0.2 mL)'},{v:1,l:'1.0 mL'},{v:5,l:'5.0 mL'}]},
