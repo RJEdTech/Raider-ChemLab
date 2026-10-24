@@ -70,7 +70,7 @@ const SIM={
          honors:'Each view zooms to fit the orbital unless you lock the zoom. 1 a₀ (the Bohr radius) = 52.9 pm.'},
   timeless:true,animated:true,chChange:0.5,chReveal:1.5,
   controls:[
-    {id:'orb',label:'Orbital',type:'select',def:'2pz',lvl:'bio',options:ORBS.map(o=>({v:o.id,l:o.name+(o.l===0?' (sphere)':'')})),onChange:onOrb},
+    {id:'orb',label:'Orbital',type:'select',def:'2pz',lvl:'bio',noTrial:true,options:ORBS.map(o=>({v:o.id,l:o.name+(o.l===0?' (sphere)':'')})),onChange:onOrb},
     {id:'spin',label:'Spin the view',type:'toggle',def:true,lvl:'bio',noTrial:true,help:'Or drag the cloud to turn it yourself.'},
     {id:'phase',label:'Color by sign of ψ',type:'toggle',def:true,lvl:'honors',noTrial:true,help:'Blue where the wavefunction is positive, orange where it is negative. Nodes sit between colors.'},
     {id:'nodes',label:'Show nodes',type:'toggle',def:false,lvl:'honors',noTrial:true,help:'Dashed circles are spherical (radial) nodes; flat sheets and cones are angular nodes.'},
@@ -100,16 +100,16 @@ const SIM={
   graphs:[{id:'P',label:'Radial probability r²R²',lvl:'bio',custom:true},{id:'cmp',label:'Compare 1s to 4s',lvl:'honors',custom:true},{id:'R',label:'Wavefunction R(r)',lvl:'ap',custom:true}],
   defaultGraph:'P',
   plot(sim,ctx,box,id){const p=sim.p,o=OB[p.orb],rad=sim.st.rad;
-    if(id==='cmp'){const curves=[1,2,3,4].map(n=>radial(n,0,p.Z));const xmax=curves[3].rmax*A0*0.75;let ymax=0;curves.forEach(c=>{for(let i=0;i<=GRID;i++)ymax=Math.max(ymax,c.P[i]/A0);});
-      const ax=axes(ctx,box,{xmin:0,xmax,ymin:0,ymax:ymax*1.08,xl:'Distance from nucleus r (pm)',yl:'Radial probability (per pm)',yd:4});
-      ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();curves.forEach((c,i)=>{ctx.strokeStyle=serColor(i);ctx.lineWidth=o.n===i+1&&o.l===0?3.5:2;ctx.beginPath();for(let j=0;j<=GRID;j++){const x=j*c.dr*A0,y=c.P[j]/A0;j?ctx.lineTo(ax.X(x),ax.Y(y)):ctx.moveTo(ax.X(x),ax.Y(y));}ctx.stroke();});ctx.restore();
+    if(id==='cmp'){const curves=[1,2,3,4].map(n=>radial(n,0,p.Z));const xmax=curves[3].rmax*A0*0.75;let ymax=0;curves.forEach(c=>{for(let i=0;i<=GRID;i++)ymax=Math.max(ymax,c.P[i]/A0*1000);});
+      const ax=axes(ctx,box,{xmin:0,xmax,ymin:0,ymax:ymax*1.08,xl:'Distance from nucleus r (pm)',yl:'Radial probability (per nm)',yd:1});
+      ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();curves.forEach((c,i)=>{ctx.strokeStyle=serColor(i);ctx.lineWidth=o.n===i+1&&o.l===0?3.5:2;ctx.beginPath();for(let j=0;j<=GRID;j++){const x=j*c.dr*A0,y=c.P[j]/A0*1000;j?ctx.lineTo(ax.X(x),ax.Y(y)):ctx.moveTo(ax.X(x),ax.Y(y));}ctx.stroke();});ctx.restore();
       legend(ctx,box.L+12,box.T+10,[1,2,3,4].map((n,i)=>({label:n+'s',color:serColor(i)})));return;}
     const xmax=rad.rmax*A0;
-    if(id==='P'){let ymax=0;for(let i=0;i<=GRID;i++)ymax=Math.max(ymax,rad.P[i]/A0);const ax=axes(ctx,box,{xmin:0,xmax,ymin:0,ymax:ymax*1.12,xl:'Distance from nucleus r (pm)',yl:'Radial probability (per pm)',yd:4});
-      ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.beginPath();for(let i=0;i<=GRID;i++){const x=ax.X(i*rad.dr*A0),y=ax.Y(rad.P[i]/A0);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.lineTo(ax.X(xmax),ax.Y(0));ctx.lineTo(ax.X(0),ax.Y(0));ctx.closePath();ctx.fillStyle=PAL['g-fill'];ctx.fill();
-      ctx.beginPath();for(let i=0;i<=GRID;i++){const x=ax.X(i*rad.dr*A0),y=ax.Y(rad.P[i]/A0);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.strokeStyle=serColor(0);ctx.lineWidth=2.5;ctx.stroke();
+    if(id==='P'){let ymax=0;for(let i=0;i<=GRID;i++)ymax=Math.max(ymax,rad.P[i]/A0*1000);const ax=axes(ctx,box,{xmin:0,xmax,ymin:0,ymax:ymax*1.12,xl:'Distance from nucleus r (pm)',yl:'Radial probability (per nm)',yd:1});
+      ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.beginPath();for(let i=0;i<=GRID;i++){const x=ax.X(i*rad.dr*A0),y=ax.Y(rad.P[i]/A0*1000);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.lineTo(ax.X(xmax),ax.Y(0));ctx.lineTo(ax.X(0),ax.Y(0));ctx.closePath();ctx.fillStyle=PAL['g-fill'];ctx.fill();
+      ctx.beginPath();for(let i=0;i<=GRID;i++){const x=ax.X(i*rad.dr*A0),y=ax.Y(rad.P[i]/A0*1000);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.strokeStyle=serColor(0);ctx.lineWidth=2.5;ctx.stroke();
       rad.nodes.forEach(r=>{ctx.strokeStyle=PAL['s5'];ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(ax.X(r*A0),box.T);ctx.lineTo(ax.X(r*A0),box.T+box.H);ctx.stroke();ctx.setLineDash([]);});
-      ctx.fillStyle=serColor(1);ctx.beginPath();ctx.arc(ax.X(rad.rmp*A0),ax.Y(rad.P[Math.round(rad.rmp/rad.dr)]/A0),6,0,6.29);ctx.fill();ctx.restore();
+      ctx.fillStyle=serColor(1);ctx.beginPath();ctx.arc(ax.X(rad.rmp*A0),ax.Y(rad.P[Math.round(rad.rmp/rad.dr)]/A0*1000),6,0,6.29);ctx.fill();ctx.restore();
       legend(ctx,box.L+12,box.T+10,[{label:o.name+' r²R²',color:serColor(0)},{label:'most probable r = '+Math.round(rad.rmp*A0)+' pm',color:serColor(1)}].concat(rad.nodes.length?[{label:'radial node',color:PAL['s5'],dash:true}]:[]));return;}
     let ymn=0,ymx=0;for(let i=0;i<=GRID;i++){ymn=Math.min(ymn,rad.Rv[i]);ymx=Math.max(ymx,rad.Rv[i]);}const pad=(ymx-ymn)*0.1||0.1;
     const ax=axes(ctx,box,{xmin:0,xmax,ymin:ymn-pad,ymax:ymx+pad,xl:'Distance from nucleus r (pm)',yl:'R(r) (a₀^−3/2)',yd:2});

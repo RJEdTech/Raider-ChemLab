@@ -109,8 +109,8 @@ const SIM={
     {id:'gasA',label:'Gas',type:'select',def:'N2',lvl:'bio',modes:['dist','effuse'],options:GOPT},
     {id:'T',label:'Temperature',type:'range',min:100,max:1000,step:10,def:300,unit:' K',lvl:'bio',modes:['dist','effuse'],help:'K = °C + 273'},
     {id:'gasB',label:'Second gas (mixture)',type:'select',def:'none',lvl:'honors',modes:['dist','effuse'],options:[{v:'none',l:'None'}].concat(GOPT),onChange(sim){sync(sim);}},
-    {id:'nA',label:'Molecules of the first gas',type:'range',min:20,max:150,step:10,def:100,unit:' dots',lvl:'honors',modes:['dist']},
-    {id:'nB',label:'Molecules of the second gas',type:'range',min:10,max:100,step:10,def:50,unit:' dots',lvl:'honors',modes:['dist'],when:p=>p.gasB!=='none'},
+    {id:'nA',label:'Molecules of the first gas',type:'range',min:20,max:150,step:10,def:100,unit:'',lvl:'honors',modes:['dist']},
+    {id:'nB',label:'Molecules of the second gas',type:'range',min:10,max:100,step:10,def:50,unit:'',lvl:'honors',modes:['dist'],when:p=>p.gasB!=='none'},
     {id:'coll',label:'Molecules collide with each other',type:'toggle',def:true,lvl:'honors',modes:['dist'],help:'Turn off and start them at one speed: without collisions the speeds never spread out.'},
     {id:'pair',label:'Gases in the tube',type:'seg',def:'hcl',lvl:'bio',modes:['race'],options:[{v:'hcl',l:'NH₃ + HCl'},{v:'hbr',l:'NH₃ + HBr',lvl:'honors'},{v:'mea',l:'CH₃NH₂ + HCl',lvl:'honors'}],onChange(sim){sim.st&&(sim.st.race={t:0,met:false,xm:0,tm:0,dep:0});}}
   ],
