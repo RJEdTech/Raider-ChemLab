@@ -80,8 +80,10 @@ const SIM={
     {id:'U',label:'Lattice energy (measured)',unit:'kJ/mol',lvl:'ap',min:0,max:null,d:0,get:s=>{const c=cmpd(s.p);return c.lat?c.lat[0]:NaN;}},
     {id:'mp',label:'Melting point',unit:'°C',lvl:'ap',min:0,max:3000,d:0,get:s=>{const c=cmpd(s.p);return c.lat?c.lat[1]:NaN;}}
   ],
-  graphs:[{id:'lat',label:'Lattice energy vs Coulomb factor',lvl:'ap',custom:true},{id:'mpg',label:'Melting point vs lattice energy',lvl:'ap',custom:true}],defaultGraph:'lat',
-  plot(sim,ctx,box,id){const cur=cmpd(sim.p);const pts=Object.keys(LAT).map(f=>{const c=findCmpd(f);return c?{f,c,U:LAT[f][0],mp:LAT[f][1]}:null;}).filter(x=>x&&x.f!=='Al2O3');
+  graphs:[{id:'bal',label:'Charge balance in one formula unit',lvl:'bio',custom:true},{id:'lat',label:'Lattice energy vs Coulomb factor',lvl:'ap',custom:true},{id:'mpg',label:'Melting point vs lattice energy',lvl:'ap',custom:true}],defaultGraph:'bal',
+  plot(sim,ctx,box,id){const cur=cmpd(sim.p);
+    if(id==='bal'){const pos=cur.nC*cur.m.q,neg=cur.nA*Math.abs(cur.a.q);const ax=axes(ctx,box,{xmin:0,xmax:2,ymin:0,ymax:Math.max(4,pos+1),xcats:['+ charge: '+cur.nC+' × '+cur.m.q+'+','− charge: '+cur.nA+' × '+Math.abs(cur.a.q)+'−'],yl:'Total charge (units of e)'});
+      BioLab.h.bars(ctx,ax,[pos,neg],{colors:[PAL['s2'],PAL['s1']]});txt(ctx,CL.fmt(cur.f)+': '+pos+' positive = '+neg+' negative, net 0',box.L+box.W/2,box.T+14,{s:14,w:700,c:PAL['fg'],a:'center'});return;}const pts=Object.keys(LAT).map(f=>{const c=findCmpd(f);return c?{f,c,U:LAT[f][0],mp:LAT[f][1]}:null;}).filter(x=>x&&x.f!=='Al2O3');
     const X=id==='lat'?(p=>p.c.cf):(p=>p.U),Yv=id==='lat'?(p=>p.U):(p=>p.mp);const xmax=Math.max(...pts.map(X))*1.1,ymax=Math.max(...pts.map(Yv))*1.1;
     const ax=axes(ctx,box,{xmin:0,xmax,ymin:0,ymax,xl:id==='lat'?'|q₊q₋| / (r₊ + r₋)  (per 100 pm)':'Lattice energy (kJ/mol)',yl:id==='lat'?'Lattice energy (kJ/mol)':'Melting point (°C)'});
     pts.forEach(p=>{const one=p.c.nC===1&&p.c.nA===1;ctx.fillStyle=one?PAL['s2']:PAL['s3'];ctx.beginPath();ctx.arc(ax.X(X(p)),ax.Y(Yv(p)),5,0,6.29);ctx.fill();if(p.f===cur.f){ctx.strokeStyle=PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ax.X(X(p)),ax.Y(Yv(p)),10,0,6.29);ctx.stroke();}});
