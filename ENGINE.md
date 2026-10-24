@@ -20,7 +20,6 @@ ChemLab shares the Raider BioLab engine (the global is still called `BioLab`). C
 | 13 | Equilibrium |
 | 14 | Acids and bases |
 | 15 | Thermodynamics and electrochemistry |
-| 18 | Digital forensics (shown before Go further) |
 | 17 | Go further |
 
 Ignore the biology section numbers in the table below. The level names in code stay `bio` / `honors` / `ap`; on screen they read Big picture / Closer look / Deep dive, and they fit Chemistry / Honors Chemistry / AP Chemistry.

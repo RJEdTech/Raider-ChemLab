@@ -6,8 +6,8 @@ BioLab.setSections({
            5: 'Bonding and naming', 6: 'States of matter and intermolecular forces', 7: 'Chemical reactions', 8: 'The mole and stoichiometry',
            9: 'Gases', 10: 'Solutions', 11: 'Thermochemistry', 12: 'Kinetics', 13: 'Equilibrium', 14: 'Acids and bases',
            15: 'Thermodynamics and electrochemistry' },
-  extra: { 0: 'Lab skills and measurement', 18: 'Digital forensics', 17: 'Go further' },
-  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 17],
+  extra: { 0: 'Lab skills and measurement', 17: 'Go further' },
+  order: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17],
   further: 17,
   unitPrefix: ''
 });
@@ -85,6 +85,5 @@ BioLab.TOPIC_ORDER = {
   13: ['equilibrium', 'ksp'],
   14: ['ph', 'titration', 'buffers'],
   15: ['gibbs', 'galvanic'],
-  17: ['orbitals'],
-  18: ['hashing', 'filesig', 'metadata', 'recovery', 'passwords', 'phishing', 'stego', 'casefile']
+  17: ['orbitals']
 };
