@@ -37,7 +37,7 @@ function lnK(P,T){return -dG(P,T)*1000/(R*T);}
 function kText(P,T){const l=lnK(P,T),l10=l/Math.LN10;if(Math.abs(l10)<3)return Math.exp(l).toPrecision(3);const e=Math.floor(l10);return Math.pow(10,l10-e).toFixed(1)+' × 10'+CL.sup(String(e).replace('-','−'));}
 
 /* ---------- spreading box ---------- */
-const BX=40,BY=104,BW=460,BH=272,MID=BX+BW/2,PR=6;
+const BX=40,BY=100,BW=460,BH=250,MID=BX+BW/2,PR=6;
 function seedGas(N,seed){const r=rng(seed||17),G=[];for(let i=0;i<N;i++){const a=r()*6.283,v=110+70*r();G.push({x:BX+PR+2+r()*(BW/2-2*PR-4),y:BY+PR+2+r()*(BH-2*PR-4),vx:Math.cos(a)*v,vy:Math.sin(a)*v});}return G;}
 function nLeft(st){let n=0;st.G.forEach(g=>{if(g.x<MID)n++;});return n;}
 
@@ -62,15 +62,15 @@ function drawSpread(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,N=st.G.length,nL=nL
   st.G.forEach((g,i)=>ball(ctx,g.x,g.y,PR,g.x<MID?'#3f6fb0':'#c27a00'));
   pill(ctx,'Left: '+nL,BX+BW/4,BY-4-10*k,PAL['card'],PAL['cv-ink'],13*k);pill(ctx,'Right: '+(N-nL),BX+3*BW/4,BY-4-10*k,PAL['card'],PAL['cv-ink'],13*k);
   // arrangements chart
-  const cx=528,cw=260,cy=128,ch=230,max=lnC(N,Math.floor(N/2));
+  const cx=528,cw=260,cy=124,ch=212,max=lnC(N,Math.floor(N/2));
   txt(ctx,'Ways to arrange them',cx+cw/2,cy-12,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+ch);ctx.lineTo(cx+cw,cy+ch);ctx.stroke();
   const bw=cw/(N+1);for(let n=0;n<=N;n++){const h=ch*Math.exp(lnC(N,n)-max);if(h<0.4&&n!==nL)continue;ctx.fillStyle=n===nL?PAL['s4']:PAL['s2'];ctx.globalAlpha=n===nL?1:0.55;ctx.fillRect(cx+n*bw+bw*0.1,cy+ch-Math.max(h,n===nL?3:0),Math.max(1,bw*0.8),Math.max(h,n===nL?3:0));}ctx.globalAlpha=1;
   if(st.obsT>0.5){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();let first=true;const mo=Math.max(...st.obs);for(let n=0;n<=N;n++){const v=st.obs[n]/mo*ch;const x=cx+(n+0.5)*bw,y=cy+ch-v;first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false;}ctx.stroke();}
   txt(ctx,'0',cx,cy+ch+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});txt(ctx,String(N),cx+cw,cy+ch+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});txt(ctx,'on the left',cx+cw/2,cy+ch+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});
   // the two key counts, under the box
-  txt(ctx,'All '+N+' on the left: 1 way out of '+sciE(N*Math.LN2),BX,BY+BH+22*k,{s:13*k,w:600});
-  txt(ctx,'Right now ('+nL+' left): '+sciE(lnC(N,nL))+' ways',BX,BY+BH+44*k,{s:13*k,w:600,c:PAL['cv-soft']});}
+  txt(ctx,'All '+N+' on the left: 1 way out of '+sciE(N*Math.LN2),BX,BY+BH+22*k,{s:13*k,w:600});const wn=lnC(N,nL);
+  txt(ctx,'Right now ('+nL+' left): '+sciE(wn)+(wn<0.01?' way':' ways'),BX,BY+BH+43*k,{s:13*k,w:600,c:PAL['cv-soft']});}
 
 /* predict cartoons */
 function initBox(key,side,P,x0,y0,w,h){const r=rng(key.length*31+(side==='A'?7:3)),list=[];const groups=P[side];
@@ -79,31 +79,31 @@ function initBox(key,side,P,x0,y0,w,h){const r=rng(key.length*31+(side==='A'?7:3
   const take=(par)=>{let i=cells.findIndex(c=>!c.used&&(par===null||c.par===par));if(i<0)i=cells.findIndex(c=>!c.used);cells[i].used=true;return cells[i];};
   groups.forEach((g,gi)=>{const si=solids.indexOf(g);for(let i=0;i<g.n;i++){let x,y,home=null;
     if(g.ph==='s'){const c=take(solids.length===2?si:null);x=c.x;y=c.y;home=[x,y];}
-    else if(g.ph==='l'){x=x0+16+r()*(w-32);y=y0+h*0.42+r()*(h*0.58-16);}
+    else if(g.ph==='l'){x=x0+16+r()*(w-32);y=y0+h*0.62+r()*(h*0.38-14);}
     else{x=x0+16+r()*(w-32);y=y0+16+r()*(h-32);}
     const a=r()*6.283;list.push({g,x,y,home,vx:Math.cos(a),vy:Math.sin(a),ph:r()*6.283});}});return list;}
 function drawBox(sim,ctx,vdt,k,t,side,x0,y0,w,h){const P=proc(sim.p),key=sim.p.proc+side,v=sim.vis;v.box=v.box||{};if(!v.box[key])v.box[key]=initBox(key,side,P,x0,y0,w,h);
   ctx.fillStyle=P.water?PAL['cv-water']:PAL['cv-bg2'];rr(ctx,x0,y0,w,h,8);ctx.fill();ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;rr(ctx,x0,y0,w,h,8);ctx.stroke();
-  const L=v.box[key];if(L.some(q=>q.g.ph==='l')){ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=0.6;rr(ctx,x0+3,y0+h*0.38,w-6,h*0.62-3,6);ctx.fill();ctx.globalAlpha=1;}
+  const L=v.box[key];if(L.some(q=>q.g.ph==='l')){ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=0.6;rr(ctx,x0+3,y0+h*0.56,w-6,h*0.44-3,6);ctx.fill();ctx.globalAlpha=1;}
   L.forEach(q=>{const sp=q.g.ph==='g'?120:q.g.ph==='aq'?30:q.g.ph==='l'?18:0;
     if(vdt>0&&!RM&&sp){q.x+=q.vx*sp*vdt;q.y+=q.vy*sp*vdt;if(q.g.ph!=='g'){q.vx+=(Math.random()-0.5)*3*vdt*10;q.vy+=(Math.random()-0.5)*3*vdt*10;const m=Math.hypot(q.vx,q.vy)||1;q.vx/=m;q.vy/=m;}
-      const top=q.g.ph==='l'?y0+h*0.42:y0+12;if(q.x<x0+12){q.x=x0+12;q.vx=Math.abs(q.vx);}if(q.x>x0+w-12){q.x=x0+w-12;q.vx=-Math.abs(q.vx);}if(q.y<top){q.y=top;q.vy=Math.abs(q.vy);}if(q.y>y0+h-12){q.y=y0+h-12;q.vy=-Math.abs(q.vy);}}
+      const top=q.g.ph==='l'?y0+h*0.62:y0+12;if(q.x<x0+12){q.x=x0+12;q.vx=Math.abs(q.vx);}if(q.x>x0+w-12){q.x=x0+w-12;q.vx=-Math.abs(q.vx);}if(q.y<top){q.y=top;q.vy=Math.abs(q.vy);}if(q.y>y0+h-12){q.y=y0+h-12;q.vy=-Math.abs(q.vy);}}
     let x=q.x,y=q.y;if(q.home){const A=RM?0:1.3;x=q.home[0]+Math.sin(t*15+q.ph)*A;y=q.home[1]+Math.cos(t*13+q.ph)*A;}
-    ball(ctx,x,y,q.g.ph==='g'?7:9,q.g.c);});}
+    ball(ctx,x,y,q.g.ph==='g'?7:10,q.g.c);});}
 function drawPredict(sim,ctx,vdt,k,t){const p=sim.p,P=proc(p),hn=hon();
   panel(ctx,P.n+':  '+P.eq,k);
-  const y0=96,h=236,w=290;drawBox(sim,ctx,vdt,k,t,'B',30,y0,w,h);drawBox(sim,ctx,vdt,k,t,'A',480,y0,w,h);arrowH(ctx,340,460,y0+h/2,PAL['cv-ink'],4);
+  const y0=96,h=210,w=290;drawBox(sim,ctx,vdt,k,t,'B',30,y0,w,h);drawBox(sim,ctx,vdt,k,t,'A',480,y0,w,h);arrowH(ctx,340,460,y0+h/2,PAL['cv-ink'],4);
   txt(ctx,'Before',175,y0+h+22*k,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});txt(ctx,'After',625,y0+h+22*k,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
   const leg=(groups,cx)=>{ctx.font='700 '+12*k+'px '+FONT;const items=groups.map(g=>g.f+'('+g.ph+')');let wt=0;items.forEach(s=>wt+=ctx.measureText(s).width+18*k);let x=cx-wt/2+6*k;const y=y0+h+44*k;
     groups.forEach((g,i)=>{ctx.fillStyle=g.c;ctx.beginPath();ctx.arc(x,y,6*k,0,6.29);ctx.fill();txt(ctx,items[i],x+9*k,y,{s:12*k,w:700,b:'middle'});x+=ctx.measureText(items[i]).width+18*k;});};
   leg(P.B,175);leg(P.A,625);
   const lab=p.reveal?(P.dS>0?'ΔS > 0: more spread out':'ΔS < 0: less spread out')+(hn?'  ('+sgn(P.dS,1)+' J/K)':''):'Predict: does entropy go up or down?';
-  pill(ctx,lab,400,y0+h/2-44,p.reveal?(P.dS>0?PAL['s3']:PAL['s1']):PAL['card'],p.reveal?'#fff':PAL['cv-ink'],13*k);}
+  pill(ctx,lab,400,428,p.reveal?(P.dS>0?PAL['s3']:PAL['s1']):PAL['card'],p.reveal?'#fff':PAL['cv-ink'],13*k);}
 
 function drawGibbs(sim,ctx,k){const p=sim.p,P=proc(p),T=p.T,G=dG(P,T),Tc=Tcross(P),hn=hon(),A=ap();
   panel(ctx,P.eq+'   ΔH° = '+sgn(P.dH,1)+' kJ,  ΔS° = '+sgn(P.dS,1)+' J/K',k,14);
   // ΔG vs T plot
-  const L=88,Tp=88,W=410,H=262,T0=0,T1=1600,g0=dG(P,T0),g1=dG(P,T1),gmax=Math.max(10,g0,g1,0)*1.08,gmin=Math.min(-10,g0,g1,0)*1.08;
+  const L=88,Tp=88,W=410,H=232,T0=0,T1=1600,g0=dG(P,T0),g1=dG(P,T1),gmax=Math.max(10,g0,g1,0)*1.08,gmin=Math.min(-10,g0,g1,0)*1.08;
   const X=v=>L+(v-T0)/(T1-T0)*W,Y=v=>Tp+(gmax-v)/(gmax-gmin)*H;
   ctx.fillStyle=PAL['cv-bg2'];ctx.fillRect(L,Tp,W,H);
   ctx.fillStyle=PAL['s3'];ctx.globalAlpha=0.12;ctx.fillRect(L,Y(0),W,Tp+H-Y(0));ctx.globalAlpha=1;
@@ -111,28 +111,28 @@ function drawGibbs(sim,ctx,k){const p=sim.p,P=proc(p),T=p.T,G=dG(P,T),Tc=Tcross(
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(L+W,Y(0));ctx.stroke();
   ctx.strokeStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(L,Tp);ctx.lineTo(L,Tp+H);ctx.lineTo(L+W,Tp+H);ctx.stroke();
   for(let v=0;v<=1600;v+=400){txt(ctx,String(v),X(v),Tp+H+16*k,{s:12*k,a:'center',c:PAL['cv-soft']});}
+  [gmax/1.08,0,gmin/1.08].forEach(v=>{if(Math.abs(v)<1&&v!==0)return;txt(ctx,v===0?'0':sgn(Math.round(v),0),L-4,Y(v),{s:12*k,a:'right',b:'middle',c:PAL['cv-soft']});});
   txt(ctx,'Temperature (K)',L+W/2,Tp+H+34*k,{s:12*k,a:'center',c:PAL['cv-soft']});
-  ctx.save();ctx.translate(L-14,Tp+H/2);ctx.rotate(-Math.PI/2);txt(ctx,'ΔG (kJ)',0,0,{s:12*k,a:'center',c:PAL['cv-soft']});ctx.restore();
+  ctx.save();ctx.translate(18,Tp+H/2);ctx.rotate(-Math.PI/2);txt(ctx,'ΔG (kJ)',0,0,{s:12*k,a:'center',c:PAL['cv-soft']});ctx.restore();
   ctx.save();ctx.beginPath();ctx.rect(L,Tp,W,H);ctx.clip();ctx.strokeStyle=PAL['s5'];ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(X(T0),Y(g0));ctx.lineTo(X(T1),Y(g1));ctx.stroke();ctx.restore();
   if(Number.isFinite(Tc)&&Tc<T1){ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(Tc),Tp);ctx.lineTo(X(Tc),Tp+H);ctx.stroke();ctx.setLineDash([]);
     if(A)pill(ctx,'T = '+Tc.toFixed(0)+' K',clamp(X(Tc),L+60,L+W-60),Y(0)-22*k,PAL['s4'],'#fff',12*k);}
   ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(X(T),Y(G),8,0,6.29);ctx.fill();ctx.strokeStyle=PAL['card'];ctx.lineWidth=2;ctx.stroke();
   // four sign cases
-  const qx=540,qy=92,qw=248,cw=qw/2,chh=44,cs=caseOf(P);
+  const qx=604,cw=92,qy=96,chh=16*k+10,cs=caseOf(P);
   txt(ctx,'ΔS > 0',qx+cw*0.5,qy,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});txt(ctx,'ΔS < 0',qx+cw*1.5,qy,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});
-  [[['ΔH < 0','always','low']],[['ΔH > 0','high','never']]].forEach((row,ri)=>{const [lab,a,b]=row[0];[a,b].forEach((c,ci)=>{const x=qx+ci*cw,y=qy+10+ri*(chh+6);rr(ctx,x+2,y,cw-4,chh,8);
+  [['ΔH < 0','always','low'],['ΔH > 0','high','never']].forEach(([lab,a,b],ri)=>{const y=qy+8+ri*(chh+4);[a,b].forEach((c,ci)=>{const x=qx+ci*cw;rr(ctx,x+2,y,cw-4,chh,7);
     ctx.fillStyle=c===cs?PAL['s5']:PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
-    const word={always:'always',never:'never',low:'low T only',high:'high T only'}[c];txt(ctx,word,x+cw/2,y+chh/2,{s:13*k,w:700,a:'center',b:'middle',c:c===cs?'#fff':PAL['cv-ink']});});
-    txt(ctx,lab,qx-4,qy+10+ri*(chh+6)+chh/2,{s:12*k,w:700,a:'right',b:'middle',c:PAL['cv-soft']});});
-  // tug of war bars: ΔH and −TΔS add to ΔG
-  const by=230,bx=600,bwid=180,vals=[['ΔH',P.dH],['−TΔS',-T*P.dS/1000],['ΔG',G]],sc=bwid/2/Math.max(20,...vals.map(v=>Math.abs(v[1])));
-  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx+bwid/2,by-8);ctx.lineTo(bx+bwid/2,by+3*34);ctx.stroke();
-  vals.forEach(([lab,v],i)=>{const y=by+i*34,x0=bx+bwid/2,w=v*sc;ctx.fillStyle=i===2?(v<0?PAL['s3']:PAL['s1']):(v<0?'#2d6bd2':'#c0392b');rr(ctx,Math.min(x0,x0+w),y,Math.max(2,Math.abs(w)),22,5);ctx.fill();
-    txt(ctx,lab,bx-8,y+11,{s:13*k,w:700,a:'right',b:'middle'});if(hn)txt(ctx,sgn(v,1),v<0?x0+6:x0-6,y+11,{s:12*k,w:700,a:v<0?'left':'right',b:'middle',c:PAL['cv-soft']});});
-  txt(ctx,'ΔG = ΔH − TΔS at '+T.toFixed(0)+' K',bx+bwid/2-20,by+3*34+14*k,{s:12*k,w:600,a:'center',c:PAL['cv-soft']});
+    const word={always:'always',never:'never',low:'low T',high:'high T'}[c];txt(ctx,word,x+cw/2,y+chh/2+1,{s:13*k,w:700,a:'center',b:'middle',c:c===cs?'#fff':PAL['cv-ink']});});
+    txt(ctx,lab,qx-6,y+chh/2+1,{s:12*k,w:700,a:'right',b:'middle',c:PAL['cv-soft']});});
+  // tug of war bars: ΔH and −TΔS add up to ΔG
+  const by=qy+8+2*(chh+4)+16,bx=610,bwid=178,bh=12*k+4,gap=bh+8,vals=[['ΔH',P.dH],['−TΔS',-T*P.dS/1000],['ΔG',G]],sc=bwid/2/Math.max(20,...vals.map(v=>Math.abs(v[1])));
+  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx+bwid/2,by-6);ctx.lineTo(bx+bwid/2,by+3*gap-2);ctx.stroke();
+  vals.forEach(([lab,v],i)=>{const y=by+i*gap,x0=bx+bwid/2,w=v*sc;ctx.fillStyle=i===2?(v<0?PAL['s3']:PAL['s1']):(v<0?'#2d6bd2':'#c0392b');rr(ctx,Math.min(x0,x0+w),y,Math.max(2,Math.abs(w)),bh,5);ctx.fill();
+    txt(ctx,lab,bx-8,y+bh/2+1,{s:13*k,w:700,a:'right',b:'middle'});if(hn)txt(ctx,sgn(v,1),v<0?x0+6:x0-6,y+bh/2+1,{s:12*k,w:700,a:v<0?'left':'right',b:'middle',c:PAL['cv-soft']});});
   const lab=G<0?'Spontaneous at '+T.toFixed(0)+' K'+(hn?': ΔG = '+sgn(G,1)+' kJ':''):'Not spontaneous at '+T.toFixed(0)+' K'+(hn?': ΔG = '+sgn(G,1)+' kJ':'');
   pill(ctx,lab,L+W/2,428,G<0?PAL['s3']:PAL['s1'],'#fff',13*k);
-  if(A)pill(ctx,'K = '+kText(P,T),bx+bwid/2-20,428,PAL['card'],PAL['cv-ink'],13*k);}
+  if(A)pill(ctx,'K = '+kText(P,T),bx+bwid/2-10,428,PAL['card'],PAL['cv-ink'],13*k);}
 
 /* ---------- the sim ---------- */
 const SPR=['spread'],PRE=['predict'],GIB=['gibbs'];
@@ -170,7 +170,7 @@ const GB={
     {id:'fL',label:'Share on the left',unit:'%',lvl:'bio',min:0,max:100,d:0,modes:SPR,get:s=>s.p.mode==='spread'?100*nLeft(s.st)/s.st.G.length:NaN},
     {id:'W',label:'Arrangements with this split, W',unit:'',lvl:'honors',text:true,modes:SPR,get:s=>s.p.mode!=='spread'?'':sciE(lnC(s.st.G.length,nLeft(s.st)))},
     {id:'Pall',label:'Chance of finding all on the left',unit:'',lvl:'honors',text:true,modes:SPR,get:s=>{if(s.p.mode!=='spread')return '';const N=s.st.G.length,l10=-N*Math.log10(2);return N<=20?'1 in '+Math.pow(2,N).toLocaleString('en-US'):'1 in '+sciE(N*Math.LN2);}},
-    {id:'S',label:'S = k ln W for this split',unit:'J/K',lvl:'ap',text:true,modes:SPR,get:s=>s.p.mode!=='spread'?'':CL.sci(1.380649e-23*lnC(s.st.G.length,nLeft(s.st)),'J/K',3)},
+    {id:'S',label:'S = k ln W for this split',unit:'J/K',lvl:'ap',text:true,modes:SPR,get:s=>s.p.mode!=='spread'?'':CL.sci(1.380649e-23*lnC(s.st.G.length,nLeft(s.st)),'',3)},
     {id:'dSm',label:'ΔS for 1 mol doubling its volume, R ln 2',unit:'J/mol·K',lvl:'ap',min:0,max:10,d:2,modes:SPR,get:s=>s.p.mode==='spread'?R*Math.LN2:NaN},
     {id:'sign',label:'Entropy change',unit:'',lvl:'bio',text:true,modes:PRE,get:s=>s.p.mode!=='predict'?'':!s.p.reveal?'Make a prediction, then show the answer':proc(s.p).dS>0?'Increases (ΔS > 0)':'Decreases (ΔS < 0)'},
     {id:'dSv',label:'ΔS°',unit:'J/K',lvl:'honors',min:-400,max:200,d:1,modes:PRE,get:s=>s.p.mode==='predict'&&s.p.reveal?proc(s.p).dS:NaN},

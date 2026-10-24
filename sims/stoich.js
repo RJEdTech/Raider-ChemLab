@@ -160,7 +160,7 @@ const SIM={
     const L=m.lim.map(i=>fm(R.re[i]));
     if(m.lim.length>1)return '<b>Everything was used up.</b> You mixed the reactants in exactly the recipe ratio, so nothing is left over and there is no limiting reactant.';
     const ex=R.re.map((s,i)=>i).filter(i=>!m.lim.includes(i)).map(i=>fmtU(m,inUnit(m,R.re[i],m.left[i]))+' '+(m.u==='count'?'':word(m)+' ')+fm(R.re[i]));
-    let s='<b>'+L[0]+' is the limiting reactant.</b> It ran out first, so the reaction stopped with '+ex.join(' and ')+' left over as excess.';
+    let s='<b>'+(R.analogy?L[0].charAt(0).toUpperCase()+L[0].slice(1)+' are':L[0]+' is')+' the limiting reactant.</b> It ran out first, so the reaction stopped with '+ex.join(' and ')+' left over as excess.';
     if(hon&&m.u==='g'){const lo=m.lim[0],light=R.re.map((q,i)=>m.nIn[i]*q.M).indexOf(Math.min(...R.re.map((q,i)=>m.nIn[i]*q.M)));if(light!==lo)s+=' Notice that it was not the reactant with the smaller mass: moles and the mole ratio decide.';}
     else if(m.u==='count'){const few=m.nIn.indexOf(Math.min(...m.nIn));if(few!==m.lim[0])s+=' It was not the reactant you had the fewest of. The recipe needs more of it.';}
     return s;},

@@ -45,8 +45,8 @@ function restart(sim){sim.st=RATES.init(sim);sim.st.t0=sim.t;sim.hist=[];sim.las
 
 /* ---------- show only what the current reaction uses ---------- */
 function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.rxn,d=sim.def;
-  d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
-  d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});}
+  d.controls.forEach(c=>{if(!c.modes)return;c.noTrial=!c.modes.includes(mode);const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
+  d.metrics.forEach(m=>{if(!m.modes)return;m.noTrial=!m.modes.includes(mode);const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});}
 
 const ZP=0.045;    // collisions per second per A–B pair at 300 K, measured in this box
 const HZ=0.0072;  // H⁺ hits per second per (ion × exposed Mg face) at 300 K

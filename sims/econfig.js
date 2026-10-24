@@ -187,7 +187,7 @@ const SIM={
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     // energy arrow
     ctx.strokeStyle=PAL['cv-soft'];ctx.fillStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(18,Y0+10);ctx.lineTo(18,60);ctx.stroke();ctx.beginPath();ctx.moveTo(11,68);ctx.lineTo(25,68);ctx.lineTo(18,54);ctx.closePath();ctx.fill();
-    ctx.save();ctx.translate(34,(Y0+60)/2);ctx.rotate(-Math.PI/2);txt(ctx,hotel?'Floor price (energy)':'Energy',0,0,{s:12*k,w:700,a:'center',b:'middle',c:PAL['cv-soft']});ctx.restore();
+    txt(ctx,'Energy',8,44-6*(k-1),{s:12*k,w:700,c:PAL['cv-soft']});
     if(hotel){ctx.fillStyle=PAL['cv-bg2'];rr(ctx,50,Y0-SUB.length*ROW+14,400,SUB.length*ROW+8,8);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
       SUB.forEach(s=>{ctx.strokeStyle=PAL['line'];ctx.beginPath();ctx.moveTo(54,rowY(s)+ROW/2);ctx.lineTo(446,rowY(s)+ROW/2);ctx.stroke();});}
     const fillingSub=(()=>{const L=lastE(st);return L?L.s.lab:null;})();
@@ -209,14 +209,23 @@ const SIM={
       if(Z===p.Z){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.strokeRect(x,y,CS,CS);}
       if(N>0&&Z===Math.min(N,MAXZ)){ctx.fillStyle=PAL['cv-e'];ctx.strokeStyle=PAL['cv-estroke'];ctx.lineWidth=1;ctx.beginPath();ctx.arc(x+CS/2,y+CS/2,5,0,6.29);ctx.fill();ctx.stroke();}}
     // element card
-    const e=el(p),cy0=PY+5*CS+12;rr(ctx,PTX,cy0,66,66,8);const cf=CL.CAT_FILL[e.cat]||'#6d7a88';ctx.fillStyle=cf;ctx.fill();
-    txt(ctx,String(e.Z),PTX+6,cy0+6+11*k*0.8,{s:11*k,w:700,c:'#fff'});txt(ctx,e.sym,PTX+33,cy0+44,{s:24*k,w:800,a:'center',c:'#fff'});
-    const tx=PTX+76;txt(ctx,p.charge?symQ(p)+' ion':e.name,tx,cy0+18*k*0.9,{s:15*k,w:800});txt(ctx,N+' of '+need(p)+' e⁻ placed',tx,cy0+18*k*0.9+20*k,{s:12*k,c:PAL['cv-soft']});
-    const ny=cy0+66+26*k;txt(ctx,cfgText(placedCounts(st),true),PTX,ny,{s:(hon?16:14)*k,w:800});
+    const e=el(p),cy0=PY+5*CS+12,TS=50+12*k;rr(ctx,PTX,cy0,TS,TS,8);const cf=CL.CAT_FILL[e.cat]||'#6d7a88';ctx.fillStyle=cf;ctx.fill();
+    txt(ctx,String(e.Z),PTX+5,cy0+3+12*k*0.85,{s:12*k,w:700,c:'#fff'});txt(ctx,e.sym,PTX+TS/2,cy0+TS-9,{s:20*k,w:800,a:'center',c:'#fff'});
+    const tx=PTX+TS+10;txt(ctx,p.charge?symQ(p)+' ion':e.name,tx,cy0+18*k*0.9,{s:15*k,w:800});txt(ctx,N+' of '+need(p)+' e⁻ placed',tx,cy0+18*k*0.9+20*k,{s:12*k,c:PAL['cv-soft']});
+    const ny=cy0+TS+26*k;txt(ctx,cfgText(placedCounts(st),true),PTX,ny,{s:(hon?16:14)*k,w:800});
     const col=ch.code==='ground'?'#1b7339':['pauli','hund','hundspin','aufbau','toomany'].includes(ch.code)?'#b3261e':['excited','ion','exception','other'].includes(ch.code)?'#a15c00':'#3f6fb0';
     const py=ny+24*k;ctx.font='700 '+(13*k)+'px '+FONT;const pw=ctx.measureText(ch.short).width+13*k*1.1;pill(ctx,ch.short,PTX+pw/2,py,col,'#fff',13*k);
-    if(ap){const L=lastE(st);let yy=py+30*k;if(L){txt(ctx,'Last e⁻: n = '+L.s.n+', ℓ = '+L.s.l+', mℓ = '+(L.ml>0?'+':L.ml<0?'−':'')+Math.abs(L.ml)+', mₛ = '+(L.ms>0?'+½':'−½'),PTX,yy,{s:12*k,c:PAL['cv-soft']});yy+=20*k;}
-      if(N)txt(ctx,unpaired(st)+' unpaired: '+(unpaired(st)?'paramagnetic':'diamagnetic'),PTX,yy,{s:12*k,c:PAL['cv-soft']});}
+    let yy=py+30*k;
+    if(ap){const L=lastE(st);if(L){const ml=(L.ml>0?'+':L.ml<0?'−':'')+Math.abs(L.ml),ms=L.ms>0?'+½':'−½';
+        if(k>1.25){txt(ctx,'Last e⁻: n = '+L.s.n+', ℓ = '+L.s.l+',',PTX,yy,{s:12*k,c:PAL['cv-soft']});yy+=18*k;txt(ctx,'mℓ = '+ml+', mₛ = '+ms,PTX,yy,{s:12*k,c:PAL['cv-soft']});}
+        else txt(ctx,'Last e⁻: n = '+L.s.n+', ℓ = '+L.s.l+', mℓ = '+ml+', mₛ = '+ms,PTX,yy,{s:12*k,c:PAL['cv-soft']});yy+=20*k;}
+      if(N){txt(ctx,unpaired(st)+' unpaired: '+(unpaired(st)?'paramagnetic':'diamagnetic'),PTX,yy,{s:12*k,c:PAL['cv-soft']});yy+=20*k;}}
+    // filling order chips (only where they fit)
+    {const fs=12*k,ch=fs*1.6;ctx.font='700 '+fs+'px '+FONT;let x=PTX,y=yy+10;const rows=[];let row=[];
+      SUB.forEach(s=>{const w=ctx.measureText(s.lab).width+fs*0.9;if(x+w>792&&row.length){rows.push(row);row=[];x=PTX;}row.push({s,x,w});x+=w+5;});rows.push(row);
+      const need=fs+6+rows.length*(ch+5);if(y+need<=446){txt(ctx,'Filling order',PTX,y+fs*0.8,{s:fs,w:700,c:PAL['cv-soft']});y+=fs+8;
+        rows.forEach(r=>{r.forEach(o=>{const c=subCount(st,o.s.lab),full=c===o.s.cap,cur=fillingSub===o.s.lab;rr(ctx,o.x,y,o.w,ch,ch/2);ctx.fillStyle=full?PAL['s3']:c?PAL['card']:PAL['cv-bg2'];ctx.globalAlpha=full?0.85:1;ctx.fill();ctx.globalAlpha=1;
+          ctx.strokeStyle=cur?PAL['cv-ink']:PAL['line'];ctx.lineWidth=cur?2.2:1;ctx.stroke();txt(ctx,o.s.lab,o.x+o.w/2,y+ch/2+1,{s:fs,w:700,a:'center',b:'middle',c:full?'#fff':PAL['cv-ink']});});y+=ch+5;});}}
   },
   thumbSetup(sim){sim.p.Z=26;fillNow(sim);},thumbFrames:4
 };

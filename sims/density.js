@@ -137,14 +137,14 @@ const SIM={
       ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(0));ctx.lineTo(ax.X(xmax),ax.Y(sl*xmax));ctx.stroke();ctx.setLineDash([]);
       g.forEach(q=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(ax.X(q.x),ax.Y(q.y),5.5,0,6.29);ctx.fill();});items.push({label:(OBJ[o]?OBJ[o].n.replace(' block','').replace('Mystery sample','Mystery'):o)+(atLeast('honors')?': slope '+sl.toFixed(2):''),color:c});});
     if(hasCur){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(ax.X(cur.V),ax.Y(cur.m),8,0,6.29);ctx.stroke();}ctx.restore();
-    if(!pts.length)txt(ctx,'Measure a sample, then press Record trial. Each trial adds a point.',box.L+box.W/2,box.T+box.H/2,{s:14,c:PAL['muted'],a:'center',b:'middle'});
+    if(!pts.length)txt(ctx,'Record trials to plot points',box.L+box.W/2,box.T+box.H/2,{s:14,c:PAL['muted'],a:'center',b:'middle'});
     else legend(ctx,box.L+12,box.T+10,items.slice(0,3));},
   infoPanel(sim){const p=sim.p,st=sim.st,hon=atLeast('honors');
     if(p.mode==='column'){const L=layers(p);let h='<div class="p-head"><h3>Densities</h3></div><div class="tbl-wrap"><table><thead><tr><th style="text-align:left">Substance</th><th>g/cm³</th><th style="text-align:left">Result</th></tr></thead><tbody>';
       L.slice().reverse().forEach(l=>{h+='<tr><td style="text-align:left">'+l.n+' (liquid)</td><td>'+l.d.toFixed(atLeast('ap')&&l.id==='water'?4:2)+'</td><td></td></tr>';});
       COLOBJ.forEach(o=>{h+='<tr><td style="text-align:left">'+o.n+'</td><td>'+(o.d===0.917?'0.917':o.d.toFixed(2))+'</td><td style="text-align:left;white-space:normal">'+(st.dropT===null?'?':outcome(p,o))+'</td></tr>';});
       return h+'</tbody></table></div><p>An object floats on any liquid that is denser than it, and sinks through any liquid that is less dense.</p>';}
-    let h='<div class="p-head"><h3>Accepted densities</h3></div><div class="tbl-wrap"><table><thead><tr><th style="text-align:left">Material</th><th>g/cm³</th></tr></thead><tbody>'+TABLE.filter(t=>hon||t.n!=='Nickel').map(t=>'<tr><td style="text-align:left">'+t.n+'</td><td>'+t.d+'</td></tr>').join('')+'</tbody></table></div>';
+    let h='<div class="p-head"><h3>Accepted densities</h3></div><div class="tbl-wrap"><table><thead><tr><th style="text-align:left">Material</th><th>g/cm³</th></tr></thead><tbody>'+TABLE.filter(t=>hon||t.n!=='Nickel').map(t=>'<tr><td style="text-align:left">'+t.n+'</td><td>'+(t.d===0.917?'0.917':t.d.toFixed(2))+'</td></tr>').join('')+'</tbody></table></div>';
     if(st.msg==='irr')h+='<p class="verdict no">You can’t use a ruler on an irregular shape.</p><p>Use water displacement instead.</p>';
     return h;},
   narrate(sim){const p=sim.p,st=sim.st,o=OBJ[p.obj];

@@ -182,7 +182,7 @@ const SIM={
     // heater / cooler plate
     const hot=w>0.01,cold=w<-0.01,mag=Math.abs(sim.p.power)/100;ctx.fillStyle=hot?'rgb('+Math.round(150+100*mag)+',60,30)':cold?'rgb(40,'+Math.round(100+60*mag)+','+Math.round(180+60*mag)+')':P['cv-soft'];rr(ctx,BX0-6,BY1+4,BX1-BX0+12,14,4);ctx.fill();
     txt(ctx,(hot?'Heating: ':cold?'Cooling: ':'Heater off ')+(hot||cold?Math.abs(w).toFixed(w>=10||w<=-10?0:1)+' W':''),(BX0+BX1)/2,BY1+40,{s:14*k,w:700,a:'center'});
-    pill(ctx,q.T.toFixed(1)+' °C',BX0+70,BY0-34,P['card'],P['cv-ink'],16*k);
+    pill(ctx,q.T.toFixed(1).replace('-','−')+' °C',BX0+70,BY0-34,P['card'],P['cv-ink'],16*k);
     pill(ctx,phaseText(sim),BX1-100,BY0-34,q.seg===1||q.seg===3?'#a33a12':'#1f5fae','#fff',14*Math.min(k,1.5));
     // heating curve on the stage
     drawCurve(sim,ctx,{L:470,T:40,W:310,H:210,cw:800,ch:290},k,false);
@@ -203,7 +203,7 @@ function drawCurve(sim,ctx,box,k,big){const g=segs(sim),s=g.s,P=PAL,st=sim.st,X=
   txt(ctx,fmtT(s.Tm),L-6,Yp(s.Tm),{s:12*k,a:'right',b:'middle',c:P['g-axis']});if(Yp(s.Tm)-Yp(g.Tb)>12*k)txt(ctx,fmtT(g.Tb),L-6,Yp(g.Tb),{s:12*k,a:'right',b:'middle',c:P['g-axis']});
   txt(ctx,'heat added →',L+W,T+H+18*Math.min(k,1.3),{s:12*k,a:'right',c:P['muted']});txt(ctx,'T (°C)',L+6,T+4,{s:12*k,c:P['muted']});
   plotIn(ctx,{X:x=>Xp(x),Y:Yp},pts,st,X,P,12*k,g,false);}
-const fmtT=v=>(Math.abs(v)>=100?v.toFixed(0):v.toFixed(Math.abs(v%1)>0.05?1:0));
+const fmtT=v=>(Math.abs(v)>=100?v.toFixed(0):v.toFixed(Math.abs(v%1)>0.05?1:0)).replace('-','−');
 function plotIn(ctx,ax,pts,st,X,P,fs,g,big){ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle=P['muted'];ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((p,i)=>{const x=ax.X(X(p[0])),y=ax.Y(p[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);
   // the part you have actually traveled
   const lo=st.Hlo,hi=st.Hhi;ctx.strokeStyle=P['s1'];ctx.lineWidth=big?3:3.5;ctx.beginPath();let first=true;

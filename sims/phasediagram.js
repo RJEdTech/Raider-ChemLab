@@ -7,7 +7,7 @@ const CL=window.ChemLab;
    with ΔH_sub = 51.06 kJ/mol, and the ice I melting curve (−0.0074 °C/atm). CO₂: Clausius–Clapeyron lines through
    the triple point (−56.6 °C, 5.11 atm), the sublimation point (−78.5 °C, 1 atm) and the critical point (31.0 °C, 72.8 atm). */
 const RG=8.314;
-function antoine(T){return Math.pow(10,T<=99?8.07131-1730.63/(233.426+T):8.14019-1810.94/(244.485+T))/760;}
+function antoine(T){const a=Math.pow(10,T<=100?8.07131-1730.63/(233.426+T):8.14019-1810.94/(244.485+T))/760;return T<100?a*(1+0.0101*clamp(1-T/100,0,1.5)):a;}
 const W={id:'water',l:'Water',f:'H₂O',Ttp:0.01,Tc:373.95,Pc:217.7,Tmin:-60,Tmax:420,lpMin:-4,lpMax:4,dHsub:51.06,dHvap:40.7,dHfus:6.01,dV:-1.63,Ttick:100,
   Tnm:0,Tnb:100};
 W.Ptp=antoine(W.Ttp);const WfC=W.Pc/antoine(W.Tc)-1;
@@ -44,7 +44,7 @@ function phaseNow(sim){const s=sb(sim),T=getT(sim),P=getP(sim),ln=onLine(s,T,P);
 const TRANS={'s>l':'Melting','l>s':'Freezing','l>g':'Boiling (vaporization)','g>l':'Condensation','s>g':'Sublimation','g>s':'Deposition',
   'l>sc':'Becomes a supercritical fluid','g>sc':'Becomes a supercritical fluid','sc>l':'Supercritical fluid becomes a liquid','sc>g':'Supercritical fluid becomes a gas'};
 const fmtP=P=>(P>=1000?Math.round(P).toLocaleString('en-US'):CL.toSig(P,3))+' atm';
-const fmtT=T=>T.toFixed(Math.abs(T)<10?2:1)+' °C';
+const fmtT=T=>T.toFixed(Math.abs(T)<10?2:1).replace('-','−')+' °C';
 
 /* ---------- paths ---------- */
 const SCENES={
@@ -87,7 +87,7 @@ function assign(sim){const v=sim.vis,P=v.P,tg=targets(sim);const cnt=ro=>P.filte
     if(ro==='g'||ro==='sc'){const a=Math.random()*6.283;pick.vx=Math.cos(a)*90;pick.vy=Math.sin(a)*90;pick.va=(Math.random()-0.5)*5;}}});}
 function moveParts(sim,dt){const s=sb(sim),v=sim.vis,P=v.P,T=getT(sim),d0=21;const u=clamp((T-s.Tmin)/(s.Tmax-s.Tmin),0,1),vg=60+110*u,vl=18+30*u;
   let left=Math.min(dt,0.1);while(left>1e-6){const h=Math.min(left,1/60);left-=h;
-    P.forEach(p=>{if(p.role==='h')return;if(p.role==='s'){const st=SITES[p.site]||[p.x,p.y],A=RM?0:0.6+1.8*u;p.x+=(st[0]+A*Math.sin(sim.vt*13+p.ph)-p.x)*Math.min(1,h*8);p.y+=(st[1]+A*Math.cos(sim.vt*11+p.ph)-p.y)*Math.min(1,h*8);p.a+=(0-p.a)*Math.min(1,h*5);return;}
+    P.forEach(p=>{if(p.role==='h')return;if(p.role==='s'){const st=SITES[p.site]||[p.x,p.y],A=RM?0:0.6+1.8*u;p.x+=(st[0]+A*Math.sin(sim.vt*13+p.ph)-p.x)*Math.min(1,h*8);p.y+=(st[1]+A*Math.cos(sim.vt*11+p.ph)-p.y)*Math.min(1,h*8);p.a+=((s.id==='co2'?(p.site%2?0.785:-0.785):0)-p.a)*Math.min(1,h*5);return;}
       if(p.role==='l'){p.vx+=randn()*vl*6*h;p.vy+=randn()*vl*6*h+150*h;const sp=Math.hypot(p.vx,p.vy);if(sp>vl){p.vx*=vl/sp;p.vy*=vl/sp;}p.va=clamp(p.va+randn()*4*h,-2,2);}
       else if(p.role==='sc'){p.vx+=randn()*80*h;p.vy+=randn()*80*h;const sp=Math.hypot(p.vx,p.vy)||1,f=lerp(1,70/sp,Math.min(1,h*3));p.vx*=f;p.vy*=f;}
       else{p.vy+=20*h;const sp=Math.hypot(p.vx,p.vy)||1,f=lerp(1,vg/sp,Math.min(1,h*2));p.vx*=f;p.vy*=f;}
@@ -127,12 +127,12 @@ function drawDiagram(sim,ctx,k){const s=sb(sim),P=PAL,hon=atLeast('honors'),ap=a
   ctx.restore();
   // region labels
   const lab=(t,x,y,c)=>txt(ctx,t,x,y,{s:15*Math.min(k,1.5),w:800,a:'center',c:c||P['cv-ink']});
-  if(s.id==='water'){lab('SOLID',DL+44,DT+70);lab('LIQUID',XT(s,170),DT+70);lab('GAS',XT(s,250),DT+DH-60);}
+  if(s.id==='water'){ctx.save();ctx.translate(XT(s,-32),DT+120);ctx.rotate(-Math.PI/2);lab('SOLID',0,0);ctx.restore();lab('LIQUID',XT(s,170),DT+46);lab('GAS',XT(s,250),DT+DH-60);}
   else{lab('SOLID',XT(s,-95),DT+70);lab('LIQUID',XT(s,-15),DT+70);lab('GAS',XT(s,-10),DT+DH-50);}
-  if(ap){const sx=(cpx+DL+DW)/2;txt(ctx,'SUPER-',sx,DT+22,{s:12*k,w:800,a:'center',c:P['s5']});txt(ctx,'CRITICAL',sx,DT+22+13*k,{s:12*k,w:800,a:'center',c:P['s5']});}
+  if(ap){const sx=(cpx+DL+DW)/2;txt(ctx,'SUPER-',sx,DT+34,{s:12*k,w:800,a:'center',c:P['s5']});txt(ctx,'CRITICAL',sx,DT+34+13*k,{s:12*k,w:800,a:'center',c:P['s5']});}
   // special points
   ctx.fillStyle=P['cv-ink'];ctx.beginPath();ctx.arc(tpx,tpy,5,0,6.283);ctx.fill();ctx.beginPath();ctx.arc(cpx,cpy,5,0,6.283);ctx.fill();
-  if(hon){txt(ctx,'triple point',tpx+8,tpy+16*Math.min(k,1.3),{s:12*k,w:700,c:P['cv-soft']});txt(ctx,'critical point',cpx-8,cpy-10,{s:12*k,w:700,a:'right',c:P['cv-soft']});}
+  if(hon){txt(ctx,'triple point',tpx+8,tpy+16*Math.min(k,1.3),{s:12*k,w:700,c:P['cv-soft']});if(k<1.3)txt(ctx,'critical point',cpx-8,cpy-10,{s:12*k,w:700,a:'right',c:P['cv-soft']});}
   // axes
   ctx.strokeStyle=P['g-axis'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(DL,DT);ctx.lineTo(DL,DT+DH);ctx.lineTo(DL+DW,DT+DH);ctx.stroke();
   for(let e=s.lpMin;e<=s.lpMax;e++){const y=YP(s,e);ctx.beginPath();ctx.moveTo(DL-5,y);ctx.lineTo(DL,y);ctx.stroke();if((e-s.lpMin)%(k>1.3?2:1)===0||e===0)txt(ctx,e<0?(e>=-3?String(Math.pow(10,e)):'10'+CL.sup(String(e).replace('-','−'))):e===0?'1':e<4?String(Math.pow(10,e)):'10'+CL.sup(e),DL-8,y,{s:12*k,a:'right',b:'middle',c:P['g-axis']});}

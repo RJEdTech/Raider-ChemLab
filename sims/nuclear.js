@@ -62,7 +62,7 @@ function eqTerms(n){const d=daughter(n),P=PART[n.mode],ps=CL.el(n.Z).sym,ds=CL.e
   const par={A:n.A,Z:n.Z,sym:ps+(n.meta?'ᵐ':'')},dau={A:d.A,Z:d.Z,sym:ds},pt={A:P.A,Z:P.Z,sym:P.sym,plusZ:n.mode==='b+'};
   if(n.mode==='ec')return {t:[par,{op:'+'},{A:0,Z:-1,sym:'e'},{op:'→'},dau],hi:4,sumA:[n.A+' + 0',String(d.A)],sumZ:[n.Z+' + (−1)',String(d.Z)]};
   return {t:[par,{op:'→'},dau,{op:'+'},pt],hi:2,sumA:[String(n.A),d.A+' + '+P.A],sumZ:[String(n.Z),d.Z+' + '+(P.Z<0?'(−1)':P.Z)]};}
-function nucleonPts(Z,A,cx,cy,r){const out=[];for(let i=0;i<A;i++){const isP=Math.floor((i+1)*Z/A)>Math.floor(i*Z/A);const q=r*1.05*Math.sqrt(i+0.5),a=i*2.39996;out.push({x:cx+q*Math.cos(a),y:cy+q*Math.sin(a),p:isP});}return out;}
+function nucleonPts(Z,A,cx,cy,r){const out=[],R=rng(A*131+Z),ord=[...Array(A).keys()].map(i=>[R(),i]).sort((a,b)=>a[0]-b[0]),isPA=new Array(A).fill(false);ord.slice(0,Z).forEach(q=>isPA[q[1]]=true);for(let i=0;i<A;i++){const isP=isPA[i];const q=r*1.05*Math.sqrt(i+0.5),a=i*2.39996;out.push({x:cx+q*Math.cos(a),y:cy+q*Math.sin(a),p:isP});}return out;}
 function drawNucleus(ctx,Z,A,cx,cy,glow){const r=A>100?3.7:A>40?5:7;const pts=nucleonPts(Z,A,cx,cy,r),simple=A>100;
   if(glow){const R=r*1.05*Math.sqrt(A)+r+14;const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(167,125,255,'+(0.5*glow)+')');g.addColorStop(1,'rgba(167,125,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R,0,6.29);ctx.fill();}
   for(let i=pts.length-1;i>=0;i--){const o=pts[i],c=o.p?CL.FILL.proton:CL.FILL.neutron;if(simple){ctx.fillStyle=c;ctx.beginPath();ctx.arc(o.x,o.y,r,0,6.29);ctx.fill();ctx.strokeStyle=CL.shade(c,-0.45);ctx.lineWidth=0.8;ctx.stroke();}
@@ -249,14 +249,14 @@ function drawDecay(sim,ctx,k,t){const p=sim.p,st=sim.st,n=nucOf(p),d=daughter(n)
   else txt(ctx,'A: '+e.sumA[0]+' = '+e.sumA[1]+'   Z: '+e.sumZ[0]+' = '+e.sumZ[1],245,420,{s:12*k,a:'center',c:PAL['cv-soft']});
   // mini N-Z chart
   const X=494,Y=14,W=294,H=300;rr(ctx,X,Y,W,H,12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
-  const N=n.A-n.Z,z0=n.Z-6,n0=N-8,cw=18,chh=13,gx=X+44,gy=Y+40;txt(ctx,'Where it sits on the N vs Z chart',X+14,Y+24,{s:Math.min(13*k,19),w:700});
+  const N=n.A-n.Z,z0=n.Z-6,n0=N-8,cw=18,chh=13,gx=X+44,gy=Y+40;txt(ctx,k<1.4?'Neutrons (up) vs protons (across)':'N vs Z chart',X+14,Y+24,{s:Math.min(13*k,19),w:700});
   for(let i=0;i<13;i++)for(let j=0;j<17;j++){const Z=z0+i,NN=n0+j;if(Z<1||NN<0)continue;const x=gx+i*cw,y=gy+(16-j)*chh;ctx.fillStyle=stableish(Z,NN)?PAL['cv-ink']:PAL['card2'];ctx.globalAlpha=stableish(Z,NN)?0.8:1;ctx.fillRect(x+1,y+1,cw-2,chh-2);ctx.globalAlpha=1;}
   const cell=(Z,NN)=>[gx+(Z-z0)*cw+cw/2,gy+(16-(NN-n0))*chh+chh/2];const a=cell(n.Z,N),b=cell(d.Z,d.A-d.Z);
   ctx.strokeStyle=PAL['s1'];ctx.lineWidth=3;ctx.strokeRect(a[0]-cw/2,a[1]-chh/2,cw,chh);if(n.mode!=='g'){ctx.strokeStyle=PAL['s3'];ctx.strokeRect(b[0]-cw/2,b[1]-chh/2,cw,chh);
     ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.fillStyle=PAL['s1'];ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-9*Math.cos(ang-0.5),b[1]-9*Math.sin(ang-0.5));ctx.lineTo(b[0]-9*Math.cos(ang+0.5),b[1]-9*Math.sin(ang+0.5));ctx.fill();}
   for(let i=0;i<13;i+=3)txt(ctx,String(z0+i),gx+i*cw+cw/2,gy+17*chh+14,{s:12,a:'center',c:PAL['cv-soft']});for(let j=0;j<17;j+=4)txt(ctx,String(n0+j),gx-6,gy+(16-j)*chh+chh/2,{s:12,a:'right',b:'middle',c:PAL['cv-soft']});
-  txt(ctx,'Z (protons) →',gx+13*cw,gy+17*chh+30,{s:12,a:'right',c:PAL['cv-soft']});txt(ctx,'N ↑',X+12,gy-2,{s:12,c:PAL['cv-soft']});
-  if(n.Z>83)txt(ctx,'No stable nuclei above Z = 83',X+W/2,gy+8*chh,{s:12*k,w:700,a:'center',c:PAL['s1']});
+  txt(ctx,'Z →',gx+13*cw,gy+17*chh+30,{s:12,a:'right',c:PAL['cv-soft']});
+  if(n.Z>83)txt(ctx,k<1.4?'No stable nuclei above Z = 83':'None stable, Z > 83',X+12,gy+17*chh+30,{s:12*k,w:700,c:PAL['s1']});
   // info lines
   let y=Y+H+26;const lh=Math.max(19,16*k);txt(ctx,'Half-life: '+n.half,X+4,y,{s:13*k,w:700});y+=lh;txt(ctx,MODE_NAME[n.mode],X+4,y,{s:13*k,c:PAL['cv-soft']});
   if(k<1.4){y+=lh;const u2=n.use.length>40?n.use.slice(0,38).replace(/\s\S*$/,'')+'…':n.use;txt(ctx,'Used for: '+u2,X+4,y,{s:12*k,c:PAL['cv-soft']});}}
@@ -284,13 +284,13 @@ function drawChain(sim,ctx,k,t){const p=sim.p,st=sim.st,C=CHAINS[p.chain],hon=at
   const z0=80,z1=93,a0=204,a1=240,gx=62,gw=480,gy=34,gh=380,X=Z=>gx+(Z-z0)/(z1-z0)*gw,Y=A=>gy+(a1-A)/(a1-a0)*gh;
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;for(let Z=z0;Z<=z1;Z++){ctx.beginPath();ctx.moveTo(X(Z),gy);ctx.lineTo(X(Z),gy+gh);ctx.stroke();if(Z<z1&&(k<1.4||Z%2===0))txt(ctx,CL.el(Z).sym,X(Z),gy+gh+16,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});}
   for(let A=a0;A<=a1;A+=4){ctx.beginPath();ctx.moveTo(gx,Y(A));ctx.lineTo(gx+gw,Y(A));ctx.stroke();txt(ctx,String(A),gx-8,Y(A),{s:12,a:'right',b:'middle',c:PAL['cv-soft']});}
-  txt(ctx,'A',gx-30,gy+6,{s:12*k,w:700,c:PAL['cv-soft']});
+  txt(ctx,'A',gx-30,gy-14,{s:12*k,w:700,c:PAL['cv-soft']});
   const pts=C.steps.map(q=>[X(SYMZ(q[0])),Y(q[1])]);
   for(let i=1;i<C.steps.length;i++){const a=pts[i-1],b=pts[i],done=i<=st.ci,isA=C.steps[i-1][2]==='a';const f=i===st.ci?st.cAnim:1;if(!done)continue;
     const ex=lerp(a[0],b[0],f),ey=lerp(a[1],b[1],f);ctx.strokeStyle=isA?PAL['s1']:PAL['s4'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(ex,ey);ctx.stroke();}
   C.steps.forEach((q,i)=>{const [x,y]=pts[i],seen=i<=st.ci,cur=i===st.ci;ctx.globalAlpha=seen?1:0.3;ctx.fillStyle=cur?PAL['rj']:!q[2]?PAL['s3']:PAL['card'];ctx.beginPath();ctx.arc(x,y,15,0,6.29);ctx.fill();ctx.strokeStyle=cur?PAL['rj']:PAL['cv-soft'];ctx.lineWidth=1.5;ctx.stroke();
     txt(ctx,q[0],x,y+1,{s:12,w:800,a:'center',b:'middle',c:cur||!q[2]?'#fff':PAL['cv-ink']});ctx.globalAlpha=1;});
-  legend(ctx,gx+8,gy+gh-14,[{label:'α (A − 4, Z − 2)',color:PAL['s1']},{label:'β⁻ (Z + 1)',color:PAL['s4']}]);
+  legend(ctx,gx+10,gy+14,[{label:'α (A − 4, Z − 2)',color:PAL['s1']},{label:'β⁻ (Z + 1)',color:PAL['s4']}]);
   // right panel
   const RX=560,RW=228;rr(ctx,RX,14,RW,422,12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();
   const q=C.steps[st.ci];txt(ctx,C.name,RX+14,40,{s:Math.min(13*k,18),w:700});txt(ctx,'Step '+(st.ci+1)+' of '+C.steps.length,RX+14,40+20*k,{s:12*k,c:PAL['cv-soft']});

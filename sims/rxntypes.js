@@ -63,12 +63,12 @@ const GEOM={H2:[['H',-0.55,0],['H',0.55,0]],O2:[['O',-0.8,0],['O',0.8,0]],H2O:[[
 const RAD=el=>el==='H'?0.62:1;
 function geom(f){const g=(GEOM[f]||[[f,0,0]]).map(a=>({el:a[0],x:a[1],y:a[2],r:RAD(a[0])}));let R=0;g.forEach(a=>R=Math.max(R,Math.hypot(a.x,a.y)+a.r));g.R=R;return g;}
 const ICOL={Cu2:'#1976d2',Al3:'#9e8f8f',Zn2:'#6c7a89'};
-const ZX=636,ZY=236,ZR=132,AR=11;
+const ZX=636,ZY=236,ZR=134,AR=13;
 
 /* ---------- build the particle zoom for one station ---------- */
 function buildZoom(key){const z=R[key].zoom;let seed=key.length*97+key.charCodeAt(0);const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
   const sp=Math.max(2*AR+1,...z.r.concat(z.p).filter(s=>s[3]==='solid').map(s=>geom(s[0]).R*AR*1.7));
-  const solidRows=(n)=>{const out=[];let row=0;while(out.length<n&&row<8){const y=ZY+ZR-sp*0.5-6-row*sp*0.9,half=Math.sqrt(Math.max(0,ZR*ZR-(y-ZY)*(y-ZY)))-sp*0.5-6,off=(row%2)*sp/2;
+  const solidRows=(n)=>{const out=[];let row=0;while(out.length<n&&row<8){const y=ZY+ZR-sp*0.5-14-row*sp*0.88,half=Math.sqrt(Math.max(0,ZR*ZR-(y-ZY)*(y-ZY)))-sp*0.5-8,off=(row%2)*sp/2;
       for(let x=ZX-half+off;x<=ZX+half&&out.length<n;x+=sp)out.push({x,y});row++;}return out;};
   const mk=(spec,u,side)=>{const [f,q,n,zone]=spec,arr=[];for(let i=0;i<n;i++){const g=geom(f);arr.push({f,q,zone,u,side,g,atoms:g.map(a=>({el:a.el,dx:a.x*AR,dy:a.y*AR,r:a.r*AR})),ph:rnd()*6.28});}return arr;};
   const rp=[],pp=[];for(let u=0;u<z.U;u++){z.r.forEach(s=>rp.push(...mk(s,u,'r')));z.p.forEach(s=>pp.push(...mk(s,u,'p')));}
@@ -84,16 +84,18 @@ function buildZoom(key){const z=R[key].zoom;let seed=key.length*97+key.charCodeA
     const queue={};R1.filter(r=>!usedR.has(r)).forEach(r=>r.atoms.forEach((a,i)=>{(queue[a.el]=queue[a.el]||[]).push({q:r,i});}));
     P1.filter(p=>!p.spec).forEach(p=>p.atoms.forEach(a=>{const s=(queue[a.el]||[]).shift();if(!s)console.error('rxntypes zoom: atoms not conserved in '+key);a.src=s;}));}
   // product homes near their source atoms
-  const ps=pp.filter(q=>q.zone==='solid'),sitesP=solidRows(ps.length+rs.length).slice(0);const usedS=new Set();
-  pp.forEach(p=>{if(p.spec){p.x=p.spec.x;p.y=p.spec.y;return;}let cx=0,cy=0;p.atoms.forEach(a=>{cx+=a.src.q.x+a.src.q.atoms[a.src.i].dx;cy+=a.src.q.y+a.src.q.atoms[a.src.i].dy;});cx/=p.atoms.length;cy/=p.atoms.length;
-    if(p.zone==='solid'){let best=null,bd=1e9;sitesP.forEach((s,i)=>{if(usedS.has(i))return;const d=Math.hypot(s.x-cx,s.y-cy);if(d<bd){bd=d;best=i;}});usedS.add(best);p.x=sitesP[best].x;p.y=sitesP[best].y;}
-    else{p.x=clamp(cx,ZX-ZR+30,ZX+ZR-30);p.y=Math.min(cy,solidTop-p.g.R*AR);if(p.y<ZY-ZR+30)p.y=ZY-ZR+30;}});
+  const ps=pp.filter(q=>q.zone==='solid'),sitesP=solidRows(ps.length).sort((a,b)=>a.x-b.x||b.y-a.y);
+  pp.forEach(p=>{let cx=0,cy=0;p.atoms.forEach(a=>{cx+=a.src.q.x+a.src.q.atoms[a.src.i].dx;cy+=a.src.q.y+a.src.q.atoms[a.src.i].dy;});p.cx=cx/p.atoms.length;p.cy=cy/p.atoms.length;});
+  ps.slice().sort((a,b)=>a.cx-b.cx).forEach((p,i)=>{p.x=sitesP[i].x;p.y=sitesP[i].y;});
+  const pTop=ps.length?Math.min(...sitesP.map(s=>s.y))-AR*2.2:solidTop;
+  pp.forEach(p=>{if(p.zone==='solid')return;if(p.spec){p.x=p.spec.x;p.y=Math.min(p.spec.y,pTop-p.g.R*AR);return;}
+    p.x=clamp(p.cx,ZX-ZR+34,ZX+ZR-34);p.y=Math.min(p.cy,pTop-p.g.R*AR);if(p.y<ZY-ZR+34)p.y=ZY-ZR+34;});
   return {rp,pp,U:z.U,key};}
 const sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 function wob(q,tt){if(RM)return [0,0];const A=q.zone==='solid'?0.8:7;return [Math.sin(tt*0.9+q.ph)*A,Math.cos(tt*0.75+q.ph*1.3)*A];}
 function ionCol(q,el){if(q.q&&q.atoms.length===1){const c=ICOL[el+q.q];if(c)return c;}return null;}
 function drawParticle(ctx,q,x,y,al){ctx.save();ctx.globalAlpha=al===undefined?1:al;const a=q.atoms;a.slice().sort((m,n)=>m.r-n.r).forEach(t=>CL.drawAtom(ctx,x+t.dx,y+t.dy,t.r,t.el,{color:ionCol(q,t.el)||undefined,label:t.r>=8?t.el:''}));
-  if(q.q){const R0=q.g.R*AR;txt(ctx,(Math.abs(q.q)>1?Math.abs(q.q):'')+(q.q>0?'+':'−'),x+R0*0.72,y-R0*0.72,{s:11,w:800,c:PAL['cv-ink'],a:'left',b:'middle'});}ctx.restore();}
+  if(q.q&&q.zone!=='solid'){const R0=q.g.R*AR;txt(ctx,(Math.abs(q.q)>1?Math.abs(q.q):'')+(q.q>0?'+':'−'),x+R0*0.72,y-R0*0.72,{s:11,w:800,c:PAL['cv-ink'],a:'left',b:'middle'});}ctx.restore();}
 
 /* ---------- run state ---------- */
 const prog=sim=>{const st=sim.st;if(!st.run)return 0;return clamp((sim.t-st.t0)/R[sim.p.rxn].D,0,1);};
@@ -126,22 +128,22 @@ function drawBench(ctx,sim,k,t){const key=sim.p.rxn,p=prog(sim),run=sim.st.run,w
     ctx.fillStyle='#d7d2c8';rr(ctx,130,BENCH-14,170,14,4);ctx.fill();const ash=clamp(p*1.1,0,1);if(ash>0){ctx.fillStyle='#f6f6f4';ctx.beginPath();ctx.ellipse(205,BENCH-14,62*ash,10*ash,0,Math.PI,0);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.2)';ctx.stroke();}
     if(live&&p>0.02){const gr=70+(RM?0:Math.sin(t*31)*8),g=ctx.createRadialGradient(x0,290,2,x0,290,gr);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.3,'rgba(255,255,240,.85)');g.addColorStop(1,'rgba(255,255,230,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x0,290,gr,0,6.29);ctx.fill();
       pill(ctx,'Very bright: do not stare at it',240,120,'#5d5d63','#fff',12*k);}
-    txt(ctx,'tongs',388,232,{s:12*k,c:PAL['cv-soft']});txt(ctx,'ceramic pad',215,BENCH+0-22,{s:12*k,c:PAL['cv-soft'],a:'center'});}
+    txt(ctx,'tongs',388,232,{s:12*k,c:PAL['cv-soft']});txt(ctx,'ceramic pad',215,BENCH+20,{s:12*k,c:PAL['cv-soft'],a:'center'});}
   else if(key==='h2o2'){flask(ctx,200,214,150,200,water,0.42);const ly=214+200*0.58;
     if(run){ctx.fillStyle='#2b2b2b';for(let i=0;i<14;i++){ctx.beginPath();ctx.arc(150+((i*37)%100),BENCH-6-((i*13)%8),2.4,0,6.29);ctx.fill();}
       const rate=Math.max(0,1-p*0.9);bubbles(ctx,140,260,ly+6,BENCH-8,Math.round(26*rate),t,1.1);if(p<0.9){ctx.fillStyle='rgba(255,255,255,.65)';ctx.beginPath();ctx.ellipse(200,ly+2,64*rate,7,0,0,6.29);ctx.fill();}}
     ctx.strokeStyle='#b5874f';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(330,120);ctx.lineTo(214,198);ctx.stroke();
     const lit=run&&p>0.12;if(lit){const fh=18+(RM?0:Math.sin(t*20)*3);ctx.fillStyle='rgba(255,170,40,.9)';ctx.beginPath();ctx.ellipse(212,192-fh/2,7,fh/2,-0.6,0,6.29);ctx.fill();}else{ctx.fillStyle='#ff6d00';ctx.beginPath();ctx.arc(214,198,4.5,0,6.29);ctx.fill();}
     txt(ctx,lit?'splint bursts into flame: O₂':'glowing splint',338,116,{s:12*k,w:lit?700:400,c:lit?PAL['s4']:PAL['cv-soft']});if(run)txt(ctx,'black MnO₂ (catalyst)',200,BENCH+0-24,{s:12*k,c:PAL['cv-soft'],a:'center'});}
-  else if(key==='cuco3'){burner(ctx,150,run&&p<1,t,48);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(40,BENCH);ctx.lineTo(40,160);ctx.lineTo(160,190);ctx.stroke();
-    const pg=clamp(p*1.15,0,1),pc=mixHex('#3f9b6b','#232323',pg);tube(ctx,170,190,30,120,-1.15,pc,0.3);
-    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(268,145);ctx.lineTo(330,130);ctx.lineTo(370,130);ctx.lineTo(370,350);ctx.stroke();
+  else if(key==='cuco3'){burner(ctx,150,run&&p<1,t,48);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(40,BENCH);ctx.lineTo(40,150);ctx.lineTo(236,212);ctx.stroke();
+    const pg=clamp(p*1.15,0,1),pc=mixHex('#3f9b6b','#232323',pg);tube(ctx,252,212,30,116,1.107,pc,0.3);
+    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(252,212);ctx.lineTo(262,168);ctx.lineTo(370,168);ctx.lineTo(370,350);ctx.stroke();
     const milk=clamp((p-0.08)*1.4,0,0.85);tube(ctx,370,258,36,140,0,mixHex(water,'#efefea',milk),0.75);if(run&&p>0.05&&p<0.97)bubbles(ctx,360,380,300,390,8,t,0.9);
-    txt(ctx,'limewater',370,250,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,pg>0.5?'black CuO':'green CuCO₃',150,112,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});}
+    txt(ctx,'limewater',370,250,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,pg>0.5?'black CuO':'green CuCO₃',120,238,{s:12*k,w:700,c:PAL['cv-soft'],a:'center'});}
   else if(key==='alcu'){const blue='#3f8fd6',liq=mixHex(mixHex(water,blue,0.85),water,clamp(p*1.1,0,1)*0.85);const L=CL.drawBeaker(ctx,{x:90,y:214,w:200,h:200,fill:0.72,liquid:liq});
     ctx.fillStyle='#b9bec6';ctx.beginPath();ctx.moveTo(150,BENCH-8);ctx.lineTo(165,BENCH-40);ctx.lineTo(195,BENCH-48);ctx.lineTo(228,BENCH-30);ctx.lineTo(232,BENCH-8);ctx.closePath();ctx.fill();
     if(run){ctx.globalAlpha=clamp(p*1.4,0,1);ctx.fillStyle='#8a3b12';ctx.fill();for(let i=0;i<Math.round(16*p);i++){ctx.beginPath();ctx.arc(155+((i*29)%75),BENCH-10-((i*17)%34),3,0,6.29);ctx.fill();}ctx.globalAlpha=1;if(p<0.95)bubbles(ctx,160,225,L.y+6,BENCH-44,6,t,0.7);}
-    thermo(ctx,262,170,200,Tnow,k);txt(ctx,Tnow.toFixed(1)+' °C',262,160,{s:13*k,w:700,a:'center'});txt(ctx,'aluminum foil',190,BENCH+0-58,{s:12*k,c:PAL['cv-soft'],a:'center'});}
+    thermo(ctx,262,170,200,Tnow,k);txt(ctx,Tnow.toFixed(1)+' °C',262,160,{s:13*k,w:700,a:'center'});txt(ctx,'aluminum foil',190,BENCH+20,{s:12*k,c:PAL['cv-soft'],a:'center'});}
   else if(key==='znhcl'){ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(110,330,180,8);tube(ctx,200,190,40,220,0,water,0.62,null);ctx.fillStyle='#8b939e';for(let i=0;i<6;i++){ctx.beginPath();ctx.arc(190+(i%3)*9,398-Math.floor(i/3)*8,5,0,6.29);ctx.fill();}
     if(run&&p<0.97)bubbles(ctx,188,212,276,398,Math.round(14*(1-p*0.6)),t,1.0);
     ctx.strokeStyle='#b5874f';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(320,112);ctx.lineTo(214,178);ctx.stroke();const pop=run&&p>0.22&&p<0.36;
@@ -149,18 +151,18 @@ function drawBench(ctx,sim,k,t){const key=sim.p.rxn,p=prog(sim),run=sim.st.run,w
     else{pill(ctx,'POP!',212,150,'#c62828','#fff',16*k);}txt(ctx,'burning splint',328,108,{s:12*k,c:PAL['cv-soft']});txt(ctx,Tnow.toFixed(1)+' °C',250,262,{s:13*k,w:700});}
   else if(key==='agcl'){const pour=run?clamp(p/0.15,0,1):0;const L=CL.drawBeaker(ctx,{x:90,y:230,w:190,h:184,fill:0.35+0.3*pour,liquid:water});
     const cl=run?clamp((p-0.1)*2,0,1):0,settle=run?clamp((p-0.5)*2,0,1):0;if(cl>0){ctx.save();ctx.beginPath();ctx.rect(L.x,L.y,L.w,L.h);ctx.clip();ctx.globalAlpha=0.7*cl*(1-0.6*settle);ctx.fillStyle='#f4f4f2';ctx.fillRect(L.x,L.y,L.w,L.h);ctx.globalAlpha=1;
-      ctx.fillStyle='#f4f4f2';ctx.fillRect(L.x,L.y+L.h-14*settle,L.w,14*settle);ctx.strokeStyle='rgba(0,0,0,.3)';ctx.strokeRect(L.x,L.y+L.h-14*settle,L.w,14*settle);
+      ctx.fillStyle='#f4f4f2';ctx.fillRect(L.x,L.y+L.h-22*settle,L.w,22*settle);ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.strokeRect(L.x,L.y+L.h-22*settle,L.w,22*settle);
       ctx.fillStyle='#ffffff';for(let i=0;i<40;i++){ctx.beginPath();ctx.arc(L.x+8+((i*41)%(L.w-16)),lerp(L.y+((i*67)%L.h),L.y+L.h-8,settle),1.8,0,6.29);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=0.6;ctx.stroke();}ctx.restore();}
     const tp=run?Math.sin(Math.PI*pour):0;tube(ctx,lerp(340,262,tp),lerp(220,120,tp),30,120,lerp(0,-2.1,tp),water,run?1-pour:0.7);
-    txt(ctx,'NaCl(aq)',185,BENCH+0-196,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'AgNO₃(aq)',355,196,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,Tnow.toFixed(1)+' °C',185,214,{s:13*k,w:700,a:'center'});}
+    txt(ctx,'NaCl(aq)',185,BENCH+20,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'AgNO₃(aq)',355,196,{s:12*k,c:PAL['cv-soft'],a:'center'});}
   else if(key==='ch4'){burner(ctx,200,run&&p<1,t,70);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(380,BENCH);ctx.lineTo(380,120);ctx.lineTo(300,120);ctx.stroke();
     ctx.save();ctx.translate(200,170);ctx.scale(1,-1);CL.drawBeaker(ctx,{x:-70,y:-70,w:140,h:120,fill:0,liquid:water,ticks:false});ctx.restore();
     const fog=clamp((p-0.15)*1.5,0,1);if(fog>0){ctx.fillStyle=PAL['cv-bstroke'];ctx.globalAlpha=0.8*fog;for(let i=0;i<34;i++){ctx.beginPath();ctx.arc(136+((i*37)%128),132+((i*23)%100),1.6+(i%3)*0.7,0,6.29);ctx.fill();}ctx.globalAlpha=1;}
     txt(ctx,'cold, dry beaker',300,108,{s:12*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'gas valve',60,BENCH+0-8,{s:12*k,c:PAL['cv-soft']});ctx.strokeStyle='#e0a030';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(60,BENCH-20);ctx.quadraticCurveTo(120,BENCH-10,180,BENCH-30);ctx.stroke();}
   else if(key==='neut'){const pink='#e255a8',f=run?clamp((p-0.86)/0.1,0,1):0,liq=mixHex(mixHex(water,pink,0.75),water,f);CL.drawBeaker(ctx,{x:90,y:230,w:190,h:184,fill:0.4+0.32*(run?p:0),liquid:liq});
-    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.strokeRect(175,60,20,150);ctx.fillStyle=water;ctx.fillRect(177,62+130*(run?p:0)*0.6,16,140-130*(run?p:0)*0.6);ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(170,210,30,6);
+    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.strokeRect(175,100,20,110);ctx.fillStyle=water;ctx.fillRect(177,102+100*(run?p:0)*0.6,16,106-100*(run?p:0)*0.6);ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(170,210,30,6);
     if(run&&p<0.99&&!RM){const dy=((t*2.2)%1)*80;ctx.fillStyle=PAL['cv-bstroke'];ctx.beginPath();ctx.arc(185,222+dy,3,0,6.29);ctx.fill();}
-    thermo(ctx,256,190,190,Tnow,k);txt(ctx,Tnow.toFixed(1)+' °C',256,180,{s:13*k,w:700,a:'center'});txt(ctx,'HCl in a buret',205,56,{s:12*k,c:PAL['cv-soft']});}}
+    thermo(ctx,256,190,190,Tnow,k);txt(ctx,Tnow.toFixed(1)+' °C',256,180,{s:13*k,w:700,a:'center'});txt(ctx,'HCl in a buret',205,118,{s:12*k,c:PAL['cv-soft']});}}
 
 /* ---------- definition ---------- */
 const RXT={

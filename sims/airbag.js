@@ -8,7 +8,7 @@ const CL=window.ChemLab;
    The bag holds the liquid and the gas, so fullness = (V_gas + V_liquid) ÷ bag volume. */
 const R=CL.K.Ratm,M_S=CL.molarMass('NaHCO3'),M_A=CL.molarMass('HC2H3O2'),M_AZ=CL.molarMass('NaN3');
 const VIN_D=1.005,VIN_PCT=0.05,MOL_PER_ML=VIN_D*VIN_PCT/M_A; // vinegar: 5.0% acetic acid by mass, 1.005 g/mL
-const BAGS={pint:{l:'Pint bag (0.473 L)',V:0.473,w:190,h:170},quart:{l:'Quart bag (0.946 L)',V:0.946,w:250,h:220},gallon:{l:'Gallon bag (3.785 L)',V:3.785,w:340,h:300}};
+const BAGS={pint:{l:'Pint bag (0.473 L)',V:0.473,w:240,h:200},quart:{l:'Quart bag (0.946 L)',V:0.946,w:300,h:250},gallon:{l:'Gallon bag (3.785 L)',V:3.785,w:380,h:310}};
 const PLACES={rj:{l:'RJ classroom, Aurora CO (0.83 atm)',P:0.83},sea:{l:'Sea level (1.00 atm)',P:1.0}};
 const TAU=1.1,BURST=1.3;
 const BX=245,BY=262; // bag center
@@ -169,6 +169,7 @@ const SIM={
     const nC=st.burst?2:Math.round(clamp(nn/Math.max(1e-6,need(p).n),0,2.5)*14),r=rng(11);
     for(let i=0;i<nC;i++){const a=r()*6.28,rad=r()*zr*0.85,x=zx+Math.cos(a+t*0.3*(0.5+r()))*rad,y=zy+Math.sin(a+t*0.3*(0.5+r()))*rad,ro=r()*3+t;
       ctx.save();ctx.translate(x,y);ctx.rotate(ro);CL.drawAtom(ctx,-11,0,6.5,'O',{label:''});CL.drawAtom(ctx,11,0,6.5,'O',{label:''});CL.drawAtom(ctx,0,0,7.5,'C',{label:''});ctx.restore();}
+    if(nC===0)txt(ctx,'No gas yet',zx,zy,{s:14*k,a:'center',b:'middle',c:PAL['cv-soft']});
     ctx.restore();txt(ctx,'CO₂ gas inside the bag',zx,zy+zr+18*k,{s:12.5*k,a:'center',c:PAL['cv-soft']});
     ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(zx-zr,zy+10);ctx.lineTo(BX+40,topY+30);ctx.stroke();ctx.setLineDash([]);
     // readout

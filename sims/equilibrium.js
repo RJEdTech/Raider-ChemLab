@@ -45,13 +45,13 @@ const pr=(g)=>g==='N2O4'||g==='NO2'||g==='N2'||g==='H2'||g==='NH3'||g==='pink'||
 function nearest(st,g,x,y,skip){let best=null,bd=1e18;for(const q of st.ps){if(q.g!==g||q.dead||(skip&&skip.includes(q)))continue;const d=(q.x-x)**2+(q.y-y)**2;if(d<bd){bd=d;best=q;}}return best;}
 function pickRand(st,g){const L=st.ps.filter(q=>q.g===g&&!q.dead);return L.length?L[Math.floor(st.rnd()*L.length)]:null;}
 function evForward(sim){const st=sim.st,p=sim.p,T=TK(p);
-  if(p.sys==='no2'){const q=pickRand(st,'N2O4');if(!q)return false;q.dead=true;for(const s of [-1,1]){addP(st,'NO2',q.x+s*7,q.y,T);const n=st.ps[st.ps.length-1];n.vx=s*Math.abs(n.vx)+q.vx;n.fl=0.5;}return true;}
-  if(p.sys==='haber'){const q=pickRand(st,'N2');if(!q)return false;const hs=[];for(let i=0;i<3;i++){const h=nearest(st,'H2',q.x,q.y,hs);if(!h)return false;hs.push(h);}q.dead=true;hs.forEach(h=>h.dead=true);for(let i=0;i<2;i++){addP(st,'NH3',q.x+(i?8:-8),q.y,T);st.ps[st.ps.length-1].fl=0.5;}return true;}
-  const q=pickRand(st,'pink');if(!q)return false;q.g='blue';q.fl=0.5;st.clAcc-=4/4000*50;while(st.clAcc<=-1){const c=nearest(st,'Cl',q.x,q.y);if(c)c.dead=true;st.clAcc+=1;}return true;}
+  if(p.sys==='no2'){const q=pickRand(st,'N2O4');if(!q)return false;q.dead=true;for(const s of [-1,1]){addP(st,'NO2',q.x+s*7,q.y,T);const n=st.ps[st.ps.length-1];n.vx=s*Math.abs(n.vx)+q.vx;n.fl=0.3;}return true;}
+  if(p.sys==='haber'){const q=pickRand(st,'N2');if(!q)return false;const hs=[];for(let i=0;i<3;i++){const h=nearest(st,'H2',q.x,q.y,hs);if(!h)return false;hs.push(h);}q.dead=true;hs.forEach(h=>h.dead=true);for(let i=0;i<2;i++){addP(st,'NH3',q.x+(i?8:-8),q.y,T);st.ps[st.ps.length-1].fl=0.3;}return true;}
+  const q=pickRand(st,'pink');if(!q)return false;q.g='blue';q.fl=0.3;st.clAcc-=4/4000*50;while(st.clAcc<=-1){const c=nearest(st,'Cl',q.x,q.y);if(c)c.dead=true;st.clAcc+=1;}return true;}
 function evReverse(sim){const st=sim.st,p=sim.p,T=TK(p);
-  if(p.sys==='no2'){const a=pickRand(st,'NO2');if(!a)return false;const b=nearest(st,'NO2',a.x,a.y,[a]);if(!b)return false;a.dead=b.dead=true;addP(st,'N2O4',(a.x+b.x)/2,(a.y+b.y)/2,T);st.ps[st.ps.length-1].fl=0.5;return true;}
-  if(p.sys==='haber'){const a=pickRand(st,'NH3');if(!a)return false;const b=nearest(st,'NH3',a.x,a.y,[a]);if(!b)return false;a.dead=b.dead=true;const x=(a.x+b.x)/2,y=(a.y+b.y)/2;addP(st,'N2',x,y,T);st.ps[st.ps.length-1].fl=0.5;for(let i=0;i<3;i++)addP(st,'H2',x+(i-1)*9,y+8,T);return true;}
-  const q=pickRand(st,'blue');if(!q)return false;q.g='pink';q.fl=0.5;st.clAcc+=4/4000*50;while(st.clAcc>=1){addP(st,'Cl',q.x+8,q.y,T);st.clAcc-=1;}return true;}
+  if(p.sys==='no2'){const a=pickRand(st,'NO2');if(!a)return false;const b=nearest(st,'NO2',a.x,a.y,[a]);if(!b)return false;a.dead=b.dead=true;addP(st,'N2O4',(a.x+b.x)/2,(a.y+b.y)/2,T);st.ps[st.ps.length-1].fl=0.3;return true;}
+  if(p.sys==='haber'){const a=pickRand(st,'NH3');if(!a)return false;const b=nearest(st,'NH3',a.x,a.y,[a]);if(!b)return false;a.dead=b.dead=true;const x=(a.x+b.x)/2,y=(a.y+b.y)/2;addP(st,'N2',x,y,T);st.ps[st.ps.length-1].fl=0.3;for(let i=0;i<3;i++)addP(st,'H2',x+(i-1)*9,y+8,T);return true;}
+  const q=pickRand(st,'blue');if(!q)return false;q.g='pink';q.fl=0.3;st.clAcc+=4/4000*50;while(st.clAcc>=1){addP(st,'Cl',q.x+8,q.y,T);st.clAcc-=1;}return true;}
 const mainG=p=>p.sys==='no2'?'N2O4':p.sys==='haber'?'N2':'pink';
 function dispCount(st,g){let n=0;for(const q of st.ps)if(q.g===g&&!q.dead)n++;return n;}
 
@@ -261,10 +261,7 @@ const EQ={
     if(st.He>0){const nHe=Math.round(st.He*(p.sys==='no2'?200:6));const r=rng(31);for(let i=0;i<nHe;i++){ctx.fillStyle=PAL['cv-soft'];ctx.globalAlpha=0.5;const x=BX+8+((r()*W+t*(20+r()*40))%(W-16)),y=BY+8+r()*(BH-16);ctx.beginPath();ctx.arc(x,y,2.5,0,6.29);ctx.fill();}ctx.globalAlpha=1;}
     st.ps.forEach(q=>drawMol(ctx,q));
     ctx.restore();ctx.lineWidth=3;ctx.strokeStyle=PAL['cv-glass'];rr(ctx,BX,BY,W,BH,10);ctx.stroke();
-    if(S.gas){// piston
-      ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(BX+W+2,BY-6,8,BH+12);ctx.fillRect(BX+W+10,BY+BH/2-5,Math.max(14,470-W-10),10);
-      if(hon)pill(ctx,st.V.toFixed(1)+' L',BX+W/2,BY+BH+16*Math.min(k,1.4),PAL['card2'],PAL['cv-ink'],12*k);}
-    else pill(ctx,(st.V*1000).toFixed(0)+' mL of solution',BX+W/2,BY+BH+16*Math.min(k,1.4),PAL['card2'],PAL['cv-ink'],12*k);
+    if(S.gas){ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(BX+W+2,BY-6,8,BH+12);ctx.fillRect(BX+W+10,BY+BH/2-5,Math.max(14,470-W-10),10);}
     if(st.full>0)pill(ctx,'The box is full. Start over to add more.',BX+150,BY+24,PAL['s4'],'#fff',13*k);
     drawMacro(ctx,sim,k);drawRates(ctx,sim,k);drawGauge(ctx,sim,k);
   },
@@ -275,27 +272,30 @@ function drawMol(ctx,q){const x=q.x,y=q.y;
   else if(q.g==='Cl'){ctx.fillStyle=PAL['s3'];ctx.beginPath();ctx.arc(x,y,4.5,0,6.29);ctx.fill();}
   else{const g=GL[q.g],c=Math.cos(q.a),s=Math.sin(q.a);g.forEach(([e,dx,dy])=>{const ax=x+dx*c-dy*s,ay=y+dx*s+dy*c;ctx.fillStyle=e==='N'&&(q.g==='NO2'||q.g==='N2O4')?'#3050f8':CL.cpk(e);ctx.beginPath();ctx.arc(ax,ay,RAD[e],0,6.29);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=0.8;ctx.stroke();});
     if(q.g==='NO2'){ctx.strokeStyle='rgba(150,75,20,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y+1,10,0,6.29);ctx.stroke();}}
-  if(q.fl>0){ctx.strokeStyle=PAL['cv-e'];ctx.globalAlpha=clamp(q.fl*2,0,1);ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,15,0,6.29);ctx.stroke();ctx.globalAlpha=1;}}
+  if(q.fl>0){ctx.strokeStyle=PAL['cv-e'];ctx.globalAlpha=clamp(q.fl*2.5,0,0.8);ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,15,0,6.29);ctx.stroke();ctx.globalAlpha=1;}}
 function card(ctx,x,y,w,h){rr(ctx,x,y,w,h,10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();}
-function drawMacro(ctx,sim,k){const p=sim.p,S=sysOf(p),st=sim.st,fs=12*k,y=BY,h=168;card(ctx,PX,y,PW,h);
-  if(p.sys==='no2'){const c=conc(st,'NO2'),a=clamp(c/0.06,0,0.92);txt(ctx,'Sealed tube',PX+12,y+10+fs,{s:13*k,w:700});
-    const tx=PX+PW/2-26,ty=y+30+fs;ctx.fillStyle='rgba(190,225,240,0.25)';rr(ctx,tx,ty,52,h-50-fs,20);ctx.fill();ctx.fillStyle='rgba(150,75,20,'+a.toFixed(3)+')';rr(ctx,tx,ty,52,h-50-fs,20);ctx.fill();ctx.strokeStyle='#8aa6b4';ctx.lineWidth=2.5;rr(ctx,tx,ty,52,h-50-fs,20);ctx.stroke();
-    txt(ctx,a<0.15?'nearly colorless':a<0.45?'light brown':'dark brown',PX+PW/2,y+h-10,{s:fs,c:PAL['cv-soft'],a:'center'});
-    legendRow(ctx,PX+12,y+h/2-6,[['N2O4','N₂O₄'],['NO2','NO₂']],k);return;}
-  if(p.sys==='co'){const f=conc(st,'CoCl4')/(conc(st,'CoCl4')+conc(st,'Co6')+1e-12);const pk=[224,122,160],bl=[47,95,196];const col='rgb('+pk.map((v,i)=>Math.round(lerp(v,bl[i],f))).join(',')+')';
-    txt(ctx,'Test tube',PX+12,y+10+fs,{s:13*k,w:700});const tx=PX+PW/2-24,ty=y+28+fs;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(tx,ty+12);ctx.lineTo(tx,ty+h-70);ctx.arc(tx+24,ty+h-70,24,Math.PI,0,true);ctx.lineTo(tx+48,ty+12);ctx.closePath();ctx.fill();ctx.strokeStyle='#8aa6b4';ctx.lineWidth=2.5;ctx.stroke();
-    txt(ctx,f<0.25?'pink':f<0.6?'violet':'blue',PX+PW/2,y+h-10,{s:fs,c:PAL['cv-soft'],a:'center'});
-    legendRow(ctx,PX+12,y+h/2-6,[['pink','pink'],['blue','blue'],['Cl','Cl⁻ (1 dot = 80 ions shown)']].slice(0,k>1.35?2:3),k,true);return;}
-  const tot=st.n.N2+st.n.H2+st.n.NH3,y_=st.n.NH3/tot;txt(ctx,'Ammonia in the gas',PX+12,y+10+fs,{s:13*k,w:700});
-  const bx=PX+PW/2-20,by=y+30+fs,bh=h-56-fs;rr(ctx,bx,by,40,bh,6);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();const fh=bh*clamp(y_/0.6,0,1);rr(ctx,bx,by+bh-fh,40,fh,6);ctx.fillStyle=PAL['s5'];ctx.fill();
-  txt(ctx,(100*y_).toFixed(1)+'% NH₃',PX+PW/2,y+h-10,{s:fs,w:700,a:'center'});legendRow(ctx,PX+12,y+h/2-6,[['N2','N₂'],['H2','H₂'],['NH3','NH₃']],k);}
-function legendRow(ctx,x,y,items,k,col){const fs=12*k;items.forEach((it,i)=>{const yy=y+i*fs*1.7;drawMol(ctx,{g:it[0],x:x+10,y:yy,a:0,fl:0});txt(ctx,it[1],x+26,yy,{s:fs,b:'middle'});});}
-function drawRates(ctx,sim,k){const st=sim.st,p=sim.p,S=sysOf(p),fs=12*k,y=BY+178,h=BH-178;card(ctx,PX,y,PW,h);const hon=atLeast('honors');
-  txt(ctx,hon?'Forward vs reverse rate':'Splitting vs joining',PX+12,y+10+fs,{s:13*k,w:700});
-  const mx=Math.max(st.rf,st.rr,1e-30),L=PX+16,Wb=PW-32;const bar=(v,yy,c,lab)=>{const w=Wb*v/mx;rr(ctx,L,yy,Wb,fs*1.4,5);ctx.fillStyle=PAL['card2'];ctx.fill();rr(ctx,L,yy,Math.max(2,w),fs*1.4,5);ctx.fillStyle=c;ctx.fill();txt(ctx,lab,L,yy-5,{s:fs,c:PAL['cv-soft']});};
+function drawMacro(ctx,sim,k){const p=sim.p,S=sysOf(p),st=sim.st,fs=12*k,y=BY,h=168;card(ctx,PX,y,PW,h);const hon=atLeast('honors');
+  const vol=S.gas?(hon?' · '+st.V.toFixed(1)+' L':''):' · '+(st.V*1000).toFixed(0)+' mL';
+  const cx=PX+PW-46*Math.min(k,1.3),top=y+20+fs*1.6,bot=y+h-14-fs*1.3,ly=top+fs*0.6;
+  const vessel=(fill,round)=>{ctx.fillStyle='rgba(190,225,240,0.25)';rr(ctx,cx-22,top,44,bot-top,round);ctx.fill();ctx.fillStyle=fill;rr(ctx,cx-22,top,44,bot-top,round);ctx.fill();ctx.strokeStyle='#8aa6b4';ctx.lineWidth=2.5;rr(ctx,cx-22,top,44,bot-top,round);ctx.stroke();};
+  if(p.sys==='no2'){const a=clamp(conc(st,'NO2')/0.06,0,0.92);txt(ctx,'Sealed tube'+vol,PX+12,y+10+fs,{s:13*k,w:700});vessel('rgba(150,75,20,'+a.toFixed(3)+')',18);
+    txt(ctx,a<0.15?'nearly colorless':a<0.45?'light brown':'dark brown',cx,y+h-10,{s:fs,c:PAL['cv-soft'],a:'center'});legendRow(ctx,PX+12,ly,[['N2O4','N₂O₄'],['NO2','NO₂ (brown)']],k);return;}
+  if(p.sys==='co'){const f=conc(st,'CoCl4')/(conc(st,'CoCl4')+conc(st,'Co6')+1e-12);const pk=[224,122,160],bl=[47,95,196];
+    txt(ctx,'Test tube'+vol,PX+12,y+10+fs,{s:13*k,w:700});vessel('rgb('+pk.map((v,i)=>Math.round(lerp(v,bl[i],f))).join(',')+')',20);
+    txt(ctx,f<0.25?'pink':f<0.6?'violet':'blue',cx,y+h-10,{s:fs,w:700,c:PAL['cv-soft'],a:'center'});
+    legendRow(ctx,PX+12,ly,[['pink','Co(H₂O)₆²⁺'],['blue','CoCl₄²⁻'],['Cl',k>1.35?'Cl⁻':'Cl⁻ (1 dot : 80)']],k);return;}
+  const tot=st.n.N2+st.n.H2+st.n.NH3,y_=st.n.NH3/tot;txt(ctx,(k>1.35?'NH₃':'Ammonia in the gas')+vol,PX+12,y+10+fs,{s:13*k,w:700});
+  rr(ctx,cx-20,top,40,bot-top,6);ctx.fillStyle=PAL['card2'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.stroke();const fh=(bot-top)*clamp(y_/0.6,0,1);rr(ctx,cx-20,bot-fh,40,fh,6);ctx.fillStyle=PAL['s5'];ctx.fill();
+  txt(ctx,(100*y_).toFixed(1)+'%',cx,y+h-10,{s:fs,w:700,a:'center'});legendRow(ctx,PX+12,ly,[['N2','N₂'],['H2','H₂'],['NH3','NH₃']],k);}
+function legendRow(ctx,x,y,items,k){const fs=12*k;items.forEach((it,i)=>{const yy=y+i*fs*1.75;drawMol(ctx,{g:it[0],x:x+10,y:yy,a:0,fl:0});txt(ctx,it[1],x+26,yy,{s:fs,b:'middle'});});}
+function drawRates(ctx,sim,k){const st=sim.st,p=sim.p,fs=12*k,y=BY+178,h=BH-178;card(ctx,PX,y,PW,h);const hon=atLeast('honors'),cmp=k>1.35;
+  txt(ctx,hon?(cmp?'Rates':'Forward vs reverse rate'):'Splitting vs joining',PX+12,y+10+fs,{s:13*k,w:700});
+  const mx=Math.max(st.rf,st.rr,1e-30),bh=Math.max(10,fs*0.9);
   const fl=p.sys==='no2'&&!hon?'N₂O₄ splitting →':'forward →',rl=p.sys==='no2'&&!hon?'← NO₂ joining':'← reverse';
-  bar(st.rf,y+28+fs*2.2,PAL['s3'],fl);bar(st.rr,y+28+fs*5.4,PAL['s1'],rl);
-  const eq=Math.abs(Math.log10((st.rf+1e-300)/(st.rr+1e-300)))<0.01;txt(ctx,eq?'equal: at equilibrium':st.rf>st.rr?'forward is faster':'reverse is faster',PX+PW/2,y+h-10,{s:fs,w:700,c:eq?PAL['s3']:PAL['cv-ink'],a:'center'});}
+  const bar=(v,yy,c,lab,short)=>{let L=PX+16,Wb=PW-32;if(cmp){L=PX+16+fs*2;Wb=PW-32-fs*2;txt(ctx,short,PX+14,yy+bh/2,{s:fs,w:700,c,b:'middle'});}else txt(ctx,lab,L,yy-5,{s:fs,c:PAL['cv-soft']});
+    rr(ctx,L,yy,Wb,bh,4);ctx.fillStyle=PAL['card2'];ctx.fill();rr(ctx,L,yy,Math.max(2,Wb*v/mx),bh,4);ctx.fillStyle=c;ctx.fill();};
+  const y1=cmp?y+22+fs*2:y+26+fs*2.4,y2=cmp?y1+bh+fs*1.1:y1+bh+fs*2.2;bar(st.rf,y1,PAL['s3'],fl,'→');bar(st.rr,y2,PAL['s1'],rl,'←');
+  const eq=Math.abs(Math.log10((st.rf+1e-300)/(st.rr+1e-300)))<0.01;txt(ctx,eq?(cmp?'equal':'equal: at equilibrium'):st.rf>st.rr?'forward faster':'reverse faster',PX+PW/2,y+h-10,{s:fs,w:700,c:eq?PAL['s3']:PAL['cv-ink'],a:'center'});}
 function drawGauge(ctx,sim,k){const p=sim.p,S=sysOf(p),st=sim.st,fs=12*k,y=406,h=88,hon=atLeast('honors');card(ctx,BX,y,772,h);
   const Q=Qof(S,st),K=Kat(S,TK(p)),lq=Math.log10(Q),lk=Math.log10(K),L=BX+130*Math.min(k,1.4),R=BX+760,mid=(L+R)/2,span=3;const X=v=>clamp(mid+(v-lk)/span*(R-L)/2,L,R);
   txt(ctx,hon?'Q vs K':'Balance',BX+14,y+22+fs*0.3,{s:14*k,w:700});txt(ctx,'log scale',BX+14,y+44+fs*0.6,{s:fs,c:PAL['cv-soft']});

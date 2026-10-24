@@ -97,7 +97,7 @@ function drawPackZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,S=salt(p);if(!sim
   ctx.restore();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.stroke();
   if(!st.limit)txt(ctx,'Particle view',ZX,ZY-ZR-12,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
   legend2(ctx,k,[[CAT_COL,CL.fmt(S.cat[0],S.cat[1])],[AN_COL,CL.fmt(S.an[0],S.an[1])]]);}
-function legend2(ctx,k,items){ctx.font='700 '+13*k+'px '+FONT;const gap=18*k;let w=0;items.forEach(it=>w+=ctx.measureText(it[1]).width+16*k);w+=gap*(items.length-1);let x=ZX-w/2;const y=ZY+ZR+20*k;
+function legend2(ctx,k,items){ctx.font='700 '+13*k+'px '+FONT;const gap=18*k;let w=0;items.forEach(it=>w+=ctx.measureText(it[1]).width+16*k);w+=gap*(items.length-1);let x=clamp(ZX-w/2,264,790-w);const y=ZY+ZR+20*k;
   items.forEach(it=>{ctx.fillStyle=it[0];ctx.beginPath();ctx.arc(x+6*k,y,6*k,0,6.29);ctx.fill();txt(ctx,it[1],x+16*k,y,{s:13*k,w:700,b:'middle'});x+=ctx.measureText(it[1]).width+16*k+gap;});}
 
 /* Neutralization particle view: H₃O⁺ and OH⁻ meet and become water; Na⁺ and Cl⁻ just watch. */
@@ -124,7 +124,7 @@ function drawNeutZoom(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st;if(!sim.vis.N||si
 
 /* Energy diagram on the right */
 function drawDiagram(sim,ctx,k){const p=sim.p,hn=hon(),SC=1.6;
-  txt(ctx,'Energy',DX+8,118,{s:13*k,w:700,c:PAL['cv-soft']});arrowV(ctx,DX+8,384,132,PAL['cv-soft'],1.5,false);
+  ctx.save();ctx.translate(DX-4,262);ctx.rotate(-Math.PI/2);txt(ctx,'Energy',0,0,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});ctx.restore();arrowV(ctx,DX+10,384,128,PAL['cv-soft'],1.5,false);
   const lev=(x1,x2,y,c)=>{ctx.strokeStyle=c||PAL['cv-ink'];ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();};
   if(p.mode==='neut'){const y0=190,y1=y0-DH_NEUT*SC;lev(DX+30,DX+130,y0);lev(DX+140,DX+236,y1);arrowV(ctx,DX+135,y0,y1,PAL['s2'],4,false);
     txt(ctx,'H₃O⁺ + OH⁻',DX+80,y0-14,{s:13*k,w:700,a:'center'});txt(ctx,'2 H₂O',DX+188,y1+22*k,{s:13*k,w:700,a:'center'});

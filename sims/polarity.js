@@ -223,7 +223,7 @@ function drawMol(sim,ctx,vdt,k,t){const p=sim.p,m=MB[p.mol],D=molData(m),v=sim.v
     const kick=RM?0:2.2;tq=[tq[0]+r1*kick,tq[1]+r2*kick,tq[2]+r3*kick];const drag=p.field&&D.mag>0.05?4.2:0.9;
     v.w=v.w.map((w,i)=>w+(tq[i]-drag*w)*dt);const wm=Math.hypot(...v.w);if(!p.field||D.mag<=0.05){const cap=0.9;if(wm>cap)v.w=v.w.map(x=>x*cap/wm);}
     if(wm>1e-6)sim.R=ortho(mm(axisRot(v.w,wm*dt),sim.R));}
-  const R=sim.R,Lb=118/(1+(k-1)*0.35),cen=D.cen;
+  const R=sim.R,Lb=150/(1+(k-1)*0.15),cen=D.cen;
   const P3=u=>{const w=mul(R,[u[0]-cen[0],u[1]-cen[1],u[2]-cen[2]]),f=900/(900-w[2]*Lb);return {x:CX+w[0]*Lb*f,y:CY-w[1]*Lb*f,z:w[2],f};};
   // field plates
   if(p.field){ctx.fillStyle=PAL['s1'];rr(ctx,24,50,18,330,6);ctx.fill();ctx.fillStyle=PAL['s2'];rr(ctx,758,50,18,330,6);ctx.fill();
@@ -235,14 +235,14 @@ function drawMol(sim,ctx,vdt,k,t){const p=sim.p,m=MB[p.mol],D=molData(m),v=sim.v
   m.L.forEach((s,i)=>{const a=atoms[0].P,b=atoms[i+1].P;items.push({z:(a.z+b.z)/2-0.01,f(){stick(ctx,a,b,m.bo[i]);}});});
   atoms.forEach(a=>{const r=rad(a.s)*a.P.f;items.push({z:a.P.z,f(){if(p.charges&&Math.abs(a.q)>0.04){const al=clamp(Math.abs(a.q)*0.7,0.12,0.42);ctx.fillStyle=a.q<0?'rgba(214,48,72,'+al+')':'rgba(40,90,220,'+al+')';ctx.beginPath();ctx.arc(a.P.x,a.P.y,r+14,0,6.29);ctx.fill();}
     CL.drawAtom(ctx,a.P.x,a.P.y,r,a.s,{s:Math.max(12*k,Math.min(r*0.85,24))});}});});
+  let netDir=null;if(D.mag>0.05){const n=mul(R,D.net),L=Lb*(1.15+0.3*Math.min(D.mag,2)/2),pr=Math.hypot(n[0],n[1])/D.mag,sc=Math.max(pr,0.3)/(pr||1);const ux=n[0]/D.mag*sc,uy=-n[1]/D.mag*sc;netDir=Math.atan2(uy,ux);
+    items.push({z:9,f(){ctx.globalAlpha=0.78;dipArrow(ctx,CX-ux*L*0.25,CY-uy*L*0.25,CX+ux*L,CY+uy*L,PAL['s5'],7);ctx.globalAlpha=1;}});}
   items.sort((a,b)=>a.z-b.z).forEach(it=>it.f());
   // bond dipoles (offset to the side of each bond) and the net dipole
   if(p.bdip&&m.L.length>1)m.L.forEach((s,i)=>{const dEN=EN(s)-EN(m.c);if(Math.abs(dEN)<0.05)return;const a=atoms[0].P,b=atoms[i+1].P,dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);if(L<30)return;
     const nx=-dy/L*16,ny=dx/L*16,s1=0.28,s2=0.78;let x1=a.x+dx*s1+nx,y1=a.y+dy*s1+ny,x2=a.x+dx*s2+nx,y2=a.y+dy*s2+ny;if(dEN<0){[x1,x2]=[x2,x1];[y1,y2]=[y2,y1];}dipArrow(ctx,x1,y1,x2,y2,PAL['s2'],2.5);});
-  if(D.mag>0.05){const n=mul(R,D.net),L=40+50*Math.min(D.mag,2.2),pr=Math.hypot(n[0],n[1])/D.mag,sc=Math.max(pr,0.3)/(pr||1);const ux=n[0]/D.mag*sc,uy=-n[1]/D.mag*sc;
-    dipArrow(ctx,CX-ux*L*0.4,CY-uy*L*0.4,CX+ux*L,CY+uy*L,PAL['s5'],6);}
   if(p.charges)atoms.forEach((a,i)=>{if(Math.abs(a.q)<0.08)return;if(a.P.z<-0.35&&atoms.length>3)return;const r=rad(a.s)*a.P.f;let dx=a.P.x-CX,dy=a.P.y-CY;const l=Math.hypot(dx,dy);if(l<5){dx=0.7;dy=-0.7;}else{dx/=l;dy/=l;}
-    if(i===0){dx=0.75;dy=-0.66;}txt(ctx,a.q<0?'δ−':'δ+',a.P.x+dx*(r+20),a.P.y+dy*(r+20),{s:15*k,w:800,a:'center',b:'middle',c:a.q<0?PAL['s1']:PAL['s2']});});
+    if(i===0){const occ=atoms.slice(1).map(b=>Math.atan2(b.P.y-a.P.y,b.P.x-a.P.x));if(netDir!==null){occ.push(netDir);occ.push(netDir+Math.PI);}let best=-0.8,bd=-1;for(let c=0;c<16;c++){const an=c*Math.PI/8;const d=occ.length?Math.min(...occ.map(o=>{let x=Math.abs(an-o)%(2*Math.PI);return x>Math.PI?2*Math.PI-x:x;})):9;if(d>bd){bd=d;best=an;}}dx=Math.cos(best);dy=Math.sin(best);}txt(ctx,a.q<0?'δ−':'δ+',a.P.x+dx*(r+20),a.P.y+dy*(r+20),{s:15*k,w:800,a:'center',b:'middle',c:a.q<0?PAL['s1']:PAL['s2']});});
   // labels
   txt(ctx,CL.fmt(m.f),56,40,{s:24*Math.min(k,1.5),w:800});txt(ctx,m.name,56,40+20*Math.min(k,1.5),{s:13*k,c:PAL['cv-soft']});
   pill(ctx,isPolar(m)?'Polar':'Nonpolar',700,36,isPolar(m)?PAL['s5']:PAL['cv-soft'],'#fff',15*k);
@@ -252,7 +252,7 @@ function stick(ctx,a,b,bo){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx
   offs.forEach(o=>{ctx.lineCap='round';ctx.strokeStyle='#5d6470';ctx.lineWidth=w+2;ctx.beginPath();ctx.moveTo(a.x+nx*o,a.y+ny*o);ctx.lineTo(b.x+nx*o,b.y+ny*o);ctx.stroke();ctx.strokeStyle='#b9bec8';ctx.lineWidth=w*0.45;ctx.beginPath();ctx.moveTo(a.x+nx*o,a.y+ny*o);ctx.lineTo(b.x+nx*o,b.y+ny*o);ctx.stroke();});}
 
 /* ---------- water stream demo ---------- */
-function drawStream(sim,ctx,vdt,k,t){const p=sim.p,v=sim.vis,Dcm=deflection(p),S=30,x0=300,yT=78,yB=392,Dpx=Dcm*S;
+function drawStream(sim,ctx,vdt,k,t){const p=sim.p,v=sim.vis,Dcm=deflection(p),S=30,x0=300,yT=78,yB=356,Dpx=Dcm*S;
   const sx=y=>x0+Dpx*Math.pow((y-yT)/(yB-yT),2);
   // buret
   ctx.fillStyle=PAL['cv-glass'];ctx.globalAlpha=0.35;ctx.fillRect(x0-14,0,28,56);ctx.globalAlpha=1;ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2;ctx.strokeRect(x0-14,0,28,56);
@@ -260,10 +260,10 @@ function drawStream(sim,ctx,vdt,k,t){const p=sim.p,v=sim.vis,Dcm=deflection(p),S
   txt(ctx,p.liquid==='water'?'water, H₂O (polar)':'hexane, C₆H₁₄ (nonpolar)',x0-30,30,{s:14*k,w:700,a:'right'});
   // stream
   const col=p.liquid==='water'?PAL['s2']:PAL['s6'];ctx.strokeStyle=col;ctx.lineCap='round';
-  for(let y=yT;y<yB-40;y+=6){const w=clamp(6-(y-yT)/90,2.5,6);ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(sx(y),y);ctx.lineTo(sx(y+6),y+6);ctx.stroke();}
-  if(!v.drops)v.drops=[];if(!RM&&vdt>0&&Math.random()<vdt*30)v.drops.push({y:yB-40,vy:200});v.drops.forEach(d=>{d.vy+=600*vdt;d.y+=d.vy*vdt;});v.drops=v.drops.filter(d=>d.y<yB+30);
+  for(let y=yT;y<yB-30;y+=6){const w=clamp(6-(y-yT)/90,2.5,6);ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(sx(y),y);ctx.lineTo(sx(y+6),y+6);ctx.stroke();}
+  if(!v.drops)v.drops=[];if(!RM&&vdt>0&&Math.random()<vdt*30)v.drops.push({y:yB-30,vy:200});v.drops.forEach(d=>{d.vy+=600*vdt;d.y+=d.vy*vdt;});v.drops=v.drops.filter(d=>d.y<yB+20);
   ctx.fillStyle=col;v.drops.forEach(d=>{ctx.beginPath();ctx.arc(sx(Math.min(d.y,yB)),d.y,3,0,6.29);ctx.fill();});
-  CL.drawBeaker(ctx,{x:x0-60+Dpx*0.9,y:yB+10,w:120+0,h:50,fill:0.4,liquid:p.liquid==='water'?PAL['cv-water']:PAL['cv-bg2'],ticks:false});
+  CL.drawBeaker(ctx,{x:x0-60+Dpx,y:yB-6,w:120,h:52,fill:0.4,liquid:p.liquid==='water'?PAL['cv-water']:PAL['cv-bg2'],ticks:false});
   // rod
   const xr=x0+p.dist*S+8;ctx.fillStyle=p.rod==='none'?PAL['cv-soft']:p.rod==='neg'?'#2b5fb4':'#b3261e';rr(ctx,xr,150,26,190,10);ctx.fill();
   if(p.rod!=='none')for(let i=0;i<6;i++)txt(ctx,p.rod==='neg'?'−':'+',xr+13,170+i*30,{s:18*k,w:800,c:'#fff',a:'center',b:'middle'});
@@ -272,7 +272,7 @@ function drawStream(sim,ctx,vdt,k,t){const p=sim.p,v=sim.vis,Dcm=deflection(p),S
   const ym=245;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x0,ym+40);ctx.lineTo(xr,ym+40);ctx.stroke();ctx.setLineDash([]);
   pill(ctx,p.dist.toFixed(1)+' cm',(x0+xr)/2,ym+60,PAL['card'],PAL['cv-ink'],13*k);
   // zoom circle: how molecules near the rod are oriented
-  const zx=140,zy=250,zr=92;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(zx+zr,zy-20);ctx.lineTo(sx(220)-4,220);ctx.stroke();ctx.setLineDash([]);
+  const zx=130,zy=226,zr=90;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(zx+zr,zy-20);ctx.lineTo(sx(220)-4,220);ctx.stroke();ctx.setLineDash([]);
   ctx.save();ctx.beginPath();ctx.arc(zx,zy,zr,0,6.29);ctx.fillStyle=PAL['card'];ctx.fill();ctx.clip();
   const toward=p.rod==='neg'?Math.PI:0;
   for(let i=0;i<9;i++){const gx=zx-56+(i%3)*56,gy=zy-56+Math.floor(i/3)*56;const jit=RM?0:Math.sin(t*2+i*1.7)*0.5;
@@ -283,8 +283,8 @@ function drawStream(sim,ctx,vdt,k,t){const p=sim.p,v=sim.vis,Dcm=deflection(p),S
     else{ctx.fillStyle='#5a5a5a';ctx.save();ctx.translate(gx,gy);ctx.rotate(ang);for(let j=-2;j<=2;j++){ctx.beginPath();ctx.arc(j*7,(j%2)*4,5,0,6.29);ctx.fill();}ctx.restore();}}
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(zx,zy,zr,0,6.29);ctx.stroke();
   txt(ctx,'inside the stream',zx,zy+zr+20,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});
-  if(p.liquid==='water'&&p.rod!=='none')txt(ctx,(p.rod==='neg'?'H (δ+)':'O (δ−)')+' ends face the rod →',zx,zy-zr-12,{s:12*k,a:'center',c:PAL['cv-soft']});
-  pill(ctx,'deflection '+Dcm.toFixed(1)+' cm',x0+Math.max(Dpx,0)/2+10,yB-14,PAL['card'],PAL['cv-ink'],13*k);}
+  if(p.liquid==='water'&&p.rod!=='none')txt(ctx,(p.rod==='neg'?'H (δ+)':'O (δ−)')+' faces the rod',zx,zy+zr+20+17*k,{s:12*k,a:'center',c:PAL['cv-soft']});
+  pill(ctx,'deflection '+Dcm.toFixed(1)+' cm',x0+Dpx,428,PAL['card'],PAL['cv-ink'],13*k);}
 
 POL.onLevel=sync;
 BioLab.register(POL);

@@ -195,7 +195,7 @@ const GAL={
     {lvl:'honors',t:'Half-cell',d:'A metal in a solution of its own ions.'},{lvl:'honors',t:'Standard reduction potential, E°',d:'How strongly a half-reaction pulls electrons, measured against hydrogen at 1 M, 1 atm and 25 °C.'},{lvl:'honors',t:'Cell notation',d:'Anode | anode solution ‖ cathode solution | cathode, e.g. Zn(s) | Zn²⁺(aq) ‖ Cu²⁺(aq) | Cu(s).'},
     {lvl:'ap',t:'Nernst equation',d:'E = E° − (RT/nF) ln Q = E° − (0.0592/n) log Q at 25 °C.'},{lvl:'ap',t:'ΔG° = −nFE°',d:'Links cell potential to free energy. F = 96,485 C per mole of electrons.'},{lvl:'ap',t:'Electrolysis',d:'Using an outside power source to drive a non-spontaneous redox reaction. Mass deposited = ItM/(nF).'}],
   about:'<p>Standard reduction potentials at 25 °C come from the ChemLab data table (Ag⁺ +0.80, Cu²⁺ +0.34, Pb²⁺ −0.13, Ni²⁺ −0.25, Fe²⁺ −0.44, Zn²⁺ −0.76, Al³⁺ −1.66, Mg²⁺ −2.37 V). Each electrode’s potential follows the Nernst equation, E = E° + (0.0592/n) log[Mⁿ⁺], and the voltmeter reads the difference with the red lead on the right electrode. The meter is treated as ideal and the cell’s internal resistance is lumped into a 50 Ω load, so the reading equals the cell potential even while current flows.</p><p>As current flows, the anode loses mass and the cathode gains it by Faraday’s law (mass = ItM/nF), and the ion concentrations in each 50.0 mL beaker change, so the voltage slowly drops. Time runs 5 minutes per second. Real lab cells differ: magnesium and aluminum carry oxide coatings and usually read several tenths of a volt lower, Mg also reacts slowly with water, and iron(II) solutions oxidize in air. The six-way readings include a small fixed measurement scatter (up to ±0.02 V). Electrolysis ignores side reactions such as H₂ or O₂ formation, and the salt-bridge ions and zoom particles are a picture of the process, not to scale.</p>',
-  initVis(sim){const v=sim.vis;v.ph=0;v.ev={L:[],R:[]};v.evT={L:0,R:0};v.br=[];const r=rng(3);for(let i=0;i<10;i++)v.br.push({f:r(),k:i%2?'K':'N'});v.ions={L:[],R:[]};['L','R'].forEach(s=>{for(let i=0;i<9;i++)v.ions[s].push({x:-ZR+8+r()*(ZR*0.9),y:(r()-.5)*ZR*1.5,vx:0,vy:0,an:i>=6});});},
+  initVis(sim){const v=sim.vis;v.ph=0;v.ev={L:[],R:[]};v.evT={L:0,R:0};v.br=[];const r=rng(3);for(let i=0;i<10;i++)v.br.push({f:r(),k:i%2?'K':'N'});v.ions={L:[],R:[]};['L','R'].forEach(s=>{for(let i=0;i<9;i++)v.ions[s].push({x:0,d:12+r()*ZR,y:(r()-.5)*ZR*1.5,vx:0,vy:0,an:i>=6});});},
   draw(sim,ctx,vdt,k,t){const p=sim.p;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);if(p.mode==='six'){drawSix(sim,ctx,k);return;}drawCell(sim,ctx,vdt,k,t);},
   thumbSetup(sim){}
 };
@@ -255,11 +255,8 @@ function zoom(sim,ctx,s,o,isAn,isCa,vdt,k,c){const v=sim.vis,[cx,cy]=o.z,m=o.m,s
   for(let i=0;i<4;i++)for(let j=-5;j<=5;j++){const x=surfX+metalSide*(7+i*13),y=cy+j*12+(i%2)*6;ionBall(ctx,x,y,6.5,m.col,'');}
   // ions in solution drift around
   v.ions[s].forEach(q=>{if(!RM&&vdt>0){q.vx+=randn()*30*vdt;q.vy+=randn()*30*vdt;q.vx*=0.97;q.vy*=0.97;q.x+=q.vx*vdt;q.y+=q.vy*vdt;}
-    const lim=ZR*0.25;const sx=(s==='L'?-1:1);// solution side is away from the metal
-    const rx=q.x*sx;// keep in the solution side
-    if(q.x*-sx< -ZR*0.9)q.x=-sx*ZR*0.9;if((q.x)*metalSide>-8+0)q.x=-metalSide*8+ (q.x-(q.x));
-    q.y=clamp(q.y,-ZR*0.8,ZR*0.8);
-    const x=surfX-metalSide*(14+Math.abs(q.x)%(ZR*0.95)),y=cy+q.y;
+    if(q.d===undefined)q.d=10+Math.abs(q.x)%(ZR*1.1);q.d=clamp(q.d+(RM?0:q.vx*vdt),10,ZR*1.25);q.y=clamp(q.y,-ZR*0.85,ZR*0.85);
+    const x=surfX-metalSide*(6+q.d),y=cy+q.y;
     if(q.an)ionBall(ctx,x,y,5,'#9aa3ad',m.anion==='NO₃⁻'?'−':'2−',0.55);else ionBall(ctx,x,y,6.5,m.sol||'#8fa9c9',chg(m.q));});
   // events: an atom leaves as an ion (anode) or an ion plates out (cathode)
   const rate=c.I>0?(c.electro?2.2:1.3):0;v.evT[s]-=vdt;
@@ -273,10 +270,10 @@ function zoom(sim,ctx,s,o,isAn,isCa,vdt,k,c){const v=sim.vis,[cx,cy]=o.z,m=o.m,s
     return e.t<1.6;});
   ctx.restore();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,ZR,0,6.29);ctx.stroke();
   const lab=isAn?m.s+' → '+m.ion+' + '+(m.q===1?'':m.q)+'e⁻':isCa?m.ion+' + '+(m.q===1?'':m.q)+'e⁻ → '+m.s:m.n+' surface';
-  ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(lab).width;const lx=s==='L'?Math.max(w/2+4,cx):Math.min(800-w/2-4,cx);
+  if(k>1.3)return;  ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(lab).width;const lx=s==='L'?Math.max(w/2+4,cx):Math.min(800-w/2-4,cx);
   txt(ctx,lab,lx,cy+ZR+18*k,{s:12*k,w:700,a:'center',c:isAn?PAL['s1']:isCa?PAL['s2']:PAL['cv-soft']});}
 function drawSix(sim,ctx,k){const p=sim.p,st=sim.st,S=SETS[p.set],[pi,pj]=PAIRS[+p.pair],r=sixReading(p),hon=atLeast('honors');
-  const C=[400,240],pos=[[400,96],[598,240],[400,384],[202,240]];
+  const C=[400,222],pos=[[400,92],[598,222],[400,352],[202,222]];
   // filter paper salt bridge
   ctx.fillStyle=PAL['cv-ruler'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;
   [[C[0]-14,pos[0][1],28,pos[2][1]-pos[0][1]],[pos[3][0],C[1]-14,pos[1][0]-pos[3][0],28]].forEach(a=>{ctx.fillRect(a[0],a[1],a[2],a[3]);ctx.strokeRect(a[0],a[1],a[2],a[3]);});
@@ -284,7 +281,7 @@ function drawSix(sim,ctx,k){const p=sim.p,st=sim.st,S=SETS[p.set],[pi,pj]=PAIRS[
   pos.forEach((q,i)=>{const m=MET[S[i]],on=i===pi||i===pj;ctx.beginPath();ctx.arc(q[0],q[1],56,0,6.29);ctx.fillStyle=m.sol?mixHex(PAL['cv-water'],m.sol,0.6):PAL['cv-water'];ctx.fill();ctx.lineWidth=on?4:2;ctx.strokeStyle=on?(i===pi?'#c62828':PAL['cv-ink']):PAL['cv-glass'];ctx.stroke();
     ctx.save();ctx.translate(q[0],q[1]);ctx.rotate(-0.5);const g=ctx.createLinearGradient(-30,0,30,0);g.addColorStop(0,CL.shade(m.col,-0.25));g.addColorStop(.5,CL.shade(m.col,0.25));g.addColorStop(1,CL.shade(m.col,-0.3));ctx.fillStyle=g;ctx.fillRect(-30,-10,60,20);ctx.restore();
     txt(ctx,m.s,q[0],q[1]+1,{s:16*k,w:800,a:'center',b:'middle',c:CL.inkOn(m.col)});
-    const tx=i===1?q[0]+62:i===3?q[0]-62:q[0],ty=i===0?q[1]-66:i===2?q[1]+72:q[1]+4,al=i===1?'left':i===3?'right':'center';
+    const tx=i===1||i===2?q[0]+62:i===3?q[0]-62:q[0],ty=i===0?q[1]-66:q[1]+4,al=i===1||i===2?'left':i===3?'right':'center';
     txt(ctx,(i+1)+': '+m.n,tx,ty,{s:13*k,w:700,a:al});});
   // voltmeter with leads
   rr(ctx,630,18,150,58,10);ctx.fillStyle='#1d2a2c';ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.stroke();

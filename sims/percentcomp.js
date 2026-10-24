@@ -65,7 +65,7 @@ function shape(f){const c=CL.parse(f),heavy=[],H=[];Object.keys(c).forEach(s=>{f
   const out=[],nh=heavy.length,r0=nh<=1?0:nh<=3?9:5+nh*2.3,sc=nh>10?0.62:nh>6?0.8:1;
   heavy.forEach((s,i)=>{const a=i/nh*6.283;out.push([s,Math.cos(a)*r0,Math.sin(a)*r0,(CL.el(s).Z>11?9:7.5)*sc]);});
   H.forEach((s,i)=>{const a=i/Math.max(1,H.length)*6.283+0.4,r=r0+10*sc;out.push(['H',Math.cos(a)*r,Math.sin(a)*r,4.5*sc]);});return out;}
-function drawMolecule(ctx,f,x,y,sc,rot){const sh=shape(f);ctx.save();ctx.translate(x,y);ctx.rotate(rot||0);ctx.scale(sc,sc);sh.filter(a=>a[0]==='H').forEach(a=>CL.drawAtom(ctx,a[1],a[2],a[3],'H',{label:''}));sh.filter(a=>a[0]!=='H').forEach(a=>CL.drawAtom(ctx,a[1],a[2],a[3],a[0],{label:''}));ctx.restore();}
+function drawMolecule(ctx,f,x,y,sc,rot,fit){const sh=shape(f);if(fit){const ext=Math.max(...sh.map(a=>Math.hypot(a[1],a[2])+a[3]));sc=Math.min(2.6,fit/ext);}ctx.save();ctx.translate(x,y);ctx.rotate(rot||0);ctx.scale(sc,sc);sh.filter(a=>a[0]==='H').forEach(a=>CL.drawAtom(ctx,a[1],a[2],a[3],'H',{label:''}));sh.filter(a=>a[0]!=='H').forEach(a=>CL.drawAtom(ctx,a[1],a[2],a[3],a[0],{label:''}));ctx.restore();}
 
 const SIM={
   id:'percentcomp',hash:'percentcomp',apUnit:8,order:2,tab:'Percent composition and empirical formulas',kind:'Virtual lab',prereq:['mole'],next:['hydrate','stoich'],
@@ -213,7 +213,7 @@ function drawPie(sim,ctx,k,t){const p=sim.p,pc=CL.percentComp(p.cmp),M=Mm(p.cmp)
   txt(ctx,CL.fmt(p.cmp)+'  ·  '+M.toFixed(2)+' g/mol',16,30,{s:15*k,w:800});
   if(k<1.3)txt(ctx,name,16,52,{s:13,c:PAL['cv-soft']});
   rr(ctx,16,70,140,150,12);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
-  drawMolecule(ctx,p.cmp,86,138,1.15,RM?0:t*0.2);
+  drawMolecule(ctx,p.cmp,86,138,1,RM?0:t*0.2,56);
   txt(ctx,'one '+(/^(NaCl|Fe2O3|NH4NO3|Ca3|CuSO4|NaHCO3)/.test(p.cmp)?'formula unit':'molecule'),86,208,{s:12*k,a:'center',c:PAL['cv-soft']});
   const cx=320,cy=255,R=128;let a0=-Math.PI/2;
   pc.forEach(q=>{const a1=a0+q.pct/100*6.2832;ctx.fillStyle=ec(q.sym);ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,a0,a1);ctx.closePath();ctx.fill();ctx.strokeStyle=PAL['cv-bg'];ctx.lineWidth=2;ctx.stroke();

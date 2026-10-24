@@ -324,8 +324,8 @@ function drawSSS(sim,ctx,t,k){const st=sim.st,P=PAL,b=st.busy,m=st.main,kind=b?b
     txt(ctx,'Beaker: '+(dryMass(m)>0.01?dryMass(m).toFixed(2)+' g solids':'empty')+(m.water>0.01?', '+m.water.toFixed(0)+' mL water':''),225,436,{s:13*Math.min(k,1.4),w:700,a:'center',c:P['cv-ink']});}
   drawShelf(sim,ctx,k);}
 function drawShelf(sim,ctx,k){const st=sim.st,P=PAL,L=fractions(st).filter(f=>f.where!=='beaker'&&!(f.where==='filtrate'&&st.busy&&st.busy.tgt==='filt'));const x0=480,y0=286,cw=104;
-  txt(ctx,'Collected',x0,y0-12,{s:13*k,w:700,c:P['cv-soft']});
-  if(!L.length){txt(ctx,'nothing yet',x0,y0+20,{s:13*k,c:P['cv-soft']});return;}
+  txt(ctx,L.length?'Collected':'Clues',x0,y0-12,{s:13*k,w:700,c:P['cv-soft']});
+  if(!L.length){const fs=13*Math.min(k,1.45);[['iron','magnetic, insoluble'],['salt','dissolves in water'],['sand','not magnetic, insoluble']].forEach(([a,b],i)=>{txt(ctx,a+':',x0,y0+22+i*fs*1.8,{s:fs,w:800});txt(ctx,b,x0+fs*3.3,y0+22+i*fs*1.8,{s:fs,c:P['cv-soft']});});return;}
   L.slice(-6).forEach((f,i)=>{const cx=x0+cw/2+(i%3)*cw,cy=y0+28+Math.floor(i/3)*70,mj=f.where==='receiver'||f.where==='filtrate'?'water':majority(f)||'water';
     const col={sand:'#a8844d',salt:'#6f8796',iron:'#4d535c',water:'#3f7fb8'}[mj];ctx.fillStyle=P['cv-glass'];ctx.globalAlpha=0.35;ctx.beginPath();ctx.ellipse(cx,cy+8,40,12,0,0,6.283);ctx.fill();ctx.globalAlpha=1;
     const tag={sand:'sand',salt:'salt',iron:'iron',water:f.where==='filtrate'?'salt water':'water'}[mj];pill(ctx,tag,cx,cy,col,'#fff',13*Math.min(k,1.45));

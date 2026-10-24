@@ -166,26 +166,26 @@ const BT={
   about:'<p>Melting points are CRC Handbook values (sucrose melts with decomposition at about 186 °C, graphite sublimes near 3650 °C, brass and steel melt over a range). The burner tops out at 1500 °C. The tester is a 9 V battery and a 30 Ω bulb in series with the sample; the bulb lights above 100 mA. Sample resistances between the probes are representative: about 0.05 Ω for a copper strip, 3 Ω for a graphite rod, 12 Ω for molten salt, 25 Ω for a salt solution, and more than 10 MΩ for insulators. Distilled water alone is about 100 kΩ.</p><p>The particle view is schematic: particles are not to scale, there are far fewer of them than in a real sample, and water molecules are drawn only to show the solvent. In the water test the probes sit in the liquid, not on an undissolved solid. Safety: in a real lab, wear goggles, use tongs on hot crucibles, and never heat paraffin over an open flame (it is flammable).</p>',
   initVis(sim){buildParts(sim);},
   draw(sim,ctx,vdt,k,t){const p=sim.p,s=SB[p.sub],st=stateOf(sim),hon=atLeast('honors');observe(sim);moveParts(sim,Math.min(vdt,0.05));
-    ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,404,420,46);
+    ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,404,800,46);
     drawBench(sim,ctx,k,t,s,st);drawZoom(sim,ctx,k,t,s,st);
     txt(ctx,fmtF(s),18,34,{s:22*Math.min(k,1.5),w:800});txt(ctx,s.name,18,34+19*Math.min(k,1.5),{s:13*k,c:PAL['cv-soft']});},
   thumbSetup(sim){sim.p.setup='water';}
 };
 
 /* ---------- the bench: tester, sample, burner or beaker ---------- */
-function drawBench(sim,ctx,k,t,s,st){const p=sim.p,on=lit(sim),br=bright(sim),hot=p.setup==='heat'?clamp((p.temp-25)/1400,0,1):0;const SX=250;
+function drawBench(sim,ctx,k,t,s,st){const p=sim.p,on=lit(sim),br=bright(sim),hot=p.setup==='heat'?clamp((p.temp-25)/1400,0,1):0;const SX=272,pY=p.setup==='water'?268:p.setup==='heat'?236:318;
   // circuit wires
-  const pA=[[SX-16,p.setup==='water'?268:p.setup==='heat'?236:318],[SX-16,96],[132,96]],pB=[[SX+16,p.setup==='water'?268:p.setup==='heat'?236:318],[SX+16,82],[300,82],[300,62],[60,62],[60,300]],pC=[[96,140],[96,300]];
+  const pA=[[SX-16,pY],[SX-16,112],[110,112],[110,136]],pB=[[SX+16,pY],[SX+16,96],[60,96],[60,310]],pC=[[110,192],[110,310]];
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.lineJoin='round';[pA,pB,pC].forEach(pl=>{ctx.beginPath();pl.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();});
   // battery
-  ctx.fillStyle='#3a3f47';rr(ctx,40,300,76,44,6);ctx.fill();ctx.fillStyle='#c27a00';ctx.fillRect(40,300,20,44);txt(ctx,'9 V',88,323,{s:14*k,w:800,c:'#fff',a:'center',b:'middle'});
+  ctx.fillStyle='#3a3f47';rr(ctx,40,310,76,44,6);ctx.fill();ctx.fillStyle='#c27a00';ctx.fillRect(40,310,20,44);txt(ctx,'9 V',88,333,{s:14*k,w:800,c:'#fff',a:'center',b:'middle'});
   // bulb
-  const bx=110,by=112;if(br>0.02){const g=ctx.createRadialGradient(bx,by,4,bx,by,70);g.addColorStop(0,'rgba(255,214,80,'+(0.75*br).toFixed(2)+')');g.addColorStop(1,'rgba(255,214,80,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by,70,0,6.29);ctx.fill();}
+  const bx=110,by=158;if(br>0.02){const g=ctx.createRadialGradient(bx,by,4,bx,by,70);g.addColorStop(0,'rgba(255,214,80,'+(0.75*br).toFixed(2)+')');g.addColorStop(1,'rgba(255,214,80,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(bx,by,70,0,6.29);ctx.fill();}
   ctx.fillStyle=br>0.02?'rgb(255,'+Math.round(200+40*br)+','+Math.round(90+60*br)+')':PAL['card'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx,by,22,0,6.29);ctx.fill();ctx.stroke();
   ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(bx-10,by+20,20,14);ctx.strokeStyle=br>0.02?'#a35a00':PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx-6,by+12);ctx.lineTo(bx-3,by-4);ctx.lineTo(bx,by+4);ctx.lineTo(bx+3,by-4);ctx.lineTo(bx+6,by+12);ctx.stroke();
-  txt(ctx,on?'bulb lights':current(sim)>0.002?'very faint':'bulb dark',bx,by-34,{s:13*k,w:700,a:'center',c:on?PAL['s4']:PAL['cv-soft']});
+  txt(ctx,on?'bulb lit':current(sim)>0.002?'very faint':'bulb dark',bx+30,by+4,{s:13*k,w:700,a:'left',c:on?PAL['s4']:PAL['cv-soft']});
   // moving electrons along the wires when current flows
-  if(current(sim)>0.002&&!RM){const path=[[60,300],[60,62],[300,62],[300,82],[SX+16,82],[SX+16,pB[0][1]]];const n=10,sp=current(sim)*400;ctx.fillStyle=PAL['cv-e'];
+  if(current(sim)>0.002&&!RM){const path=[[60,310],[60,96],[SX+16,96],[SX+16,pY]];const n=10,sp=current(sim)*400;ctx.fillStyle=PAL['cv-e'];
     const seg=[];let L=0;for(let i=1;i<path.length;i++){const l=Math.hypot(path[i][0]-path[i-1][0],path[i][1]-path[i-1][1]);seg.push([path[i-1],path[i],L,l]);L+=l;}
     for(let i=0;i<n;i++){let d=((t*sp+i*L/n)%L+L)%L;for(const [a,b,s0,l] of seg){if(d<=s0+l){const f=(d-s0)/l;ctx.beginPath();ctx.arc(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,3.5,0,6.29);ctx.fill();break;}}}}
   // sample holder
@@ -200,14 +200,14 @@ function drawBench(sim,ctx,k,t,s,st){const p=sim.p,on=lit(sim),br=bright(sim),ho
     ctx.fillStyle=glow||PAL['card2'];ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(SX-46,214);ctx.lineTo(SX+46,214);ctx.lineTo(SX+32,284);ctx.lineTo(SX-32,284);ctx.closePath();ctx.fill();ctx.stroke();
     if(st==='melt'){const col=s.type==='metallic'?(hot>0.5?'#ffb040':s.look):s.chars?'#8a4b16':s.id==='wax'?'#e7d9a6':'#f6e6b0';ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(SX-38,252);ctx.lineTo(SX+38,252);ctx.lineTo(SX+32,281);ctx.lineTo(SX-32,281);ctx.closePath();ctx.fill();}
     else sampleSolid(ctx,s,SX,270,0.7);
-    pill(ctx,'T = '+p.temp+' °C',SX+118,250,PAL['card'],PAL['cv-ink'],14*k);}
+    pill(ctx,'T = '+p.temp+' °C',SX-118,262,PAL['card'],PAL['cv-ink'],14*k);}
   else{const liq=CL.drawBeaker(ctx,{x:SX-72,y:212,w:144,h:160,fill:0.78,liquid:PAL['cv-water']});
     if(st==='aq'){ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fillRect(liq.x+3,liq.y,liq.w-6,liq.h-3);}
     else if(st==='float'){ctx.fillStyle=s.look;rr(ctx,SX-40,liq.y-10,80,16,5);ctx.fill();ctx.strokeStyle='#9c8a55';ctx.lineWidth=1;ctx.stroke();}
     else sampleSolid(ctx,s,SX+26,362,0.55);}
   // probes
-  [SX-16,SX+16].forEach(x=>{ctx.fillStyle='#8c939e';ctx.fillRect(x-3,96,6,(p.setup==='water'?268:p.setup==='heat'?236:318)-96);});
-  txt(ctx,'probes',SX+28,120,{s:12*k,c:PAL['cv-soft']});}
+  [SX-16,SX+16].forEach((x,i)=>{ctx.fillStyle='#8c939e';ctx.fillRect(x-3,i?96:112,6,pY-(i?96:112));});
+  txt(ctx,'probes',SX+26,136,{s:12*k,c:PAL['cv-soft']});}
 function sampleSolid(ctx,s,x,y,sc){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
   if(s.type==='metallic'){const g=ctx.createLinearGradient(-60,0,60,0);g.addColorStop(0,CL.shade(s.look,-0.25));g.addColorStop(0.5,CL.shade(s.look,0.25));g.addColorStop(1,CL.shade(s.look,-0.25));ctx.fillStyle=g;rr(ctx,-62,-14,124,22,4);ctx.fill();}
   else if(s.graphite){ctx.fillStyle=s.look;rr(ctx,-60,-10,120,16,8);ctx.fill();}
@@ -218,7 +218,7 @@ function sampleSolid(ctx,s,x,y,sc){ctx.save();ctx.translate(x,y);ctx.scale(sc,sc
 
 /* ---------- particle zoom ---------- */
 function drawZoom(sim,ctx,k,t,s,st){const v=sim.vis,on=lit(sim),hon=atLeast('honors');
-  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(290,sim.p.setup==='water'?320:sim.p.setup==='heat'?260:330);ctx.lineTo(ZX-ZR*0.92,ZY+ZR*0.4);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(sim.p.setup==='water'?350:sim.p.setup==='heat'?322:340,sim.p.setup==='water'?320:sim.p.setup==='heat'?262:332);ctx.lineTo(ZX-ZR*0.92,ZY+ZR*0.4);ctx.stroke();ctx.setLineDash([]);
   ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=st==='aq'||st==='under'||st==='float'?PAL['cv-water']:PAL['card'];ctx.fill();ctx.clip();
   const water=st==='aq'||st==='under'||st==='float';
   if(water)v.W.forEach(w=>{ctx.globalAlpha=0.7;const ox=w.x,oy=w.y;[0.9,-0.9].forEach(h=>{ctx.fillStyle='#f0f0f0';ctx.beginPath();ctx.arc(ox+Math.cos(w.a+h)*7,oy+Math.sin(w.a+h)*7,3.2,0,6.29);ctx.fill();});ctx.fillStyle='#e0473c';ctx.beginPath();ctx.arc(ox,oy,5,0,6.29);ctx.fill();ctx.globalAlpha=1;});

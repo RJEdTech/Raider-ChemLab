@@ -29,17 +29,19 @@ const RXN={
   h2o:{eq:'2H₂O(g) → 2H₂(g) + O₂(g)',R:[['H2O',165,200],['H2O',165,322]],P:[['H2',235,172],['O2',350,258],['H2',235,344]],dH:483.6},
   no:{eq:'N₂(g) + O₂(g) → 2NO(g)',R:[['N2',150,258],['O2',345,258]],P:[['NO',248,192],['NO',248,322]],dH:180.6}
 };
-const RAD={H:13,C:18,N:18,O:18,Cl:21};
+const RAD={H:15.5,C:21.5,N:21.5,O:21.5,Cl:25};const MS=1.45;   // molecule template scale
 const PH={R:2,B1:5.5,A:6.5,F1:10,END:13};    // animation clock (s): reactants, breaking, apart, forming, products
 function build(key){const r=RXN[key];if(r.built)return r;const atoms=[],rb=[],pb=[];
-  r.R.forEach(([m,x,y])=>{const M=MOL[m],base=atoms.length;M.a.forEach(([el,dx,dy])=>atoms.push({el,R:[x+dx,y+dy]}));M.b.forEach(([a,b,o,n])=>rb.push({a:base+a,b:base+b,o,n,E:BE[n]}));});
-  const pa=[];r.P.forEach(([m,x,y])=>{const M=MOL[m],base=pa.length;M.a.forEach(([el,dx,dy])=>pa.push({el,P:[x+dx,y+dy]}));M.b.forEach(([a,b,o,n])=>pb.push({a:base+a,b:base+b,o,n,E:BE[n]}));});
+  r.R.forEach(([m,x,y])=>{const M=MOL[m],base=atoms.length;M.a.forEach(([el,dx,dy])=>atoms.push({el,R:[x+dx*MS,y+dy*MS]}));M.b.forEach(([a,b,o,n])=>rb.push({a:base+a,b:base+b,o,n,E:BE[n]}));});
+  const pa=[];r.P.forEach(([m,x,y])=>{const M=MOL[m],base=pa.length;M.a.forEach(([el,dx,dy])=>pa.push({el,P:[x+dx*MS,y+dy*MS]}));M.b.forEach(([a,b,o,n])=>pb.push({a:base+a,b:base+b,o,n,E:BE[n]}));});
   // map product atoms onto reactant atoms of the same element, in order
   const used=new Set(),map=[];pa.forEach((q,j)=>{const i=atoms.findIndex((a,i)=>a.el===q.el&&!used.has(i));used.add(i);map[j]=i;atoms[i].P=q.P;});
   pb.forEach(b=>{b.a=map[b.a];b.b=map[b.b];});
   const C=[265,258];atoms.forEach(a=>{const m=[(a.R[0]+a.P[0])/2,(a.R[1]+a.P[1])/2];a.A=[clamp(C[0]+(m[0]-C[0])*1.55,40,490),clamp(C[1]+(m[1]-C[1])*1.5,140,372)];});
+  for(let it=0;it<80;it++)for(let i=0;i<atoms.length;i++)for(let j=i+1;j<atoms.length;j++){const A1=atoms[i].A,A2=atoms[j].A,dx=A2[0]-A1[0],dy=A2[1]-A1[1],d=Math.hypot(dx,dy)||1;if(d<66){const m=(66-d)/2,ux=dx/d,uy=dy/d;A1[0]=clamp(A1[0]-ux*m,40,490);A1[1]=clamp(A1[1]-uy*m,150,372);A2[0]=clamp(A2[0]+ux*m,40,490);A2[1]=clamp(A2[1]+uy*m,150,372);}}
   rb.forEach((b,i)=>b.t=PH.R+0.25+(PH.B1-PH.R-0.5)*(rb.length>1?i/(rb.length-1):0.5));
   pb.forEach((b,i)=>b.t=PH.A+0.25+(PH.F1-PH.A-0.5)*(pb.length>1?i/(pb.length-1):0.5));
+  atoms.forEach((a,i)=>{const br=rb.filter(b=>b.a===i||b.b===i).map(b=>b.t),fm=pb.filter(b=>b.a===i||b.b===i).map(b=>b.t);a.tb=br.length?Math.max(...br):PH.R;a.tf=fm.length?Math.min(...fm):PH.F1;});
   r.atoms=atoms;r.rb=rb;r.pb=pb;r.inE=rb.reduce((s,b)=>s+b.E,0);r.outE=pb.reduce((s,b)=>s+b.E,0);r.est=r.inE-r.outE;r.built=true;return r;}
 Object.keys(RXN).forEach(build);
 function phase(c){return c<PH.R?'R':c<PH.B1?'B':c<PH.A?'A':c<PH.F1?'F':'P';}
@@ -103,8 +105,10 @@ function bondLine(ctx,a,b,o,alpha,col){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hy
 const ease=f=>f<0.5?2*f*f:1-2*(1-f)*(1-f);
 
 function drawBonds(sim,ctx,k,t){const p=sim.p,st=sim.st,r=build(p.rxn),c=st.clk,ph=phase(c),hn=hon();
-  const pos=r.atoms.map(a=>{if(c<PH.R)return a.R;if(c<PH.A){const f=ease(clamp((c-PH.R)/(PH.A-PH.R),0,1));return [lerp(a.R[0],a.A[0],f),lerp(a.R[1],a.A[1],f)];}
-    if(c<PH.F1+0.3){const f=ease(clamp((c-PH.A)/(PH.F1+0.3-PH.A),0,1));return [lerp(a.A[0],a.P[0],f),lerp(a.A[1],a.P[1],f)];}return a.P;});
+  const pos=r.atoms.map(a=>{const L=(P1,P2,f)=>{f=ease(clamp(f,0,1));return [lerp(P1[0],P2[0],f),lerp(P1[1],P2[1],f)];};
+    if(c<PH.B1-0.3)return L(a.R,a.A,c<PH.R?0:0.12*clamp((c-PH.R)/(a.tb-PH.R+1e-6),0,1));   // bonds stretch a little, snap, then the loose atoms drift apart
+    if(c<PH.A)return L(a.R,a.A,0.12+0.88*(c-PH.B1+0.3)/0.8);
+    const t0=Math.max(PH.A,a.tf-1.1);if(c<t0)return a.A;return L(a.A,a.P,(c-t0)/(a.tf-t0+1e-6));});
   const jig=RM?0:1.2;const P=pos.map((q,i)=>[q[0]+Math.sin(t*6+i*1.7)*jig,q[1]+Math.cos(t*7+i*2.1)*jig]);
   // bonds: reactant bonds stretch and snap; product bonds appear as they form
   r.rb.forEach(b=>{if(c<b.t){const str=clamp((c-PH.R)/(b.t-PH.R+1e-6),0,1);bondLine(ctx,P[b.a],P[b.b],b.o,1-0.35*str);}
@@ -119,18 +123,18 @@ function drawBonds(sim,ctx,k,t){const p=sim.p,st=sim.st,r=build(p.rxn),c=st.clk,
     ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,bx,y,bw*full/mx,18,5);ctx.stroke();
     if(v>0){ctx.fillStyle=col;rr(ctx,bx,y,Math.max(10,bw*v/mx),18,5);ctx.fill();if(hn&&bw*v/mx>70)txt(ctx,v.toFixed(0)+' kJ',bx+bw*v/mx-8,y+10,{s:12*k,w:700,c:'#fff',a:'right',b:'middle'});}});
   // energy diagram
-  const x0=548,top=128,bot=360,lo=Math.min(0,r.est),span=r.inE-lo,S=(bot-top)/span,Y=e=>bot-(e-lo)*S;
-  txt(ctx,'Energy',x0+120,108,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});arrowV(ctx,x0,bot+30,top-4,PAL['cv-soft'],1.5);
+  const x0=548,top=140,bot=330,lo=Math.min(0,r.est),span=r.inE-lo,S=(bot-top)/span,Y=e=>bot-(e-lo)*S;
+  ctx.save();ctx.translate(x0-10,(top+bot)/2);ctx.rotate(-Math.PI/2);txt(ctx,'Energy',0,0,{s:13*k,w:700,a:'center',c:PAL['cv-soft']});ctx.restore();arrowV(ctx,x0,bot+40,top-14,PAL['cv-soft'],1.5);
   const yR=Y(0),yT=Y(r.inE),yP=Y(r.est);
   level(ctx,x0+14,x0+80,yR);level(ctx,x0+84,x0+168,yT);level(ctx,x0+172,x0+238,yP,r.est<0?PAL['s1']:PAL['s2']);
   arrowV(ctx,x0+82,yR,yT,IN_COL,3.5);arrowV(ctx,x0+170,yT,yP,OUT_COL,3.5);
   ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0+80,yR);ctx.lineTo(x0+238,yR);ctx.stroke();ctx.setLineDash([]);
   txt(ctx,'reactants',x0+47,yR+(r.est<0||yR-yP>-24*k?-10:20*k),{s:12*k,w:700,a:'center'});
   txt(ctx,'atoms',x0+126,yT-10,{s:12*k,w:700,a:'center'});
-  txt(ctx,'products',x0+205,yP+(r.est<0?20*k:-10),{s:12*k,w:700,a:'center'});
+  txt(ctx,'products',x0+238,yP+(r.est<0?20*k:-10),{s:12*k,w:700,a:'right'});
   // where the system is right now
   const E=energyNow(r,c),mxp=c<PH.A?x0+82:c<PH.F1+0.3?x0+170:x0+205;ctx.fillStyle=PAL['s4'];ctx.beginPath();ctx.arc(mxp,Y(E),7,0,6.29);ctx.fill();ctx.strokeStyle=PAL['card'];ctx.lineWidth=2;ctx.stroke();
-  pill(ctx,hn?'ΔH ≈ '+sgn(r.est,0)+' kJ':(r.est<0?'Exothermic':'Endothermic'),x0+126,bot+42,r.est<0?PAL['s1']:PAL['s2'],'#fff',13*k);
+  pill(ctx,hn?'ΔH ≈ '+sgn(r.est,0)+' kJ':(r.est<0?'Exothermic':'Endothermic'),x0+126,bot+72,r.est<0?PAL['s1']:PAL['s2'],'#fff',13*k);
   const L=[{t:r.eq,s:15,w:700}];if(hn)L.push({t:'ΔH ≈ Σ(bonds broken) − Σ(bonds formed) = '+r.inE+' − '+r.outE+' = '+sgn(r.est,0)+' kJ',s:13,c:PAL['cv-soft']});panel(ctx,L,k);}
 
 function drawHess(sim,ctx,k){const p=sim.p,P=puz(p),m=mults(p),H=hessSum(p);
@@ -150,28 +154,28 @@ function drawHess(sim,ctx,k){const p=sim.p,P=puz(p),m=mults(p),H=hessSum(p);
     txt(ctx,sgn(mi*e.dH,1)+' kJ',778,y,{s:14*k,w:700,a:'right',b:'middle',c:mi*e.dH<0?PAL['s1']:PAL['s2']});
     if(tag)txt(ctx,tag,778,y+17*k,{s:12*k,w:600,a:'right',b:'middle',c:PAL['cv-soft']});});
   const ys=y0+rows*dy-6;ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(22,ys);ctx.lineTo(778,ys);ctx.stroke();
-  const sumT=eqText(H.net);txt(ctx,'Sum',22,ys+34,{s:14*k,w:700,c:PAL['cv-soft'],b:'middle'});txt(ctx,sumT,70,ys+34,{s:fitFont(ctx,sumT,15,700,560,k),w:700,b:'middle'});
+  const sumT=eqText(H.net);txt(ctx,'Sum',22,ys+34,{s:14*k,w:700,c:PAL['cv-soft'],b:'middle'});txt(ctx,sumT,86,ys+34,{s:fitFont(ctx,sumT,15,700,540,k),w:700,b:'middle'});
   txt(ctx,sgn(H.dH,1)+' kJ',778,ys+34,{s:15*k,w:800,a:'right',b:'middle'});
   const lefts=[];if(!H.match){const keys=new Set([...Object.keys(H.net),...Object.keys(P.target)]);keys.forEach(s=>{const d=(H.net[s]||0)-(P.target[s]||0);if(Math.abs(d)>1e-9)lefts.push(SP[s]);});}
   pill(ctx,H.match?'Matches the target: ΔH = '+sgn(H.dH,1)+' kJ':'Not yet: '+lefts.slice(0,3).join(', ')+' still off',400,ys+86,H.match?PAL['s3']:PAL['s4'],'#fff',14*k);
   txt(ctx,'Flip an equation: change the sign of ΔH.  Multiply it: multiply ΔH too.',400,438,{s:12*k,a:'center',c:PAL['cv-soft']});}
 
-function drawForm(sim,ctx,k){const p=sim.p,F=form(p);panel(ctx,[{t:formEq(F),s:15,w:700},{t:'ΔH°rxn = ΣnΔH°f(products) − ΣnΔH°f(reactants) = '+sgn(F.sP,1)+' − ('+sgn(F.sR,1)+') = '+sgn(F.dH,1)+' kJ',s:13,c:PAL['cv-soft']}],k);
+function drawForm(sim,ctx,k){const p=sim.p,F=form(p);panel(ctx,[{t:formEq(F),s:15,w:700},{t:'ΔH°rxn = ('+sgn(F.sP,1)+') − ('+sgn(F.sR,1)+') = '+sgn(F.dH,1)+' kJ',s:13,c:PAL['cv-soft']}],k);
   // staircase: elements at 0, reactants and products below (or above)
   const top=150,bot=360,lo=Math.min(F.sR,F.sP,0),hi=Math.max(F.sR,F.sP,0),S=(bot-top)/Math.max(1,hi-lo),Y=e=>top+(hi-e)*S,yE=Y(0),yR=Y(F.sR),yP=Y(F.sP);
   ctx.setLineDash([6,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(30,yE);ctx.lineTo(500,yE);ctx.stroke();ctx.setLineDash([]);
-  txt(ctx,'elements in standard states (ΔH°f = 0)',265,yE-10,{s:12*k,w:700,a:'center',c:PAL['cv-soft']});
+  txt(ctx,'elements (ΔH°f = 0)',30,yE-10,{s:12*k,w:700,c:PAL['cv-soft']});
   level(ctx,50,190,yR);level(ctx,340,480,yP,F.dH<0?PAL['s1']:PAL['s2']);
   arrowV(ctx,120,yE,yR,PAL['s5'],3);arrowV(ctx,410,yE,yP,PAL['s5'],3);arrowV(ctx,265,yR,yP,F.dH<0?PAL['s1']:PAL['s2'],4.5);
   ctx.setLineDash([3,4]);ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(190,yR);ctx.lineTo(265,yR);ctx.moveTo(265,yP);ctx.lineTo(340,yP);ctx.stroke();ctx.setLineDash([]);
   const below=(y,o)=>y+(y>bot-30?-12:o);
-  txt(ctx,'reactants '+sgn(F.sR,1),120,yR+(Math.abs(yR-yE)<30?22*k:22*k),{s:12*k,w:700,a:'center'});txt(ctx,'products '+sgn(F.sP,1),410,yP+22*k,{s:12*k,w:700,a:'center'});
-  pill(ctx,'ΔH°rxn = '+sgn(F.dH,1)+' kJ',265,412,F.dH<0?PAL['s1']:PAL['s2'],'#fff',14*k);
+  const lbY=y=>y+22*k;txt(ctx,'reactants '+sgn(F.sR,1),120,lbY(yR),{s:12*k,w:700,a:'center'});txt(ctx,'products '+sgn(F.sP,1),410,lbY(yP),{s:12*k,w:700,a:'center'});
+  pill(ctx,'ΔH°rxn = '+sgn(F.dH,1)+' kJ',385,yE-36,F.dH<0?PAL['s1']:PAL['s2'],'#fff',14*k);
   // data table
   const tx=528,tr=788;let y=152;const lh=22*k;rr(ctx,tx-12,y-24*k,tr-tx+20,Math.min(440-y+24*k,(F.R.length+F.P.length+2)*lh+20),10);ctx.fillStyle=PAL['card'];ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
   const head=(s)=>{txt(ctx,s,tx,y,{s:12*k,w:700,c:PAL['cv-soft'],b:'middle'});y+=lh;};
   const row=x=>{txt(ctx,(x.n>1?x.n+' ':'')+fspTxt(x.s),tx,y,{s:13*k,w:600,b:'middle'});txt(ctx,(x.n>1?x.n+'×':'')+(x.hf===0?'0':sgn(x.hf,1)),tr,y,{s:13*k,a:'right',b:'middle',c:x.hf===0?PAL['muted']:PAL['cv-ink']});y+=lh;};
-  head('Reactants  (n × ΔH°f, kJ/mol)');F.R.forEach(row);head('Products');F.P.forEach(row);}
+  head('Reactants (kJ)');F.R.forEach(row);head('Products (kJ)');F.P.forEach(row);}
 
 /* ---------- the sim ---------- */
 const BONDS=['bonds'],HESS=['hess'],FORM=['form'];

@@ -157,7 +157,7 @@ const TOD={
      baseline:{view:'cool',ta:20},change:{ta:5},changeText:'Air temperature dropped to 5 °C',watch:'cool',
      explain:{bio:'Heat flows faster when the temperature difference is bigger. With 5 °C air the gap between body and air is larger, so the curve bends down more steeply.'}},
     {lvl:'bio',instant:true,set:{view:'cool',ta:20,mass:70,cloth:'none'},jumpT:(92.6-32)*5/9,q:'A rectal temperature reads 92.6 °F. Using the Glaister rule, (98.6 °F − reading) ÷ 1.5, about how many hours since death?',choices:['2 hours','4 hours','6 hours'],correct:1,
-     explain:{bio:'(98.6 − 92.6) ÷ 1.5 = 6 ÷ 1.5 = 4 hours. The model is now paused at that reading, and its true time is about 6.6 hours. Glaister’s rule is quick, but it ignores clothing, body size and the slow start, so treat it as a rough first guess.'}},
+     explain:{bio:'(98.6 − 92.6) ÷ 1.5 = 6 ÷ 1.5 = 4 hours. The model is now paused at that reading, and its true time is about 6.7 hours. Glaister’s rule is quick, but it ignores clothing, body size and the slow start, so treat it as a rough first guess.'}},
     {lvl:'bio',q:'Blow fly larvae are growing at 15 °C. The weather warms to 25 °C. How fast do they develop now?',choices:['The same: insects follow a fixed calendar','About 1.7× faster (25 ÷ 15)','About 3× faster'],correct:2,
      baseline:{view:'insects',ta:15,swing:0},change:{ta:25},changeText:'Air warmed to 25 °C',
      explain:{bio:'Growth depends on the degrees above 10 °C, where development stops. At 15 °C that is 5 degree hours per hour; at 25 °C it is 15. So the larvae develop 3× faster. Watch the “Hours since eggs were laid” and the stage change.'}},
