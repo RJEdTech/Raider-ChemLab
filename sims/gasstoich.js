@@ -191,8 +191,8 @@ function vaporTable(p){const a=Math.floor(p.Tw);const rows=[a-1,a,a+1,a+2].filte
 
 /* ---------- drawing ---------- */
 function zoom(ctx,cx,cy,r,k,kind,t,label){ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.fillStyle=PAL['card'];ctx.fill();ctx.clip();
-  const n=kind==='H2'?26:13;for(let i=0;i<n;i++){const a=i*2.399+t*0.25*(i%2?1:-1),rr2=Math.sqrt((i+0.5)/n)*(r-14);const x=cx+Math.cos(a)*rr2,y=cy+Math.sin(a)*rr2,ang=i*1.3+t*(0.6+(i%3)*0.3);
-    if(i===7||i===(kind==='H2'?19:11)){CL.drawAtom(ctx,x,y,7,'O',{label:''});CL.drawAtom(ctx,x+Math.cos(ang)*8,y+Math.sin(ang)*8,4.5,'H',{label:''});CL.drawAtom(ctx,x+Math.cos(ang+1.82)*8,y+Math.sin(ang+1.82)*8,4.5,'H',{label:''});}
+  const n=kind==='H2'?17:13;for(let i=0;i<n;i++){const a=i*2.399+t*0.25*(i%2?1:-1),rr2=Math.sqrt((i+0.5)/n)*(r-14);const x=cx+Math.cos(a)*rr2,y=cy+Math.sin(a)*rr2,ang=i*1.3+t*(0.6+(i%3)*0.3);
+    if(i===7||i===(kind==='H2'?14:11)){CL.drawAtom(ctx,x,y,7,'O',{label:''});CL.drawAtom(ctx,x+Math.cos(ang)*8,y+Math.sin(ang)*8,4.5,'H',{label:''});CL.drawAtom(ctx,x+Math.cos(ang+1.82)*8,y+Math.sin(ang+1.82)*8,4.5,'H',{label:''});}
     else if(kind==='H2'){CL.drawAtom(ctx,x-Math.cos(ang)*3.5,y-Math.sin(ang)*3.5,5,'H',{label:''});CL.drawAtom(ctx,x+Math.cos(ang)*3.5,y+Math.sin(ang)*3.5,5,'H',{label:''});}
     else{for(let j=0;j<4;j++){const ox=(j-1.5)*6,oy=(j%2?3:-3);const c=Math.cos(ang),s=Math.sin(ang);CL.drawAtom(ctx,x+ox*c-oy*s,y+ox*s+oy*c,4.6,'C',{label:''});}}}
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.stroke();
@@ -223,7 +223,7 @@ function drawLab(sim,ctx,vdt,k,t){const p=sim.p,c=C(sim),compact=k>1.3,hon=atLea
     ctx.fillStyle='#5d4037';rr(ctx,x0-6,yM,w+12,22,4);ctx.fill();ctx.strokeStyle='#b87333';ctx.lineWidth=2;ctx.strokeRect(x0+14,yM-40,22,36);
     const left=1-prog(sim)*(c.err==='oxide'?1:1);if(left>0.01){ctx.strokeStyle='#9ea7ad';ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=20;i++){const yy=yM-6-i*1.6*left*1.0;const xx=x0+25+Math.sin(i*1.4)*7*Math.sqrt(left);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();}
     bubbles(sim,ctx,x0+25,yM-40,yIn+4,tt>2&&tt<14,vdt,PAL['cv-bstroke']);
-    if(c.err==='levels'&&tt>14){pill(ctx,'levels not equal',255,yOut-16,'#c62828','#fff',12*k);}
+    if(c.err==='levels'&&tt>14){pill(ctx,'levels not equal',255,yOut+22,'#c62828','#fff',12*k);}
     pill(ctx,V.toFixed(1)+' mL',x0+w+48*Math.min(k,1.4),Math.max(yTop+20,yIn),PAL['cv-ink'],PAL['card'],13*k);
     if(c.over&&V>=CAPM-0.05&&tt<14)pill(ctx,'tube full: gas escaping',x0+w/2,yM+40,'#c62828','#fff',12*k);
     // equation, zoom, notebook
@@ -238,7 +238,7 @@ function drawLab(sim,ctx,vdt,k,t){const p=sim.p,c=C(sim),compact=k>1.3,hon=atLea
   ctx.fillStyle=PAL['cv-water'];ctx.fillRect(220,Math.min(yOut,yM-10),252,436-Math.min(yOut,yM-10));ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(220,30);ctx.lineTo(220,436);ctx.lineTo(472,436);ctx.lineTo(472,30);ctx.stroke();
   tube(ctx,x0,w,yTop,yM,px,CAPL,V,k,20,compact);
   pill(ctx,V.toFixed(1)+' mL',x0+w+48*Math.min(k,1.4),Math.max(yTop+20,yIn),PAL['cv-ink'],PAL['card'],13*k);
-  if(c.err==='levels'&&d)pill(ctx,'levels not equal',400,yOut-16,'#c62828','#fff',12*k);
+  if(c.err==='levels'&&d)pill(ctx,'levels not equal',410,yOut+22,'#c62828','#fff',12*k);
   // balance
   const bx=36,by=360;ctx.fillStyle='#6d7a88';rr(ctx,bx,by,150,62,8);ctx.fill();rr(ctx,bx+12,by+30,126,24,4);ctx.fillStyle='#1b2a30';ctx.fill();ctx.fillStyle='#9aa3ad';rr(ctx,bx+20,by-8,110,10,3);ctx.fill();
   const shown=tt<1?M0:d?c.m1:null;txt(ctx,shown===null?'- - -':shown.toFixed(3)+' g',bx+75,by+48,{s:15*k,w:700,c:'#8ef0b4',a:'center'});
