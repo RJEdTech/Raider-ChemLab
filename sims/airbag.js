@@ -68,7 +68,7 @@ const SIM={
     {id:'nco2',label:'Moles of CO₂ made',unit:'mol',lvl:'honors',min:0,max:null,d:4,get:s=>nowN(s)},
     {id:'lim',label:'Limiting reactant',unit:'',lvl:'honors',text:true,get:s=>{const pl=s.st.pl;if(pl.n<=0)return 'One reactant is missing';return pl.lim==='s'?'Baking soda (vinegar left over)':pl.lim==='a'?'Acetic acid (baking soda left over)':'Neither: exact 1 : 1';}},
     {id:'nN2',label:'Moles of N₂ needed',unit:'mol',lvl:'ap',min:0,max:null,d:3,get:s=>car(s.p).nN},
-    {id:'mAz',label:'Mass of NaN₃ needed',unit:'g',lvl:'ap',min:0,max:null,d:1,get:s=>car(s.p).g},
+    {id:'mAz',label:'Mass of Na‌N₃ needed',unit:'g',lvl:'ap',min:0,max:null,d:1,get:s=>car(s.p).g},
     {id:'vmc',label:'Molar volume of the hot gas',unit:'L/mol',lvl:'ap',min:0,max:null,d:1,get:s=>{const c=car(s.p);return R*c.T/c.P;}}
   ],
   graphs:[{id:'vol',label:'Gas volume in the bag',lvl:'bio',custom:true}],
@@ -79,7 +79,7 @@ const SIM={
     [[cap,'bag full',PAL['s3']],[(BURST*pl.b.V-pl.liq),'bursts',PAL['s1']]].forEach(([v,l,c])=>{ctx.setLineDash([6,4]);ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(box.L,ax.Y(v));ctx.lineTo(box.L+box.W,ax.Y(v));ctx.stroke();ctx.setLineDash([]);txt(ctx,l,box.L+box.W-6,ax.Y(v)-6,{s:12,c,a:'right',w:600});});
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=serColor(1);ctx.lineWidth=2.5;ctx.beginPath();st.hist.forEach((h,i)=>{i?ctx.lineTo(ax.X(h[0]),ax.Y(h[1])):ctx.moveTo(ax.X(h[0]),ax.Y(h[1]));});ctx.stroke();ctx.restore();},
   infoPanel(sim){const p=sim.p,pl=plan(p),hon=atLeast('honors'),ap=atLeast('ap');
-    if(p.mode==='car'){const c=car(p);return `<h3>Car air bag: the calculation</h3><p>2NaN<sub>3</sub>(s) → 2Na(s) + 3N<sub>2</sub>(g)</p><p>n(N<sub>2</sub>) = PV/RT = (${c.P.toFixed(2)} atm)(${p.carV} L) ÷ [(0.08206)(${c.T.toFixed(0)} K)] = <b>${c.nN.toFixed(3)} mol</b></p><p>n(NaN<sub>3</sub>) = ${c.nN.toFixed(3)} mol N<sub>2</sub> × (2 mol NaN<sub>3</sub> / 3 mol N<sub>2</sub>) = ${c.nAz.toFixed(3)} mol</p><p>mass = ${c.nAz.toFixed(3)} mol × ${M_AZ.toFixed(2)} g/mol = <b>${c.g.toFixed(1)} g</b></p><p class="help">Sodium azide is highly toxic. Real inflators also contain KNO₃ and SiO₂, which turn the reactive sodium metal into a harmless glass. This mode is a calculation only.</p>`;}
+    if(p.mode==='car'){const c=car(p);return `<h3>Car air bag: the calculation</h3><p>2Na&zwnj;N<sub>3</sub>(s) → 2Na(s) + 3N<sub>2</sub>(g)</p><p>n(N<sub>2</sub>) = PV/RT = (${c.P.toFixed(2)} atm)(${p.carV} L) ÷ [(0.08206)(${c.T.toFixed(0)} K)] = <b>${c.nN.toFixed(3)} mol</b></p><p>n(Na&zwnj;N<sub>3</sub>) = ${c.nN.toFixed(3)} mol N<sub>2</sub> × (2 mol Na&zwnj;N<sub>3</sub> / 3 mol N<sub>2</sub>) = ${c.nAz.toFixed(3)} mol</p><p>mass = ${c.nAz.toFixed(3)} mol × ${M_AZ.toFixed(2)} g/mol = <b>${c.g.toFixed(1)} g</b></p><p class="help">Sodium azide is highly toxic. Real inflators also contain KNO₃ and SiO₂, which turn the reactive sodium metal into a harmless glass. This mode is a calculation only.</p>`;}
     const nd=need(p);
     let h=`<h3>Your plan</h3><p>${p.soda.toFixed(2)} g NaHCO<sub>3</sub> ÷ ${M_S.toFixed(2)} g/mol = <b>${pl.nS.toFixed(4)} mol</b><br>${p.vin} mL vinegar × ${VIN_D} g/mL × 0.050 ÷ ${M_A.toFixed(2)} g/mol = <b>${pl.nA.toFixed(4)} mol</b> HC<sub>2</sub>H<sub>3</sub>O<sub>2</sub></p>
       <p>The mole ratio is 1 : 1, so you make <b>${pl.n.toFixed(4)} mol CO<sub>2</sub></b>${pl.n>0?' (limited by '+(pl.lim==='s'?'baking soda':pl.lim==='a'?'acetic acid':'both equally')+')':''}.</p>
@@ -88,7 +88,7 @@ const SIM={
     h+=`<details><summary>Check: the amounts that fill this bag exactly</summary><p>${nd.n.toFixed(4)} mol CO<sub>2</sub>: <b>${nd.g.toFixed(2)} g</b> baking soda and <b>${nd.mL.toFixed(0)} mL</b> vinegar${ap?' (the gas gets the bag volume minus the liquid’s volume)':''}.</p></details>`;
     return h;},
   narrate(sim){const p=sim.p,st=sim.st,pl=st.pl,hon=atLeast('honors');
-    if(p.mode==='car'){const c=car(p);return '<b>'+c.g.toFixed(0)+' g of sodium azide</b> makes '+c.nN.toFixed(2)+' mol of N₂, enough to fill a '+p.carV+' L bag at '+p.carT+' °C. The reaction is over in about 30 milliseconds. Calculation only: NaN₃ is highly toxic.';}
+    if(p.mode==='car'){const c=car(p);return '<b>'+c.g.toFixed(0)+' g of sodium azide</b> makes '+c.nN.toFixed(2)+' mol of N₂, enough to fill a '+p.carV+' L bag at '+p.carT+' °C. The reaction is over in about 30 milliseconds. Calculation only: Na‌N₃ is highly toxic.';}
     if(pl.n<=0)return 'You need both reactants. With '+(p.soda<=0?'no baking soda':'no vinegar')+', nothing reacts and no gas forms.';
     if(!st.mixed)return 'The baking soda sits in a folded tissue so it does not touch the vinegar yet. Squeeze out the air, seal the bag, then press <b>Seal the bag and mix</b>. Goggles on: vinegar stings eyes, and a bursting bag sprays it.';
     const F=fullness(sim);
@@ -106,7 +106,7 @@ const SIM={
     {title:'Milliliters of vinegar',text:'Vinegar is 5% acetic acid. Each mL holds about 0.00084 mol, so 0.031 mol needs about 37 mL.',focus:[30,60,430,370],pause:true},
     {title:'Seal and mix',text:'Seal the bag and tip the baking soda into the vinegar. CO₂ bubbles out of the liquid and the bag fills.',focus:[30,60,430,370],speed:0.5,setup(sim){SIM.actions[0].run(sim);}},
     {title:'Check the result',text:'The readouts show how full the bag is. Change one amount and try again: the limiting reactant decides how much gas you get.',focus:[490,270,300,170],speed:1},
-    {lvl:'ap',title:'A real car air bag',text:'Car bags use 2NaN₃ → 2Na + 3N₂. The same steps, PV = nRT then the mole ratio, give the mass of sodium azide. Calculation only: it is highly toxic.',focus:[0,0,800,450],pause:true,setup(sim){BioLab.setValues(sim,{mode:'car'});}}
+    {lvl:'ap',title:'A real car air bag',text:'Car bags use 2Na‌N₃ → 2Na + 3N₂. The same steps, PV = nRT then the mole ratio, give the mass of sodium azide. Calculation only: it is highly toxic.',focus:[0,0,800,450],pause:true,setup(sim){BioLab.setValues(sim,{mode:'car'});}}
   ],
   onTourExit(sim){BioLab.setValues(sim,{mode:'bag'});BioLab.reset(sim);},
   onLevel(sim){modeUI(sim);},
@@ -128,16 +128,16 @@ const SIM={
      explain:{honors:'The mole ratio NaHCO₃ : CO₂ is 1 : 1, so you need 0.0400 mol NaHCO₃ × 84.01 g/mol = 3.36 g.'}},
     {lvl:'ap',instant:true,q:'Vinegar is 5.0% acetic acid by mass (density 1.005 g/mL). What volume of vinegar supplies 0.0400 mol of HC₂H₃O₂?',choices:['47.8 mL','2.40 mL','4.78 mL','24.0 mL'],correct:0,
      explain:{ap:'0.0400 mol × 60.05 g/mol = 2.402 g acid. 2.402 g ÷ 0.050 = 48.04 g vinegar. 48.04 g ÷ 1.005 g/mL = 47.8 mL. Forgetting the 5% gives 2.40 mL.'}},
-    {lvl:'ap',instant:true,q:'A car air bag needs 60.0 L of N₂ at 1.00 atm and 25 °C (2NaN₃ → 2Na + 3N₂). What mass of NaN₃ is needed?',choices:['106 g','159 g','71 g','3.9 g'],correct:0,
-     explain:{ap:'n(N₂) = PV/RT = (1.00)(60.0) ÷ (0.08206 × 298.15) = 2.45 mol. n(NaN₃) = 2.45 × 2/3 = 1.64 mol. 1.64 mol × 65.01 g/mol = 106 g. 159 g uses 1 : 1 instead of 2 : 3. Check it in the Car air bag mode.'}}
+    {lvl:'ap',instant:true,q:'A car air bag needs 60.0 L of N₂ at 1.00 atm and 25 °C (2Na‌N₃ → 2Na + 3N₂). What mass of Na‌N₃ is needed?',choices:['106 g','159 g','71 g','3.9 g'],correct:0,
+     explain:{ap:'n(N₂) = PV/RT = (1.00)(60.0) ÷ (0.08206 × 298.15) = 2.45 mol. n(Na‌N₃) = 2.45 × 2/3 = 1.64 mol. 1.64 mol × 65.01 g/mol = 106 g. 159 g uses 1 : 1 instead of 2 : 3. Check it in the Car air bag mode.'}}
   ],
   lab:{bio:'<p><b>Question:</b> How much baking soda and vinegar exactly fill a zip bag?</p><ol><li>Read the molar volume in this room. Calculate the moles of CO₂ that fill a quart bag (0.946 L).</li><li>Convert to grams of baking soda (84.01 g/mol) and mL of vinegar (0.00084 mol acetic acid per mL).</li><li>Set your amounts, press Seal the bag and mix, and record a trial.</li><li>Adjust and try again until the bag is just right.</li></ol><p>Explain what happened when one reactant was in excess.</p>',
        honors:'<p><b>Question:</b> How do temperature and pressure change the amounts you need?</p><ol><li>Find the amounts that fill a gallon bag at RJ (0.83 atm, 22 °C). Record the trial.</li><li>Without changing amounts, switch to sea level, and record. Then try 5 °C and 35 °C.</li></ol><p>Use PV = nRT to predict each fullness before you run it, and compare with your data.</p>',
-       ap:'<p><b>Question:</b> How precisely can you hit the target volume?</p><ol><li>Calculate amounts for a pint bag, accounting for the liquid’s volume. Record the trial.</li><li>Make the acetic acid limiting on purpose with 20% extra baking soda, and record.</li><li>Use the Car air bag mode to find the NaN₃ for a 120 L passenger bag at 100 °C.</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why a real bag usually comes out slightly under-filled (hint: CO₂ dissolves in water).</p>'},
+       ap:'<p><b>Question:</b> How precisely can you hit the target volume?</p><ol><li>Calculate amounts for a pint bag, accounting for the liquid’s volume. Record the trial.</li><li>Make the acetic acid limiting on purpose with 20% extra baking soda, and record.</li><li>Use the Car air bag mode to find the Na‌N₃ for a 120 L passenger bag at 100 °C.</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why a real bag usually comes out slightly under-filled (hint: CO₂ dissolves in water).</p>'},
   terms:[{t:'Limiting reactant',d:'The reactant that runs out first and sets how much CO₂ forms.'},{t:'Excess reactant',d:'The reactant left over when the reaction stops.'},
     {t:'Mole ratio',d:'Here 1 mol NaHCO₃ : 1 mol HC₂H₃O₂ : 1 mol CO₂.'},{t:'Molar volume',d:'The volume one mole of gas fills at a given temperature and pressure (22.4 L at STP).'},
     {lvl:'honors',t:'Ideal gas law',d:'PV = nRT, with R = 0.08206 L·atm/(mol·K).'},{lvl:'honors',t:'Absolute temperature',d:'Kelvin = °C + 273.15. Gas volume is proportional to kelvins, not degrees Celsius.'},
-    {lvl:'ap',t:'Percent by mass',d:'Grams of solute per 100 g of solution, like 5% acetic acid in vinegar.'},{lvl:'ap',t:'Sodium azide',d:'NaN₃, the toxic solid that decomposes to N₂ in car air bags.'}],
+    {lvl:'ap',t:'Percent by mass',d:'Grams of solute per 100 g of solution, like 5% acetic acid in vinegar.'},{lvl:'ap',t:'Sodium azide',d:'Na‌N₃, the toxic solid that decomposes to N₂ in car air bags.'}],
   about:'<p>Moles of CO₂ = the smaller of mol NaHCO₃ (84.01 g/mol) and mol acetic acid (60.05 g/mol, 5.0% by mass in vinegar of density 1.005 g/mL). The gas volume is nRT/P at the room’s temperature and pressure; RJ’s pressure is taken as 0.83 atm (about 1,700 m elevation). The bag holds liquid and gas together. It is “just right” from 85% to 105% full and bursts at 130%.</p><p>Simplifications: the reaction is drawn finishing in a few seconds; real bags take longer and need shaking. Some CO₂ stays dissolved in the liquid (about 1.5 g/L at 1 atm), which this model ignores, so real bags come out a little under-filled. The pressure in an overinflated bag is treated as the room’s pressure when computing gas volume. The car air bag mode is only a calculation from the balanced equation.</p>',
   initVis(sim){},
   draw(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
@@ -181,16 +181,16 @@ const SIM={
 };
 function fitText(ctx,s,x,y,size,maxW){ctx.font='700 '+size+'px '+FONT;const w=ctx.measureText(s).width;if(w>maxW)size*=maxW/w;txt(ctx,s,x,y,{s:size,w:700,a:'center',b:'middle'});}
 function drawCar(sim,ctx,k,t){const p=sim.p,c=car(p);
-  fitText(ctx,'2NaN₃(s) → 2Na(s) + 3N₂(g)',400,28,17*k,760);
+  fitText(ctx,'2Na‌N₃(s) → 2Na(s) + 3N₂(g)',400,28,17*k,760);
   const cx=210,cy=250,ab=clamp(Math.cbrt(p.carV/60),0.6,1.5);
   ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=14;ctx.beginPath();ctx.arc(cx,cy,92,0,6.29);ctx.stroke();ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(cx-90,cy);ctx.lineTo(cx+90,cy);ctx.moveTo(cx,cy);ctx.lineTo(cx,cy+90);ctx.stroke();
   ctx.fillStyle='#f1efe8';ctx.strokeStyle='#a8a396';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy-6,120*ab,100*ab,0,0,6.29);ctx.fill();ctx.stroke();
   ctx.strokeStyle='#cfcabd';ctx.lineWidth=1.2;for(let i=1;i<4;i++){ctx.beginPath();ctx.ellipse(cx,cy-6,120*ab*i/4,100*ab*i/4,0,0,6.29);ctx.stroke();}
   txt(ctx,p.carV+' L of N₂',cx,cy-6,{s:15*k,w:800,a:'center',b:'middle',c:'#3a362e'});
   const x=410;let y=96;const lh=34*Math.max(1,k*0.8);
-  [['n(N₂) = PV ÷ RT',c.nN.toFixed(3)+' mol'],['n(NaN₃) = n(N₂) × 2/3',c.nAz.toFixed(3)+' mol'],['mass NaN₃ = n × 65.01 g/mol',c.g.toFixed(1)+' g']].forEach(([a,b2],i)=>{
+  [['n(N₂) = PV ÷ RT',c.nN.toFixed(3)+' mol'],['n(Na‌N₃) = n(N₂) × 2/3',c.nAz.toFixed(3)+' mol'],['mass Na‌N₃ = n × 65.01 g/mol',c.g.toFixed(1)+' g']].forEach(([a,b2],i)=>{
     txt(ctx,a,x,y,{s:13*k,c:PAL['cv-soft']});txt(ctx,b2,x,y+lh*0.7,{s:16*k,w:800,c:i===2?PAL['s1']:PAL['cv-ink']});y+=lh*1.75;});
   txt(ctx,'P = '+c.P.toFixed(2)+' atm, T = '+c.T.toFixed(0)+' K',x,y,{s:12.5*k,c:PAL['cv-soft']});
-  pill(ctx,'Calculation only: NaN₃ is highly toxic',400,430,PAL['s4'],'#fff',12.5*k);}
+  pill(ctx,'Calculation only: Na‌N₃ is highly toxic',400,430,PAL['s4'],'#fff',12.5*k);}
 BioLab.register(SIM);
 })();

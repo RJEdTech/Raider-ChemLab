@@ -187,7 +187,7 @@ function zoom(sim,ctx,store,cx,cy,R,c,vdt,k,t,title){const s=SOL(sim),scale=s.sa
   return scale;}
 function zoomLegend(sim,ctx,cx,y,k,scale){const s=SOL(sim);ctx.font='700 '+(12*k)+'px '+FONT;const a=s.cat.l,b=s.an.l;const wa=ctx.measureText(a).width,wb=ctx.measureText(b).width;const tot=wa+wb+70;cx=Math.min(cx,796-tot/2);let x=cx-tot/2;
   ball(ctx,x+9,y,s.cat.c,Math.min(9,s.cat.r));txt(ctx,a,x+22,y,{s:12*k,w:700,b:'middle'});x+=wa+40;ball(ctx,x+9,y,s.an.c,Math.min(9,s.an.r));txt(ctx,b,x+22,y,{s:12*k,w:700,b:'middle'});
-  if(atLeast('ap')){const st='1 drawn formula unit ≈ '+CL.toSig(scale,2)+' M';ctx.font='400 '+(12*k)+'px '+FONT;const w2=ctx.measureText(st).width;txt(ctx,st,Math.min(cx,796-w2/2),y+20*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}}
+  if(atLeast('ap')&&k<1.25){const st='1 drawn formula unit ≈ '+CL.toSig(scale,2)+' M';ctx.font='400 '+(12*k)+'px '+FONT;const w2=ctx.measureText(st).width;txt(ctx,st,Math.min(cx,796-w2/2),y+20*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}}
 function ball(ctx,x,y,c,r){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.fill();ctx.strokeStyle=CL.shade(c,-0.45);ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.arc(x-r*0.35,y-r*0.35,r*0.3,0,6.29);ctx.fill();}
 function drawWater(ctx,x,y,a){ctx.globalAlpha=0.75;ctx.fillStyle='#fff';for(const d of [-0.91,0.91]){ctx.beginPath();ctx.arc(x+Math.cos(a+d)*6,y+Math.sin(a+d)*6,2.8,0,6.29);ctx.fill();}ctx.fillStyle='#e53935';ctx.beginPath();ctx.arc(x,y,4.6,0,6.29);ctx.fill();ctx.globalAlpha=1;}
 function crystals(ctx,s,cx,y,w,g){const n=Math.round(clamp(Math.sqrt(g)*4,1,48));const col=s.spec.length?solColor(s,s.sat*0.6,1).css:'#f4f6f8';let row=0,inRow=0,cap=Math.min(Math.floor(w/9),Math.ceil(2*Math.sqrt(n)));

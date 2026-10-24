@@ -199,7 +199,7 @@ function drawBench(sim,ctx,vdt,k,t){const p=sim.p,s=SOL(sim),c=cSample(sim),v=si
   // lamp
   const lx=60;const gr=ctx.createRadialGradient(lx,BY,4,lx,BY,44);gr.addColorStop(0,'rgba(255,250,220,1)');gr.addColorStop(1,'rgba(255,250,220,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(lx,BY,44,0,6.29);ctx.fill();
   ctx.fillStyle='#fff6d8';ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(lx,BY,16,0,6.29);ctx.fill();ctx.stroke();
-  txt(ctx,'white light',lx,BY-58,{s:12*k,w:600,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,'white light',22,BY-58,{s:12*k,w:600,c:PAL['cv-soft']});
   // white beam to grating
   ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(lx+16,BY);ctx.lineTo(150,BY);ctx.stroke();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(lx+16,BY-4);ctx.lineTo(150,BY-4);ctx.moveTo(lx+16,BY+4);ctx.lineTo(150,BY+4);ctx.stroke();
   // grating and rainbow fan, slit selects λ
@@ -236,7 +236,7 @@ function drawBench(sim,ctx,vdt,k,t){const p=sim.p,s=SOL(sim),c=cSample(sim),v=si
   const unk=p.cuv==='unk'&&p.mode!=='meter';const lab=unk?(p.mode==='brass'?'Brass sample: '+p.bm.toFixed(3)+' g in 100.00 mL':'Unknown '+s.sp+' sample'):s.sp+' standard: '+fmtC(s,c);
   pill(ctx,lab,430,296,unk?PAL['s1']:PAL['card2'],unk?'#fff':PAL['cv-ink'],13*k);
   if(p.mode==='brass'){const a1='Safety: dissolve brass in concentrated HNO₃ in a fume hood,',a2='with goggles and gloves. It gives off toxic NO₂ gas.';if(k<1.25)txt(ctx,a1+' '+a2,400,484,{s:12*k,c:PAL['cv-soft'],a:'center',b:'middle'});else{txt(ctx,a1,400,470,{s:12*k,c:PAL['cv-soft'],a:'center',b:'middle'});txt(ctx,a2,400,490,{s:12*k,c:PAL['cv-soft'],a:'center',b:'middle'});}}}
-function drawSpectrumStrip(sim,ctx,k){const p=sim.p,s=SOL(sim),c=cSample(sim);const L=70,R=770,T=326,B=p.mode==='brass'?(k<1.25?452:438):470;const H=B-T;
+function drawSpectrumStrip(sim,ctx,k){const p=sim.p,s=SOL(sim),c=cSample(sim);const L=70,R=770,T=326,B=p.mode==='brass'?(k<1.25?452:428):470;const H=B-T;
   const X=l=>L+(l-LMIN)/(LMAX-LMIN)*(R-L);let ymax=0.2;for(let l=LMIN;l<=LMAX;l+=4)ymax=Math.max(ymax,measA(sim,c,l));ymax*=1.12;const Y=a=>B-a/ymax*(H-12);
   ctx.fillStyle=PAL['card'];ctx.fillRect(L,T,R-L,H);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.strokeRect(L,T,R-L,H);
   for(let l=LMIN;l<LMAX;l+=2){ctx.fillStyle=wl2rgb(l);ctx.globalAlpha=0.9;ctx.fillRect(X(l),B-7,X(l+2)-X(l)+0.6,7);}ctx.globalAlpha=1;

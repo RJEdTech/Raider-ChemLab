@@ -143,7 +143,7 @@ const BUF={
       <tr><td>Change</td><td>−${Math.min(Math.abs(x),x>=0?c.f.A:c.f.HA).toFixed(2)}</td><td>${x>=0?'+':'−'}${Math.min(Math.abs(x),x>=0?c.f.A:c.f.HA).toFixed(2)}</td><td>${x>=0?'−':'+'}${Math.min(Math.abs(x),x>=0?c.f.A:c.f.HA).toFixed(2)}</td></tr>
       <tr><td>After</td><td>${(x>=0?a.freeH:a.freeOH).toFixed(2)} mmol left over</td><td>${fmm(a.HA)}</td><td>${fmm(a.A)}</td></tr></tbody></table></div>`;
       h+=`<p class="help">${x>=0?s.a+' + H₃O⁺ → '+s.ha+' + H₂O':s.ha+' + OH⁻ → '+s.a+' + H₂O'}. ${(x>=0?a.freeH:a.freeOH)>0?'<b>The buffer has broken:</b> its '+(x>=0?s.a:s.ha)+' is used up, so the extra '+(x>=0?'H₃O⁺':'OH⁻')+' stays in solution.':'The buffer still has '+fmm(x>=0?a.A:a.HA)+' mmol of '+(x>=0?s.a:s.ha)+' to absorb more '+(x>=0?'acid':'base')+'.'}</p>`;}
-    if(ap){const ok=a.A>1e-9&&a.HA>1e-9;h+=`<p><b>Henderson–Hasselbalch:</b> pH = pKa + log([${s.a}]/[${s.ha}]) = ${pKa(s).toFixed(2)} + log(${fmm(a.A)} / ${fmm(a.HA)}) = ${ok?(pKa(s)+Math.log10(a.A/a.HA)).toFixed(2):'undefined'}. Exact pH from the full equilibrium: ${c.pb.toFixed(2)}.</p>`;
+    if(ap){const ok=a.A>1e-9&&a.HA>1e-9;h+=`<p><b>Henderson–Hasselbalch:</b> pH = pKa + log([${s.a}]/[${s.ha}]) = ${pKa(s).toFixed(2)} + log(${fmm(a.A)} / ${fmm(a.HA)}) = ${ok?(pKa(s)+Math.log10(a.A/a.HA)).toFixed(2):'no value, because one part is used up'}. Exact pH from the full equilibrium: ${c.pb.toFixed(2)}.</p>`;
       if(p.sys==='blood')h+=`<p class="help">In your body, extra H₂CO₃ breaks down to CO₂ that you breathe out, and your kidneys adjust HCO₃⁻. That keeps blood near pH 7.40 far better than this closed beaker can.</p>`;}
     return h;},
   narrate(sim){const p=sim.p,st=sim.st,c=calc(sim),s=c.f.s,hon=atLeast('honors'),a=c.af;

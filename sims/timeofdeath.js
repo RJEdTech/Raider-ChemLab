@@ -131,7 +131,7 @@ const TOD={
       return C.pmi<20?'The body is still well above the air temperature, so <b>the cooling curve gives the tightest range</b>. Rigor and livor agree with it.':C.pmi<40?'The body is close to air temperature and rigor is passing. <b>The ranges only narrow when you combine them.</b>':'The body has reached air temperature and rigor is gone, so those clues only set a minimum. <b>The insects are now the best clock.</b>';}
     if(p.view==='insects'){const adh=adhAt(p,st.ih),i=stageOf(adh);
       if(p.ta<=TB&&!(p.swing>0))return 'At '+p.ta+' °C the air is at or below the 10 °C base temperature, so <b>the larvae do not develop at all</b>. Cold slows the insect clock to a stop.';
-      return 'At '+p.ta+' °C the insects gain about <b>'+Math.round(Math.max(0,p.ta-TB))+' degree hours every hour</b>'+(p.swing?' on average (more in the warm afternoons)':'')+'. After '+Math.round(st.ih)+' h they are '+(i>=6?'adult flies':STAGES[i].l.toLowerCase())+'. Warmer air means faster growth.';}
+      return 'At '+p.ta+' °C the insects gain about <b>'+Math.round(Math.max(0,p.ta-TB))+' degree hours every hour</b>'+(p.swing?' on average (more in the warm afternoons)':'')+'. After '+Math.round(st.ih)+' h they are '+(i>=6?'adult flies':['eggs','first-instar larvae','second-instar larvae','third-instar larvae, still feeding','post-feeding larvae, wandering off to pupate','pupae'][i])+'. Warmer air means faster growth.';}
     const T=st.Tc,d=T-p.ta;
     if(st.h<0.2)return 'At death the core is at about <b>37 °C (98.6 °F)</b>. The body now loses heat to the '+p.ta+' °C air.';
     if(d<0.6)return 'The body has reached the air temperature, so <b>it stops cooling</b>. From here, temperature can only say “at least this long”.';

@@ -43,7 +43,7 @@ function eqText(sim){const g=segs(sim),s=g.s,q=cur(sim),m=g.m.toFixed(1),nm=s.na
   return 'q = mcΔT for '+nm[2]+': '+m+' g × '+s.cg+' J/g·°C × ΔT';}
 
 /* ---------- particles ---------- */
-const BX0=30,BX1=400,BY0=44,BY1=392;
+const BX0=30,BX1=400,BY0=74,BY1=392;
 function sites(s){const N=s.N,sp=s.site,nc=8,rows=Math.ceil(N/nc),pts=[];const w=(nc-1)*sp,x0=(BX0+BX1)/2-w/2,dy=sp*0.87;
   for(let j=0;j<rows;j++)for(let i=0;i<nc;i++){if(pts.length>=N)break;pts.push([x0+i*sp+(j%2?sp/2-sp/4:-sp/4),BY1-sp*0.55-j*dy]);}return pts;}
 function buildVis(sim){const s=sub(sim),q=cur(sim),r=rng(3),v=sim.vis;v.key=sim.p.sub+'|'+sim.st.gen;v.sites=sites(s);v.P=[];
@@ -51,7 +51,7 @@ function buildVis(sim){const s=sub(sim),q=cur(sim),r=rng(3),v=sim.vis;v.key=sim.
   for(let i=0;i<s.N;i++){const p={x:0,y:0,vx:0,vy:0,a:(s.mol==='H2O'?-Math.PI/2:0),va:0,role:'s',site:-1,ph:r()*6.283};
     if(i<Ns){p.role='s';p.site=i;p.x=v.sites[i][0];p.y=v.sites[i][1];}
     else if(i<s.N-Ng){p.role='l';const nc=Math.floor((BX1-BX0-20)/s.d0),c=li%nc,rw=Math.floor(li/nc);p.x=BX0+14+c*s.d0+(rw%2)*s.d0/2;p.y=(Ns?top:BY1-s.d0*0.6)-rw*s.d0*0.88;li++;p.a=r()*6.283;}
-    else{p.role='g';p.x=lerp(BX0+20,BX1-20,r());p.y=lerp(BY0+20,BY0+160,r());const a=r()*6.283;p.vx=Math.cos(a)*100;p.vy=Math.sin(a)*100;p.a=r()*6.283;p.va=(r()-0.5)*6;}
+    else{p.role='g';p.x=lerp(BX0+20,BX1-20,r());p.y=lerp(BY0+20,BY0+140,r());const a=r()*6.283;p.vx=Math.cos(a)*100;p.vy=Math.sin(a)*100;p.a=r()*6.283;p.va=(r()-0.5)*6;}
     v.P.push(p);}}
 function rebalance(sim){const s=sub(sim),q=cur(sim),v=sim.vis,P=v.P,N=s.N;const Ns=Math.round(N*q.fs),Ng=Math.round(N*q.fg);
   const cnt=role=>P.filter(p=>p.role===role).length;let guard=0;
@@ -201,7 +201,7 @@ function drawCurve(sim,ctx,box,k,big){const g=segs(sim),s=g.s,P=PAL,st=sim.st,X=
   ctx.strokeStyle=P['g-axis'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,T+H);ctx.lineTo(L+W,T+H);ctx.stroke();
   [s.Tm,g.Tb].forEach(v=>{ctx.strokeStyle=P['g-grid'];ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L,Yp(v));ctx.lineTo(L+W,Yp(v));ctx.stroke();ctx.setLineDash([]);});
   txt(ctx,fmtT(s.Tm),L-6,Yp(s.Tm),{s:12*k,a:'right',b:'middle',c:P['g-axis']});if(Yp(s.Tm)-Yp(g.Tb)>12*k)txt(ctx,fmtT(g.Tb),L-6,Yp(g.Tb),{s:12*k,a:'right',b:'middle',c:P['g-axis']});
-  txt(ctx,'heat added →',L+W,T+H+18*Math.min(k,1.3),{s:12*k,a:'right',c:P['muted']});txt(ctx,'T (°C)',L-6,T-4,{s:12*k,a:'right',c:P['muted']});
+  txt(ctx,'heat added →',L+W,T+H+18*Math.min(k,1.3),{s:12*k,a:'right',c:P['muted']});txt(ctx,'T (°C)',L+6,T+4,{s:12*k,c:P['muted']});
   plotIn(ctx,{X:x=>Xp(x),Y:Yp},pts,st,X,P,12*k,g,false);}
 const fmtT=v=>(Math.abs(v)>=100?v.toFixed(0):v.toFixed(Math.abs(v%1)>0.05?1:0));
 function plotIn(ctx,ax,pts,st,X,P,fs,g,big){ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle=P['muted'];ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((p,i)=>{const x=ax.X(X(p[0])),y=ax.Y(p[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);

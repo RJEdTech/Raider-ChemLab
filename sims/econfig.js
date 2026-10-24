@@ -214,8 +214,7 @@ const SIM={
     const tx=PTX+76;txt(ctx,p.charge?symQ(p)+' ion':e.name,tx,cy0+18*k*0.9,{s:15*k,w:800});txt(ctx,N+' of '+need(p)+' e⁻ placed',tx,cy0+18*k*0.9+20*k,{s:12*k,c:PAL['cv-soft']});
     const ny=cy0+66+26*k;txt(ctx,cfgText(placedCounts(st),true),PTX,ny,{s:(hon?16:14)*k,w:800});
     const col=ch.code==='ground'?'#1b7339':['pauli','hund','hundspin','aufbau','toomany'].includes(ch.code)?'#b3261e':['excited','ion','exception','other'].includes(ch.code)?'#a15c00':'#3f6fb0';
-    const py=ny+24*k;pill(ctx,ch.short,PTX+ctx.measureText?Math.min(PTX+150,PTX+8+0):PTX,py,col,'#fff',13*k);
-    // pill() centers on x; recompute so it starts at PTX
+    const py=ny+24*k;ctx.font='700 '+(13*k)+'px '+FONT;const pw=ctx.measureText(ch.short).width+13*k*1.1;pill(ctx,ch.short,PTX+pw/2,py,col,'#fff',13*k);
     if(ap){const L=lastE(st);let yy=py+30*k;if(L){txt(ctx,'Last e⁻: n = '+L.s.n+', ℓ = '+L.s.l+', mℓ = '+(L.ml>0?'+':L.ml<0?'−':'')+Math.abs(L.ml)+', mₛ = '+(L.ms>0?'+½':'−½'),PTX,yy,{s:12*k,c:PAL['cv-soft']});yy+=20*k;}
       if(N)txt(ctx,unpaired(st)+' unpaired: '+(unpaired(st)?'paramagnetic':'diamagnetic'),PTX,yy,{s:12*k,c:PAL['cv-soft']});}
   },

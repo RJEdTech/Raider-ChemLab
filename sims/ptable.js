@@ -47,7 +47,7 @@ function setPool(set){if(set==='z20')return CL.elements.filter(e=>e.Z<=20);if(se
   if(set==='main')return CL.elements.filter(e=>(e.group<=2||e.group>=13)&&e.period<=6&&!(e.cat==='lanthanide'||e.cat==='actinide'));return CL.elements;}
 // cell geometry
 function cellXY(e){const g=CL.gridPos(e);const x=X0+(g.col-1)*C,y=g.row>=9?FY+(g.row-9)*C:Y0+(g.row-1)*C;return {x,y};}
-const CARD={x:X0+2*C+4,y:Y0+2,w:10*C-8,h:3*C-6};
+const CARD={x:X0+2*C+4,y:Y0+2,w:10*C-8,h:3*C-22};
 function cellAt(x,y){for(const e of CL.elements){const p=cellXY(e);if(x>=p.x&&x<p.x+C&&y>=p.y&&y<p.y+C)return e;}return null;}
 
 function fillFor(sim,e){const m=sim.p.color;
@@ -247,7 +247,7 @@ const SIM={
   about:'<p>Element data (molar mass, category, electronegativity, covalent radius, first ionization energy, state at 25 °C) come from ChemLab’s shared element table, so they match every other tool on the site. Electron configurations include the known exceptions (Cr, Cu, Mo, Ag, Au and others).</p><p>Melting and boiling points at 1 atm come from the CRC Handbook. Carbon and arsenic sublime at 1 atm, and helium never freezes at 1 atm. Values for astatine, francium, protactinium, neptunium and berkelium to einsteinium are estimates, and nothing is known for elements past 99, so they show as “not known.”</p><p>Simplifications: “common ion charges” lists the ions taught in first-year chemistry; many transition metals form more. Valence electrons are shown only for main-group elements. Lanthanum and actinium sit in group 3, and helium is placed with the noble gases even though it is an s-block element. The mass colors use a log scale.</p>',
   draw(sim,ctx,vdt,k){const P=PAL,small=k>1.3,cur=el(sim.p.el),pr=sim.p.mode==='practice'?sim.st.pr:null;ctx.fillStyle=P['cv-bg'];ctx.fillRect(0,0,800,600);
     // group numbers
-    if(!small)for(let g=1;g<=18;g++){const y=g===1||g===18?Y0-8:g===2||g>=13?Y0+C-8:Y0+3*C-8;txt(ctx,String(g),X0+(g-0.5)*C,y,{s:12*k,w:700,c:P['cv-soft'],a:'center'});}
+    if(!small)for(let g=1;g<=18;g++){const y=g===1||g===18?Y0-8:g===2||g>=13?Y0+C-8:Y0+3*C-5;txt(ctx,String(g),X0+(g-0.5)*C,y,{s:12*k,w:700,c:P['cv-soft'],a:'center'});}
     if(!small)for(let r=1;r<=7;r++)txt(ctx,String(r),X0-8,Y0+(r-0.5)*C+1,{s:12*k,w:700,c:P['cv-soft'],a:'right',b:'middle'});
     // f-block labels
     txt(ctx,small?'La–Lu':'Lanthanides',X0+3*C-6,FY+C/2+1,{s:12*k,w:700,c:P['cv-soft'],a:'right',b:'middle'});txt(ctx,small?'Ac–Lr':'Actinides',X0+3*C-6,FY+1.5*C+1,{s:12*k,w:700,c:P['cv-soft'],a:'right',b:'middle'});

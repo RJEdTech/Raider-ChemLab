@@ -374,7 +374,8 @@ function drawSyringe(sim,ctx,k,compact){const p=sim.p,st=sim.st,g=st.geo,P=Pread
   ctx.fillStyle=PAL['cv-glass'];ctx.fillRect(xEnd+14,SYR.y0-28,8,SYR.y1-SYR.y0+56);
   // graduations (outside the gas, above the barrel)
   ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.3;for(let v=0;v<=20;v++){const x=SYR.tip+SYR.pxml*v,L=v%5===0?12:v%1===0?6:3;ctx.beginPath();ctx.moveTo(x,SYR.y0-3);ctx.lineTo(x,SYR.y0-3-L);ctx.stroke();
-    if(v%5===0&&v>0)txt(ctx,v+(v===20?' mL':''),x,SYR.y0-20,{s:12.5*k,c:PAL['cv-ink'],a:'center',w:600});}
+    if(v%5===0&&v>0)txt(ctx,String(v),x,SYR.y0-20,{s:12.5*k,c:PAL['cv-ink'],a:'center',w:600});}
+  txt(ctx,'mL',SYR.tip+4,SYR.y0-20,{s:12.5*k,c:PAL['cv-ink'],w:600});
   // gas
   ctx.save();ctx.beginPath();ctx.rect(g.x0,g.y0,g.x1-g.x0,g.y1-g.y0);ctx.clip();dots(ctx,st,PAL['s2'],4.2);ctx.restore();flashes(ctx,st);
   // plunger

@@ -66,7 +66,7 @@ function stress(sim,kind){const st=sim.st,p=sim.p,S=sysOf(p),T=TK(p);if(st.ps.le
   if(kind==='addR'){if(p.sys==='no2')add('N2O4',S.addR);else if(p.sys==='haber')add('N2',S.addR);}
   else if(kind==='addP'){if(p.sys==='no2')add('NO2',S.addP);else add('NH3',S.addP);}
   else if(kind==='remP'){if(p.sys==='no2')rem('NO2',0.5);else rem('NH3',0.5);}
-  else if(kind==='he'){st.He+=st.n[S.sp[0].id]+0.5*Object.values(st.n).reduce((a,b)=>a+b,0)*0;st.He=Math.min(st.He+ (p.sys==='no2'?0.05:2),p.sys==='no2'?0.15:6);}
+  else if(kind==='he'){st.He=Math.min(st.He+(p.sys==='no2'?0.05:2),p.sys==='no2'?0.15:6);}
   else if(kind==='hcl'){add('Cl',0.15);st.V+=0.0125;st.W=boxW(S,st.V);}
   else if(kind==='water'){if(st.V<0.199){const f=(st.V+0.05)/st.V;setV(sim,st.V+0.05);}}
   else if(kind==='ag'){const take=Math.min(0.15,st.n.Cl*0.6);rem('Cl',take/st.n.Cl);st.ag+=take;}
@@ -205,7 +205,7 @@ const EQ={
   challenges:[
     {lvl:'bio',q:'The N₂O₄ ⇌ 2NO₂ mixture is at equilibrium at 25 °C. You heat it to 80 °C. What happens to the brown color?',choices:['It gets darker, because more brown NO₂ forms','It gets lighter','It stays the same, because the system is already at equilibrium'],correct:0,
      baseline:{sys:'no2',Tg:25},change:{Tg:80},changeText:'Heated to 80 °C',watch:'cg',
-     explain:{bio:'Splitting N₂O₄ absorbs heat. Adding heat favors the direction that uses it up, so more N₂O₄ splits into brown NO₂. This is the classic hot-and-cold NO₂ tube demo.',honors:'The forward reaction is endothermic, so K rises from 0.0046 to about 0.13 at 80 °C. Q is now below K, and the mixture shifts right.'}},
+     explain:{bio:'Splitting N₂O₄ absorbs heat. Adding heat favors the direction that uses it up, so more N₂O₄ splits into brown NO₂. This is the classic hot-and-cold NO₂ tube demo.',honors:'The forward reaction is endothermic, so K rises from 0.0046 to about 0.17 at 80 °C. Q is now below K, and the mixture shifts right.'}},
     {lvl:'bio',q:'At equilibrium you add extra N₂O₄. What does the mixture do?',choices:['Makes more NO₂ to use up some of the extra N₂O₄','Nothing; it was already balanced','Makes more N₂O₄'],correct:0,
      baseline:{sys:'no2',Tg:25},changeAction:'addR',changeText:'Extra N₂O₄ added',watch:'cg',
      explain:{bio:'When you add a reactant, the reaction shifts toward the products to use some of it up. [NO₂] rises to a new, higher steady value. This is Le Châtelier’s principle.'}},
@@ -228,7 +228,7 @@ const EQ={
      explain:{ap:'Helium is not in the K expression and the volume did not change, so [N₂O₄] and [NO₂] stay the same and Q still equals K. Pressure changes cause shifts only when they change the concentrations (partial pressures) of the reacting gases.'}},
     {lvl:'ap',q:'The Haber reaction is exothermic (ΔH° = −92 kJ/mol). You raise the temperature from 400 °C to 500 °C. What happens?',choices:['K increases and more NH₃ forms','K decreases and some NH₃ breaks down','K stays the same; only the rate changes'],correct:1,
      baseline:{sys:'haber',Th:400},change:{Th:500},changeText:'Heated to 500 °C',watch:'cg',
-     explain:{ap:'For an exothermic reaction, K falls as T rises: K goes from about 0.39 to 0.060. Q is now above K, so NH₃ decomposes. Industry accepts a lower yield at 400–450 °C because the rate at lower temperatures is too slow.'}},
+     explain:{ap:'For an exothermic reaction, K falls as T rises: K goes from about 0.50 to 0.060. Q is now above K, so NH₃ decomposes. Industry accepts a lower yield at 400–450 °C because the rate at lower temperatures is too slow.'}},
     {lvl:'ap',instant:true,set:{sys:'no2',Tg:25,V:1},q:'0.050 mol N₂O₄ is sealed in a 1.00 L flask at 25 °C (K = 4.6 × 10⁻³). Use an ICE table: what is [NO₂] at equilibrium?',choices:['0.0068 M','0.014 M','0.10 M'],correct:1,
      explain:{ap:'K = (2x)²/(0.050 − x) = 4.6 × 10⁻³ gives 4x² + 0.0046x − 0.00023 = 0, so x = 0.0070 M and [NO₂] = 2x = 0.014 M. The x is not negligible here (14% of 0.050), so the quadratic is needed. The info panel shows the same ICE table.'}},
     {lvl:'ap',instant:true,set:{sys:'no2',Tg:25,V:1},q:'For N₂O₄ ⇌ 2NO₂ at 25 °C, a mixture has [N₂O₄] = 0.010 M and [NO₂] = 0.020 M. Which way will it shift?',choices:['Right, toward NO₂','Left, toward N₂O₄','It is at equilibrium'],correct:1,

@@ -31,9 +31,10 @@ const WT=[[0,0.99984],[4,0.99997],[10,0.99970],[20,0.99821],[25,0.99705],[30,0.9
 function rhoW(T){for(let i=1;i<WT.length;i++)if(T<=WT[i][0]){const a=WT[i-1],b=WT[i];return lerp(a[1],b[1],(T-a[0])/(b[0]-a[0]));}return WT[WT.length-1][1];}
 
 /* ---------- measuring ---------- */
-function sampleSeed(p){return 1000+OKEYS.indexOf(p.obj)*37+p.size*101;}
-function readings(p){const o=OBJ[p.obj],r=rng(sampleSeed(p)),V=trueV(o,p.size),m=o.d*V;const nz=()=>Math.round((r()-0.5)*2.4);
-  const mass=Math.round((m+0.01*nz())*100)/100;const dims=o.reg?DIMS[p.size-1].map(x=>Math.round((x+0.01*nz())*100)/100):null;
+const SZ=p=>clamp(Math.round(p.size)||2,1,4);
+function sampleSeed(p){return 1000+OKEYS.indexOf(p.obj)*37+SZ(p)*101;}
+function readings(p){const o=OBJ[p.obj],r=rng(sampleSeed(p)),V=trueV(o,SZ(p)),m=o.d*V;const nz=()=>Math.round((r()-0.5)*2.4);
+  const mass=Math.round((m+0.01*nz())*100)/100;const dims=o.reg?DIMS[SZ(p)-1].map(x=>Math.round((x+0.01*nz())*100)/100):null;
   const Vi=Math.round((46+r()*8)*10)/10;return {V,m,mass,dims,Vi,nz:nz()};}
 function displaced(p,R,pushed){const o=OBJ[p.obj];const full=R.V;if(o.d<1&&!pushed)return R.m/1.00;return full;}
 function weigh(sim){const s=sim.st;s.go='bal';s.goT=0;s.m=readings(sim.p).mass;}
@@ -203,13 +204,13 @@ function drawMeasure(sim,ctx,k,t){const p=sim.p,st=sim.st,o=OBJ[p.obj],R=reading
   // balance
   const onBal=st.go==='bal';drawBalance(ctx,BAL.x,BAL.y,BAL.w,onBal&&st.goT>0.6?st.m.toFixed(2)+' g':'0.00 g',k);
   // cylinder and water
-  const S=sampleSize(o,p.size);const inCyl=st.go==='cyl';const Vi=inCyl?st.Vi:(st.Vi!==null?st.Vi:R.Vi);const ppm=(CYL.bot-CYL.top)/CYL.cap;
+  const S=sampleSize(o,SZ(p));const inCyl=st.go==='cyl';const Vi=inCyl?st.Vi:(st.Vi!==null?st.Vi:R.Vi);const ppm=(CYL.bot-CYL.top)/CYL.cap;
   let objBottom=null,dispNow=0;
   if(inCyl){const fall=clamp((st.goT-0.2)/0.9,0,1);const full=st.Vf-st.Vi;const floatTop=o.d<1&&!p.push;const wy=CYL.bot-(Vi+full)*ppm;
     const restB=floatTop?wy+S.h*o.d:(o.d<1?wy+S.h+4:CYL.bot-2);objBottom=lerp(CYL.top-30,restB,fall);const subFrac=clamp((objBottom-(CYL.bot-Vi*ppm))/S.h,0,1);dispNow=fall>=1?full:full*subFrac;}
   const level=Vi+dispNow,wy=CYL.bot-level*ppm;
   ctx.save();ctx.globalAlpha=0.55;ctx.fillStyle='#5aa7dd';ctx.fillRect(CYL.x0,wy,CYL.x1-CYL.x0,CYL.bot-wy);ctx.restore();
-  if(inCyl){const xs=(CYL.x0+CYL.x1)/2;drawSample(ctx,o,p.size,xs,objBottom,sampleSeed(p));if(o.d<1&&p.push){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xs,objBottom-S.h);ctx.lineTo(xs,CYL.top-40);ctx.stroke();}
+  if(inCyl){const xs=(CYL.x0+CYL.x1)/2;drawSample(ctx,o,SZ(p),xs,objBottom,sampleSeed(p));if(o.d<1&&p.push){ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xs,objBottom-S.h);ctx.lineTo(xs,CYL.top-40);ctx.stroke();}
     ctx.save();ctx.globalAlpha=0.3;ctx.fillStyle='#5aa7dd';ctx.fillRect(CYL.x0,Math.max(wy,objBottom-S.h),CYL.x1-CYL.x0,Math.max(0,Math.min(objBottom,CYL.bot)-Math.max(wy,objBottom-S.h)));ctx.restore();}
   ctx.strokeStyle='#2c6db0';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CYL.x0,wy);ctx.quadraticCurveTo((CYL.x0+CYL.x1)/2,wy+6,CYL.x1,wy);ctx.stroke();
   ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(CYL.x0,CYL.top-6);ctx.lineTo(CYL.x0,CYL.bot);ctx.lineTo(CYL.x1,CYL.bot);ctx.lineTo(CYL.x1,CYL.top-6);ctx.stroke();ctx.fillStyle=PAL['cv-glass'];ctx.fillRect(CYL.x0-14,CYL.bot,CYL.x1-CYL.x0+28,4);
@@ -218,7 +219,7 @@ function drawMeasure(sim,ctx,k,t){const p=sim.p,st=sim.st,o=OBJ[p.obj],R=reading
   const shownV=inCyl&&st.goT>1.2?st.Vf:Vi;pill(ctx,shownV.toFixed(1)+' mL',CYL.x1+44,wy,PAL['s2'],'#fff',13*k);
   // sample at home or on balance
   if(!inCyl){let x=HOME,yb=400;if(onBal){const f=clamp(st.goT/0.5,0,1);x=lerp(HOME,BAL.x+BAL.w/2,f);yb=lerp(400,BAL.y-18,f)-Math.sin(f*Math.PI)*40;}
-    drawSample(ctx,o,p.size,x,yb,sampleSeed(p));
+    drawSample(ctx,o,SZ(p),x,yb,sampleSeed(p));
     if(st.dims&&!onBal){const w=S.w,h=S.h,dp=S.dp;ctx.strokeStyle=PAL['s4'];ctx.fillStyle=PAL['s4'];ctx.lineWidth=2;const arrow=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();[[x1,y1,x2,y2],[x2,y2,x1,y1]].forEach(([a,b,c,d])=>{const an=Math.atan2(d-b,c-a);ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(a+Math.cos(an+0.5)*8,b+Math.sin(an+0.5)*8);ctx.lineTo(a+Math.cos(an-0.5)*8,b+Math.sin(an-0.5)*8);ctx.closePath();ctx.fill();});};
       arrow(x-w/2,yb+0-14+20,x+w/2,yb-14+20);arrow(x-w/2-12,yb,x-w/2-12,yb-h);arrow(x+w/2+6,yb-h-6,x+w/2+dp+6,yb-h-dp*0.7-6);
       const fs=13*Math.min(k,1.5);pill(ctx,st.dims[0].toFixed(2)+' cm',x,yb+30,PAL['card'],PAL['cv-ink'],fs);ctx.font='700 '+fs+'px '+FONT;const hw=ctx.measureText(st.dims[2].toFixed(2)+' cm').width/2+10;
