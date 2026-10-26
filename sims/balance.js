@@ -19,7 +19,7 @@ function tally(r,p,cr,cp){const els=[],R={},P={};let qR=0,qP=0;
   const add=(list,cs,T,isR)=>list.forEach((s,i)=>{const c=cs[i];for(const k in s.counts){if(!els.includes(k))els.push(k);T[k]=(T[k]||0)+c*s.counts[k];}if(isR)qR+=c*s.q;else qP+=c*s.q;});
   add(r,cr,R,true);add(p,cp,P,false);els.forEach(k=>{R[k]=R[k]||0;P[k]=P[k]||0;});return {els,R,P,qR,qP};}
 
-// [id, name, tier (game level), type, skeleton, balanced coefficients]
+// [id, name, tier (3 = Closer look and up in the equation menu), type, skeleton, balanced coefficients]
 const LIB_RAW=[
  ['water','Making water',1,'synthesis','H2 + O2 > H2O',[2,1,2]],
  ['ammonia','Making ammonia',1,'synthesis','N2 + H2 > NH3',[1,3,2]],
@@ -97,18 +97,19 @@ const fEq=sim=>[8,30,784,LAY(sim).BY-34],fBoxes=sim=>{const l=LAY(sim);return [[
   fRightScales=sim=>{const l=LAY(sim);return [[408,l.BY,384,l.BH],[8,376,784,136]];};
 
 /* ---------- state helpers ---------- */
-function cur(sim){const p=sim.p;if(p.mode==='redox')return RXM[p.req]||RX[0];
-  if(p.mode==='game'){const g=sim.st&&sim.st.game;return g&&g.list.length?LIBM[g.list[g.i]]:LIBM.water;}return LIBM[p.eq]||LIB[0];}
+function cur(sim){const p=sim.p;if(p.mode==='redox')return RXM[p.req]||RX[0];return LIBM[p.eq]||LIB[0];}
 function coefs(sim,e){e=e||cur(sim);return e.all.map((_,i)=>Math.max(1,Math.round(sim.p['c'+i]||1)));}
-function ev(sim){const e=cur(sim),c=coefs(sim,e),nr=e.r.length,t=tally(e.r,e.p,c.slice(0,nr),c.slice(nr));
+function evC(e,c){const nr=e.r.length,t=tally(e.r,e.p,c.slice(0,nr),c.slice(nr));
   const bad=t.els.filter(k=>t.R[k]!==t.P[k]),qok=t.qR===t.qP,atoms=!bad.length,bal=atoms&&qok,g=c.reduce(gcd),lowest=g===1;
   let aR=0,aP=0,mR=0,mP=0;e.r.forEach((s,i)=>{aR+=c[i]*s.n;mR+=c[i]*s.M;});e.p.forEach((s,i)=>{aP+=c[nr+i]*s.n;mP+=c[nr+i]*s.M;});
   return {e,c,nr,t,bad,qok,atoms,bal,lowest,g,aR,aP,mR,mP,correct:bal&&lowest};}
-function hidden(sim){const g=sim.st&&sim.st.game;return sim.p.mode==='game'&&g&&g.state==='play';}
+function ev(sim){const e=cur(sim);return evC(e,coefs(sim,e));}
+/* Balance race: the atom counts stay hidden while the student is setting coefficients, so the scales cannot be used to
+   fiddle until everything turns green. They appear when Check is pressed, and stay up after a miss until a coefficient changes. */
+const same=(a,b)=>!!a&&!!b&&a.length===b.length&&a.every((x,i)=>x===b[i]);
+function hidden(sim){const G=sim.game,r=sim.gameRound;if(!G||!r||G.state==='over'||G.state==='hit'||G.state==='flying')return false;
+  return !(G.state==='miss'&&same(coefs(sim),r.checked));}
 function setCoefs(sim,arr){const v={};for(let i=0;i<NSLOT;i++)v['c'+i]=arr[i]||1;BioLab.setValues(sim,v);}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function newRound(sim){const tier=+sim.p.glevel||1;const pool=shuffle(LIB.filter(e=>e.tier===tier).map(e=>e.id));
-  sim.st.game={lvl:tier,list:pool.slice(0,5),i:0,score:0,tries:0,state:'play',msg:'Set the coefficients, then press Check.',log:[]};setCoefs(sim,[]);sim.infoDirty=true;}
 const qs=q=>q===0?'0':(q>0?'+':'−')+Math.abs(q);
 function hint(r){const e=r.e,t=r.t;if(!r.bad.length)return '';
   const inOne=k=>e.r.filter(s=>s.counts[k]).length===1&&e.p.filter(s=>s.counts[k]).length===1;
@@ -117,16 +118,16 @@ function hint(r){const e=r.e,t=r.t;if(!r.bad.length)return '';
 function statusText(r,sim){if(hidden(sim))return 'Press Check';if(r.bal&&!r.lowest)return 'Balanced, not lowest terms';if(r.bal)return 'Balanced';if(r.atoms&&!r.qok)return 'Charge not balanced';return 'Not balanced';}
 
 /* ---------- show only what the current mode uses ---------- */
-function syncMode(sim){if(!atLeast('ap')&&sim.p.mode==='redox')BioLab.setValues(sim,{mode:'explore'});
-  if(sim.st&&sim.p.mode==='game'&&(!sim.st.game||sim.st.game.lvl!==(+sim.p.glevel||1)))newRound(sim);
-  if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.mode,d=sim.def,e=cur(sim);
+function syncMode(sim){if((!atLeast('ap')&&sim.p.mode==='redox')||!MODES.some(m=>m.v===sim.p.mode))BioLab.setValues(sim,{mode:'explore'});
+  if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.mode,d=sim.def,e=cur(sim),inGame=!!sim.game;
   d.controls.forEach(c=>{const cid=d.id+'-'+c.id,el=document.getElementById(cid)||document.getElementById(cid+'-l');if(!el)return;const w=el.closest('.ctl');if(!w)return;
-    let show=atLeast(c.lvl)&&(!c.modes||c.modes.includes(mode));
+    // during the Balance race only the coefficient sliders of the round's equation show
+    let show=atLeast(c.lvl)&&(!c.modes||c.modes.includes(mode))&&(!inGame||c.slot!==undefined);
     if(c.slot!==undefined){show=show&&c.slot<e.all.length;const lab=w.querySelector('label');if(lab)lab.textContent=c.slot<e.all.length?'Coefficient of '+e.all[c.slot].txt:'Coefficient '+(c.slot+1);}
     w.hidden=!show;});
   d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});
   const btns=[...sim.ui.sec.querySelectorAll('.actions button')];
-  d.actions.forEach(a=>{const b=btns.find(x=>x.textContent===a.label);if(b)b.hidden=!atLeast(a.lvl)||!a.modes.includes(mode);});
+  d.actions.forEach(a=>{const b=btns.find(x=>x.textContent===a.label);if(b)b.hidden=inGame||!atLeast(a.lvl)||!a.modes.includes(mode);});
   sim.vis.syncKey=mode+'|'+e.id;sim.infoDirty=true;}
 function eqChanged(sim){setCoefs(sim,[]);syncMode(sim);}
 
@@ -157,13 +158,79 @@ function drawSide(ctx,list,cs,box,k,t,budget){const n=list.length,gap=6,wEach=(b
     if(i>0){ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(rx-gap/2,box.y);ctx.lineTo(rx-gap/2,box.y+box.h);ctx.stroke();ctx.setLineDash([]);}
     const lab=(show<want?show+' of ':'')+want+' '+s.txt;txt(ctx,lab,rx+rw/2,box.y+box.h-2,{s:12*k,c:PAL['cv-soft'],a:'center'});});}
 
+
+/* ---------- Balance race (the engine's Challenge game) ----------
+   Six equations per game, easy to hard: synthesis, decomposition, a harder synthesis, combustion, a double replacement
+   with a polyatomic ion, then a hard finish. Each round draws one equation from its pool, so every game differs.
+   Every library equation is verified at load, and every coefficient is 1–25, so every round is winnable on the sliders. */
+const RACE={
+  bio:   [['water','ammonia','salt','mgo','hcl'],['peroxide','hgo','kclo3'],['al2o3','fecl3','rust'],['methane','propane'],['pbi2','caoh','h2so4','baso4'],['ethanol','alcu','smelt','nawater']],
+  honors:[['al2o3','fecl3','p4o10','rust'],['kclo3','airbag','hgo'],['propane','ethanol','resp'],['pbi2','baso4','h2so4','caoh'],['ethane','butane','octane'],['fekoh','alh2so4']],
+  ap:    [['rust','p4o10','al2o3','fecl3'],['kclo3','airbag'],['ethane','butane','resp'],['fekoh','alh2so4'],['octane','pyrite','ostwald'],['kmno4','remsen','phos']]};
+const RTYPE=['Synthesis','Decomposition','Synthesis','Combustion','Double replacement','Final equation'];
+const CTX={water:'A hydrogen fuel cell joins hydrogen and oxygen into water, the only thing that comes out of its tailpipe.',
+  ammonia:'Factories make ammonia for fertilizer from nitrogen in the air and hydrogen gas.',salt:'Sodium metal burns in chlorine gas and leaves table salt.',
+  mgo:'A magnesium strip burns with a blinding white flame and leaves a white powder, magnesium oxide.',hcl:'Hydrogen and chlorine gases combine to make hydrogen chloride.',
+  peroxide:'The fizz when you pour hydrogen peroxide on a cut is oxygen gas escaping as the peroxide breaks down.',
+  hgo:'Joseph Priestley first collected oxygen in 1774 by heating red mercury(II) oxide.',kclo3:'Heating potassium chlorate is the classic way to make oxygen gas in a school lab.',
+  airbag:'A car airbag fills in about 30 ms with nitrogen gas from sodium azide.',al2o3:'Aluminum foil stays shiny because a thin skin of aluminum oxide forms on it.',
+  fecl3:'Hot iron wool glows in chlorine gas and turns into iron(III) chloride.',rust:'A steel bridge rusts as its iron reacts with oxygen to form iron(III) oxide.',
+  p4o10:'Burning white phosphorus makes thick white smoke of P₄O₁₀.',methane:'A gas stove burns natural gas, which is mostly methane.',
+  propane:'A gas grill burns propane with oxygen from the air.',ethanol:'E10 gasoline is 10% ethanol, which burns in the engine along with the gasoline.',
+  resp:'Your cells burn glucose for energy, and you breathe out the CO₂.',ethane:'Ethane, the second-biggest part of natural gas, burns in a furnace.',
+  butane:'A pocket lighter burns butane.',octane:'A car engine burns octane, a main part of gasoline.',
+  pbi2:'Mix two clear solutions and a bright yellow solid, lead(II) iodide, appears.',caoh:'Calcium hydroxide (slaked lime) neutralizes hydrochloric acid.',
+  h2so4:'Sodium hydroxide neutralizes a sulfuric acid spill.',baso4:'This reaction makes barium sulfate, the white solid patients drink before a stomach X-ray.',
+  fekoh:'Potassium hydroxide added to iron(III) sulfate solution makes a rust-brown solid, iron(III) hydroxide.',
+  alh2so4:'Aluminum dissolves in sulfuric acid and gives off hydrogen gas.',alcu:'Aluminum foil in blue copper(II) chloride solution pulls out red-brown copper metal.',
+  nawater:'A chunk of sodium fizzes across water, making sodium hydroxide and hydrogen gas.',smelt:'A blast furnace turns iron ore into iron metal with carbon from coke.',pyrite:'Roasting pyrite (fool’s gold) makes the SO₂ that factories turn into sulfuric acid.',
+  ostwald:'The first step in making nitric acid for fertilizer burns ammonia over a platinum gauze.',
+  kmno4:'Potassium permanganate and hydrochloric acid make chlorine gas in the lab.',remsen:'A copper penny in concentrated nitric acid gives off choking brown NO₂ gas.',
+  phos:'Phosphorus is made in an electric furnace from phosphate rock, sand and coke.'};
+const POLY={pbi2:'NO₃',caoh:'OH',h2so4:'SO₄',baso4:'SO₄',fekoh:'SO₄ and OH',alh2so4:'SO₄'};
+const eqHtml=(e,c)=>e.r.map((s,i)=>(c&&c[i]>1?c[i]:'')+s.html).join(' + ')+' → '+e.p.map((s,i)=>(c&&c[e.r.length+i]>1?c[e.r.length+i]:'')+s.html).join(' + ');
+function raceHint(e,i,lv){const t=e.type;
+  if(lv==='bio'){if(POLY[e.id])return 'Hint: '+POLY[e.id]+' stays together on both sides, so count it as one unit.';
+    if(t==='combustion')return 'Hint: balance C first, then H, then O last.';
+    if(t==='decomposition')return 'Hint: count each element on both sides in the particle view. Fix one, then recount the others.';
+    if(t==='single replacement')return 'Hint: balance the element that changes partners first, then the other one.';
+    return 'Hint: balance the element that is not oxygen or chlorine first, then that gas last.';}
+  if(lv==='honors'&&(POLY[e.id]||(t==='combustion'&&i>=4)))return POLY[e.id]?'Treat '+POLY[e.id]+' as one unit.':'If O₂ needs a half, double every coefficient.';
+  return '';}
+/* why a check failed: lowest terms, or which element is off, by how much, and which way to adjust */
+function raceMiss(r){const e=r.e,t=r.t;
+  if(r.bal&&!r.lowest)return 'Balanced, but not in lowest terms: every coefficient divides by '+r.g+'. Divide them all by '+r.g+'.';
+  const h=hint(r),k=h.k,L=t.R[k],R=t.P[k],d=Math.abs(L-R),lowL=L<R,nr=r.nr;
+  const with_=(left,big)=>(left?e.r:e.p).map((s,i)=>({s,c:r.c[left?i:nr+i]})).filter(x=>x.s.counts[k]&&(!big||x.c>1)).map(x=>x.s.html).join(' or ');
+  const up=with_(lowL,false),down=with_(!lowL,true);
+  let m='<b>'+k+'</b> is off by '+d+': '+L+' on the left, '+R+' on the right. Raise the coefficient of '+up+' on the '+(lowL?'left':'right')+(down?', or lower '+down+' on the '+(lowL?'right':'left'):'')+'.';
+  const rest=r.bad.filter(x=>x!==k).map(x=>x+' ('+t.R[x]+' left, '+t.P[x]+' right)');
+  if(rest.length)m+=' Also off: '+rest.join(', ')+'.';return m;}
+const GAME={label:'Balance race',title:'Balance race',rounds:6,fireLabel:'Check',par:300,metrics:[],
+  intro:{bio:'Six equations, easy to hard. Set each coefficient with its slider or the arrows on the stage, then press Check. The atom scales stay hidden until you check, so count atoms in the particle view. You need the smallest whole numbers. A first-try balance scores 3 points; finish in under 5:00 for the par badge.',
+         honors:'Six equations, from synthesis to a polyatomic double replacement and long combustions. Find the smallest whole-number coefficients, then press Check; the scales stay hidden until you do. First-try balances score 3, and under 5:00 earns the par badge.',
+         ap:'Six equations, ending with redox reactions that take real bookkeeping. Find the lowest whole-number coefficients and press Check; the scales stay hidden until you do. First-try balances score 3, and under 5:00 earns the par badge.'},
+  newRound(sim,i){const lv=BioLab.level==='ap'?'ap':BioLab.level==='honors'?'honors':'bio',pool=RACE[lv][i].filter(id=>LIBM[id]);
+    const id=pool[Math.floor(Math.random()*pool.length)],e=LIBM[id];
+    BioLab.setValues(sim,{mode:'explore',eq:id});setCoefs(sim,[]);sim.vis.th={};
+    const h=raceHint(e,i,lv),tp=i<5?RTYPE[i]:e.type.charAt(0).toUpperCase()+e.type.slice(1);
+    return {id,controls:e.all.map((_,k)=>'c'+k),metrics:[],checked:null,
+      prompt:`<b>Round ${i+1}: ${tp}.</b> ${CTX[id]||e.name+'.'}<br>Balance <b>${eqHtml(e)}</b> with the smallest whole-number coefficients.`+(h?` <span class="gm-hint">${h}</span>`:'')};},
+  fire(sim,r){r.checked=coefs(sim,LIBM[r.id]);r.t0=performance.now();sim.infoDirty=true;},
+  retry(sim,r){r.checked=null;},
+  // give the scales about half a second to tip into place before the verdict
+  poll(sim,r){if(performance.now()-r.t0<600)return null;const e=LIBM[r.id],c=r.checked,res=evC(e,c);sim.infoDirty=true;
+    if(res.correct)return {ok:true,msg:'Balanced! '+eqHtml(e,c)+' has the same atoms of every element on both sides.'};
+    return {ok:false,msg:raceMiss(res)};},
+  solve(sim,r){setCoefs(sim,LIBM[r.id].ans);}};
+
 /* ---------- the definition ---------- */
-const MODES=[{v:'explore',l:'Explore'},{v:'game',l:'Game'},{v:'redox',l:'Redox in acid',lvl:'ap'}];
+const MODES=[{v:'explore',l:'Explore'},{v:'redox',l:'Redox in acid',lvl:'ap'}];
 const ctlC=[];for(let i=0;i<NSLOT;i++)ctlC.push({id:'c'+i,slot:i,label:'Coefficient '+(i+1),type:'range',min:1,max:25,step:1,def:1,lvl:'bio',
   help:i===0?'Coefficients count whole molecules (or formula units). You can also click the arrows above and below each number on the stage.':undefined});
 const BAL={
   id:'balance',hash:'balance',apUnit:7,order:1,tab:'Balancing equations',kind:'Learning tool',next:['rxntypes','stoich'],prereq:[],
-  card:'Change coefficients and watch molecules appear, atom counts tip the scales, and the equation balance. Then race the game.',
+  card:'Change coefficients and watch molecules appear, atom counts tip the scales, and the equation balance. Then race the clock in the Balance race.',
   title:'Balancing chemical equations',
   lede:{bio:'Atoms are never created or destroyed in a reaction. Change the coefficients until every element has the same number of atoms on both sides.',
         honors:'Balance each equation with the smallest whole-number coefficients, and check that the mass of the reactants equals the mass of the products.',
@@ -174,20 +241,16 @@ const BAL={
     {id:'mode',label:'Mode',type:'seg',def:'explore',lvl:'bio',options:MODES,onChange(sim){syncMode(sim);}},
     {id:'eq',label:'Equation',type:'select',def:'water',lvl:'bio',modes:['explore'],options:LIB.map(e=>({v:e.id,l:e.name+': '+e.r.map(s=>s.txt).join(' + ')+' → '+e.p.map(s=>s.txt).join(' + '),lvl:e.tier===3?'honors':undefined})),onChange:eqChanged},
     {id:'req',label:'Redox equation (acidic solution)',type:'select',def:'cuag',lvl:'ap',noTrial:true,modes:['redox'],options:RX.map(e=>({v:e.id,l:e.name+': '+e.r.map(s=>s.txt).join(' + ')+' → '+e.p.map(s=>s.txt).join(' + ')})),onChange:eqChanged},
-    {id:'glevel',label:'Game level',type:'seg',def:'1',lvl:'bio',noTrial:true,modes:['game'],options:[{v:'1',l:'Level 1'},{v:'2',l:'Level 2'},{v:'3',l:'Level 3',lvl:'honors'}],onChange(sim){if(sim.p.mode==='game')newRound(sim);syncMode(sim);}},
     ...ctlC,
     {id:'half',label:'Show the half-reactions',type:'toggle',def:false,lvl:'ap',noTrial:true,modes:['redox'],help:'Splits the reaction into oxidation and reduction, then adds them so the electrons cancel.'}
   ],
   actions:[
-    {id:'check',label:'Check',lvl:'bio',primary:true,modes:['game'],run(sim){gameCheck(sim);}},
-    {id:'next',label:'Next equation',lvl:'bio',modes:['game'],run(sim){gameNext(sim);}},
-    {id:'round',label:'New round',lvl:'bio',modes:['game'],run(sim){newRound(sim);syncMode(sim);}},
     {id:'random',label:'Random equation',lvl:'bio',modes:['explore'],run(sim){const pool=LIB.filter(e=>atLeast(e.tier===3?'honors':'bio')&&e.id!==sim.p.eq);BioLab.setValues(sim,{eq:pool[Math.floor(Math.random()*pool.length)].id});}},
-    {id:'ones',label:'Reset coefficients to 1',lvl:'bio',modes:['explore','redox','game'],run(sim){setCoefs(sim,[]);}},
+    {id:'ones',label:'Reset coefficients to 1',lvl:'bio',modes:['explore','redox'],run(sim){setCoefs(sim,[]);}},
     {id:'answer',label:'Show the answer',lvl:'bio',modes:['explore','redox'],run(sim){setCoefs(sim,cur(sim).ans);}}
   ],
-  init(sim){const st={game:null};return st;},
-  afterPrewarm(sim){if(sim.p.mode==='game')newRound(sim);},
+  game:GAME,
+  init(sim){return {};},
   step(sim,dt){},
   metrics:[
     {id:'status',label:'The equation is',unit:'',lvl:'bio',text:true,get:s=>statusText(ev(s),s)},
@@ -196,8 +259,7 @@ const BAL={
     {id:'aP',label:'Atoms on the right',unit:'atoms',lvl:'bio',min:0,max:null,d:0,get:s=>ev(s).aP},
     {id:'mR',label:'Mass of reactants',unit:'g',lvl:'honors',min:0,max:null,d:2,get:s=>ev(s).mR},
     {id:'mP',label:'Mass of products',unit:'g',lvl:'honors',min:0,max:null,d:2,get:s=>ev(s).mP},
-    {id:'chg',label:'Charge: left | right',unit:'',lvl:'ap',text:true,modes:['redox'],get:s=>{const r=ev(s);return qs(r.t.qR)+' | '+qs(r.t.qP);}},
-    {id:'score',label:'Game score',unit:'',lvl:'bio',text:true,modes:['game'],get:s=>{const g=s.st.game;return g?g.score+' points · equation '+Math.min(5,g.i+1)+' of 5':'—';}}
+    {id:'chg',label:'Charge: left | right',unit:'',lvl:'ap',text:true,modes:['redox'],get:s=>{const r=ev(s);return qs(r.t.qR)+' | '+qs(r.t.qP);}}
   ],
   graphs:[{id:'inv',label:'Atom inventory',lvl:'bio',custom:true},{id:'mass',label:'Mass of reactants vs products',lvl:'honors',custom:true}],
   defaultGraph:'inv',
@@ -213,9 +275,8 @@ const BAL={
       [r.mR,r.mP].forEach((m,i)=>{const x0=ax.X(i+0.2),x1=ax.X(i+0.8);ctx.fillStyle=i?serColor(3):serColor(1);ctx.fillRect(x0,ax.Y(m),x1-x0,ax.Y(0)-ax.Y(m));txt(ctx,m.toFixed(2)+' g',(x0+x1)/2,ax.Y(m)-6,{s:13,w:700,c:PAL.fg,a:'center'});});
       txt(ctx,Math.abs(r.mR-r.mP)<1e-6?'Equal: mass is conserved':'Difference: '+Math.abs(r.mR-r.mP).toFixed(2)+' g',box.L+box.W/2,box.T+14,{s:13,w:700,c:Math.abs(r.mR-r.mP)<1e-6?PAL.s3:PAL.s1,a:'center'});}},
   infoPanel(sim){const r=ev(sim),e=r.e,hon=atLeast('honors'),ap=atLeast('ap'),hid=hidden(sim),mode=sim.p.mode;let h='';
-    if(mode==='game'){const g=sim.st.game;if(g){h+=`<h3>Game: level ${g.lvl}</h3><p><b>${g.msg}</b></p><p>Equation ${Math.min(5,g.i+1)} of 5 · Score ${g.score} of 10</p><p class="help">2 points if you get it on the first check, 1 point on the second. After two misses the answer is shown.</p>`;
-      if(g.log.length)h+='<p class="help">'+g.log.map((x,i)=>(i+1)+'. '+x).join('<br>')+'</p>';}}
-    else h+=`<h3>${e.name}</h3>`;
+    h+=`<h3>${e.name}</h3>`;
+    if(hid)h+='<p class="help">The atom counts appear when you press Check. Until then, count the atoms in the particle view yourself.</p>';
     const coefTxt=(c,s)=>(c>1?c:'')+s.html;
     h+=`<p style="font-size:1.05em">${e.r.map((s,i)=>coefTxt(r.c[i],s)).join(' + ')} → ${e.p.map((s,i)=>coefTxt(r.c[r.nr+i],s)).join(' + ')}</p>`;
     if(!hid){const cell=(list,off,k)=>{if(!hon)return '';const parts=[];list.forEach((s,i)=>{if(s.counts[k])parts.push(r.c[off+i]+'×'+s.counts[k]);});return parts.length===1&&parts[0]==='1×1'?'':parts.join(' + ')+' = ';};
@@ -231,8 +292,7 @@ const BAL={
     else h+='<p class="help"><b>Strategy:</b> treat a polyatomic ion that stays together (like NO₃⁻ or SO₄²⁻) as one unit. In combustion, balance C, then H, then O last. If you need a half, double everything.</p>';
     return h;},
   narrate(sim){const r=ev(sim),mode=sim.p.mode,hon=atLeast('honors');
-    if(mode==='game'){const g=sim.st.game;if(!g)return 'Pick a level to start a round of five equations.';if(g.state==='done')return '<b>Round complete.</b> You scored '+g.score+' of 10. Press New round to play again.';
-      if(g.state==='play')return 'Level '+g.lvl+', equation '+(g.i+1)+' of 5. Count the atoms in the particle view yourself, set the coefficients, then press <b>Check</b>.';return g.msg+' Press <b>Next equation</b>.';}
+    if(hidden(sim))return 'Count the atoms of each element in the particle view, set the coefficients, then press <b>Check</b>. The scales stay hidden until you check.';
     if(r.bal&&!r.lowest)return '<b>Balanced, but not in lowest terms.</b> Every coefficient divides by '+r.g+'. Divide them all by '+r.g+' to get the simplest whole numbers.';
     if(r.bal){const ex=r.t.els.slice(0,3).map(k=>r.t.R[k]+' '+k).join(', ');return '<b>Balanced.</b> Each side has '+ex+(r.t.els.length>3?' and more':'')+'. The atoms only rearranged into new substances; none were created or destroyed'+(hon?', so the mass stays '+r.mR.toFixed(2)+' g on both sides.':'.');}
     if(r.atoms&&!r.qok)return '<b>The atoms balance, but the charge does not:</b> '+qs(r.t.qR)+' on the left and '+qs(r.t.qP)+' on the right. Electrons lost must equal electrons gained, so adjust the ions until the charges match.';
@@ -276,7 +336,7 @@ const BAL={
      explain:{ap:'2 × 18 = 36 H atoms need 18 H₂O. Check O: 16 × 2 + 18 = 50 = 25 × 2. With 1 C₈H₁₈ the O₂ coefficient would be 12.5, so everything doubles to reach whole numbers.'}}
   ],
   lab:{bio:'<p><b>Question:</b> How can you balance an equation without changing any substance?</p><ol><li>Choose “Making water”. Count the atoms of each element on each side and record a trial.</li><li>Change one coefficient at a time. After each change, record a trial and note which scales are level.</li><li>Repeat for “Burning methane” and “Aluminum and oxygen”.</li></ol><p>Explain why you may change coefficients but never subscripts.</p>',
-       honors:'<p><b>Question:</b> Does balancing an equation conserve mass?</p><ol><li>For five equations, record a trial with every coefficient at 1, then record again when balanced.</li><li>Compare the mass of reactants and products in each trial.</li><li>Play Game level 2 and record your score.</li></ol><p>Use your data to explain the law of conservation of mass in terms of atoms.</p>',
+       honors:'<p><b>Question:</b> Does balancing an equation conserve mass?</p><ol><li>For five equations, record a trial with every coefficient at 1, then record again when balanced.</li><li>Compare the mass of reactants and products in each trial.</li><li>Play the Balance race and record your score and time.</li></ol><p>Use your data to explain the law of conservation of mass in terms of atoms.</p>',
        ap:'<p><b>Question:</b> How do electrons decide the coefficients in a redox reaction?</p><ol><li>Choose “Permanganate and hydrogen peroxide” (the AP redox titration). Write each half-reaction yourself, then turn on the half-reactions to check.</li><li>Balance it and record a trial. Note the charge on each side.</li><li>Repeat for dichromate and iron(II).</li></ol><p><b>Claim–evidence–reasoning:</b> Explain why the mole ratio of MnO₄⁻ to H₂O₂ is 2 : 5, using electrons transferred as your evidence.</p>'},
   terms:[{t:'Reactants / products',d:'The substances you start with (left of the arrow) and the substances made (right of the arrow).'},{t:'Coefficient',d:'The number in front of a formula. It counts molecules or formula units. A coefficient of 1 is not written.'},{t:'Subscript',d:'The small number inside a formula, such as the 2 in H₂O. It is part of the substance and never changes when you balance.'},
     {t:'Balanced equation',d:'An equation with the same number of atoms of each element on both sides.'},{t:'Law of conservation of mass',d:'Matter is not created or destroyed in a chemical reaction, so atoms (and mass) are the same before and after.'},{t:'Diatomic elements',d:'H₂, N₂, O₂, F₂, Cl₂, Br₂ and I₂ exist as two-atom molecules.'},
@@ -293,7 +353,7 @@ const BAL={
     if(sim.ui&&sim.ui.sec&&v.syncKey!==mode+'|'+e.id)syncMode(sim);
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,LH);
     // header
-    let head=mode==='game'&&sim.st.game?'Game level '+sim.st.game.lvl+' · equation '+Math.min(5,sim.st.game.i+1)+' of 5 · score '+sim.st.game.score:e.name;
+    const head=sim.game&&sim.gameRound?e.name+' · '+e.type:e.name;
     txt(ctx,head,16,26,{s:14*k,w:700});
     // equation row with steppers
     const items=[];e.all.forEach((s,i)=>{if(i===r.nr)items.push({op:'→'});else if(i>0)items.push({op:'+'});items.push({i,s,c:r.c[i]});});
@@ -309,14 +369,14 @@ const BAL={
       const hw=Math.max(a*1.6,it.cw/2+4);v.hits.push({x:cx-hw,y:EY-F*0.62-a*1.4-8,w:hw*2,h:a*1.4+10,i:it.i,d:1},{x:cx-hw,y:EY+F*0.62-2,w:hw*2,h:a*1.4+10,i:it.i,d:-1});
       x+=it.cw+F*0.18;txt(ctx,it.s.txt,x,EY,{s:F,w:600,b:'middle'});x+=it.fw;});
     // status pill
-    let st,bg;if(hid){st=mode==='game'?'Press Check when you think it is balanced':'';bg='#5d5d63';}else if(r.bal&&!r.lowest){st='Balanced, but divide every coefficient by '+r.g;bg='#9a5b00';}
+    let st,bg;if(hid){st='Press Check when you think it is balanced';bg='#5d5d63';}else if(r.bal&&!r.lowest){st='Balanced, but divide every coefficient by '+r.g;bg='#9a5b00';}
     else if(r.bal){st='Balanced ✓';bg='#1b7339';}else if(r.atoms&&!r.qok){st='Not balanced: charge is '+qs(r.t.qR)+' vs '+qs(r.t.qP);bg='#b3261e';}else{const h=hint(r);st='Not balanced: '+h.k+' is '+r.t.R[h.k]+' vs '+r.t.P[h.k];bg='#b3261e';}
     const PH=13*k*1.7,PY=EY+F*0.62+a0*1.4+PH/2+5;if(st)pill(ctx,st,400,PY,bg,'#fff',13*k);
     // particle boxes
     const BY=PY+PH/2+8,BH=372-BY;v.lay={EY,BY,BH};[[8,'Reactants',e.r,r.c.slice(0,r.nr),r.mR],[408,'Products',e.p,r.c.slice(r.nr),r.mP]].forEach(([bx,name,list,cs,m])=>{
       ctx.fillStyle=PAL['cv-bg2'];rr(ctx,bx,BY,384,BH,10);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1.5;ctx.stroke();
       txt(ctx,name,bx+12,BY+20*Math.min(k,1.3),{s:13*k,w:700,c:PAL['cv-soft']});
-      if(hon)txt(ctx,m.toFixed(2)+' g',bx+372,BY+20*Math.min(k,1.3),{s:13*k,w:700,c:PAL['cv-soft'],a:'right'});
+      if(hon&&!hid)txt(ctx,m.toFixed(2)+' g',bx+372,BY+20*Math.min(k,1.3),{s:13*k,w:700,c:PAL['cv-soft'],a:'right'});
       drawSide(ctx,list,cs,{x:bx+10,y:BY+20*Math.min(k,1.3)+8,w:364,h:BH-20*Math.min(k,1.3)-12},k,t,200);});
     ctx.fillStyle=PAL['cv-soft'];ctx.beginPath();ctx.moveTo(392,BY+BH/2-14);ctx.lineTo(407,BY+BH/2);ctx.lineTo(392,BY+BH/2+14);ctx.closePath();ctx.fill();
     // mini scales, one per element (plus charge in redox mode)
@@ -337,15 +397,5 @@ const BAL={
       if(!hid)txt(ctx,ok?'✓':'✗',cx,SY+32+6*k,{s:13*k,w:800,a:'center',c:col});});
   }
 };
-function gameCheck(sim){const g=sim.st.game;if(!g||g.state!=='play')return;const r=ev(sim),e=r.e;
-  if(r.correct){const pts=g.tries===0?2:1;g.score+=pts;g.state='right';g.msg='Correct! +'+pts+(pts===1?' point.':' points.');g.log.push(e.name+': +'+pts);}
-  else if(r.bal){g.msg='Balanced, but not in lowest terms. Divide every coefficient by '+r.g+' and check again.';}
-  else{g.tries++;if(g.tries>=2){g.state='shown';setCoefs(sim,e.ans);g.msg='Not quite. Here is the balanced equation (0 points). Study the scales, then go on.';g.log.push(e.name+': 0');}
-    else{const h=hint(r);g.msg='Not yet: '+h.k+' is '+r.t.R[h.k]+' on the left and '+r.t.P[h.k]+' on the right. One more try.';}}
-  sim.infoDirty=true;}
-function gameNext(sim){const g=sim.st.game;if(!g)return;if(g.state==='done'){newRound(sim);syncMode(sim);return;}
-  if(g.state==='play'){g.log.push(cur(sim).name+': skipped');}
-  if(g.i>=g.list.length-1){g.state='done';g.msg='Round complete: '+g.score+' of 10 points.';sim.infoDirty=true;return;}
-  g.i++;g.tries=0;g.state='play';g.msg='Set the coefficients, then press Check.';setCoefs(sim,[]);syncMode(sim);}
 BioLab.register(BAL);
 })();
