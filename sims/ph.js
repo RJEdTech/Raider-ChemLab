@@ -108,6 +108,138 @@ function sign(ctx,x,y,s){ctx.font='800 11px '+FONT;ctx.fillStyle='#fff';ctx.text
 function meter(ctx,x,y,w,val,k,label){rr(ctx,x,y,w,44*Math.min(k,1.3),8);ctx.fillStyle='#1d2a2c';ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;ctx.stroke();
   txt(ctx,label,x+10,y+22*Math.min(k,1.3),{s:12*k,w:700,c:'#9fd8b0',b:'middle'});txt(ctx,val,x+w-10,y+23*Math.min(k,1.3),{s:20*Math.min(k,1.3),w:800,c:'#7CFC9A',a:'right',b:'middle'});}
 
+/* ---------- Target pH game ----------
+   Each round names a target pH. The student sets a concentration (number × power of ten) or a dilution factor,
+   then tests the solution with universal indicator and a pH meter. A hit is within 0.05 pH units of the target. */
+const G_TOL=0.05,G_DUR=RM?300:1500;
+const G_EXP=[0,-1,-2,-3,-4,-5,-6];
+const G_DEC=e=>e===0?'1':'0.'+'0'.repeat(-e-1)+'1';
+const G_DIL=[2,5,10,20,50,100,200,500,1000,10000,100000];
+const G_BIO_DIL=[10,100,1000,10000,100000];
+const STRONG={HCl:{f:'HCl',name:'hydrochloric acid',b:0,n:1},HNO3:{f:'HNO₃',name:'nitric acid',b:0,n:1},HBr:{f:'HBr',name:'hydrobromic acid',b:0,n:1},HClO4:{f:'HClO₄',name:'perchloric acid',b:0,n:1},
+  NaOH:{f:'NaOH',name:'sodium hydroxide',b:1,n:1},KOH:{f:'KOH',name:'potassium hydroxide',b:1,n:1},BaOH2:{f:'Ba(OH)₂',name:'barium hydroxide',b:1,n:2}};
+const gInfo=sp=>STRONG[sp]||WEAK[sp];
+const gBase=sp=>!!(STRONG[sp]&&STRONG[sp].b);
+const gWeak=sp=>!!WEAK[sp];
+function gPH(sp,C){const s=STRONG[sp];if(s)return s.b?solvePH([],C*s.n,0):solvePH([],0,C*s.n);return weakPH(sp,C);}
+const r2=v=>{const x=Math.round(v*100)/100;return x===0?0:x;};
+const gF=v=>(Math.abs(v)<0.005?0:v).toFixed(2);
+const gPass=(sp,C,T)=>Math.abs(r2(gPH(sp,C))-T)<=G_TOL+1e-9;
+/* concentration that gives pH T exactly (bisection on log C) */
+function gInv(sp,T){let lo=-9,hi=1.5;const b=gBase(sp);for(let i=0;i<70;i++){const m=(lo+hi)/2,v=gPH(sp,Math.pow(10,m));if((v>T)!==b)lo=m;else hi=m;}return Math.pow(10,(lo+hi)/2);}
+/* nearest setting of the two concentration controls */
+function gGrid(C){let e=Math.floor(Math.log10(C)+1e-9),m=Math.round(C/Math.pow(10,e)*10)/10;if(m>=10){m=1;e++;}return {gM:m,gE:e};}
+const gVal=(m,e)=>m*Math.pow(10,e);
+const gOkGrid=g=>g.gE<=0&&g.gE>=-6&&g.gM>=1&&g.gM<=9.9&&gVal(g.gM,g.gE)<=1.0001;
+const gC=(sim,r)=>r.kind==='dil'?r.C0/(+sim.p.gD):gVal(+sim.p.gM,+sim.p.gE);
+const gKey=(sim,r)=>r.kind==='dil'?'d'+sim.p.gD:'c'+sim.p.gM+'|'+sim.p.gE;
+const gPick=a=>a[Math.floor(Math.random()*a.length)];
+const gRand=(a,b)=>r2(a+Math.random()*(b-a));
+const gNum=n=>n.toLocaleString('en-US');
+const gT=T=>Number.isInteger(T)&&BioLab.level==='bio'?String(T):gF(T);
+/* concentrations: decimals at Big picture, scientific notation above */
+const gCs=C=>(BioLab.level==='bio'&&C>=1e-6?String(+C.toPrecision(2)):C>=0.0095?C.toPrecision(2):sx(C,2))+' M';
+const gC0=C=>C.toPrecision(2)+' M';
+const gNear=(D,opts)=>opts.reduce((a,b)=>Math.abs(Math.log10(b/D))<Math.abs(Math.log10(a/D))?b:a);
+const gKa=sp=>'K<sub>a</sub> = '+sx(WEAK[sp].Ka,2);
+const gHint=s=>` <span class="gm-hint">${s}</span>`;
+const ACID_N=[[2.40,'vinegar'],[2.50,'cola'],[3.50,'orange juice'],[3.10,'a sports drink'],[4.30,'tomato juice']];
+const BASE_N=[[12.60,'bleach'],[11.60,'ammonia cleaner'],[10.50,'milk of magnesia'],[12.40,'limewater']];
+function mkConc(sp,T,o){const C=gInv(sp,T),g=gGrid(C);return Object.assign({kind:'conc',sp,T,ans:g,ansC:gVal(g.gM,g.gE)},o);}
+function mkDil(sp,C0,D,o){const T=r2(gPH(sp,C0/D));return Object.assign({kind:'dil',sp,C0,D0:D,T,S:r2(gPH(sp,C0)),ans:{gD:D},ansD:D},o);}
+/* a strong acid or base to a household target, or a random one (Closer look and Deep dive) */
+function gStrongConc(n,sp,base){const inf=STRONG[sp];let T,nm=null;
+  if(Math.random()<0.6){[T,nm]=gPick(base?BASE_N:ACID_N);}else T=base?gRand(9.4,13.3):gRand(1.2,4.8);
+  const r=mkConc(sp,T);if(sp==='BaOH2'&&r.ansC>0.1)return null;
+  r.prompt=nm?`<b>Round ${n}: Match ${nm}.</b> Make ${inf.name}, ${inf.f}, with the same pH as ${nm}: <b>pH ${gF(T)}</b>. Set the concentration.`
+    :`<b>Round ${n}: Calibrate a sensor.</b> A lab needs ${inf.name}, ${inf.f}, at exactly <b>pH ${gF(T)}</b> to check a pH sensor. Set the concentration.`;return r;}
+function gStrongDil(n,sp){const inf=STRONG[sp],C0=gPick([0.5,0.25,0.2,0.1,0.05,0.02]),D=gPick([2,5,20,50,200,500]);if(C0/D<1e-5)return null;
+  const r=mkDil(sp,C0,D);r.prompt=`<b>Round ${n}: Dilute the stock.</b> Your stock bottle is <b>${gC0(C0)} ${inf.f}</b> (pH ${gF(r.S)}). A procedure calls for <b>pH ${gF(r.T)}</b>. How much should you dilute it?`;return r;}
+function gWeakConc(n,sp,lo,hi){const w=WEAK[sp],T=gRand(lo,hi),r=mkConc(sp,T),x=Math.pow(10,-T),s=gGrid(x*x/w.Ka);
+  r.short=gVal(s.gM,s.gE);r.shortOk=gOkGrid(s)&&gPass(sp,r.short,T);
+  r.prompt=`<b>Round ${n}: Use a weak acid.</b> Make ${w.name}, ${w.f} (${gKa(sp)}), at <b>pH ${gF(T)}</b>. What concentration do you need?`;return r;}
+function gWeakDil(n,sp,Ds,ap){const w=WEAK[sp],C0=gPick([1,0.5,0.2,0.1]),D=gPick(Ds);if(C0/D<1e-4)return null;const r=mkDil(sp,C0,D);
+  r.strongD=gNear(Math.pow(10,r.T-r.S),G_DIL);
+  /* the method this level teaches must land on the right option */
+  const est=ap?(()=>{const x=Math.pow(10,-r.T);return C0/(x+x*x/w.Ka);})():Math.pow(10,2*(r.T-r.S));if(gNear(est,G_DIL)!==D)return null;
+  r.prompt=`<b>Round ${n}: Dilute a weak acid.</b> Your stock is <b>${gC0(C0)} ${w.f}</b>, ${w.name} (${gKa(sp)}, pH ${gF(r.S)}). Dilute it to <b>pH ${gF(r.T)}</b>.`;return r;}
+function gGen(lv,i){const n=i+1;let r;
+  if(lv==='bio'){
+    if(i===0){const [T,nm]=gPick([[1,'stomach acid'],[2,'lemon juice'],[4,'strong acid rain'],[5,'black coffee']]);r=mkConc('HCl',T);
+      r.prompt=`<b>Round 1: Match ${nm}.</b> Make hydrochloric acid, HCl, at <b>pH ${T}</b>, as acidic as ${nm}. Choose its concentration.`+gHint('Hint: for a strong acid, the pH is the power of ten without the minus sign. 0.01 M = 10⁻² M HCl has pH 2.');}
+    else if(i===1){const [T,nm]=gPick([[14,'drain cleaner'],[13,'oven cleaner'],[12,'a heavy-duty floor cleaner'],[10,'bar soap']]);r=mkConc('NaOH',T);
+      r.prompt=`<b>Round 2: Make a cleaner.</b> Make sodium hydroxide, NaOH, at <b>pH ${T}</b>, as basic as ${nm}. Choose its concentration.`+gHint('Hint: for a strong base, the power of ten gives the pOH. Then pH = 14 − pOH.');}
+    else if(i===2){const C0=gPick([1,0.1]),D=gPick([10,100,1000,10000]);if(C0/D<1e-5)return null;r=mkDil('HCl',C0,D);
+      r.prompt=`<b>Round 3: Dilute an acid.</b> Your stock bottle holds <b>${C0===1?'1.0':'0.10'} M HCl</b> (pH ${gT(r.S)}). You need <b>pH ${gT(r.T)}</b>. How many times should you dilute it?`+gHint('Hint: every 10× dilution raises an acid’s pH by 1.');}
+    else if(i===3){const C0=gPick([1,0.1]),D=gPick([10,100,1000]);if(C0/D<1e-4)return null;r=mkDil('NaOH',C0,D);
+      r.prompt=`<b>Round 4: Dilute a base.</b> Your stock bottle holds <b>${C0===1?'1.0':'0.10'} M NaOH</b> (pH ${gT(r.S)}). You need <b>pH ${gT(r.T)}</b>. How many times should you dilute it?`+gHint('Hint: diluting a base lowers its pH, by 1 for every 10×.');}
+    else if(i===4){const acid=Math.random()<0.5,k=gPick([2,3]);
+      if(acid){const S=gPick([1,2]);r=mkDil('HCl',Math.pow(10,-S),Math.pow(10,k),{hideC0:true});}else{const S=gPick([13,14]);r=mkDil('NaOH',Math.pow(10,S-14),Math.pow(10,k),{hideC0:true});}
+      r.prompt=`<b>Round 5: Count the steps.</b> A bottle of ${acid?'HCl':'NaOH'} is labeled only <b>pH ${gT(r.S)}</b>. Dilute it to <b>pH ${gT(r.T)}</b>.`+gHint('Hint: count the pH steps. Each step is one 10× dilution.');}
+    else{const acid=Math.random()<0.5;let ref,rp,k,more;
+      if(acid){[ref,rp,more]=gPick([['pure water',7,1],['black coffee',5,1],['lemon juice',2,0]]);k=more?gPick(rp===7?[2,3,4,5]:[1,2,3,4]):gPick([1,2,3]);r=mkConc('HCl',more?rp-k:rp+k);}
+      else{[ref,rp,more]=gPick([['pure water',7,1],['bar soap',10,1],['drain cleaner',14,0]]);k=more?gPick(rp===7?[3,4,5,6]:[1,2,3]):gPick([1,2,3,4]);r=mkConc('NaOH',more?rp+k:rp-k);}
+      const ion=acid?'H₃O⁺':'OH⁻',f=acid?'HCl':'NaOH',amt=more?`<b>${gNum(Math.pow(10,k))} times more ${ion}</b> than ${ref} (pH ${rp})`:`<b>only 1/${gNum(Math.pow(10,k))} as much ${ion}</b> as ${ref} (pH ${rp})`;
+      r.prompt=`<b>Round 6: Compare to the real thing.</b> Make ${f} with ${amt}. Choose its concentration.`+gHint(acid?'Hint: 10 times more H₃O⁺ means one pH step lower.':'Hint: 10 times more OH⁻ means one pH step higher.');}
+    return r;}
+  if(lv==='honors'){
+    if(i===0){r=gStrongConc(n,'HCl',false);if(r)r.prompt+=gHint('[H₃O⁺] = 10<sup>−pH</sup>. A strong acid gives one H₃O⁺ per formula unit, so C = [H₃O⁺].');}
+    else if(i===1){r=gStrongConc(n,gPick(['NaOH','KOH']),true);if(r)r.prompt+=gHint('pOH = 14 − pH, then [OH⁻] = 10<sup>−pOH</sup>.');}
+    else if(i===2){r=gStrongDil(n,'HCl');if(r)r.prompt+=gHint('Find the concentration you need. Dilution factor = C<sub>stock</sub> ÷ C<sub>new</sub>.');}
+    else if(i===3)r=gStrongDil(n,gPick(['NaOH','KOH']));
+    else if(i===4){r=Math.random()<0.6?gWeakConc(n,'HC2H3O2',2.5,3.3):gWeakConc(n,'HCHO2',2.1,2.4);if(!r||!r.shortOk)return null;
+      r.prompt+=gHint('x = [H₃O⁺] = 10<sup>−pH</sup>. Most of a weak acid stays intact, so K<sub>a</sub> ≈ x²/C and C ≈ x²/K<sub>a</sub>.');}
+    else{r=gWeakDil(n,'HC2H3O2',[2,5,10,20,50,100],false);if(r)r.prompt+=gHint('For a weak acid, [H₃O⁺] ≈ √(K<sub>a</sub>·C), so a 10× dilution raises the pH by only about 0.5.');}
+    return r;}
+  if(i===0)r=gStrongConc(n,gPick(['HCl','HNO3','HBr','HClO4']),false);
+  else if(i===1)r=gStrongConc(n,gPick(['NaOH','KOH','BaOH2','BaOH2']),true);
+  else if(i===2)r=gStrongDil(n,gPick(['HCl','HNO3','NaOH','KOH']));
+  else if(i===3){const [sp,lo,hi]=gPick([['HC2H3O2',2.5,3.3],['HClO',3.8,4.9],['HCN',4.7,5.6]]);r=gWeakConc(n,sp,lo,hi);if(!r||!r.shortOk)return null;}
+  else if(i===4){const sp=gPick(['HF','HNO2','HCHO2']),Ka=WEAK[sp].Ka,x=Ka*Math.pow(2,Math.random()*1.55-0.25);r=gWeakConc(n,sp,-Math.log10(x),-Math.log10(x));
+    if(!r||Math.abs(r2(gPH(sp,r.short))-r.T)<=G_TOL+0.01)return null;r.trap=true;r.prompt+=gHint('Check the 5% rule before you trust the shortcut.');}
+  else{r=gWeakDil(n,gPick(['HC2H3O2','HCHO2','HF','HNO2']),[2,5,10,20,50,100,200,500,1000],true);if(r)r.prompt+=gHint('Work backward from the target pH.');}
+  return r;}
+/* every round must be winnable with the controls shown, and must not already be won at its starting setting */
+function gValid(r,lv){if(!r)return false;const opts=lv==='bio'?G_BIO_DIL:G_DIL;
+  if(r.kind==='conc'){if(!gOkGrid(r.ans)||(lv==='bio'&&r.ans.gM!==1)||!gPass(r.sp,r.ansC,r.T))return false;
+    r.start=[[1,-1],[1,-4],[1,-2],[1,-6]].map(a=>({gM:a[0],gE:a[1]})).find(g=>!gPass(r.sp,gVal(g.gM,g.gE),r.T));if(!r.start)return false;}
+  else{const ok=opts.filter(D=>gPass(r.sp,r.C0/D,r.T));if(ok.length!==1||ok[0]!==r.ansD)return false;r.start={gD:[10,1000,100].find(D=>D!==r.ansD)};}
+  return true;}
+function gMsg(r,C,D,pH){const lv=BioLab.level,T=r.T,d=r2(pH)-T,ad=Math.abs(d),inf=gInfo(r.sp),b=gBase(r.sp),w=gWeak(r.sp),ps=gF(pH);
+  if(ad<=G_TOL+1e-9){let m=`On target: your solution tested <b>pH ${ps}</b>.`;
+    if(r.kind==='conc'){if(w){const x=Math.pow(10,-pH);const a=100*x/C;m+=` ${a<10?'Only ':''}${a.toPrecision(2)}% of the ${inf.name} ionized, so you needed ${gCs(C)} of acid to get [H₃O⁺] = ${sx(x,2)} M.`;}
+      else if(b)m+=(inf.n===2?` Each Ba(OH)₂ releases two OH⁻, so [OH⁻] = 2 × ${gCs(C)} = ${sx(2*C,2)} M.`:` [OH⁻] = ${gCs(C)}, so pOH = ${gF(14-pH)} and pH = 14 − pOH.`);
+      else m+=` Every ${inf.f} gave its H⁺ to water, so [H₃O⁺] = ${gCs(C)}.`;}
+    else if(w){const a0=100*Math.pow(10,-r.S)/r.C0,a1=100*Math.pow(10,-pH)/C;m+=` Diluting ${gNum(D)}× raised the pH by only ${gF(pH-r.S)}, because the percent ionized rose from ${a0.toPrecision(2)}% to ${a1.toPrecision(2)}%.`;}
+    else if(r.hideC0){const k=Math.round(Math.log10(D));m+=` ${gNum(D)}× is ${k} factors of 10, so the pH moved ${k} steps.`;}
+    else m+=` Diluting ${gNum(D)}× took it from ${gC0(r.C0)} to ${gCs(C)}.`;
+    return m;}
+  const head=`Your solution tested <b>pH ${ps}</b>, ${gF(ad)} ${d>0?'above':'below'} the target of ${gT(T)}.`;let adv;
+  if(r.kind==='conc'){const dilute=b?d<0:d>0;adv=dilute?'It is too dilute: choose a higher concentration.':'It is too concentrated: choose a lower concentration.';
+    if(w){const x=Math.pow(10,-T);
+      if(r.trap&&Math.abs(C/r.short-1)<0.06)adv=`That is the shortcut answer, C ≈ x²/K<sub>a</sub>. Here x is more than 5% of C, so the shortcut fails. Add back the acid that ionized: C = x + x²/K<sub>a</sub>.`;
+      else if(Math.abs(C/x-1)<0.2)adv=`You set the concentration equal to the [H₃O⁺] you want. A weak acid gives up only part of its H⁺, so you need more acid than that. Use K<sub>a</sub> and an ICE table to find C.`;
+      else adv+=' For a weak acid, a 10× change in concentration moves the pH by only about 0.5.';}
+    else if(inf.n===2&&Math.abs(C/(2*r.ansC)-1)<0.08)adv=`Each Ba(OH)₂ releases two OH⁻, so [OH⁻] = 2 × C. You need only half as much Ba(OH)₂ as the [OH⁻] you want.`;
+    else if(lv==='bio'){const k=Math.round(ad);if(k>=1)adv+=` You are ${k} pH step${k>1?'s':''} off, a factor of ${gNum(Math.pow(10,k))} in concentration.`;}
+    else adv+=` A pH gap of ${gF(ad)} is a factor of ${big(Math.pow(10,ad))} in ${b?'[OH⁻]':'[H₃O⁺]'}.`;}
+  else{const much=b?d<0:d>0;adv=much?'You diluted it too much: choose a smaller dilution factor.':'You did not dilute it enough: choose a bigger dilution factor.';
+    if(w){if(D===r.strongD&&r.strongD!==r.ansD)adv=`You diluted it as if it were a strong acid. A weak acid’s pH rises only about half as fast, because more of it ionizes as you dilute.`+(lv==='ap'?' Work backward: x = 10<sup>−pH</sup>, C = x + x²/K<sub>a</sub>, then the factor is C<sub>stock</sub> ÷ C.':' Use [H₃O⁺] ≈ √(K<sub>a</sub>·C).');}
+    else if(lv==='bio'){const k=Math.round(ad);if(k>=1)adv+=` Each 10× dilution moves the pH by 1, and you are ${k} step${k>1?'s':''} off.`;}}
+  return head+' '+adv;}
+const GAME={label:'Target pH',title:'Target pH',rounds:6,fireLabel:'Test pH',par:300,controls:['gE'],metrics:[],
+  intro:{bio:'Six solutions to make. Each round gives you a target pH. Choose the concentration or the dilution, then press Test pH to add universal indicator and read the meter. Land within 0.05 of the target on the first try for 3 points.',
+         honors:'Six solutions, from strong acids and bases to a weak acid. Work out the concentration or dilution on paper, set it, then test. You need to land within 0.05 pH units; first-try hits score 3.',
+         ap:'Six solutions: strong acids and bases, a dilution, then weak acids where you need K<sub>a</sub>. Land within 0.05 pH units of the target; first-try hits score 3.'},
+  newRound(sim,i){const lv=BioLab.level;let r=null;for(let t=0;t<500&&!r;t++){const c=gGen(lv,i);if(gValid(c,lv))r=c;}
+    if(!r){r=mkConc('HCl',2);gValid(r,lv);r.prompt=`<b>Round ${i+1}: Match lemon juice.</b> Make HCl at <b>pH 2</b>. Choose its concentration.`;r.fallback=true;}
+    r.controls=r.kind==='dil'?['gD']:lv==='bio'?['gE']:['gM','gE'];r.tf=null;r.key=null;sim.tgLast=r;
+    BioLab.setValues(sim,Object.assign({mode:'target',gM:1,gE:-1,gD:10},r.start));return r;},
+  fire(sim,r){r.C=gC(sim,r);r.D=+sim.p.gD;r.pH=gPH(r.sp,r.C);r.key=gKey(sim,r);r.tf=performance.now();},
+  poll(sim,r){if(r.tf===null||performance.now()-r.tf<G_DUR)return null;const ok=Math.abs(r2(r.pH)-r.T)<=G_TOL+1e-9;return {ok,msg:gMsg(r,r.C,r.D,r.pH)};},
+  retry(sim,r){r.tf=null;r.key=null;},
+  solve(sim,r){BioLab.setValues(sim,r.ans);}};
+
 const PH={
   id:'ph',hash:'ph',apUnit:14,order:1,tab:'pH and acid strength',kind:'Simulation',
   prereq:['molarity','equilibrium'],next:['titration','buffers'],
@@ -134,6 +266,7 @@ const PH={
     {id:'dilute',label:'Dilute 10×',lvl:'bio',primary:true,modes:['compare'],run(sim){const i=CONCS.indexOf(+sim.p.conc);BioLab.setValues(sim,{conc:i>=0&&i<CONCS.length-1?CONCS[i+1]:CONCS[0]});}},
     {id:'nexts',label:'Next solution',lvl:'bio',primary:true,modes:['scale'],run(sim){const i=SOL.findIndex(s=>s.id===sim.p.sol);BioLab.setValues(sim,{sol:SOL[(i+1)%SOL.length].id});}}
   ],
+  game:GAME,
   init(){return {key:''};},
   step(sim,dt){const v=sim.vis;if(!v.U)return;const r=calc(sim.p),key=sim.p.weak+'|'+sim.p.conc;
     if(v.key!==key){v.key=key;setStates(v.U[0],1);setStates(v.U[1],r.alpha);}
@@ -306,6 +439,61 @@ function drawCompare(sim,ctx,r,k,t,hon,ap){const p=sim.p,v=sim.vis;if(!v.U)retur
     txt(ctx,n+' of 40 ionized'+(hon?' ('+(i?(100*r.alpha).toPrecision(2):'100')+'% on average)':''),x0+200,338+26*k,{s:12.5*k,c:PAL['cv-soft'],a:'center'});
     const ey=440-(h.eq.length-1)*17*k;h.eq.forEach((e,j)=>txt(ctx,e,x0+200,ey+j*17*k,{s:13*k,w:700,a:'center'}));});
   ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(400,44);ctx.lineTo(400,446);ctx.stroke();
+}
+/* Target pH game view: stock bottle → your beaker (with pH meter) → pH scale with the target band */
+function gFit(ctx,s,maxw,size,w){ctx.font=w+' '+size+'px '+FONT;const tw=ctx.measureText(s).width;return tw>maxw?size*maxw/tw:size;}
+function drawBottle(ctx,x,y,w,h){const nw=w*0.36,nx=x+(w-nw)/2;
+  ctx.fillStyle=PAL['cv-glass'];rr(ctx,nx-4,y-28,nw+8,16,4);ctx.fill();
+  ctx.beginPath();ctx.moveTo(nx,y-12);ctx.lineTo(nx,y+4);ctx.quadraticCurveTo(x,y+10,x,y+32);ctx.lineTo(x,y+h-8);ctx.quadraticCurveTo(x,y+h,x+8,y+h);ctx.lineTo(x+w-8,y+h);ctx.quadraticCurveTo(x+w,y+h,x+w,y+h-8);ctx.lineTo(x+w,y+32);ctx.quadraticCurveTo(x+w,y+10,nx+nw,y+4);ctx.lineTo(nx+nw,y-12);ctx.closePath();
+  ctx.save();ctx.clip();ctx.fillStyle=PAL['cv-water'];ctx.fillRect(x,y+h*0.22,w,h);ctx.restore();
+  ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.stroke();}
+function drawTarget(sim,ctx,k){const r=sim.gameRound||sim.tgLast;
+  if(!r){txt(ctx,'Start the Target pH game to make a solution.',400,225,{s:15*k,c:PAL['cv-soft'],a:'center',b:'middle'});return;}
+  const p=sim.p,inf=gInfo(r.sp),C=gC(sim,r),D=+p.gD,w=gWeak(r.sp);
+  const shown=r.tf!==null&&r.key===gKey(sim,r),prog=shown?clamp((performance.now()-r.tf)/G_DUR,0,1):0,pH=shown?r.pH:null;
+  const kk=Math.min(k,1.5);
+  // header: the target
+  txt(ctx,'Target: pH '+gT(r.T),24,38,{s:18*kk,w:800});
+  txt(ctx,'Hit it within ± '+G_TOL.toFixed(2),24,38+20*kk,{s:12*k,c:PAL['cv-soft']});
+  // stock or reagent bottle
+  const BX=36,BY=180,BW=124,BH=150;drawBottle(ctx,BX,BY,BW,BH);
+  ctx.fillStyle=PAL['card'];rr(ctx,BX+10,BY+50,BW-20,48,6);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.stroke();
+  const fs=gFit(ctx,inf.f,BW-30,17*kk,800);txt(ctx,inf.f,BX+BW/2,BY+75,{s:fs,w:800,a:'center',b:'middle',c:PAL['fg']});
+  const lines=r.kind==='dil'?[r.hideC0?'Stock, pH '+gT(r.S):'Stock: '+gC0(r.C0),r.hideC0?'':'pH '+gT(r.S)]:[w?inf.name:(gBase(r.sp)?'strong base':'strong acid'),w&&k<1.3?'Ka = '+sx(inf.Ka,2):''];
+  lines.forEach((s,j)=>{if(s)txt(ctx,s,BX+BW/2,BY+BH+24+j*18*kk,{s:gFit(ctx,s,BW+40,(j?12.5:13.5)*k,j?400:700),w:j?400:700,a:'center',c:j?PAL['cv-soft']:PAL['cv-ink']});});
+  // arrow into the beaker
+  ctx.strokeStyle=PAL['cv-soft'];ctx.fillStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(BX+BW+14,290);ctx.lineTo(258,290);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(266,290);ctx.lineTo(254,283);ctx.lineTo(254,297);ctx.closePath();ctx.fill();
+  // your beaker, clear until you test it
+  const X=280,Y=170,W=170,H=190,ip=clamp((prog-0.3)/0.4,0,1),uc=shown?ramp(UNI,pH):null;
+  const liq=uc?mix(PAL['cv-water'],uc,0.85*ip):PAL['cv-water'];const L=CL.drawBeaker(ctx,{x:X,y:Y,w:W,h:H,fill:0.62,liquid:liq});
+  // pH meter and probe
+  const mh=44*Math.min(k,1.3),my=64;
+  ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X+44,my+mh);ctx.lineTo(X+44,Y+H-34);ctx.stroke();ctx.fillStyle=PAL['cv-glass'];rr(ctx,X+38,Y+H-48,12,36,5);ctx.fill();
+  const mv=!shown?'?':prog<0.35?'…':gF(lerp(7,pH,1-Math.pow(1-clamp((prog-0.35)/0.6,0,1),3)));
+  meter(ctx,X,my,W,mv,k,'pH');
+  // indicator drop
+  if(shown&&prog<0.32){const dy=lerp(Y-20,L.y,prog/0.32);ctx.fillStyle=PAL['cv-glass'];rr(ctx,X+W-44,Y-46,10,26,3);ctx.fill();
+    ctx.fillStyle=uc;ctx.beginPath();ctx.arc(X+W-39,dy,5,0,6.29);ctx.fill();}
+  // what you made
+  const desc=r.kind==='dil'?(r.hideC0?'Stock diluted '+gNum(D)+'×':gC0(r.C0)+' ÷ '+gNum(D)+' = '+gCs(C)+' '+inf.f):gCs(C)+' '+inf.f;
+  txt(ctx,'Your solution',X+W/2,Y+H+26,{s:14*k,w:700,a:'center'});
+  txt(ctx,desc,X+W/2,Y+H+26+19*k,{s:gFit(ctx,desc,300,12.5*k,400),a:'center',c:PAL['cv-soft']});
+  if(shown&&prog>=1&&k<1.3)txt(ctx,'[H₃O⁺] = '+sx(Math.pow(10,-pH),2)+' M',X+W/2,Y+H+26+38*k,{s:12*k,a:'center',c:PAL['cv-soft']});
+  // pH scale with the target band
+  const SX=612,SW=26,PT=50,PB=412,PY=v=>PT+clamp(v,0,14)/14*(PB-PT);
+  const g=ctx.createLinearGradient(0,PY(0),0,PY(14));UNI.forEach(u=>g.addColorStop(u[0]/14,u[1]));ctx.fillStyle=g;rr(ctx,SX,PY(0),SW,PY(14)-PY(0),6);ctx.fill();
+  for(let v=0;v<=14;v+=(k>1.3?2:1))txt(ctx,String(v),SX-8,PY(v),{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});
+  const ty=PY(r.T),bh=Math.max(7,PY(r.T+G_TOL)-PY(r.T-G_TOL));
+  ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2.5;ctx.strokeRect(SX-6,ty-bh/2,SW+12,bh);
+  const LX=SX+SW+14;let tly=ty,mly=null;
+  if(shown&&prog>=1){mly=PY(pH);const gap=22*kk;if(Math.abs(mly-tly)<gap){const s=mly>=tly?1:-1;mly=tly+s*gap;if(mly>PB+4||mly<PT-4){mly=tly-s*gap;}}}
+  ctx.fillStyle=PAL['cv-ink'];ctx.beginPath();ctx.moveTo(SX+SW+8,ty);ctx.lineTo(SX+SW+16,ty-6);ctx.lineTo(SX+SW+16,ty+6);ctx.closePath();ctx.fill();
+  txt(ctx,'target '+gT(r.T),LX+6,tly,{s:13*k,w:800,b:'middle'});
+  if(mly!==null){const yv=PY(pH);ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(SX-4,yv);ctx.lineTo(SX+SW+4,yv);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(SX+SW+4,yv);ctx.lineTo(LX,mly);ctx.stroke();
+    const lab='yours '+gF(pH);ctx.font='700 '+(13*k)+'px '+FONT;const lw=ctx.measureText(lab).width+14,lh=20*Math.min(k,1.4);rr(ctx,LX+2,mly-lh/2,lw,lh,lh/2);ctx.fillStyle=uc;ctx.fill();
+    txt(ctx,lab,LX+9,mly+1,{s:13*k,w:700,b:'middle',c:CL.inkOn(uc)});}
 }
 PH.controls[0].onChange=syncMode;
 PH.onLevel=syncMode;

@@ -102,7 +102,7 @@ function gShuffle(n){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j
 const gNow=r=>r.anim?r.anim.n*r.anim.u:0;
 function gameStep(r,dt){const a=r.anim;if(!a)return;if(a.u<1)a.u=Math.min(1,a.u+dt/a.dur);else a.hold+=dt;}
 function gResult(r){const a=r.anim,n=a.n,rem=r.S*Math.pow(0.5,n),d=n-r.nAns,off=Math.abs(d),date=r.kind==='date';
-  const lots=off>=0.95?'about '+off.toFixed(1)+' half-lives':off>=0.15?'about '+off.toFixed(1)+' half-life':'a little';
+  const o1=+off.toFixed(1),lots=o1<0.15?'a little':'about '+o1+(o1>1?' half-lives':' half-life');
   const set=gSet(r,a.v),eq=r.kind==='hl'?' = '+fmtT(n*r.th,r.u):' = '+gHl(n);
   if(n<=0)return {ok:false,msg:`No time passed, so all ${gGiven(r,r.S)} is still there. Set ${r.kind==='hl'?'the number of half-lives':date?'an age':'a time'} first.`};
   if(off<=GTOL+1e-9)return {ok:true,msg:date?`Dated! A sample ${set} old keeps ${gAmt(r,rem)} of its carbon-14, a match for this one’s ${gNum(r.T)}%.`:`On target! After ${set}${eq}, ${gAmt(r,rem)} is left. The goal was ${gGiven(r,r.T)}.`};
@@ -131,24 +131,6 @@ function drawGame(ctx,k,r){const a=r.anim,n=gNow(r),I=r.I,N=200,alive=Math.round
   ctx.strokeStyle=PAL['rj'];ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(bx-4,ty);ctx.lineTo(X+W-14,ty);ctx.stroke();ctx.setLineDash([]);
   txt(ctx,'Goal: '+gGiven(r,r.T),bx+bw+10,ty-7,{s:Math.min(13*k,21),w:800,c:PAL['rj']});
   txt(ctx,'Start: '+gGiven(r,r.S),bx+bw+10,bt+Math.min(13*k,21),{s:Math.min(12*k,19),c:PAL['cv-soft']});}
-function plotGame(ctx,box,r){const hl=r.kind==='hl',sc=hl?1:r.th,shots=r.shots.map(s=>s.n);const live=r.anim&&!r.anim.rec?gNow(r):null;
-  const nmax=Math.max(6,...shots,live||0)*1.05;
-  const ax=axes(ctx,box,{xmin:0,xmax:nmax*sc,ymin:0,ymax:r.S*1.05,xl:hl?'Half-lives':(r.kind==='date'?'Age (years)':'Time ('+r.u+')'),yl:r.kind==='date'?'% carbon-14 left':r.pct?'% left':'mg left'});
-  const ty=ax.Y(r.T);ctx.strokeStyle=serColor(1);ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(ax.X(0),ty);ctx.lineTo(ax.X(nmax*sc),ty);ctx.stroke();ctx.setLineDash([]);
-  const trace=(n,alpha)=>{ctx.globalAlpha=alpha;ctx.strokeStyle=serColor(0);ctx.lineWidth=2.5;ctx.beginPath();for(let j=0;j<=60;j++){const m=n*j/60,X=ax.X(m*sc),Y=ax.Y(r.S*Math.pow(0.5,m));j?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.stroke();
-    ctx.fillStyle=serColor(0);ctx.beginPath();ctx.arc(ax.X(n*sc),ax.Y(r.S*Math.pow(0.5,n)),5,0,6.29);ctx.fill();ctx.globalAlpha=1;};
-  shots.forEach((n,q)=>trace(n,q===shots.length-1&&live===null?1:0.35));if(live!==null)trace(live,1);
-  legend(ctx,Math.max(box.L+60,box.L+box.W-250),box.T+12,[{label:'your tries',color:serColor(0)},{label:'goal '+gGiven(r,r.T),color:serColor(1),dash:true}]);}
-function infoGame(r){const hon=atLeast('honors'),ap=atLeast('ap');
-  let h=`<h3>${r.kind==='date'?'Carbon dating':'Timing a radioactive sample'}</h3><p>Each half-life cuts what is left in half: 100% → 50% → 25% → 12.5% → 6.25%.${r.kind==='date'?' A living thing has 100% of the carbon-14 level in the air; the clock starts when it dies.':''}</p>`;
-  if(hon)h+='<p><b>N = N₀(½)ⁿ</b>, where n = t / t½ is the number of half-lives that pass.</p>';
-  if(ap)h+='<p>When N/N₀ is not a power of ½: n = ln(N₀/N) / ln 2. With the rate constant: t = ln(N₀/N) / k, where k = ln 2 / t½.</p>';
-  if(r.shots.length)h+=`<div class="tbl-wrap"><table><thead><tr><th>Try</th><th>You set</th><th>Half-lives</th><th>Left</th></tr></thead><tbody>${r.shots.map((s,q)=>`<tr><td>${q+1}</td><td>${gSet(r,s.v)}</td><td>${s.n.toFixed(2)}</td><td>${gAmt(r,r.S*Math.pow(0.5,s.n))}</td></tr>`).join('')}</tbody></table></div>`;
-  return h;}
-function narrateGame(r){const a=r.anim;if(!a)return 'Set the '+(r.kind==='hl'?'number of half-lives':r.kind==='date'?'age':'time')+' with the slider, then press <b>Run the clock</b>.';
-  if(a.u<1)return 'The clock is running. Each atom decays at a random moment, but about half of what is left goes in every half-life.';
-  return 'After '+gHl(a.n)+', '+gAmt(r,r.S*Math.pow(0.5,a.n))+' is left. The goal was '+gGiven(r,r.T)+'.';}
-
 function restart(sim){if(!sim.st)return;sim.st.runs=[];sim.st.done=false;sim.st.avgShown=false;newRun(sim);sim.infoDirty=true;}
 function modeChange(sim){syncMode(sim);restart(sim);}
 
@@ -214,7 +196,7 @@ const HL={
   ],
   graphs:[{id:'curve',label:'Amount left vs time',lvl:'bio',custom:true},{id:'ln',label:'ln(amount left) vs time',lvl:'ap',custom:true}],
   defaultGraph:'curve',
-  plot(sim,ctx,box,id){if(sim.gameRound){plotGame(ctx,box,sim.gameRound);return;}const st=sim.st,p=sim.p,ap=atLeast('ap');
+  plot(sim,ctx,box,id){const st=sim.st,p=sim.p,ap=atLeast('ap');
     if(p.mode==='date'){const xmax=50000;const ax=axes(ctx,box,{xmin:0,xmax,ymin:id==='ln'?0:0,ymax:id==='ln'?Math.log(100)*1.05:100,xl:'Years since death',yl:id==='ln'?'ln(% carbon-14)':'% carbon-14 left'});
       const f=t=>100*Math.pow(0.5,t/T14),g=t=>id==='ln'?Math.log(f(t)):f(t);ctx.strokeStyle=serColor(0);ctx.lineWidth=2.5;ctx.beginPath();for(let t=0;t<=xmax;t+=250){t?ctx.lineTo(ax.X(t),ax.Y(g(t))):ctx.moveTo(ax.X(t),ax.Y(g(t)));}ctx.stroke();
       const a=age(p.pct),y=id==='ln'?Math.log(p.pct):p.pct;if(a<=xmax){ctx.setLineDash([4,4]);ctx.strokeStyle=PAL['muted'];ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(ax.X(0),ax.Y(y));ctx.lineTo(ax.X(a),ax.Y(y));ctx.lineTo(ax.X(a),ax.Y(0));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=serColor(1);ctx.beginPath();ctx.arc(ax.X(a),ax.Y(y),6,0,6.29);ctx.fill();}
@@ -233,7 +215,7 @@ const HL={
     ctx.restore();
     const items=[{label:'this run',color:serColor(0)},{label:id==='ln'?'ln N = ln N₀ − kt':'N = N₀(1 − p)ⁿ',color:PAL['muted'],dash:true}];if(A&&A.n>1)items.splice(1,0,{label:'average of '+A.n+' runs',color:serColor(1)});
     legend(ctx,box.L+12,box.T+10,items);},
-  infoPanel(sim){if(sim.gameRound)return infoGame(sim.gameRound);const st=sim.st,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap');
+  infoPanel(sim){const st=sim.st,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap');
     if(p.mode==='date'){const a=age(p.pct),n=Math.log2(100/p.pct);return `<h3>Dating a sample with ${p.pct}% carbon-14 left</h3><p>Living things keep the same carbon-14 level as the air. After death, no new carbon comes in, and the carbon-14 decays with a half-life of 5,730 years.</p>
       <p><b>Half-lives passed:</b> 100% → ${p.pct}% means (½)ⁿ = ${(p.pct/100).toFixed(2)}, so n = log₂(${(100/p.pct).toFixed(2)}) = ${n.toFixed(2)}.</p><p><b>Age</b> = ${n.toFixed(2)} × 5,730 years = <b>${Math.round(a).toLocaleString('en-US')} years</b>.</p>
       ${ap?`<p><b>First-order form:</b> t = ln(N₀/N) / k = ln(${(100/p.pct).toFixed(2)}) / (1.21 × 10⁻⁴ yr⁻¹) = ${Math.round(a).toLocaleString('en-US')} years.</p>`:''}${p.pct<3?'<p>Below about 2% left (over 30,000 years), so little carbon-14 remains that small errors matter a lot. Labs can date to about 50,000 years.</p>':''}`;}
@@ -244,7 +226,7 @@ const HL={
     h+=`<div class="tbl-wrap"><table><thead><tr><th>${p.mode==='iso'?'Half-lives':'Shake'}</th><th>Left</th><th>Percent</th>${hon?'<th>Predicted</th>':''}</tr></thead><tbody>${rows}</tbody></table></div>`;
     if(ap)h+=`<p style="margin-top:8px">Decay is first order: rate = kN, so N = N₀e^(−kt) with k = ${(-Math.log(1-pDecay(p))).toFixed(3)} per ${p.mode==='iso'?'step':'shake'}. A plot of ln N vs time is a straight line with slope −k.</p>`;
     return h;},
-  narrate(sim){if(sim.gameRound)return narrateGame(sim.gameRound);const st=sim.st,p=sim.p,hon=atLeast('honors');
+  narrate(sim){const st=sim.st,p=sim.p,hon=atLeast('honors');
     if(p.mode==='date'){const a=age(p.pct),n=Math.log2(100/p.pct);return 'A sample with <b>'+p.pct+'%</b> of its carbon-14 left has been dead for '+n.toFixed(2)+' half-lives: <b>'+Math.round(a).toLocaleString('en-US')+' years</b>.'+(p.pct<3?' That is near the limit of carbon dating.':'');}
     const iso=p.mode==='iso',I=isoOf(p),word=iso?'atoms':'candies';
     if(st.k===0)return iso?'200 '+I.name.toLowerCase()+' atoms. Each time step is '+fmtT(p.step*I.t,I.u)+'. Press <b>Advance one time step</b>: each atom decays at random, but about '+(100*pDecay(p)).toFixed(0)+'% go each step.':'A cup of '+st.N0+' candies, all with the mark facing up (undecayed). Press <b>Shake and pour</b>: any candy that lands blank side up has “decayed” and comes out.';
@@ -293,7 +275,10 @@ const HL={
   about:'<p>Each candy or atom decays independently with probability p per step, using a random number, so every run differs, just as real class data do. In the candy lab, p is 1/2 (two-sided candy), 1/4 or 1/6 (dice). In Real isotopes, a step of s half-lives gives p = 1 − (½)ˢ. The ideal curves are N₀(1 − p)ⁿ and N₀e^(−kt) with k = −ln(1 − p) per step.</p><p>Half-lives are NNDC values, rounded. Carbon dating assumes the carbon-14 level in the air was constant; real labs correct with calibration curves from tree rings, which shift some ages by several hundred years. With only 20–200 “atoms”, chance matters far more than in a real sample, which holds trillions of atoms.</p>',
   initVis(sim){},
   onLevel(sim){syncMode(sim);},
-  draw(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);if(sim.gameRound){drawGame(ctx,k,sim.gameRound);return;}
+  draw(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st;ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
+    // On the game's end card, tuck away the last round's slider; anything else (Play again, another mode) brings it back.
+    const ov=!!(sim.game&&sim.game.state==='over');if(sim.ui&&sim.ui.ctrls&&sim._gOv!==ov){sim._gOv=ov;sim.ui.ctrls.style.display=ov?'none':'';}
+    if(sim.gameRound){drawGame(ctx,k,sim.gameRound);return;}
     if(p.mode==='date')drawDate(sim,ctx,k,t);else if(p.mode==='iso')drawIso(sim,ctx,k,t);else drawCandy(sim,ctx,k,t);
     if(p.mode!=='date')drawSide(sim,ctx,k);},
   thumbSetup(sim){shake(sim);shake(sim);}

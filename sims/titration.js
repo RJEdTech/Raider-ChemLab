@@ -43,7 +43,7 @@ function indAt(ind,pH){const I=IND[ind];if(!I||!I.st||!Number.isFinite(pH))retur
   for(let i=1;i<s.length;i++)if(pH<=s[i][0]){const t=(pH-s[i-1][0])/(s[i][0]-s[i-1][0]);const a=lerp(s[i-1][2],s[i][2],t);return [mix(s[i-1][1],s[i][1],t),ind==='phenol'?Math.max(0.12,a):a,ind==='phenol'?'faint pink':ind==='btb'?'green':'orange'];}
   return [hi[1],hi[2],I.names[1]];}
 
-function cfg(p){const t=TYPES[p.type]||TYPES.ss,C=UNK[p.type],va=+p.va,ct=p.type==='redox'?(+p.cb)/5:+p.cb;
+function cfg(p){const t=TYPES[p.type]||TYPES.ss,C=p.gC>0?+p.gC:UNK[p.type],va=+p.va,ct=p.type==='redox'?(+p.cb)/5:+p.cb;
   const nA=C*va;                                   // mmol of analyte
   const nE=p.type==='redox'?nA*2/5:nA;              // mmol of titrant needed
   const acid=ACIDS[p.acid]||ACIDS.HC2H3O2;return {t,C,va,ct,nA,nE,Ve:nE/ct,acid};}
@@ -59,7 +59,11 @@ function flaskColor(p,V,c){c=c||cfg(p);const base=PAL['cv-water'];
 function region(p,V,c){c=c||cfg(p);const f=V/c.Ve;if(V<=0)return 'start';if(Math.abs(V-c.Ve)<=0.03)return 'eq';if(f<0.9)return 'before';if(f<1)return 'near';return 'after';}
 
 /* ---------- mode-aware UI ---------- */
-function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.type,d=sim.def;
+function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;
+  // the game just ended: put back the bench the student had before it (the game's sample and settings go away)
+  if(!sim.game&&sim._gBak){const b=sim._gBak;sim._gBak=null;delete sim.p.gC;BioLab.setValues(sim,Object.assign({rate:'closed'},b));BioLab.reset(sim);if(sim.vis)sim.vis.key='';}
+  const db=dropBtn(sim);if(db)db.classList.toggle('primary',!sim.game);
+  const mode=sim.p.type,d=sim.def;
   d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
   d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});
   sim.infoDirty=true;}
@@ -135,6 +139,117 @@ function legendItems(p,acid,big){const t=p.type,sp=big?'':', spectator';
   if(t==='wb')return [['B','NH₃'],['BH','NH₄⁺'],['H3O','H₃O⁺'],['W','H₂O formed'],['Cl','Cl⁻'+sp]];
   return [['H2O2','H₂O₂'],['MnO4','MnO₄⁻'],['Mn','Mn²⁺'],['O2','O₂ gas'],['K','K⁺'+sp]];}
 
+/* ---------- Challenge game: "Hit the endpoint" ----------
+   Every round is a real burette run: the student works the stopcock and single drops, then presses Mark endpoint.
+   "find" rounds hide the concentration and the student watches the indicator (or the pH meter).
+   "calc" rounds give the numbers but take away the color cue (no indicator yet, or a covered flask), so the student
+   calculates the volume and delivers exactly that much. The particle zoom, the canvas status line and any curve a
+   real student could not see stay hidden until the endpoint is marked. */
+const GTOL=0.10,GTOL_PH=0.02;      // mL either side of the target (two drops); pH units for the buffer round
+const gRs=(a,b,st)=>Math.round((a+Math.random()*(b-a))/st)*st;
+const gPick=a=>a[Math.floor(Math.random()*a.length)];
+const f2=v=>v.toFixed(2);
+const SUPD='⁰¹²³⁴⁵⁶⁷⁸⁹';
+const kaTxt=k=>{const s=k.toExponential(1).split('e');return s[0]+' × 10'+s[1].replace('-','⁻').replace('+','').replace(/\d/g,d=>SUPD[d]);};
+const IND_G={phenol:{n:'phenolphthalein',from:'colorless',goal:'the first pink that stays'},btb:{n:'bromothymol blue',from:'yellow',goal:'the first green or blue that stays'},
+  mred:{n:'methyl red',from:'yellow',goal:'the first orange or red that stays'},none:{n:'',goal:'the middle of the steep jump in pH'}};
+function dropBtn(sim){const i=(sim.def.actions||[]).findIndex(a=>a.id==='drop');return sim.ui&&sim.ui.ctrls?sim.ui.ctrls.querySelectorAll('.actions button')[i]:null;}
+/* an unknown whose equivalence volume lands between lo and hi mL, inside the bench's unknown range */
+function gConc(p,lo,hi,st){const red=p.type==='redox',ct=red?p.cb/5:p.cb,k=red?0.4:1,cmin=red?0.030:0.060,cmax=red?0.065:0.140;
+  const a=Math.max(cmin,lo*ct/(k*p.va)),b=Math.min(cmax,hi*ct/(k*p.va));if(a>b)return null;
+  let C=gRs(a,b,st);if(C<a-1e-12)C+=st;if(C>b+1e-12)C-=st;return C<a-1e-12||C>b+1e-12?null:+C.toFixed(4);}
+/* the exact volume where a weak acid's pH reaches pHt (pH rises steadily before equivalence) */
+function gVatPH(p,pHt){const c=cfg(p);let lo=0,hi=c.Ve;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(pHat(p,m,c)<pHt)lo=m;else hi=m;}return (lo+hi)/2;}
+function gTry(lv,i){const P=o=>Object.assign({type:'ss',va:25,cb:0.1,acid:'HC2H3O2',ind:'phenol',meter:false},o),WS=['HC2H3O2','HCHO2','HC7H5O2'];let s;
+  if(lv==='bio')s=[{kind:'find',p:P({va:25}),lo:15,hi:24},{kind:'find',p:P({va:10,ind:'btb'}),lo:8,hi:14},
+      {kind:'calc',p:P({ind:'none'}),post:{ind:'phenol'},lo:15,hi:24},{kind:'calc',p:P({va:10,ind:'none'}),post:{ind:'phenol'},lo:8,hi:14},
+      {kind:'calc',two:true,p:P({ind:'none'}),post:{ind:'phenol'},lo:15,hi:24},{kind:'find',known:true,p:P({}),lo:15,hi:24}][i];
+  else if(lv==='honors')s=[{kind:'find',p:P({}),lo:15,hi:24},{kind:'calc',p:P({cb:0.2,ind:'none'}),post:{ind:'phenol'},lo:8,hi:17},
+      {kind:'find',p:P({type:'ws'}),lo:15,hi:24},{kind:'calc',p:P({type:'ws',va:gPick([10,25]),cb:gPick([0.1,0.2]),ind:'none'}),post:{ind:'phenol'},lo:8,hi:24},
+      {kind:'find',p:P({type:'wb',ind:'mred'}),lo:15,hi:24},{kind:'calc',two:true,p:P({type:'wb',cb:0.2,ind:'none'}),post:{ind:'mred'},lo:10,hi:17.5}][i];
+  else{const a2=gPick(Object.keys(ACIDS));
+    s=[{kind:'find',p:P({type:'ws',acid:gPick(WS),cb:gPick([0.1,0.2]),ind:'none',meter:true}),lo:8,hi:24},
+      {kind:'calc',ka:true,p:P({type:'ws',acid:a2,va:gPick([10,25]),cb:gPick([0.1,0.2]),ind:'none'}),post:a2==='HClO'?{meter:true}:{ind:'phenol',meter:true},lo:8,hi:24},
+      {kind:'find',p:P({type:'redox',va:gPick([10,25]),cb:gPick([0.1,0.2]),ind:'none'}),lo:8,hi:20},
+      {kind:'calc',cover:true,p:P({type:'redox',va:gPick([10,25]),cb:gPick([0.1,0.2]),ind:'none'}),lo:8,hi:24},
+      {kind:'calc',goal:'half',p:P({type:'ws',acid:gPick(WS),cb:gPick([0.1,0.2]),ind:'none'}),post:{meter:true},lo:12,hi:40},
+      {kind:'calc',goal:'ph',p:P({type:'ws',acid:gPick(['HC2H3O2','HC7H5O2']),cb:gPick([0.1,0.2]),ind:'none'}),post:{meter:true},lo:12,hi:30}][i];}
+  s=Object.assign({goal:'eq'},s);s.p=Object.assign({},s.p);const p=s.p;
+  if(s.two){// yesterday's 10.00 mL sample with 0.100 M titrant needed X mL; today's sample is p.va with p.cb
+    const f=(p.va/10)*(0.1/p.cb),a=Math.max(6,s.lo/f),b=Math.min(14,s.hi/f);if(a>b)return null;s.X=+gRs(a,b,0.01).toFixed(2);p.gC=+(s.X/100).toFixed(4);}
+  else p.gC=gConc(p,s.lo,s.hi,s.kind==='find'&&!s.known?0.0001:0.0005);
+  if(!(p.gC>0))return null;
+  const c=cfg(p),red=p.type==='redox',ct=red?p.cb/5:p.cb,k=red?0.4:1,Vc=s.two?s.X*(p.va/10)*(0.1/p.cb):p.gC*p.va*k/ct;
+  s.Ve=c.Ve;s.target=s.goal==='half'?c.Ve/2:c.Ve;s.calc=s.goal==='half'?Vc/2:Vc;
+  if(s.goal==='ph'){s.pKa=+(-Math.log10(c.acid.Ka)).toFixed(2);const dl=gPick([-0.6,-0.5,-0.4,-0.3,0.3,0.4,0.5,0.6]);s.phT=+(s.pKa+dl).toFixed(2);
+    s.target=gVatPH(p,s.phT);const r=Math.pow(10,s.phT-s.pKa);s.calc=Vc*r/(1+r);}
+  if(s.target<3||s.target>45)return null;
+  s.an=p.type==='ws'?c.acid.f:c.t.flask;s.tn=c.t.titN;
+  return s;}
+function gMake(lv,i){for(let k=0;k<200;k++){const s=gTry(lv,i);if(s)return gWords(lv,i,s);}throw new Error('titration game: no round for '+lv+' '+i);}
+/* prompt, tiles and the "check your math" line for one round */
+function gWords(lv,i,s){const p=s.p,c=cfg(p),red=p.type==='redox',hint=lv==='bio',tn=s.tn,an=s.an,ctT=(red?c.ct.toFixed(4):c.ct.toFixed(3))+' M '+tn,
+    vaT=p.va.toFixed(2)+' mL',CT=p.gC.toFixed(4)+' M',acidN=c.acid.n+', '+c.acid.f,ig=IND_G[p.ind]||IND_G.none,H=t=>hint?` <span class="gm-hint">Hint: ${t}</span>`:'';
+  let A=Math.floor(s.target-0.3-Math.random()*1.2),B=A+2;if(B-s.target<0.3)B++;s.rough=[A,B];
+  const rough=` A quick rough trial ${p.meter?'jumped':red?'stayed purple':'changed color'} between ${A} and ${B} mL.`;
+  const nm={ss:'HCl',ws:c.acid.n,wb:'NH₃',redox:'H₂O₂'}[p.type],R=`<b>Round ${i+1}: `;
+  s.metrics=p.meter&&s.kind==='find'?['vol','pH','mmol']:s.cover||(s.post&&s.post.meter&&!s.post.ind)?['vol','mmol']:['vol','color','mmol'];
+  s.goalTxt=red?'the first faint purple that stays':ig.goal;s.indName=s.post&&s.post.ind?IND_G[s.post.ind].n:ig.n;
+  s.check=red?'Check the mole ratio: 2 mol MnO₄⁻ react with 5 mol H₂O₂, so mol MnO₄⁻ = 2/5 × mol H₂O₂.':
+    s.two?`Check: the moles of ${an} grow in proportion to the sample volume`+(p.cb!==0.1?`, and a more concentrated ${tn} needs less volume.`:'.'):
+    s.goal==='half'?'':`Check: at the endpoint mol ${tn} = mol ${an}, so V(${tn}) = M(${an}) × V(${an}) ÷ M(${tn}).`;
+  const nInd=' No indicator is in the flask yet, so the color will not warn you. Calculate the volume, deliver exactly that much, then press <b>Mark endpoint</b>'+(s.post&&s.post.ind?` and your partner adds ${s.indName} to check.`:' and the pH meter goes in to check.');
+  let q;
+  if(s.kind==='find'&&!s.known){
+    if(red)q=`${R}Permanganate.</b> The flask holds ${vaT} of H₂O₂ of unknown concentration, in sulfuric acid. The burette holds ${ctT}, which is its own indicator: each purple drop loses its color while H₂O₂ is left. Stop at ${s.goalTxt}.`+rough;
+    else if(p.meter)q=`${R}pH meter only.</b> The flask holds 25.00 mL of ${acidN}, unknown concentration, and no indicator. The burette holds ${ctT}. Watch the pH meter and stop at the equivalence point, in the middle of the steep jump in pH.`+rough;
+    else if(i===0)q=`${R}Find the endpoint.</b> The flask holds ${vaT} of HCl of unknown concentration, with a few drops of phenolphthalein. The burette holds ${ctT}. Stop at ${s.goalTxt} and press <b>Mark endpoint</b>.`+rough+H(`open the stopcock to go fast until you are close to ${A} mL, then switch to Drip or Add one drop.`);
+    else if(p.type==='ss')q=`${R}A new indicator.</b> Now ${vaT} of a different HCl with bromothymol blue, which is yellow in acid and blue in base. The burette holds ${ctT}. Stop at ${s.goalTxt}.`+rough+H('a smaller sample holds fewer moles of acid, so it needs less base.');
+    else if(p.type==='ws')q=`${R}A weak acid.</b> The flask holds ${vaT} of ${acidN}, unknown concentration, with phenolphthalein. The burette holds ${ctT}. The jump at the end is smaller than with HCl, so watch for ${s.goalTxt}.`+rough;
+    else q=`${R}A weak base.</b> The flask holds ${vaT} of ammonia, NH₃, unknown concentration, with methyl red, which is yellow in base and red in acid. The burette holds ${ctT}. Stop at ${s.goalTxt}.`+rough;}
+  else if(s.kind==='find')q=`${R}Work like a chemist.</b> The flask holds ${vaT} of ${CT} HCl with phenolphthalein, and the burette holds ${ctT}. Calculate where the endpoint is, open the stopcock to about 1 mL before it, then finish drop by drop to ${s.goalTxt}.`+H('M(base) × V(base) = M(acid) × V(acid). Calculating first tells you when to slow down.');
+  else if(s.goal==='half')q=`${R}Find the pKa.</b> The flask holds ${vaT} of ${CT} ${acidN}, and the burette holds ${ctT}. Stop at the <b>half-equivalence point</b>, where half the acid has become ${c.acid.an} and pH = pKa. The pH meter goes in when you press <b>Mark endpoint</b>.`;
+  else if(s.goal==='ph')q=`${R}Make a buffer.</b> An enzyme lab needs a buffer at <b>pH ${s.phT.toFixed(2)}</b>. Start with ${vaT} of ${CT} ${acidN} (pKa ${s.pKa.toFixed(2)}) and add ${ctT} until the pH is ${s.phT.toFixed(2)}, within 0.02. Calculate the volume, deliver it, then press <b>Mark endpoint</b>.`+` <span class="gm-hint">pH = pKa + log(mol ${c.acid.an} ÷ mol ${an}). Each mol of OH⁻ turns one ${an} into ${c.acid.an}.</span>`;
+  else if(s.cover)q=`${R}Use the mole ratio.</b> Blind test: the flask is covered, so you cannot watch for purple. It holds ${vaT} of ${CT} H₂O₂, and the burette holds ${ctT}. The equation is 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O. Deliver exactly enough KMnO₄, then press <b>Mark endpoint</b> and the cover comes off.`;
+  else if(s.two)q=`${R}${lv==='bio'?'Scale it up':'Two changes at once'}.</b> Yesterday a 10.00 mL sample of this ${nm} needed <b>${f2(s.X)} mL</b> of 0.100 M ${tn}. Today you titrate <b>${vaT}</b> of the same ${nm} with <b>${ctT}</b>. How much ${tn} reaches the endpoint?`+nInd+H('the concentration is the same, so the base needed grows in proportion to the sample volume.');
+  else if(s.ka)q=`${R}Does Ka matter?</b> The flask holds ${vaT} of ${CT} ${acidN} (Ka = ${kaTxt(c.acid.Ka)}), and the burette holds ${ctT}.`+nInd;
+  else if(p.type==='ws')q=`${R}Weak acid, by calculation.</b> The flask holds ${vaT} of ${CT} ${acidN}, and the burette holds ${ctT}. It is a weak acid: does that change how much base it needs?`+nInd;
+  else q=`${R}${lv==='bio'?(p.va<25?'A smaller sample':'Calculate first'):'Double-strength base'}.</b> The flask holds ${vaT} of ${CT} HCl, and the burette holds ${ctT}.`+nInd+H('at the endpoint, moles of NaOH = moles of HCl, so M(base) × V(base) = M(acid) × V(acid). Solve for V(base).');
+  s.prompt=q;return s;}
+/* grade the volume the student marked */
+function gJudge(p,r){const c=cfg(p),V=r.V,tn=r.tn,an=r.an,red=p.type==='redox',d=V-r.target,ad=f2(Math.abs(d)),pH=red?NaN:pHat(p,V,c),ph2=Number.isFinite(pH)?pH.toFixed(2):'',
+    col=flaskColor(p,V,c)[1],Ve=f2(c.Ve),again=' Opening the stopcock again starts a fresh sample.';
+  if(!(V>0))return {ok:false,msg:`Nothing has gone into the flask yet. Open the stopcock to add ${tn}.`};
+  if(r.goal==='ph'){const dp=pH-r.phT;
+    if(Math.abs(dp)<=GTOL_PH+1e-9)return {ok:true,msg:`Buffer made! The pH is ${ph2} at ${f2(V)} mL: ${Math.round(100*V/c.Ve)}% of the ${an} is now ${c.acid.an}.`};
+    return {ok:false,over:dp>0,msg:`The pH is ${ph2}, not ${r.phT.toFixed(2)}: ${dp>0?'too much':'not enough'} ${tn}, by about ${ad} mL. Find mol ${c.acid.an} ÷ mol ${an} from the pH, then the mL of ${tn} that makes that ratio.`+(dp>0?again:' Add more, then mark again.')};}
+  const ok=Math.abs(d)<=GTOL+1e-9;
+  if(r.goal==='half'){const pk=-Math.log10(c.acid.Ka);
+    if(ok)return {ok:true,msg:`Right on! At ${f2(V)} mL the pH is ${ph2}, so pKa ≈ ${ph2} and Ka ≈ ${kaTxt(Math.pow(10,-pH))}. The table value is ${kaTxt(c.acid.Ka)}.`};
+    return {ok:false,over:d>0,msg:`The pH is ${ph2}, ${d>0?'above':'below'} the pKa of ${pk.toFixed(2)}: you are ${ad} mL ${d>0?'past':'short of'} half-equivalence. Half-equivalence takes half the ${tn} that equivalence does.`+(d>0?again:' Add more, then mark again.')};}
+  const phP=ph2?` (pH ${ph2})`:'',fromE=d===0||ad==='0.00'?'right at equivalence':`${ad} mL from equivalence (${Ve} mL)`;
+  // what the color shows at the marked volume: one drop short of the change still counts as a hit
+  const ig=IND_G[(r.post&&r.post.ind)||p.ind],toCol={phenol:'pink',btb:'blue',mred:'red'}[(r.post&&r.post.ind)||p.ind];
+  const colSay=red?(col==='colorless'?' The flask is still colorless; one more drop would stay purple.':` A ${col} color stays: that is the endpoint.`):
+    ig&&ig.from&&r.indName?(col===ig.from?` The ${r.indName} is still ${col}${phP}; one more drop turns it ${toCol}.`:` The ${r.indName} is ${col}${phP}: that is the endpoint.`):'';
+  if(ok){
+    if(r.kind==='find'&&!r.known){const M=(red?c.ct*V*2.5:c.ct*V)/c.va;
+      return {ok:true,msg:`Endpoint! You stopped at ${f2(V)} mL, and equivalence is at ${Ve} mL. Your result: [${an}] = ${red?c.ct.toFixed(4):c.ct.toFixed(3)} M × ${f2(V)} mL${red?' × 5/2':''} ÷ ${c.va.toFixed(2)} mL = <b>${M.toFixed(4)} M</b>.`};}
+    if(r.kind==='find')return {ok:true,msg:`Endpoint! You stopped at ${f2(V)} mL, ${fromE}.${colSay} Calculating first told you when to slow down.`};
+    if(r.cover)return {ok:true,msg:`Right on! The cover comes off. You stopped at ${f2(V)} mL, ${fromE}.${colSay}`};
+    if(r.ka)return {ok:true,msg:`Right on! You stopped at ${f2(V)} mL, ${fromE}. The pH there is ${ph2}. Ka changes the shape of the curve, not the volume: OH⁻ reacts completely with any weak acid.`};
+    return {ok:true,msg:`Right on! You stopped at ${f2(V)} mL, ${fromE}.${colSay}`};}
+  if(r.kind==='find'){
+    if(d<0)return {ok:false,msg:p.meter&&!red?`Not yet: the pH is ${ph2} and still rising slowly, so some ${an} is left. Keep adding drops; equivalence is in the middle of the steep jump.`:
+      `Not yet: the flask is still ${col}, so some ${an} is left. Keep adding ${tn} drop by drop and stop at ${r.goalTxt}.`};
+    return {ok:false,over:true,msg:`Too far: ${p.meter&&!red&&p.ind==='none'?'the pH is '+ph2:'the flask is '+col+phP}, ${ad} mL past the endpoint.${again} Go fast at first, then slow to single drops near the end.`};}
+  const seen=r.cover?`the flask is ${col}`:r.indName?`the ${r.indName} ${d<0?'stays':'turns'} ${col}${phP}`:`the pH is ${ph2}`;
+  return {ok:false,over:d>0,msg:`${d<0?'Short':'Over'} by ${ad} mL: ${seen}. ${r.check}`+(d>0?again:' Add more, then mark again.')};}
+/* the student touched the stopcock or a drop after a miss: hide the reveal again, and start a fresh sample after an overshoot */
+function gAct(sim){const G=sim.game,r=sim.gameRound;if(!G||!r||!sim.st||G.state==='flying'||G.state==='hit'||G.state==='over')return;
+  if(sim.st.gOver){BioLab.reset(sim);if(sim.vis)sim.vis.key='';}
+  sim.st.gShow=false;if(r.post)BioLab.setValues(sim,r.pre);}
+
 const TIT={
   id:'titration',hash:'titration',apUnit:14,order:2,tab:'Titration lab',kind:'Virtual lab',
   prereq:['molarity','ph'],next:['buffers','stoich'],
@@ -148,7 +263,7 @@ const TIT={
   timeScale:1,dtMax:0.05,prewarm:0,sampleDt:0.25,window:60,unit:'s',chChange:1,chReveal:30,
   controls:[
     {id:'type',label:'Titration',type:'select',def:'ss',lvl:'bio',options:[{v:'ss',l:'HCl (unknown) with NaOH'},{v:'ws',l:'Weak acid (unknown) with NaOH',lvl:'honors'},{v:'wb',l:'NH₃ (unknown) with HCl',lvl:'honors'},{v:'redox',l:'H₂O₂ (unknown) with KMnO₄',lvl:'ap'}],onChange(sim){BioLab.reset(sim);syncMode(sim);}},
-    {id:'rate',label:'Stopcock',type:'seg',def:'closed',lvl:'bio',noTrial:true,options:[{v:'closed',l:'Closed'},{v:'drip',l:'Drip'},{v:'open',l:'Open'}],help:'Drip is 2 drops per second. Open runs about 1 mL per second.'},
+    {id:'rate',label:'Stopcock',type:'seg',def:'closed',lvl:'bio',noTrial:true,options:[{v:'closed',l:'Closed'},{v:'drip',l:'Drip'},{v:'open',l:'Open'}],help:'Drip is 2 drops per second. Open runs about 1 mL per second.',onChange(sim){if(sim.p.rate!=='closed')gAct(sim);}},
     {id:'ind',label:'Indicator',type:'select',def:'phenol',lvl:'bio',modes:['ss','ws','wb'],options:[{v:'phenol',l:'Phenolphthalein (8.2–10.0)'},{v:'btb',l:'Bromothymol blue (6.0–7.6)'},{v:'mred',l:'Methyl red (4.4–6.2)',lvl:'honors'},{v:'morange',l:'Methyl orange (3.1–4.4)',lvl:'honors'},{v:'none',l:'None (pH meter only)',lvl:'honors'}]},
     {id:'va',label:'Sample volume (pipet)',type:'seg',def:25,lvl:'bio',options:[{v:10,l:'10.00 mL'},{v:25,l:'25.00 mL'}],onChange(sim){BioLab.reset(sim);}},
     {id:'acid',label:'Weak acid',type:'select',def:'HC2H3O2',lvl:'ap',modes:['ws'],options:Object.keys(ACIDS).map(k=>({v:k,l:ACIDS[k].n[0].toUpperCase()+ACIDS[k].n.slice(1)+', Ka = '+ACIDS[k].Ka.toExponential(1).replace('e-',' × 10⁻').replace(/⁻(\d+)/,(m,d)=>'⁻'+d.split('').map(x=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[x]).join(''))})),onChange(sim){BioLab.reset(sim);}},
@@ -156,12 +271,30 @@ const TIT={
     {id:'meter',label:'pH meter in the flask',type:'toggle',def:true,lvl:'bio',modes:['ss','ws','wb'],noTrial:true}
   ],
   actions:[
-    {id:'drop',label:'Add one drop',lvl:'bio',primary:true,run(sim){addVol(sim,DROP);sim.vis.drops=(sim.vis.drops||[]);sim.vis.drops.push({y:330});}},
+    {id:'drop',label:'Add one drop',lvl:'bio',primary:true,run(sim){gAct(sim);addVol(sim,DROP);sim.vis.drops=(sim.vis.drops||[]);sim.vis.drops.push({y:330});}},
     {id:'mark',label:'Mark endpoint',lvl:'bio',run(sim){const p=sim.p;if(sim.st.V<=0)return;sim.st.mark=sim.st.V;MARKS.push({type:p.type,unk:UNK[p.type],va:+p.va,cb:+p.cb,V:+sim.st.V.toFixed(2),acid:p.acid});while(MARKS.length>12)MARKS.shift();sim.infoDirty=true;}},
     {id:'refill',label:'Rinse and refill',lvl:'bio',run(sim){BioLab.setValues(sim,{rate:'closed'});BioLab.reset(sim);}},
     {id:'unknown',label:'New unknown',lvl:'bio',run(sim){const p=sim.p,r=Math.random();UNK[p.type]=p.type==='redox'?+(0.030+0.035*r).toFixed(4):+(0.060+0.080*r).toFixed(4);BioLab.setValues(sim,{rate:'closed'});BioLab.reset(sim);}}
   ],
-  init(sim){return {V:0,pts:[[0,sim.p.type==='redox'?0:pHat(sim.p,0)]],drip:0,mark:null,lastV:0};},
+  /* Challenge game: six titrations. Find rounds: watch the indicator (or the pH meter) and stop at the endpoint.
+     Calc rounds: no color cue, so calculate the volume (M₁V₁ = M₂V₂, the 2 : 5 ratio, half-equivalence, Henderson–Hasselbalch)
+     and deliver exactly that much. Within 0.10 mL (two drops) of the target scores. */
+  game:{label:'Hit the endpoint',title:'Hit the endpoint',rounds:6,fireLabel:'Mark endpoint',par:420,controls:['rate'],metrics:['vol'],
+    intro:{bio:'Six titrations. Use the stopcock to add base: Open to go fast, then Drip or Add one drop near the end. Press Mark endpoint when you think you are there. Within 0.10 mL (two drops) of the endpoint scores, and a first-try hit scores 3 points.',
+           honors:'Six titrations: a strong acid, a weak acid and a weak base. Find the endpoint by color, or calculate it and deliver exactly that volume. Within 0.10 mL (two drops) scores; a first-try hit scores 3.',
+           ap:'Six titrations: weak acids with a pH meter, permanganate with its 2 : 5 mole ratio, and the buffer region. Stop within 0.10 mL (two drops) of the target, then press Mark endpoint. A first-try hit scores 3.'},
+    start(sim){const p=sim.p;if(!sim._gBak)sim._gBak={type:p.type,va:p.va,cb:p.cb,acid:p.acid,ind:p.ind,meter:p.meter};},
+    newRound(sim,i){const s=gMake(BioLab.level,i);
+      BioLab.setValues(sim,Object.assign({gC:s.p.gC},s.p,{rate:'closed'}));BioLab.reset(sim);sim.vis.key='';
+      const r=Object.assign(s,{controls:['rate'],pre:{ind:s.p.ind,meter:s.p.meter}});
+      // the engine hides every action button in a game; single drops are part of this one, so show that button again
+      Promise.resolve().then(()=>{if(sim.gameRound===r){const b=dropBtn(sim);if(b)b.hidden=false;}});
+      return r;},
+    fire(sim,r){r.V=+sim.st.V;BioLab.setValues(sim,{rate:'closed'});if(r.post)BioLab.setValues(sim,r.post);sim.st.gShow=true;sim.st.gOver=false;r.ft=performance.now();},
+    poll(sim,r){if(performance.now()-r.ft<650)return null;const j=gJudge(sim.p,r);if(!j.ok&&j.over)sim.st.gOver=true;return {ok:j.ok,msg:j.msg};},
+    retry(sim,r){sim.st.gShow=false;},
+    solve(sim,r){BioLab.setValues(sim,{rate:'closed'});const v=Math.round((r.kind==='find'&&!r.known?r.target:r.calc)/DROP)*DROP;setV(sim,+v.toFixed(2));sim.vis.key='';}},
+  init(sim){if(!sim.game){delete sim.p.gC;sim._gBak=null;}return {V:0,pts:[[0,sim.p.type==='redox'?0:pHat(sim.p,0)]],drip:0,mark:null,lastV:0};},
   step(sim,dt){const st=sim.st,p=sim.p;
     if(p.rate==='drip'){st.drip+=dt;while(st.drip>=0.5){st.drip-=0.5;addVol(sim,DROP);if(sim.vis)(sim.vis.drops=sim.vis.drops||[]).push({y:330});}}
     else if(p.rate==='open'){addVol(sim,1.0*dt);st.drip=0;}else st.drip=0;},
@@ -272,13 +405,15 @@ const TIT={
   about:'<p>Every pH point is solved exactly from the charge balance of the mixture (H₃O⁺, OH⁻, Na⁺ or Cl⁻, and the weak acid or base species), using Kw = 1.0 × 10⁻¹⁴ and Ka values at 25 °C from the ChemLab data table (acetic acid 1.8 × 10⁻⁵, formic 1.8 × 10⁻⁴, benzoic 6.3 × 10⁻⁵, HClO 3.0 × 10⁻⁸, NH₄⁺ 5.6 × 10⁻¹⁰). Volumes add, concentrations stand in for activities, and the indicator’s own tiny acid content is ignored. The curve is drawn from those calculated readings as you add titrant, never from a stored shape.</p><p>Indicator color ranges are standard values. The pink “flash” near the endpoint models the local excess of base where a drop lands before it mixes. The redox titration uses 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O in excess sulfuric acid; its pH is not modeled.</p><p>The zoom shows 20 analyte particles; titrant particles are added in proportion to the moles delivered, and every one that reacts is accounted for (water molecules fade out to keep the view clear). Unknown concentrations are drawn between 0.060 and 0.140 M (H₂O₂: 0.030 to 0.065 M).</p>',
   initVis(sim){sim.vis.P=null;sim.vis.drops=[];sim.vis.flash=0;sim.vis.key='';},
   draw(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,v=sim.vis,c=cfg(p),hon=atLeast('honors'),ap=atLeast('ap'),red=p.type==='redox';
+    // in the game, hide what a real student could not see until the endpoint is marked
+    const G=sim.game,gr=G&&sim.gameRound,gShow=!gr||st.gShow||G.state==='over',cover=!!(gr&&gr.cover&&!gShow);
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     // keep particles in step with the model
     const key=p.type+'|'+p.va+'|'+p.cb+'|'+c.C;if(!v.P||v.key!==key||st.V<v.Vb-1e-9)rebuild(sim);
     const target=Math.min(64,Math.floor(unitsAt(p,st.V,c)+1e-9));let guard=0;while(v.S<target&&guard++<6)spawn(sim,c);v.Vb=st.V;
     if(!RM)stepParticles(sim,vdt);
     // labels
-    txt(ctx,'Flask: '+(p.type==='ws'?c.acid.f+' (unknown)':c.t.flaskN.replace(', in H₂SO₄','')),250,22,{s:12.5*k,w:700});
+    txt(ctx,'Flask: '+(gr&&(gr.known||gr.kind==='calc'&&!gr.two)?(p.type==='ws'?c.acid.f:c.t.flask)+', '+c.C.toFixed(4)+' M':p.type==='ws'?c.acid.f+' (unknown)':c.t.flaskN.replace(', in H₂SO₄','')),250,22,{s:12.5*k,w:700});
     if(k<1.3)txt(ctx,'Burette: '+c.ct.toFixed(red?4:3)+' M '+c.t.titN,250,22+17*k,{s:12.5*k,c:PAL['cv-soft']});
     // ring stand + burette
     ctx.fillStyle=PAL['cv-soft'];ctx.fillRect(28,10,5,428);ctx.fillRect(28,120,60,5);
@@ -294,16 +429,17 @@ const TIT={
     if(p.rate==='closed')ctx.fillRect(BX-16,sy,32,7);else{ctx.save();ctx.translate(BX,sy+3);ctx.rotate(p.rate==='open'?Math.PI/2:Math.PI/4);ctx.fillRect(-16,-3.5,32,7);ctx.restore();}
     {ctx.font='700 '+(12*k)+'px '+FONT;const w=ctx.measureText(st.V.toFixed(2)+' mL').width+13*k;pill(ctx,st.V.toFixed(2)+' mL',BX+14+w/2,clamp(my+4,B0,B0+VMAX*BMM),PAL['card'],PAL['cv-ink'],12*k);}
     // flask
-    const FY=322,lv=lerp(414,376,clamp((c.va+st.V-10)/65,0,1));const [fcol]=flaskColor(p,st.V,c);
+    const FY=322,lv=lerp(414,376,clamp((c.va+st.V-10)/65,0,1));const fcol=cover?PAL['cv-water']:flaskColor(p,st.V,c)[0];
     const flask=()=>{ctx.beginPath();ctx.moveTo(BX-13,FY);ctx.lineTo(BX-13,FY+28);ctx.lineTo(BX-66,438);ctx.lineTo(BX+66,438);ctx.lineTo(BX+13,FY+28);ctx.lineTo(BX+13,FY);};
     ctx.fillStyle=PAL['card'];rr(ctx,BX-80,438,160,8,3);ctx.fill();
     ctx.save();flask();ctx.closePath();ctx.clip();ctx.fillStyle=fcol;ctx.fillRect(0,lv,200,80);
     // local flash where the titrant lands, which fades as it mixes in
     const landing=p.rate==='open'?1.0:p.rate==='drip'||v.drops.length?0.5:0;
     if(landing>0){const fc=flaskColor(p,Math.min(VMAX,st.V+landing*1.2),c)[0];v.flashCol=fc;v.flash=Math.min(1,v.flash+(p.rate==='open'?2:0)*vdt);}
-    if(v.flash>0.02&&v.flashCol){const g=ctx.createRadialGradient(BX,lv+12,2,BX,lv+12,40);g.addColorStop(0,v.flashCol);g.addColorStop(1,'rgba(0,0,0,0)');ctx.globalAlpha=v.flash*0.9;ctx.fillStyle=g;ctx.fillRect(BX-45,lv,90,60);ctx.globalAlpha=1;}
+    if(v.flash>0.02&&v.flashCol&&!cover){const g=ctx.createRadialGradient(BX,lv+12,2,BX,lv+12,40);g.addColorStop(0,v.flashCol);g.addColorStop(1,'rgba(0,0,0,0)');ctx.globalAlpha=v.flash*0.9;ctx.fillStyle=g;ctx.fillRect(BX-45,lv,90,60);ctx.globalAlpha=1;}
     v.flash=Math.max(0,v.flash-vdt*0.8);
     ctx.restore();
+    if(cover){ctx.fillStyle=PAL['card2'];flask();ctx.closePath();ctx.fill();txt(ctx,'Covered',BX,412,{s:12*k,w:700,c:PAL['cv-soft'],a:'center',b:'middle'});}
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;flask();ctx.stroke();
     // drops and stream
     if(p.rate==='open'){ctx.strokeStyle=titCol===PAL['cv-water']?PAL['cv-glass']:titCol;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(BX,sy+26);ctx.lineTo(BX,lv);ctx.stroke();}
@@ -315,16 +451,19 @@ const TIT={
       txt(ctx,'pH',138,322+mh/2,{s:12*k,w:700,c:'#9fd8b0',b:'middle'});txt(ctx,pHat(p,st.V,c).toFixed(2),228,322+mh/2+1,{s:20*Math.min(k,1.3),w:800,c:'#7CFC9A',a:'right',b:'middle'});}
     // zoom
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(BX+20,lv+8);ctx.lineTo(ZX-ZR*0.95,ZY+ZR*0.3);ctx.moveTo(BX+10,FY+6);ctx.lineTo(ZX-ZR*0.7,ZY-ZR*0.7);ctx.stroke();ctx.setLineDash([]);
-    ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=mix(PAL['cv-water'],fcol,0.22);ctx.fill();ctx.clip();
+    ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=gShow?mix(PAL['cv-water'],fcol,0.22):PAL['card'];ctx.fill();ctx.clip();
     const order=['Cl','Na','K','W','O2','H2O2','HA','A','B','BH','Mn','H3O','OH','MnO4'];
-    order.forEach(ty=>v.P.forEach(q=>{if(q.t===ty)drawP(ctx,q,ZX+q.x,ZY+q.y);}));
-    if(v.flashP&&v.flashP.t>0){v.flashP.t-=vdt;ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.globalAlpha=clamp(v.flashP.t*2,0,1);ctx.beginPath();ctx.arc(ZX+v.flashP.x,ZY+v.flashP.y,10+(0.5-v.flashP.t)*30,0,6.29);ctx.stroke();ctx.globalAlpha=1;}
+    if(gShow)order.forEach(ty=>v.P.forEach(q=>{if(q.t===ty)drawP(ctx,q,ZX+q.x,ZY+q.y);}));
+    else (k>1.3?['Particle view','after you mark']:['Particle view','opens when you','mark the endpoint']).forEach((s,i,A)=>txt(ctx,s,ZX,ZY+(i-(A.length-1)/2)*20*k,{s:(i?13:14)*k,w:i?400:700,c:i?PAL['cv-soft']:PAL['cv-ink'],a:'center',b:'middle'}));
+    if(gShow&&v.flashP&&v.flashP.t>0){v.flashP.t-=vdt;ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.globalAlpha=clamp(v.flashP.t*2,0,1);ctx.beginPath();ctx.arc(ZX+v.flashP.x,ZY+v.flashP.y,10+(0.5-v.flashP.t)*30,0,6.29);ctx.stroke();ctx.globalAlpha=1;}
     ctx.restore();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.stroke();
     // legend under the zoom
     const big=k>1.3,it=legendItems(p,c.acid,big).slice(0,big?4:5),rowH=Math.max(22,20*k),colW=108;
     it.forEach((e,i)=>{const col=big?0:i%2,row=big?i:Math.floor(i/2),x=250+col*colW,y=ZY+ZR+(big?20:24)+row*(big?34:rowH);drawP(ctx,{t:e[0],a:0.6,life:1.8},x+8,y);txt(ctx,e[1],x+22,y+1,{s:12*k,c:PAL['cv-soft'],b:'middle'});});
-    // live curve
-    const ymax=red?Math.max(1,...st.pts.map(q=>q[1]))*1.15:14,X=x=>CV.L+x/VMAX*CV.W,Y=y=>CV.T+CV.H-y/ymax*CV.H;
+    // live curve (in the game, only when a pH meter is in the flask)
+    if(gr&&!(p.meter&&!red)){ctx.fillStyle=PAL['card'];ctx.fillRect(CV.L,CV.T,CV.W,CV.H);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.strokeRect(CV.L,CV.T,CV.W,CV.H);
+      (gr.cover?(k>1.3?['Flask covered:','calculate it']:['The flask is covered:','trust your calculation']):red?(k>1.3?['No pH curve:','watch for purple']:['No pH curve here:','watch the flask','for purple that stays']):(k>1.3?['No pH meter','this round']:['No pH meter','in the flask this round'])).forEach((s,i,A)=>txt(ctx,s,CV.L+CV.W/2,CV.T+CV.H/2+(i-(A.length-1)/2)*20*k,{s:(i?13:14)*k,w:i?400:700,c:i?PAL['cv-soft']:PAL['cv-ink'],a:'center',b:'middle'}));}
+    else{const ymax=red?Math.max(1,...st.pts.map(q=>q[1]))*1.15:14,X=x=>CV.L+x/VMAX*CV.W,Y=y=>CV.T+CV.H-y/ymax*CV.H;
     ctx.fillStyle=PAL['card'];ctx.fillRect(CV.L,CV.T,CV.W,CV.H);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;
     for(let x=0;x<=VMAX;x+=10){ctx.beginPath();ctx.moveTo(X(x),CV.T);ctx.lineTo(X(x),CV.T+CV.H);ctx.stroke();if(x%(k>1.3?25:10)===0)txt(ctx,String(x),X(x),CV.T+CV.H+16*k,{s:12*k,c:PAL['cv-soft'],a:'center'});}
     const yt=red?[0,ymax/2,ymax]:[0,7,14];yt.forEach(y=>{ctx.beginPath();ctx.moveTo(CV.L,Y(y));ctx.lineTo(CV.L+CV.W,Y(y));ctx.stroke();txt(ctx,red?y.toFixed(1):String(y),CV.L-6,Y(y),{s:12*k,c:PAL['cv-soft'],a:'right',b:'middle'});});
@@ -333,14 +472,14 @@ const TIT={
     txt(ctx,'mL of '+c.t.titN+' added',CV.L+CV.W/2,CV.T+CV.H+38*k,{s:12*k,c:PAL['cv-soft'],a:'center'});
     if(st.mark!==null){ctx.strokeStyle=PAL['s4'];ctx.setLineDash([4,3]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(st.mark),CV.T);ctx.lineTo(X(st.mark),CV.T+CV.H);ctx.stroke();ctx.setLineDash([]);}
     ctx.save();ctx.beginPath();ctx.rect(CV.L,CV.T,CV.W,CV.H);ctx.clip();ctx.strokeStyle=PAL['s1'];ctx.lineWidth=2.5;ctx.beginPath();st.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));ctx.stroke();
-    const L=st.pts[st.pts.length-1];if(L){ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(X(L[0]),Y(L[1]),5,0,6.29);ctx.fill();}ctx.restore();
+    const L=st.pts[st.pts.length-1];if(L){ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(X(L[0]),Y(L[1]),5,0,6.29);ctx.fill();}ctx.restore();}
     // equation and status
     const ex=490,ey=CV.T+CV.H+(k>1.3?92:66);
     const eq=red?[c.t.eq,c.t.eq2]:p.type==='ws'?(k>1.3?[c.acid.f+' + OH⁻','→ '+c.acid.an+' + H₂O']:[c.acid.f+' + OH⁻ → '+c.acid.an+' + H₂O']):[c.t.eq];
     eq.forEach((e,i)=>txt(ctx,e,ex,ey+i*18*k,{s:13*k,w:700}));
     const rg=region(p,st.V,c),line2=rg==='start'?'Nothing added yet':rg==='after'?(k>1.3?'Past equivalence':'Past equivalence: '+c.t.titN+' in excess'):rg==='eq'?'Equivalence point':rg==='near'?'Almost there: go drop by drop':(red?'H₂O₂ in excess':(p.type==='wb'?'NH₃':'Acid')+' in excess');
-    txt(ctx,line2,ex,ey+eq.length*18*k+4,{s:12.5*k,c:PAL['cv-soft']});
-    if(hon&&k<1.3)txt(ctx,(cfg(p).ct*st.V).toFixed(3)+' mmol '+c.t.titN+' added',ex,ey+eq.length*18*k+22,{s:12.5*k,c:PAL['cv-soft']});
+    if(!gr)txt(ctx,line2,ex,ey+eq.length*18*k+4,{s:12.5*k,c:PAL['cv-soft']});
+    if(!gr&&hon&&k<1.3)txt(ctx,(cfg(p).ct*st.V).toFixed(3)+' mmol '+c.t.titN+' added',ex,ey+eq.length*18*k+22,{s:12.5*k,c:PAL['cv-soft']});
   },
   thumbSetup(sim){setV(sim,cfg(sim.p).Ve+0.1);}
 };
