@@ -117,6 +117,365 @@ function ionBall(ctx,x,y,I,al,ring){const r=I.r;ctx.save();ctx.globalAlpha=al;CL
 function mixHex(a,b,t){const p=h=>{h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));};
   if(!/^#/.test(a)||!/^#/.test(b))return t>0.5?b:a;const A=p(a),B=p(b);return '#'+A.map((v,i)=>Math.round(lerp(v,B[i],t)).toString(16).padStart(2,'0')).join('');}
 
+/* ---------- Virtual lab: gravimetric analysis of calcium and hard water (AP Chemistry, Jackson). Contract: VLAB.md ----------
+   Everything on the bench lives in sim.vlab.bench, so it saves with the notebook and a reload never changes recorded data.
+   Runs: 0 = introductory activity (weighed Na2CO3 + CaCl2), 1 = sample A, 2 = sample B (guided inquiry, 20.00 mL of a CaCl2 sample). */
+const MW={CaCO3:CL.molarMass('CaCO3'),Na2CO3:CL.molarMass('Na2CO3'),CaCl2:CL.molarMass('CaCl2'),NaCl:CL.molarMass('NaCl'),CaCl2w:CL.molarMass('CaCl2*2H2O')};
+const GS=[0.400,0.200,0.500,0.100,0.050,0.300];   // [CaCl2] of samples 1 to 6 (M), 100x concentrated
+const GVS=20.00,GCM=0.500;                         // sample volume (mL), Na2CO3 solution (M)
+function hr(seed,a,b){let h=(seed^Math.imul(a+1,0x9E3779B1)^Math.imul(b+7,0x85EBCA77))|0;h=Math.imul(h^h>>>16,0x7feb352d);h=Math.imul(h^h>>>15,0x846ca68b);h^=h>>>16;return (h>>>0)/4294967296;}
+function hn(seed,a,b){const u=Math.max(1e-9,hr(seed,a,b)),w=hr(seed,a,b+100003);return Math.sqrt(-2*Math.log(u))*Math.cos(6.2831853*w);}
+const r3=v=>Math.round(v*1000)/1000;
+const LCD='700 VSIZEpx "Consolas","Menlo","DejaVu Sans Mono","Courier New",monospace';
+const mmss=s=>{s=Math.max(0,Math.floor(s+1e-6));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const AB=['Introductory activity','Sample A','Sample B'];
+const gB=sim=>sim.vlab&&sim.st&&sim.st.G?sim.vlab.bench:null;
+const gR=sim=>{const b=gB(sim);return b?b.runs[b.run]:null;};
+const gU=(sim,a,c)=>hr(sim.vlab.seed,a,c),gN=(sim,a,c)=>hn(sim.vlab.seed,a,c);
+function gRun(i){return {i,kind:i?'gi':'intro',na:{m:0,sc:0,water:false},ca:{m:0,sc:0,water:false},sample:0,vs:0,vC:0,mixed:false,pour:'',digest:false,
+  setup:false,poured:false,rinses:0,moved:false,broken:false,cycles:0,d1:0,d2:0,reads:{na:[],ca:[],paper:[],glass:[]},dry:[]};}
+function gInit(sim){const b=sim.vlab.bench;if(!Array.isArray(b.runs))b.runs=[gRun(0),gRun(1),gRun(2)];
+  if(!b.bal)b.bal={on:null,tare:0,nz:0,disp:0};if(!Number.isFinite(b.run))b.run=0;if(!b.focus)b.focus='na';if(b.busy===undefined)b.busy=null;return {kind:'grav'};}
+/* seeded glassware and reagents (fixed for a student's lab, different for each student) */
+const gPaper=(sim,i)=>0.352+0.07*gU(sim,10+i,1);   // 7 cm filter paper as weighed at room humidity, g
+const gGlass=(sim,i)=>21.6+13.5*gU(sim,10+i,2);    // watch glass, g
+const gBeaker=(sim,i,w)=>61.5+9*gU(sim,10+i,w==='na'?3:4); // 150 mL beaker, g
+const gCaWater=sim=>0.012+0.02*gU(sim,5,0);        // share of the "anhydrous" CaCl2 that is water it took up from the air
+const SCOOP={big:[0.40,0.22],small:[0.075,0.05],pinch:[0.012,0.016]};
+function gChem(sim,r){
+  if(r.kind==='intro'){const nCa=r.ca.m*(1-gCaWater(sim))/MW.CaCl2,nC=r.na.m*0.998/MW.Na2CO3;return {nCa,nC,V:40};}
+  if(!r.sample)return {nCa:0,nC:0,V:0};
+  const c=GS[r.sample-1]*(1+0.004*gN(sim,20+r.i,r.sample)),vs=r.vs+0.01*gN(sim,21+r.i,r.sample),vc=Math.max(0,r.vC+0.08*gN(sim,22+r.i,Math.round(r.vC*10)));
+  return {nCa:c*vs/1000,nC:GCM*(1+0.003*gN(sim,23,0))*vc/1000,V:vs+vc};}
+/* what ends up on the watch glass: CaCO3 minus transfer losses and fines through the paper, plus salts left in the damp cake, plus water */
+function gSolid(sim,r){const ch=gChem(sim,r),n=Math.min(ch.nCa,ch.nC),solid=n*MW.CaCO3,P=gPaper(sim,r.i);
+  const left=solid*(0.02*Math.pow(0.3,Math.min(r.rinses,3))+0.0012*Math.abs(gN(sim,30+r.i,1)));
+  const fines=solid*0.04*(r.pour==='slow'?0.18:1)*(r.digest?0.3:1)*Math.exp(0.15*gN(sim,31+r.i,1));
+  const rec=Math.max(0,solid-left-fines);
+  const salt=2*n*MW.NaCl+Math.max(0,ch.nC-n)*MW.Na2CO3+Math.max(0,ch.nCa-n)*MW.CaCl2;   // g of dissolved salts in the mixture
+  const saltR=(0.5*rec+1.0*P)*(salt/Math.max(1,ch.V))*Math.pow(0.08,r.rinses);           // left in the liquid the cake and paper hold
+  return {n,solid,left,fines,rec,saltR,W0:0.5*rec+1.05*P,ch};}
+const gWater=(sim,r)=>{const s=gSolid(sim,r);return s.W0*(0.8*Math.exp(-(r.d1||0))+0.2*Math.exp(-(r.d2||0)));};
+function gPan(sim){const b=gB(sim),on=b.bal.on;if(!on)return 0;const r=b.runs[on.run];
+  if(on.item==='na'||on.item==='ca')return gBeaker(sim,on.run,on.item)+r[on.item].m;
+  if(on.item==='paper')return gPaper(sim,on.run);if(on.item==='glass')return gGlass(sim,on.run);
+  const s=gSolid(sim,r);return gGlass(sim,on.run)+0.99*gPaper(sim,on.run)+s.rec+s.saltR+gWater(sim,r);}
+const gZ=(sim,nz)=>Math.max(-1,Math.min(1,Math.round(0.7*gN(sim,99,nz))));   // the last digit wanders by ±0.001 g
+/* the pan changed: a new reading, logged with the run so the checks can compare the student's entry with it */
+function gBal(sim){const b=gB(sim),B=b.bal;B.nz++;const d=r3(gPan(sim)-B.tare+0.001*gZ(sim,B.nz));B.disp=d;const on=B.on;if(!on)return d;const r=b.runs[on.run];
+  const ok=on.item==='na'||on.item==='ca'?Math.abs(d-r[on.item].m)<0.01:Math.abs(B.tare)<0.0016;
+  let L;if(on.item==='all'){r.dry[r.cycles-1]=r.dry[r.cycles-1]||[];L=r.dry[r.cycles-1];}else L=r.reads[on.item];L.push({v:d,ok});if(L.length>30)L.shift();return d;}
+function gTare(sim){const b=gB(sim),B=b.bal;B.nz++;B.tare=gPan(sim)+0.001*gZ(sim,B.nz);B.disp=0;}
+const gIs=(sim,item)=>{const b=gB(sim);return !!(b&&b.bal.on&&b.bal.on.run===b.run&&b.bal.on.item===item);};
+const gIdle=sim=>{const b=gB(sim);return !!b&&!b.busy;};
+const gLastOk=L=>{const g=(L||[]).filter(x=>x&&x.ok);return g.length?g[g.length-1].v:NaN;};
+function gConst(r){const n=r.cycles;if(n<2)return false;const a=gLastOk(r.dry[n-1]),c=gLastOk(r.dry[n-2]);return Number.isFinite(a)&&Number.isFinite(c)&&Math.abs(a-c)<=0.0021;}
+function gBusy(sim,w,T){const b=gB(sim);b.busy={w,run:b.run,t:0,T};BioLab.play(sim);}
+function gStep(sim,dt){if(sim.t<-1e-9)return;const b=gB(sim);if(!b||!b.busy)return;const B=b.busy;B.t+=Math.min(dt,0.25);if(B.t<B.T)return;const r=b.runs[B.run];
+  if(B.w==='digest')r.digest=true;
+  else if(B.w==='oven'){r.cycles++;r.d1=(r.d1||0)+3.5;r.d2=(r.d2||0)+(r.broken?3.0:1.2);}
+  b.busy=null;sim.infoDirty=true;}
+/* ---------- checks: data cells against the bench, calcs against the student's own entries (hints only, never the answer) ---------- */
+const near=(x,y,tol)=>Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x-y)<=tol*Math.abs(y);
+const TARE='That reading includes whatever was tared, not just this item. Take everything off the balance, press Tare so it reads 0.000 g, and weigh it again.';
+function gReadMsg(L,v,what){const hit=(L||[]).find(x=>x&&Math.abs(x.v-v)<0.0005);if(hit)return hit.ok?null:TARE;const g=gLastOk(L);
+  return Number.isFinite(g)?'The balance read '+g.toFixed(3)+' g with '+what+' on it. Check your reading.':TARE;}
+function gSolidMsg(sim,r,w,v){const R=r[w],nm=w==='na'?'Na₂CO₃':'CaCl₂',L=r.reads[w];if(!(R.m>0))return 'Weigh the '+nm+' on the bench first, then read the balance.';
+  const hit=L.find(x=>Math.abs(x.v-v)<0.0005);if(hit)return hit.ok?null:'That reading includes the beaker. Put the empty beaker on the balance, press Tare, then add the solid.';
+  const g=gLastOk(L);return Number.isFinite(g)?'The balance read '+g.toFixed(3)+' g with the '+nm+' in the tared beaker. Check your reading.':'Tare the balance with the empty beaker on it, then read the mass of the '+nm+'.';}
+const T1=['Mass of Na₂CO₃','Mass of CaCl₂','Mass of filter paper','Mass of watch glass'];
+function gT1Check(sim,rv,v){const b=gB(sim);if(!b)return null;const r=b.runs[0],i=T1.indexOf(rv);
+  if(i<2)return gSolidMsg(sim,r,i?'ca':'na',v);const w=i===2?'paper':'glass',nm=i===2?'the filter paper':'the watch glass';
+  if(!r.reads[w].length)return 'Weigh '+nm+' on the bench first.';return gReadMsg(r.reads[w],v,nm);}
+const T2=['Sample number','Volume of sample (mL)','Volume of 0.5 M Na₂CO₃ added (mL)','Mass of filter paper (g)','Mass of watch glass (g)'];
+function gT2Check(k){return (sim,rv,v)=>{const b=gB(sim);if(!b)return null;const r=b.runs[k],i=T2.indexOf(rv),nm=AB[k];
+  if(i===0){if(!r.vs)return 'Pipet the '+nm+' water sample on the bench first.';return v===r.sample?null:'You pipetted sample '+r.sample+' for '+nm+'. Check this entry.';}
+  if(i===1){if(!r.vs)return 'Pipet the '+nm+' water sample on the bench first.';return Math.abs(v-GVS)<=0.05?null:'The volumetric pipet delivers 20.00 mL. Check this entry.';}
+  if(i===2){if(!r.vC)return 'Measure the Na₂CO₃ solution for '+nm+' on the bench first.';return Math.abs(v-r.vC)<=0.05?null:'You measured '+r.vC.toFixed(1)+' mL of 0.5 M Na₂CO₃ in the graduated cylinder for '+nm+'. Check this entry.';}
+  const w=i===3?'paper':'glass',it=i===3?'the filter paper':'the watch glass';if(!r.reads[w].length)return 'Weigh '+it+' for '+nm+' on the bench first.';return gReadMsg(r.reads[w],v,it);};}
+function gDryCheck(k){return (sim,rv,v)=>{const b=gB(sim);if(!b)return null;const r=b.runs[k],n=+rv,L=r.dry[n-1];
+  if(!L||!L.length)return r.cycles<n?AB[k]+' has been in the oven '+(r.cycles===1?'once':r.cycles+' times')+' so far.':'Weigh the watch glass, paper and solid after drying '+n+' first.';
+  return gReadMsg(L,v,'the watch glass, paper and solid');};}
+function gPlanCheck(col){return (sim,rv,v)=>{const c=GS[(+rv)-1];if(!c)return null;const mol=c*GVS/1000,g=mol*MW.CaCO3,V=mol*1.2/GCM*1000,h=g/(GVS/1000)*1000/100;
+  if(col==='mol'){if(near(v,mol,0.02))return null;if(near(v,c*GVS,0.03))return 'Check your volume units: molarity is moles per liter.';return 'Check this against the molarity and the 20.0 mL sample volume.';}
+  if(col==='g'){if(near(v,g,0.015))return null;if(near(v,mol*MW.CaCl2,0.02))return 'Check which molar mass you used: the solid you collect is CaCO₃.';return 'Check your mole ratio and the molar mass of CaCO₃.';}
+  if(col==='v'){const hi=Math.max(V*1.3,Math.ceil(V/5-1e-9)*5+0.6);if(v>=V*0.98&&v<=hi)return null;if(near(v,V/1.2,0.03))return 'Remember the 20% excess of Na₂CO₃.';return 'Check your mole ratio, the 20% excess and the molarity of the Na₂CO₃ solution.';}
+  if(near(v,h,0.015))return null;if(near(v,h*100,0.03))return 'Remember that the samples were concentrated 100 times from the original water.';
+  if(near(v,h/1000,0.03)||near(v,h*1000,0.03))return 'Check your units: hardness is in milligrams of CaCO₃ per liter.';return 'Check this against your theoretical mass of CaCO₃, the sample volume and the 100× concentration.';};}
+const gNum=s=>BioLab.vlab.num(s);
+const gLast=(V,t,c)=>{const a=V.col(t,c).filter(Number.isFinite);return a.length?a[a.length-1]:NaN;};
+const CAT=[{v:'soft',l:'Soft (0 to 60 mg/L)'},{v:'moderate',l:'Moderately hard (61 to 120 mg/L)'},{v:'hard',l:'Hard (121 to 180 mg/L)'},{v:'very',l:'Very hard (more than 180 mg/L)'}];
+const gCat=h=>h<=60.5?'soft':h<=120.5?'moderate':h<=180.5?'hard':'very';
+function gResCheck(col){return (sim,rv,v)=>{const V=sim.vlab,ci=rv==='A'?'a':'b',row=rv==='A'?0:1,nm='Sample '+rv;
+  if(col==='m'){const last=gLast(V,'dry',ci),p=V.val('t2',ci,3),g=V.val('t2',ci,4);if(![last,p,g].every(Number.isFinite))return 'Fill in Tables 4 and 5 for '+nm+' first.';
+    return Math.abs(v-(last-p-g))<=0.0015?null:'Subtract the masses of the filter paper and the watch glass from your last (constant) mass in Table 5.';}
+  if(col==='exp'){const m=V.val('res','m',row),vs=V.val('t2',ci,1);if(!Number.isFinite(m))return 'Fill in the mass of CaCO₃ for '+nm+' first.';const e=m/((Number.isFinite(vs)&&vs>0?vs:GVS)/1000)*1000/100;
+    if(near(v,e,0.01))return null;if(near(v,e*100,0.03))return 'Remember that the samples were concentrated 100 times from the original water.';return 'Check this against your mass of CaCO₃, the sample volume and the 100× concentration.';}
+  if(col==='theo'){const s=V.val('t2',ci,0);if(!(s>=1&&s<=6))return 'Record the sample number for '+nm+' in Table 4 first.';const pl=V.val('plan','h',s-1),tr=GS[s-1]*MW.CaCO3*10;
+    return near(v,pl,0.01)||near(v,tr,0.015)?null:'Use the theoretical hardness for sample '+s+' from your planning table.';}
+  if(col==='err'){const e=V.val('res','exp',row),t=V.val('res','theo',row);if(!Number.isFinite(e)||!Number.isFinite(t)||!t)return 'Fill in the experimental and theoretical hardness for '+nm+' first.';
+    const p=Math.abs(e-t)/t*100;return Math.abs(Math.abs(v)-p)<=Math.max(0.15,0.03*p)?null:'Check your percent error: compare the difference between your experimental and theoretical hardness with the theoretical value.';}
+  const e=V.val('res','exp',row);if(!Number.isFinite(e))return null;const ok=[gCat(e),gCat(e-1),gCat(e+1)];return ok.includes(v)?null:'Compare your experimental hardness with the hardness scale in the Background.';};}
+function gCalcCheck(id){return (sim,v,V)=>{const mNa=V.val('t1','m',0),mCa=V.val('t1','m',1);const nNa=mNa/MW.Na2CO3,nCa=mCa/MW.CaCl2;
+  if(id==='molNa'){if(!Number.isFinite(mNa))return 'Record the mass of Na₂CO₃ in Table 1 first.';return near(v,nNa,0.01)?null:'Check this against your Na₂CO₃ mass and the molar mass of Na₂CO₃.';}
+  if(id==='molCa'){if(!Number.isFinite(mCa))return 'Record the mass of CaCl₂ in Table 1 first.';if(near(v,nCa,0.01))return null;
+    if(near(v,mCa/MW.CaCl2w,0.01))return 'Check the molar mass: the bench uses anhydrous CaCl₂, not the dihydrate.';return 'Check this against your CaCl₂ mass and the molar mass of CaCl₂.';}
+  if(id==='lim'){if(!Number.isFinite(nNa)||!Number.isFinite(nCa))return null;const t=String(v).toLowerCase().replace(/₂/g,'2').replace(/₃/g,'3').replace(/\s+/g,' ');
+    const ca=/cacl|calcium chloride/.test(t),na=/na2co3|sodium carbonate/.test(t);if(ca===na)return null;const right=nCa<nNa?ca:na;return right?null:'Compare the moles of the two reactants. They react in a 1 : 1 ratio.';}
+  if(id==='theo'){if(!Number.isFinite(nNa)||!Number.isFinite(nCa))return 'Record both reactant masses in Table 1 first.';const n=Math.min(nNa,nCa);if(near(v,n*MW.CaCO3,0.01))return null;
+    if(near(v,Math.max(nNa,nCa)*MW.CaCO3,0.01))return 'Check which reactant is limiting.';if(near(v,n*MW.CaCl2,0.01)||near(v,n*MW.Na2CO3,0.01))return 'Check the molar mass: the product you collect is CaCO₃.';return 'Check your mole ratio and the molar mass of CaCO₃.';}
+  if(id==='mppt'){const last=gLast(V,'dry','i'),p=V.val('t1','m',2),g=V.val('t1','m',3);if(![last,p,g].every(Number.isFinite))return 'Fill in Table 1 and the introductory column of Table 5 first.';
+    return Math.abs(v-(last-p-g))<=0.0015?null:'Subtract the masses of the filter paper and the watch glass from your last (constant) mass in Table 5.';}
+  const m=gNum(V.raw('k:mppt')),th=gNum(V.raw('k:theo'));if(!Number.isFinite(m)||!Number.isFinite(th)||!th)return 'Work out the theoretical yield and the mass you recovered first.';
+  const p=m/th*100;return Math.abs(v-p)<=Math.max(0.2,0.005*p)?null:'Check this against your mass recovered and your theoretical yield.';};}
+/* ---------- bench drawing ---------- */
+function gLcd(ctx,x,y,w,h,label,value,k,vs){ctx.fillStyle='#2b2f36';rr(ctx,x,y,w,h,10);ctx.fill();txt(ctx,label,x+12,y+19,{s:Math.min(12*k,15),w:700,c:'#d7dbe0'});
+  ctx.fillStyle='#cfe3c8';rr(ctx,x+10,y+28,w-20,h-38,6);ctx.fill();ctx.fillStyle='#1b2a1b';ctx.font=LCD.replace('VSIZE',String(vs));ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(value,x+w-20,y+28+(h-38)/2+2);}
+function gBeakerDraw(ctx,cx,bot,w,h,o){const x0=cx-w/2,x1=cx+w/2,top=bot-h,ih=h-8;
+  const lv=o.liq>0?ih*Math.min(1,o.liq/150):0,ly=bot-lv;
+  if(lv>0){ctx.fillStyle=PAL['cv-water'];ctx.fillRect(x0+2,ly,w-4,lv);
+    if(o.cloud>0){ctx.fillStyle='rgba(226,228,222,'+(0.9*o.cloud).toFixed(3)+')';ctx.fillRect(x0+2,ly,w-4,lv);ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0+2,ly+.5);ctx.lineTo(x1-2,ly+.5);ctx.stroke();}
+    const nf=o.flocs>0?22:o.cloud>0.3?40:0;if(nf){ctx.fillStyle='#ffffff';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=0.7;
+      for(let i=0;i<nf;i++){const fx=x0+5+((i*37)%97)/97*(w-10),fy=ly+3+((i*53)%89)/89*Math.max(1,lv-6)*(1-o.settle)+o.settle*Math.max(1,lv-6)*0.85;ctx.beginPath();ctx.arc(fx,fy,o.flocs>0?1.8+(i%3)*0.8:1,0,6.29);ctx.fill();if(o.flocs>0)ctx.stroke();}}}
+  if(o.layer>0){ctx.fillStyle='#f6f6f2';ctx.fillRect(x0+2,bot-o.layer,w-4,o.layer);ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;ctx.strokeRect(x0+2,bot-o.layer,w-4,o.layer);}
+  if(o.pile>0){ctx.fillStyle='#fbfbf7';ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;const ph=Math.min(14,3+o.pile*3.2),pw=Math.min(w*0.42,9+o.pile*7);ctx.beginPath();ctx.moveTo(cx-pw,bot);ctx.quadraticCurveTo(cx,bot-2*ph,cx+pw,bot);ctx.closePath();ctx.fill();ctx.stroke();}
+  ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0-6,top-3);ctx.lineTo(x0,top+3);ctx.lineTo(x0,bot);ctx.lineTo(x1,bot);ctx.lineTo(x1,top);ctx.stroke();
+  ctx.lineWidth=1;[50,100].forEach(ml=>{const y=bot-ih*ml/150;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x0+10,y);ctx.stroke();});}
+function gWatch(ctx,cx,y,w,o){
+  if(o.paper){ctx.fillStyle='#f4f4ef';ctx.strokeStyle='rgba(0,0,0,.18)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(cx,y-6,w*0.38,4,0,0,6.29);ctx.fill();ctx.stroke();}
+  if(o.cake>0){const ch=3+o.cake*5;ctx.fillStyle=o.wet>0.05?'#e4e8e8':'#fdfdfb';ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;
+    if(o.broken){for(let i=0;i<9;i++){const bx=cx-w*0.26+i*w*0.065,bh=ch*(0.5+0.5*((i*7)%5)/4);ctx.beginPath();ctx.ellipse(bx,y-8,w*0.04,bh/2+1,0,0,6.29);ctx.fill();ctx.stroke();}}
+    else{ctx.beginPath();ctx.ellipse(cx,y-8,w*0.27,ch/2+1.5,0,0,6.29);ctx.fill();ctx.stroke();}}
+  ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-w/2,y-9);ctx.quadraticCurveTo(cx,y+5,cx+w/2,y-9);ctx.stroke();}
+function gPaperFlat(ctx,cx,y,w){ctx.fillStyle='#f4f4ef';ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(cx,y-3,w/2,4,0,0,6.29);ctx.fill();ctx.stroke();}
+function gFlask(ctx,cx,top,base,bw,nw,fill,cloud){const path=()=>{ctx.beginPath();ctx.moveTo(cx-nw/2,top);ctx.lineTo(cx-nw/2,top+28);ctx.lineTo(cx-bw/2,base);ctx.lineTo(cx+bw/2,base);ctx.lineTo(cx+nw/2,top+28);ctx.lineTo(cx+nw/2,top);};
+  if(fill>0){ctx.save();path();ctx.closePath();ctx.clip();const y=base-fill;ctx.fillStyle=PAL['cv-water'];ctx.fillRect(cx-bw/2,y,bw,fill);if(cloud>0){ctx.fillStyle='rgba(248,248,244,'+cloud.toFixed(3)+')';ctx.fillRect(cx-bw/2,y,bw,fill);}ctx.restore();}
+  ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;path();ctx.stroke();}
+function gDraw(sim,ctx,vdt,k,t){const b=gB(sim),r=b.runs[b.run],B=b.busy&&b.busy.run===b.run?b.busy:null,on=b.bal.on,p=sim.p,F=x=>Math.min(x*k,x*1.6);
+  ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,394,800,56);ctx.fillStyle=PAL['line'];ctx.fillRect(0,394,800,2);
+  const head=r.kind==='intro'?'Introductory activity':AB[b.run]+(r.sample?': sample '+r.sample+' ('+GS[r.sample-1].toFixed(3)+' M CaCl₂)':': choose a sample');
+  txt(ctx,head,16,30,{s:F(16),w:700});
+  const ph=B?clamp(B.t/B.T,0,1):1;
+  // ----- analytical balance -----
+  ctx.fillStyle='rgba(150,190,210,0.10)';ctx.fillRect(40,152,184,138);ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2;ctx.strokeRect(40,152,184,138);ctx.beginPath();ctx.moveTo(132,152);ctx.lineTo(132,290);ctx.stroke();
+  ctx.fillStyle='#4a515b';rr(ctx,32,142,200,12,4);ctx.fill();rr(ctx,20,290,224,104,10);ctx.fill();
+  ctx.fillStyle='#9aa3ab';ctx.fillRect(126,274,12,16);ctx.fillStyle='#c3cad0';rr(ctx,74,268,116,8,3);ctx.fill();
+  if(on){const R=b.runs[on.run];
+    if(on.item==='na'||on.item==='ca')gBeakerDraw(ctx,132,268,62,84,{liq:0,pile:R[on.item].m});
+    else if(on.item==='paper')gPaperFlat(ctx,132,268,92);
+    else if(on.item==='glass')gWatch(ctx,132,268,104,{});
+    else{const s=gSolid(sim,R);gWatch(ctx,132,268,104,{paper:true,cake:clamp(s.rec/1.8,0.15,1),wet:gWater(sim,R),broken:R.broken});}}
+  ctx.fillStyle='#2b2f36';rr(ctx,32,300,200,62,8);ctx.fill();ctx.fillStyle='#cfe3c8';rr(ctx,40,306,184,50,5);ctx.fill();
+  ctx.fillStyle='#1b2a1b';ctx.font=LCD.replace('VSIZE','36');ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(b.bal.disp.toFixed(3),196,332);
+  ctx.font='700 18px '+FONT;ctx.fillText('g',216,334);
+  ctx.fillStyle='#6b737d';rr(ctx,52,370,60,18,5);ctx.fill();rr(ctx,152,370,60,18,5);ctx.fill();txt(ctx,'ON/OFF',82,383,{s:12,w:700,c:'#eef0f2',a:'center'});txt(ctx,'TARE',182,383,{s:12,w:700,c:'#eef0f2',a:'center'});
+  txt(ctx,'Analytical balance',132,416,{s:F(13),w:700,a:'center'});txt(ctx,'reads to 0.001 g',132,437,{s:F(12),c:PAL['cv-soft'],a:'center'});
+  // ----- beakers -----
+  const mixing=B&&B.w==='mix',pouring=B&&B.w==='pour',rinsing=B&&B.w==='rinse';
+  const cloudOf=()=>{const fast=r.pour!=='slow',g=mixing?ph:1,settle=r.digest?1:(B&&B.w==='digest'?ph:0);
+    return {cloud:(fast?0.75:0.35)*g*(1-0.8*settle),flocs:fast?0:g,settle,layer:settle*(fast?5:7)};};
+  if(r.kind==='intro'){
+    if(!(on&&on.run===b.run&&on.item==='na')){const lq=r.mixed?(mixing?20*(1-ph):0):r.na.water?20:0;gBeakerDraw(ctx,300,392,80,104,{liq:lq,pile:r.na.water?0:r.na.m});}
+    if(!(on&&on.run===b.run&&on.item==='ca')){let o={liq:r.ca.water?20:0,pile:r.ca.water?0:r.ca.m};
+      if(r.mixed){const c=cloudOf();o=Object.assign(o,c,{liq:mixing?20+20*ph:40});if(r.poured){const left=pouring?1-ph:0;o.liq=40*left+(rinsing?10*(1-ph):0);o.layer=c.layer*left;o.cloud=c.cloud*(left>0?1:0);o.flocs=left>0?c.flocs:0;
+        if(!pouring&&r.rinses===0)o.layer=1.5;}}
+      gBeakerDraw(ctx,404,392,80,104,o);}
+    txt(ctx,'Na₂CO₃',300,416,{s:F(13),w:700,a:'center'});txt(ctx,'CaCl₂',404,416,{s:F(13),w:700,a:'center'});}
+  else{let o={liq:r.vs?20:0,pile:0};
+    if(r.mixed){const c=cloudOf(),tot=20+r.vC;o=Object.assign(o,c,{liq:mixing?20+r.vC*ph:tot});if(r.poured){const left=pouring?1-ph:0;o.liq=tot*left+(rinsing?10*(1-ph):0);o.layer=c.layer*left;o.cloud=left>0?c.cloud:0;o.flocs=left>0?c.flocs:0;if(!pouring&&r.rinses===0)o.layer=1.5;}}
+    gBeakerDraw(ctx,300,392,80,104,o);
+    // 50 mL graduated cylinder of 0.5 M Na2CO3
+    const cx=404,cw=26,ctop=262,cb=388,ci=cb-ctop-6,vc=r.mixed?(mixing?r.vC*(1-ph):0):r.vC;
+    if(vc>0){ctx.fillStyle=PAL['cv-water'];ctx.fillRect(cx-cw/2+2,cb-ci*vc/50,cw-4,ci*vc/50);}
+    ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-cw/2,ctop);ctx.lineTo(cx-cw/2,cb);ctx.lineTo(cx+cw/2,cb);ctx.lineTo(cx+cw/2,ctop);ctx.stroke();
+    ctx.fillStyle=PAL['cv-glass'];rr(ctx,cx-24,cb,48,6,2);ctx.fill();ctx.lineWidth=1;for(let ml=10;ml<=50;ml+=10){const y=cb-ci*ml/50;ctx.beginPath();ctx.moveTo(cx+cw/2,y);ctx.lineTo(cx+cw/2-8,y);ctx.stroke();}
+    txt(ctx,r.sample?'Sample '+r.sample:'Sample',300,416,{s:F(13),w:700,a:'center'});txt(ctx,'Na₂CO₃',404,416,{s:F(13),w:700,a:'center'});}
+  // ----- watch glass on the bench -----
+  const s=r.mixed?gSolid(sim,r):null,inOven=B&&B.w==='oven',glassOnBal=on&&on.run===b.run&&(on.item==='glass'||on.item==='all');
+  if(!glassOnBal&&!inOven)gWatch(ctx,494,392,80,r.moved?{paper:true,cake:clamp(s.rec/1.8,0.15,1),wet:gWater(sim,r),broken:r.broken}:{});
+  if(!glassOnBal&&!inOven)txt(ctx,'Watch glass',494,437,{s:F(12),c:PAL['cv-soft'],a:'center'});
+  // ----- vacuum filtration: Büchner funnel, filter flask, trap, aspirator -----
+  const fx=600,vac=r.setup&&!r.moved,filt=r.poured?(s.ch.V+10*r.rinses)*(pouring?ph:1)-(rinsing?10*(1-ph):0):0;
+  const fineCloud=r.poured&&s?clamp(s.fines/Math.max(1e-6,s.solid)*12,0,0.6):0;
+  gFlask(ctx,fx,262,392,104,26,Math.min(96,filt*0.55),fineCloud);
+  ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fx+13,282);ctx.lineTo(fx+36,278);ctx.stroke();
+  ctx.fillStyle='#3a3e45';ctx.fillRect(fx-15,252,30,14);
+  ctx.fillStyle='#efece4';ctx.strokeStyle='#9a958a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(fx-42,198);ctx.lineTo(fx-42,236);ctx.lineTo(fx-8,252);ctx.lineTo(fx-5,274);ctx.lineTo(fx+5,274);ctx.lineTo(fx+8,252);ctx.lineTo(fx+42,236);ctx.lineTo(fx+42,198);ctx.closePath();ctx.fill();ctx.stroke();
+  if(r.setup&&!r.moved){ctx.fillStyle='#ffffff';ctx.fillRect(fx-38,230,76,4);
+    if(r.poured){const ck=(3+clamp(s.rec/1.8,0.1,1)*7)*(pouring?ph:1);ctx.fillStyle='#fbfbf8';ctx.fillRect(fx-38,230-ck,76,ck);ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;ctx.strokeRect(fx-38,230-ck,76,ck);
+      if(pouring||rinsing){const lq=(pouring?1-ph:1-ph)*20;ctx.fillStyle=PAL['cv-water'];ctx.globalAlpha=0.9;ctx.fillRect(fx-38,230-ck-lq,76,lq);ctx.globalAlpha=1;}}}
+  ctx.strokeStyle=PAL['cv-lamp'];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(fx+36,278);ctx.bezierCurveTo(660,262,690,268,702,302);ctx.stroke();
+  gFlask(ctx,705,316,392,62,18,0,0);ctx.fillStyle='#3a3e45';ctx.fillRect(696,306,18,12);
+  ctx.strokeStyle=PAL['cv-lamp'];ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(710,306);ctx.bezierCurveTo(716,250,760,262,772,248);ctx.stroke();
+  ctx.fillStyle='#8f979f';ctx.fillRect(764,210,36,10);ctx.fillRect(764,210,10,40);
+  if(vac){ctx.strokeStyle='#5aa9e6';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(769,252);ctx.lineTo(769,300);ctx.stroke();pill(ctx,'Vacuum on',600,180,PAL['s3'],'#fff',F(12));}
+  txt(ctx,'Aspirator',796,202,{s:F(12),c:PAL['cv-soft'],a:'right'});
+  txt(ctx,'Filter flask',fx,416,{s:F(13),w:700,a:'center'});txt(ctx,'Trap',705,416,{s:F(13),w:700,a:'center'});
+  // ----- oven -----
+  ctx.fillStyle='#5b6470';rr(ctx,604,44,186,118,8);ctx.fill();ctx.fillStyle=inOven?'#4a2e1c':'#20252c';rr(ctx,614,56,118,94,6);ctx.fill();
+  if(inOven){ctx.fillStyle='rgba(255,140,40,'+(0.18+0.08*Math.sin(t*3)).toFixed(3)+')';rr(ctx,614,56,118,94,6);ctx.fill();gWatch(ctx,673,140,84,{paper:true,cake:clamp(s.rec/1.8,0.15,1),wet:gWater(sim,r),broken:r.broken});}
+  txt(ctx,'OVEN',761,72,{s:12,w:700,c:'#e6e9ec',a:'center'});txt(ctx,'100 °C',761,96,{s:14,w:700,c:inOven?'#ffb36b':'#c9ced3',a:'center'});
+  // ----- lab timer -----
+  if(B&&(B.w==='digest'||B.w==='oven'))gLcd(ctx,300,44,200,90,B.w==='oven'?'IN THE OVEN':'STANDING (DIGESTION)',mmss(ph*600),k,38);
+  else if(r.cycles>0)txt(ctx,'Oven time so far: '+(r.cycles*10)+' min',402,70,{s:F(13),c:PAL['cv-soft'],a:'center'});}
+function gNarr(sim){const b=gB(sim),r=b.runs[b.run],B=b.busy,on=b.bal.on,s=r.mixed?gSolid(sim,r):null,intro=r.kind==='intro';
+  if(B&&B.w==='mix')return r.pour==='slow'?'<b>Ca²⁺ and CO₃²⁻ ions meet and lock into solid CaCO₃.</b> Adding the carbonate slowly while you stir keeps the ions from meeting all at once, so fewer, larger crystals grow.':'<b>Ca²⁺ and CO₃²⁻ ions meet and lock into solid CaCO₃.</b> Dumping the carbonate in at once starts a huge number of tiny crystals at the same moment, so the mixture turns milky.';
+  if(B&&B.w==='digest')return '<b>The mixture is standing.</b> Small crystals slowly dissolve and the ions redeposit on larger ones, so the solid gets coarser and settles. This is called digestion.';
+  if(B&&B.w==='pour')return 'The aspirator pulls air out of the flask, so the liquid is pushed through the paper and the CaCO₃ stays on top.';
+  if(B&&B.w==='rinse')return 'The rinse carries solid left in the beaker onto the filter and washes dissolved NaCl out of the damp solid.';
+  if(B&&B.w==='oven')return '<b>Water is evaporating from the solid and the paper.</b> CaCO₃ itself is stable at 100 °C, so only water leaves.';
+  if(on&&(on.item==='na'||on.item==='ca')&&on.run===b.run){const nm=on.item==='na'?'Na₂CO₃':'CaCl₂';return Math.abs(b.bal.tare)<1?'The beaker is on the balance but the balance is not tared, so the reading includes the beaker. Press <b>Tare</b> before you add the '+nm+'.':'Add '+nm+' with the scoop until the display is near '+(on.item==='na'?'2.5':'2.0')+' g, then record the exact reading.';}
+  if(on&&on.item==='all'&&on.run===b.run)return 'Record this mass. <b>When two weighings in a row agree within 0.002 g, the solid is dry</b>: the mass has stopped changing.';
+  if(on&&on.run===b.run)return Math.abs(b.bal.tare)>0.0016?'<b>The balance was tared with something else on it</b>, so this reading is off by that mass. Take it off, press Tare with the pan empty, and weigh again.':'Record the reading exactly as the display shows it, to 0.001 g.';
+  if(r.moved){if(!r.cycles)return 'The damp solid and paper hold water. Dry them in the 100 °C oven'+(r.broken?'.':', and break up the clumps first so the inside can dry.');
+    return gConst(r)?'<b>Two weighings in a row agree within 0.002 g: the mass is constant.</b> The solid is dry.':'Weigh again after each drying. Water is still leaving if the mass keeps going down.';}
+  if(r.poured){const cl=s.fines/Math.max(1e-6,s.solid)>0.02;return (cl?'<b>The filtrate in the flask looks cloudy.</b> Very fine particles of CaCO₃ are passing through the paper. ':'The filtrate in the flask is clear, so the solid is staying on the paper. ')+(r.rinses<2?'Rinse the beaker onto the filter so no solid is left behind.':'Turn off the vacuum and move the paper and solid to the watch glass.');}
+  if(r.mixed)return '<b>White CaCO₃ has formed.</b> Ca²⁺(aq) + CO₃²⁻(aq) → CaCO₃(s). Na⁺ and Cl⁻ are spectator ions and stay in solution.'+(r.digest?' The solid has settled to the bottom.':'');
+  if(intro){if(r.na.water&&r.ca.water)return 'Both solids have dissolved into clear, colorless solutions of ions. Combine them next.';return 'Weigh each solid in a tared beaker, then dissolve it in 20 mL of distilled water.';}
+  if(!r.vs)return 'Each sample is a CaCl₂ solution made 100 times more concentrated than the original hard water. Pipet 20.00 mL of the one you choose.';
+  return 'The beaker holds 20.00 mL of sample '+r.sample+'. Measure the 0.5 M Na₂CO₃ you planned in the graduated cylinder, then add it.';}
+/* ---------- the lab: steps, tables, questions ---------- */
+const gTxt=(sim,k)=>sim.vlab.raw(k).trim()!=='';
+function gSetRun(i,focus){return sim=>{const b=gB(sim);if(!b)return;b.run=i;if(focus)b.focus=focus;};}
+const W_CTL=['g-beaker','g-tare','scoop','g-scoop','g-dump','g-off','g-water'],M_CTL=['pour','g-mix'],PG_CTL=['g-tare','g-paper','g-glass','g-off'],
+  F_CTL=['g-setup','g-pour','g-rinse','g-move'],D_CTL=['g-break','g-oven','g-weigh','g-off','g-tare'];
+function gWeighStep(w){const nm=w==='na'?'Na₂CO₃':'CaCl₂',full=w==='na'?'sodium carbonate':'calcium chloride (anhydrous)',tg=w==='na'?2.5:2.0,lo=w==='na'?2.0:1.6,hi=w==='na'?3.0:2.4,row=w==='na'?0:1;
+  return {title:'Weigh and dissolve the '+nm,setup:gSetRun(0,w),controls:W_CTL,
+    text:'<p>Put an empty, clean, dry 150 mL beaker on the balance and press <b>Tare</b>. Add '+full+' with the scoop until the balance reads about '+tg.toFixed(1)+' g. You do not need exactly '+tg.toFixed(1)+' g, but record the exact reading in Table 1.</p><p>Take the beaker off the balance, add 20 mL of distilled water and stir until the solid dissolves.</p>',
+    done:sim=>{const r=gB(sim)&&gB(sim).runs[0];return !!r&&r[w].water&&r[w].m>=lo&&r[w].m<=hi&&gTxt(sim,'c:t1:m:'+row);},
+    doneHint:sim=>{const b=gB(sim);if(!b)return '';const R=b.runs[0][w];if(R.m>hi&&!R.water)return 'That is more than about '+tg.toFixed(1)+' g. Press <b>Empty the beaker and start over</b>, then add less.';if(R.m<lo)return 'Add '+nm+' until the balance reads about '+tg.toFixed(1)+' g. Use the large scoop first, then the small one or a pinch.';
+      if(!gTxt(sim,'c:t1:m:'+row))return 'Record the mass of '+nm+' in Table 1.';if(!R.water)return 'Take the beaker off the balance, then press <b>Add 20 mL of distilled water</b>.';return '';}};}
+function gRunSteps(k){const nm=AB[k],col=k===1?'a':'b',rr_=sim=>gB(sim)&&gB(sim).runs[k],set=gSetRun(k);
+  return [
+  {title:nm+': measure the sample and the Na₂CO₃',setup:set,controls:['gSample','g-pipet','gVol','g-carb'],
+   text:'<p><b>'+nm+'.</b> '+(k===2?'Choose a different sample from Sample A. ':'Choose one of the six samples. ')+'Pipet 20.00 mL of it into a clean 150 mL beaker. Set the volume of 0.5 M Na₂CO₃ from your planning table and measure it in the graduated cylinder.</p><p>Record the sample number and both volumes in the '+nm+' column of Table 4.</p>',
+   done:sim=>{const r=rr_(sim);if(!r||!r.vs||!r.vC)return false;if(k===2&&r.sample===gB(sim).runs[1].sample)return false;return [0,1,2].every(i=>gTxt(sim,'c:t2:'+col+':'+i));},
+   doneHint:sim=>{const r=rr_(sim);if(!r)return '';if(!r.vs)return 'Choose a sample, then press <b>Pipet 20.00 mL</b>.';if(k===2&&r.sample===gB(sim).runs[1].sample)return 'You analyzed sample '+r.sample+' as Sample A. Choose a different sample and pipet it again.';
+     if(!r.vC)return 'Set the volume of Na₂CO₃ and press <b>Measure it in the graduated cylinder</b>.';return 'Record the sample number and both volumes in Table 4.';}},
+  {title:nm+': make the precipitate',setup:set,controls:M_CTL.concat(['g-digest']),
+   text:'<p>Add the Na₂CO₃ solution to the sample in the beaker, using the technique your procedure calls for. If your procedure says to let the mixture stand, do it now. Describe what you see in the Observations box for '+nm+'.</p>',
+   done:sim=>{const r=rr_(sim);return !!r&&r.mixed&&gIdle(sim);},doneHint:'Choose how to add it, then press <b>Add the Na₂CO₃ solution</b>.'},
+  {title:nm+': weigh the filter paper and watch glass',setup:set,controls:PG_CTL,
+   text:'<p>Take everything off the balance and press Tare so it reads 0.000 g. Weigh a new piece of filter paper and a clean, dry watch glass. Record both masses in Table 4.</p>',
+   done:sim=>{const r=rr_(sim);return !!r&&r.reads.paper.length>0&&r.reads.glass.length>0&&gTxt(sim,'c:t2:'+col+':3')&&gTxt(sim,'c:t2:'+col+':4')&&!gB(sim).bal.on;},
+   doneHint:sim=>{const r=rr_(sim);if(!r)return '';if(!r.reads.paper.length||!r.reads.glass.length)return 'Weigh the filter paper and the watch glass.';if(gB(sim).bal.on)return 'Take it off the balance.';return 'Record both masses in Table 4.';}},
+  {title:nm+': filter and wash',setup:set,controls:F_CTL,
+   text:'<p>Filter the mixture the same way as in the introductory activity. Rinse the beaker onto the filter and wash the solid, then move the paper and solid onto the watch glass.</p>',
+   done:sim=>{const r=rr_(sim);return !!r&&r.moved;},doneHint:'Seat the paper, pour the mixture onto it, rinse, then move the paper and solid to the watch glass.'},
+  {title:nm+': dry to constant mass',setup:set,controls:D_CTL,
+   text:'<p>Dry and weigh as before, and record each mass in the '+nm+' column of Table 5. Keep going until two weighings in a row agree within 0.002 g.</p>',
+   done:sim=>{const r=rr_(sim);return !!r&&gConst(r)&&V_COUNT(sim,col)>=2&&!gB(sim).bal.on;},
+   doneHint:sim=>{const r=rr_(sim);if(!r)return '';if(!gConst(r))return 'Dry it again and reweigh until two weighings in a row agree within 0.002 g.';if(gB(sim).bal.on)return 'Take it off the balance.';return 'Record each weighing in Table 5.';}}];}
+const V_COUNT=(sim,c)=>sim.vlab.col('dry',c).filter(Number.isFinite).length;
+const LAB_GRAV={id:'gravimetric',title:'Gravimetric Analysis of Calcium and Hard Water',course:'AP Chemistry',teachers:'Jackson',
+  source:{label:'P3 - Gravimetric Analysis (Lab)',href:'https://rjhs.instructure.com/courses/17215/pages/p3-gravimetric-analysis-lab'},level:'ap',
+  purpose:'<p>Find out how much calcium is in a water sample by turning it into a solid you can weigh. First you make calcium carbonate from weighed reactants and find your percent yield. Then you plan an analysis, run it on two hard-water samples, and compare the hardness you measure with the expected value.</p>'+
+    '<p><b>Objectives</b></p><ul><li><b>Knowledge:</b> explain what makes hard water “hard”.</li><li><b>Skill:</b> perform a gravimetric analysis to determine the calcium ion content in a water sample.</li><li><b>Review:</b> write the double replacement reaction between calcium chloride and sodium carbonate, and the net ionic equation.</li><li><b>Vocabulary:</b> gravimetric analysis, hard water, filter paper, precipitate, funnel, drying oven.</li><li><b>AP topics 1.3 and 1.4:</b> the law of definite proportions, and elemental analysis for purity.</li></ul>',
+  background:'<p><b>What makes water hard.</b> As rain and groundwater move through rock such as limestone (CaCO₃) and dolomite (CaMg(CO₃)₂), they dissolve calcium and magnesium ions. Water with a lot of dissolved Ca²⁺ and Mg²⁺ is called <b>hard</b>. It leaves white scale inside kettles, pipes and water heaters, and it reacts with soap to form scum instead of lather. Hardness is reported as if all of those ions were present as calcium carbonate, in milligrams of CaCO₃ per liter of water (mg/L).</p>'+
+    '<p>The U.S. Geological Survey scale: 0 to 60 mg/L is <b>soft</b>, 61 to 120 mg/L is <b>moderately hard</b>, 121 to 180 mg/L is <b>hard</b>, and more than 180 mg/L is <b>very hard</b>. Denver Water is soft, at about 40 to 60 mg/L.</p>'+
+    '<p><b>The reaction.</b> When you mix solutions of calcium chloride and sodium carbonate, the ions trade partners in a double replacement reaction, and calcium carbonate comes out as a white precipitate:</p><p>CaCl₂(aq) + Na₂CO₃(aq) → CaCO₃(s) + 2NaCl(aq)</p><p>Na⁺ and Cl⁻ stay dissolved before and after, so they are spectator ions. The net ionic equation shows only the change:</p><p>Ca²⁺(aq) + CO₃²⁻(aq) → CaCO₃(s)</p>'+
+    '<p><b>Gravimetric analysis</b> measures how much of a substance is present by turning it into a solid of known composition and weighing that solid. It works because of the law of definite proportions: pure CaCO₃ is always 40.04% calcium by mass, so the mass of dry CaCO₃ tells you the moles of Ca²⁺ that were in the water.</p>'+
+    '<p><b>Why CaCO₃ is a good precipitate to weigh.</b> It is very insoluble (Ksp is about 5 × 10⁻⁹, so well under a milligram stays dissolved in your beaker). It has one known formula and molar mass, 100.09 g/mol. It is stable at 100 °C: drying removes water but does not change the solid, which only breaks down far above 600 °C. It does not pull water back out of the air. And when it forms under the right conditions, its particles are large enough to catch on filter paper.</p>'+
+    '<p><b>Interfering ions.</b> Any other cation that forms an insoluble carbonate comes down with the CaCO₃ and adds to the mass, so the result reads too high. Examples are Mg²⁺ (MgCO₃ is only slightly soluble, so part of it precipitates), Ba²⁺, Sr²⁺, Pb²⁺, and iron ions, which come down as iron hydroxides. Real water labs use other methods, such as an EDTA titration, to count Ca²⁺ and Mg²⁺ together. The samples in this lab contain only CaCl₂.</p>'+
+    '<p><b>Safety.</b> Wear goggles. Sodium carbonate and calcium chloride irritate the eyes and skin. Clamp the filter flask so it cannot tip over. The oven and the watch glass are hot: handle them with tongs. Dispose of the filtrate the way your teacher directs.</p>'+
+    '<p><b>About the virtual bench.</b> The analytical balance reads to 0.001 g, and its last digit wanders by ±0.001 g. The CaCl₂ is labeled anhydrous, but it pulls some water from the air, so a little of the mass you weigh is water. Some solid stays behind in the beaker unless you rinse it onto the filter. Very fine particles can pass through the paper, and how you add the Na₂CO₃ and whether you let the mixture stand change how many do. The damp solid holds dissolved NaCl until you wash it. The solid and the paper keep losing water in the oven until the mass is constant. Every run is a little different, and so is every student’s bench. At 1× speed, 10 minutes pass in about 5 seconds. The model ignores the tiny amount of CaCO₃ that stays dissolved, and it treats each water sample as a pure CaCl₂ solution.</p>',
+  materials:['Sodium carbonate, Na₂CO₃(s), and calcium chloride, CaCl₂(s), anhydrous','Six water samples with known CaCl₂ concentrations (concentrated 100× from the original water)','0.5 M sodium carbonate solution','Distilled water and a wash bottle','Analytical balance (reads to 0.001 g)','150 mL beakers, a scoop and a stirring rod','20.00 mL volumetric pipet and a 50 mL graduated cylinder','Filter paper and a watch glass','Büchner funnel with rubber adapter, filter flask, trap flask, vacuum tubing and an aspirator','Drying oven at 100 °C, tongs and a spatula'],
+  hypothesis:{prompt:'<p>Predict whether your percent yield in the introductory activity will be above or below 100%, and name the step you expect to matter most. Explain your reasoning.</p>'},
+  setup(sim){BioLab.refresh(sim);},
+  controls:[],
+  steps:[
+    {title:'Get set up',setup:gSetRun(0,'na'),
+     text:'<p>This lab has two parts. In the <b>introductory activity</b> you make CaCO₃ from weighed Na₂CO₃ and CaCl₂ and find your percent yield. In the <b>guided inquiry</b> you plan an analysis, then measure the hardness of two water samples.</p><p>The analytical balance reads to 0.001 g. <b>Tare</b> sets the display to zero with whatever is on the pan. Record every mass exactly as the display shows it. At 1× speed, 10 minutes on the bench pass in about 5 seconds; use Speed to change that.</p><p><b>Safety:</b> put on your goggles.</p>'},
+    gWeighStep('na'),gWeighStep('ca'),
+    {title:'Combine the solutions',setup:gSetRun(0),controls:M_CTL,
+     text:'<p>Add the Na₂CO₃ solution to the CaCl₂ solution slowly, stirring as you pour. Choose how you add it, then watch the beaker. Describe what you see in the Observations box.</p>',
+     done:sim=>{const b=gB(sim);return !!b&&b.runs[0].mixed&&gIdle(sim);},
+     doneHint:sim=>{const b=gB(sim);if(!b)return '';const r=b.runs[0];if(!r.na.water||!r.ca.water)return 'Weigh and dissolve both solids first.';return 'Choose how to add it, then press <b>Add the Na₂CO₃ solution</b>.';}},
+    {title:'Let it stand (your choice)',setup:gSetRun(0),controls:['g-digest'],
+     text:'<p>You may let the mixture stand for 10 minutes before you filter it. Chemists call this <b>digestion</b>. It is your choice: press Next to filter right away.</p>',
+     done:gIdle,doneHint:'Wait for the 10 minutes to finish.'},
+    {title:'Weigh the filter paper and watch glass',setup:gSetRun(0),controls:PG_CTL,
+     text:'<p>Take everything off the balance and press Tare so it reads 0.000 g. Weigh a piece of filter paper and record its mass in Table 1. Then weigh a clean, dry watch glass and record its mass.</p>',
+     done:sim=>{const b=gB(sim);if(!b)return false;const r=b.runs[0];return r.reads.paper.length>0&&r.reads.glass.length>0&&gTxt(sim,'c:t1:m:2')&&gTxt(sim,'c:t1:m:3')&&!b.bal.on;},
+     doneHint:sim=>{const b=gB(sim);if(!b)return '';const r=b.runs[0];if(!r.reads.paper.length||!r.reads.glass.length)return 'Weigh the filter paper and the watch glass.';if(b.bal.on)return 'Take it off the balance.';return 'Record both masses in Table 1.';}},
+    {title:'Vacuum filtration',setup:gSetRun(0),controls:F_CTL,
+     text:'<p>Seat the weighed filter paper flat in the Büchner funnel, wet it with a few drops of distilled water so it seals, and turn on the aspirator. The trap flask keeps water from the aspirator out of your filtrate.</p><p>Pour the mixture onto the center of the paper. Rinse the beaker with small portions of distilled water and pour each rinse over the solid, so all of the CaCO₃ reaches the filter and the solid is washed. Then turn off the vacuum and move the paper and solid onto the watch glass.</p>',
+     done:sim=>{const b=gB(sim);return !!b&&b.runs[0].moved;},doneHint:'Seat the paper, pour the mixture onto it, rinse, then move the paper and solid to the watch glass.'},
+    {title:'Dry to constant mass',setup:gSetRun(0),controls:D_CTL,
+     text:'<p>Dry the paper and solid on the watch glass in the 100 °C oven for 10 minutes. Breaking up the solid with a spatula helps it dry. Let it cool, then weigh the watch glass, paper and solid together and record the mass in Table 5.</p><p>Dry for another 10 minutes and weigh again. The solid is dry when two weighings in a row agree within 0.002 g.</p>',
+     done:sim=>{const b=gB(sim);return !!b&&gConst(b.runs[0])&&V_COUNT(sim,'i')>=2&&!b.bal.on;},
+     doneHint:sim=>{const b=gB(sim);if(!b)return '';if(!gConst(b.runs[0]))return 'Dry it again and reweigh until two weighings in a row agree within 0.002 g.';if(b.bal.on)return 'Take it off the balance.';return 'Record each weighing in Table 5.';}},
+    {title:'Introductory activity: calculations',setup:gSetRun(0),
+     text:'<p>Use Table 1 and Table 5 to fill in the Calculations below the bench: the moles of each reactant, the limiting reactant, the theoretical yield of CaCO₃, the mass you recovered and your percent yield.</p>'},
+    {title:'Guided inquiry: plan',setup:gSetRun(1),
+     text:'<p>The six water samples were concentrated 100 times from the original water, so there is enough calcium to weigh. Each holds a known concentration of CaCl₂, and you will analyze 20.0 mL of each sample you choose.</p><p>Fill in Table 2 for all six samples: the moles of Ca²⁺ in 20.0 mL, the theoretical mass of CaCO₃, the volume of 0.5 M Na₂CO₃ that gives a 20% excess of carbonate, and the theoretical hardness of the <i>original</i> water in mg CaCO₃/L.</p><p><b>Worked example, sample 1 (0.400 M):</b> 0.008 mol Ca²⁺, 0.801 g CaCO₃, 19.2 mL of Na₂CO₃ (round up and use 20 mL), and 400 mg CaCO₃/L.</p>',
+     done:sim=>[0,1,2,3,4,5].every(i=>['mol','g','v','h'].every(c=>gTxt(sim,'c:plan:'+c+':'+i))),doneHint:'Fill in every cell of the planning table (Table 2).'},
+    {title:'Guided inquiry: write your procedure',setup:gSetRun(1),
+     text:'<p>Write your own step-by-step procedure for analyzing one sample in Table 3. Build on the introductory activity, and include the techniques that give large, easily filtered particles and an accurate final mass. Then analyze two samples on the bench by following it.</p>',
+     done:sim=>[0,1,2,3,4,5,6,7,8,9].filter(i=>gTxt(sim,'c:proc:s:'+i)).length>=4,doneHint:'Write at least four steps in Table 3.'}]
+    .concat(gRunSteps(1),gRunSteps(2),[{title:'Analyze your results',setup:gSetRun(2),
+     text:'<p>Fill in Table 6: the mass of dry CaCO₃ from each sample, the experimental hardness of the original water, the theoretical hardness from your planning table, the percent error and the hardness category. Your bar graph draws from Table 6. Then answer the questions and write your Lab Reflection.</p>'}]),
+  tables:[
+    {id:'t1',title:'Table 1. Introductory activity: balance readings',cols:[{id:'q',label:'',rows:T1},{id:'m',label:'Balance reading (g)',input:'number',dp:3,check:gT1Check}]},
+    {id:'plan',title:'Table 2. Planning table: 20.0 mL of each sample',cols:[{id:'s',label:'Sample',rows:[1,2,3,4,5,6],rowLabels:GS.map((c,i)=>(i+1)+' ('+c.toFixed(3)+' M CaCl₂)')},
+      {id:'mol',label:'Moles of Ca²⁺ in 20.0 mL (mol)',input:'number',check:gPlanCheck('mol')},{id:'g',label:'Theoretical mass of CaCO₃ (g)',input:'number',check:gPlanCheck('g')},
+      {id:'v',label:'Volume of 0.5 M Na₂CO₃ for a 20% excess (mL)',input:'number',check:gPlanCheck('v')},{id:'h',label:'Theoretical hardness (mg CaCO₃/L)',input:'number',check:gPlanCheck('h')}]},
+    {id:'proc',title:'Table 3. Your procedure for analyzing one sample',cols:[{id:'n',label:'Step',rows:[1,2,3,4,5,6,7,8,9,10]},{id:'s',label:'What you will do',input:'text'}]},
+    {id:'t2',title:'Table 4. Guided inquiry: your two samples',cols:[{id:'q',label:'',rows:T2},{id:'a',label:'Sample A',input:'number',check:gT2Check(1)},{id:'b',label:'Sample B',input:'number',check:gT2Check(2)}]},
+    {id:'dry',title:'Table 5. Drying to constant mass: watch glass + filter paper + CaCO₃ (g)',cols:[{id:'n',label:'Weighing',rows:[1,2,3,4,5,6,7,8],rowLabels:[1,2,3,4,5,6,7,8].map(n=>n+' (after '+n*10+' min)')},
+      {id:'i',label:'Introductory activity',input:'number',dp:3,check:gDryCheck(0)},{id:'a',label:'Sample A',input:'number',dp:3,check:gDryCheck(1)},{id:'b',label:'Sample B',input:'number',dp:3,check:gDryCheck(2)}]},
+    {id:'res',title:'Table 6. Guided inquiry results',cols:[{id:'s',label:'Sample',rows:['A','B'],rowLabels:['Sample A','Sample B']},
+      {id:'m',label:'Mass of dry CaCO₃ (g)',input:'number',check:gResCheck('m')},{id:'exp',label:'Experimental hardness (mg CaCO₃/L)',input:'number',check:gResCheck('exp')},
+      {id:'theo',label:'Theoretical hardness (mg CaCO₃/L)',input:'number',check:gResCheck('theo')},{id:'err',label:'Percent error (%)',input:'number',check:gResCheck('err')},
+      {id:'cat',label:'Hardness category',input:'select',options:CAT,check:gResCheck('cat')}]}],
+  observations:[{id:'o1',label:'Introductory activity: what you saw as the solutions combined'},{id:'o2',label:'Sample A: what the precipitate and the filtrate looked like'},{id:'o3',label:'Sample B: what the precipitate and the filtrate looked like'}],
+  calcs:[{id:'molNa',label:'Moles of Na₂CO₃',unit:'mol',input:'number',check:gCalcCheck('molNa')},{id:'molCa',label:'Moles of CaCl₂',unit:'mol',input:'number',check:gCalcCheck('molCa')},
+    {id:'lim',label:'Limiting reactant, and how you know',input:'text',check:gCalcCheck('lim')},{id:'theo',label:'Theoretical yield of CaCO₃',unit:'g',input:'number',check:gCalcCheck('theo')},
+    {id:'mppt',label:'Mass of dry CaCO₃ recovered (constant mass − filter paper − watch glass)',unit:'g',input:'number',check:gCalcCheck('mppt')},{id:'pct',label:'Percent yield',unit:'%',input:'number',check:gCalcCheck('pct')}],
+  graph:{type:'bar',title:'Theoretical and experimental water hardness',xl:'Water sample',yl:'Hardness (mg CaCO₃/L)',ymin:0,
+    series:[{table:'res',x:'s',y:'theo',label:'Theoretical'},{table:'res',x:'s',y:'exp',label:'Experimental'}]},
+  questions:[
+    {id:'p1',n:'Pre 1',q:'<p>Name the two ions most responsible for water hardness, and describe one thing you might notice at home if your water were very hard.</p>'},
+    {id:'p2',n:'Pre 2',q:'<p>In the net ionic equation for this lab, why do Na⁺ and Cl⁻ not appear? What is the mole ratio of Ca²⁺ to CaCO₃, and why does that ratio make the analysis simple?</p>'},
+    {id:'p3',n:'Pre 3',q:'<p>List three properties that make a precipitate good for gravimetric analysis, and explain why each one matters for an accurate result.</p>'},
+    {id:'p4',n:'Pre 4',q:'<p>Suppose a water sample also contained Mg²⁺ or Ba²⁺. Write the net ionic equation for one of them with CO₃²⁻, and predict whether your calculated calcium content would be too high or too low.</p>'},
+    {id:'p5',n:'Pre 5',q:'<p>Describe two techniques that help a precipitate form large, easily filtered particles, and explain why each one helps.</p>'},
+    {id:'p6',n:'Pre 6',q:'<p>Why does the plan call for a 20% excess of Na₂CO₃? What would happen to your result if you added less carbonate than the calcium needs?</p>'},
+    {id:'a1',n:'A1',q:'<p>Compare your percent yield in the introductory activity with 100%. Using the choices you made on the bench, name the most likely causes of the difference and say which way each one pushes the yield.</p>'},
+    {id:'a2',n:'A2',q:'<p>Why do you dry to constant mass instead of drying once for a set time? Use your Table 5 data to support your answer.</p>'},
+    {id:'a3',n:'A3',q:'<p>The samples were 100 times more concentrated than the original water. Explain where that factor enters the hardness calculation, and why concentrating the water first makes the analysis more accurate.</p>'},
+    {id:'a4',n:'A4',q:'<p>Which of your two samples had the larger percent error? Explain why a smaller mass of precipitate usually gives a larger percent error, even with the same technique.</p>'},
+    {id:'a5',n:'A5',q:'<p>A student skips washing the solid on the filter. Predict the effect on the measured hardness, and explain what extra substance ends up on the watch glass.</p>'},
+    {id:'a6',n:'A6',q:'<p>Denver Water has a hardness of about 50 mg CaCO₃/L. Estimate the mass of CaCO₃ you would collect from 20.0 mL of it without concentrating it first. Could this balance measure that mass well? Explain.</p>'},
+    {id:'r1',n:'LR 1',q:'<p><b>Lab Reflection: Background.</b> In your own words, explain the chemistry this lab is built on: what makes water hard, the reaction you used, and why weighing a precipitate can measure an ion in solution.</p>'},
+    {id:'r2',n:'LR 2',q:'<p><b>Lab Reflection: Procedure.</b> Summarize what you did in both parts of the lab, including the techniques you chose and why.</p>'},
+    {id:'r3',n:'LR 3',q:'<p><b>Lab Reflection: Relevant calculations.</b> Show one complete calculation from start to finish: from the mass of CaCO₃ you collected for one sample to its experimental hardness and percent error. Include units at every step.</p>'},
+    {id:'r4',n:'LR 4',q:'<p><b>Lab Reflection: Sources of error.</b> Name at least three specific sources of error in this lab. For each one, say whether it makes the measured mass of CaCO₃ too high or too low, and how you could reduce it.</p>'}],
+  conclusion:{prompt:'<p><b>Lab Reflection: Conclusions.</b> State what you found: your percent yield, the hardness and category of each water sample you analyzed, and how close your results came to the expected values. Explain what your results show about how well gravimetric analysis measures calcium in water.</p>',cer:false}};
+/* bench actions for the gravimetric lab (shown only in Virtual lab mode, and only on the steps that list them) */
+function gAct(id,label,en,fn,primary){return {id,label,vlab:true,primary:!!primary,enabled:s=>{const b=gB(s);return !!b&&!!en(s,b,b.runs[b.run]);},run(s){const b=gB(s);if(!b)return;const r=b.runs[b.run];if(!en(s,b,r))return;fn(s,b,r);sim_dirty(s);}};}
+const sim_dirty=s=>{s.infoDirty=true;};
+const G_ACTIONS=[
+  gAct('g-beaker','Put an empty 150 mL beaker on the balance',(s,b,r)=>!b.busy&&!b.bal.on&&r.kind==='intro'&&!r[b.focus].water,(s,b,r)=>{b.bal.on={run:b.run,item:b.focus};gBal(s);}),
+  gAct('g-tare','Tare',(s,b)=>!b.busy,s=>gTare(s)),
+  gAct('g-scoop','Add solid with the scoop',(s,b,r)=>!b.busy&&r.kind==='intro'&&gIs(s,b.focus)&&!r[b.focus].water,(s,b,r)=>{const w=b.focus,R=r[w],z=SCOOP[s.p.scoop]||SCOOP.big;R.sc++;
+    R.m=Math.round((R.m+z[0]+z[1]*gU(s,400+r.i*7+(w==='na'?0:3),R.sc))*1e4)/1e4;r.reads[w]=[];gBal(s);},true),
+  gAct('g-dump','Empty the beaker and start over',(s,b,r)=>!b.busy&&r.kind==='intro'&&r[b.focus].m>0&&!r[b.focus].water,(s,b,r)=>{r[b.focus].m=0;r.reads[b.focus]=[];if(gIs(s,b.focus))gBal(s);}),
+  gAct('g-off','Take it off the balance',(s,b)=>!b.busy&&!!b.bal.on,(s,b)=>{b.bal.on=null;gBal(s);}),
+  gAct('g-water','Add 20 mL of distilled water and stir',(s,b,r)=>!b.busy&&r.kind==='intro'&&r[b.focus].m>0&&!r[b.focus].water&&!gIs(s,b.focus),(s,b,r)=>{r[b.focus].water=true;}),
+  gAct('g-pipet','Pipet 20.00 mL of the sample into a beaker',(s,b,r)=>!b.busy&&r.kind==='gi'&&!r.mixed,(s,b,r)=>{r.sample=+s.p.gSample||1;r.vs=GVS;}),
+  gAct('g-carb','Measure it in the graduated cylinder',(s,b,r)=>!b.busy&&r.kind==='gi'&&!r.mixed,(s,b,r)=>{r.vC=s.p.gVol;}),
+  gAct('g-mix','Add the Na₂CO₃ solution',(s,b,r)=>!b.busy&&!r.mixed&&(r.kind==='intro'?r.na.water&&r.ca.water:r.vs>0&&r.vC>0),(s,b,r)=>{r.mixed=true;r.pour=s.p.pour;gBusy(s,'mix',1.8);},true),
+  gAct('g-digest','Let it stand for 10 minutes',(s,b,r)=>!b.busy&&r.mixed&&!r.poured&&!r.digest,s=>gBusy(s,'digest',5)),
+  gAct('g-paper','Put a filter paper on the balance',(s,b,r)=>!b.busy&&!b.bal.on&&!r.setup,(s,b)=>{b.bal.on={run:b.run,item:'paper'};gBal(s);}),
+  gAct('g-glass','Put the watch glass on the balance',(s,b,r)=>!b.busy&&!b.bal.on&&!r.moved,(s,b)=>{b.bal.on={run:b.run,item:'glass'};gBal(s);}),
+  gAct('g-setup','Seat the filter paper in the funnel and turn on the vacuum',(s,b,r)=>!b.busy&&!r.setup&&r.reads.paper.length>0&&!gIs(s,'paper'),(s,b,r)=>{r.setup=true;}),
+  gAct('g-pour','Pour the mixture onto the filter',(s,b,r)=>!b.busy&&r.setup&&r.mixed&&!r.poured,(s,b,r)=>{r.poured=true;gBusy(s,'pour',1.6);},true),
+  gAct('g-rinse','Rinse the beaker onto the filter (10 mL)',(s,b,r)=>!b.busy&&r.poured&&!r.moved&&r.rinses<3,(s,b,r)=>{r.rinses++;gBusy(s,'rinse',1.0);}),
+  gAct('g-move','Move the paper and solid to the watch glass',(s,b,r)=>!b.busy&&r.poured&&!r.moved&&r.reads.glass.length>0&&!gIs(s,'glass'),(s,b,r)=>{r.moved=true;}),
+  gAct('g-break','Break up the solid with a spatula',(s,b,r)=>!b.busy&&r.moved&&!r.broken&&!gIs(s,'all'),(s,b,r)=>{r.broken=true;}),
+  gAct('g-oven','Dry in the oven for 10 minutes',(s,b,r)=>!b.busy&&r.moved&&!gIs(s,'all')&&r.cycles<8,s=>gBusy(s,'oven',5),true),
+  gAct('g-weigh','Put the watch glass, paper and solid on the balance',(s,b,r)=>!b.busy&&r.moved&&r.cycles>0&&!b.bal.on,(s,b)=>{b.bal.on={run:b.run,item:'all'};gBal(s);})];
 /* ---------- definition ---------- */
 const OPTS=Object.keys(SOL).map(k=>({v:k,l:SOL[k].txt+' ('+SOL[k].name+')'}));
 function resultText(sim){const st=sim.st;if(!st.mixed)return 'Mix to find out';const r=st.res,o=r.o;if(o.same)return 'Same solution: no change';
@@ -137,11 +496,19 @@ const PRE={
     {id:'va',label:'Volume of A',type:'range',min:5,max:50,step:5,def:25,unit:' mL',lvl:'ap',onChange:rebuild},
     {id:'ca',label:'Molarity of A',type:'range',min:0.05,max:0.5,step:0.05,def:0.1,unit:' M',lvl:'ap',onChange:rebuild},
     {id:'vb',label:'Volume of B',type:'range',min:5,max:50,step:5,def:25,unit:' mL',lvl:'ap',onChange:rebuild},
-    {id:'cb',label:'Molarity of B',type:'range',min:0.05,max:0.5,step:0.05,def:0.1,unit:' M',lvl:'ap',onChange:rebuild}
+    {id:'cb',label:'Molarity of B',type:'range',min:0.05,max:0.5,step:0.05,def:0.1,unit:' M',lvl:'ap',onChange:rebuild},
+    // virtual lab bench only (hidden in the other views)
+    {id:'scoop',label:'Scoop size',type:'seg',def:'big',vlab:true,noTrial:true,options:[{v:'big',l:'Large (about 0.5 g)'},{v:'small',l:'Small (about 0.1 g)'},{v:'pinch',l:'A pinch'}]},
+    {id:'pour',label:'How you add the Na₂CO₃ solution',type:'seg',def:'fast',vlab:true,noTrial:true,options:[{v:'fast',l:'All at once'},{v:'slow',l:'Slowly, while stirring'}]},
+    {id:'gSample',label:'Water sample',type:'select',def:1,vlab:true,noTrial:true,options:GS.map((c,i)=>({v:i+1,l:'Sample '+(i+1)+' ('+c.toFixed(3)+' M CaCl₂)'}))},
+    {id:'gVol',label:'Volume of 0.5 M Na₂CO₃ to measure',type:'range',min:0.5,max:30,step:0.5,def:10,unit:' mL',vlab:true,noTrial:true}
   ],
-  actions:[{id:'mix',label:'Pour B into A',lvl:'bio',primary:true,run(sim){startMix(sim);}},{id:'refill',label:'Fresh solutions',lvl:'bio',run(sim){rebuild(sim);}}],
-  init(sim){const st={parts:[],mixed:false,mixT:0};sim.st=st;rebuild(sim);return st;},
-  step(sim,dt){stepParts(sim,Math.min(dt,0.05));if(sim.st.mixed&&Math.abs(sim.st.mixT-2.2)<dt)sim.infoDirty=true;},
+  actions:[{id:'mix',label:'Pour B into A',lvl:'bio',primary:true,run(sim){startMix(sim);}},{id:'refill',label:'Fresh solutions',lvl:'bio',run(sim){rebuild(sim);}}].concat(G_ACTIONS),
+  labs:[LAB_GRAV],
+  /* what the bench instruments show right now (used by the virtual-lab tests) */
+  benchRead(sim){const b=gB(sim);if(!b)return null;const r=b.runs[b.run];return {balance:b.bal.disp,on:b.bal.on?b.bal.on.item:null,busy:b.busy?b.busy.w:null,run:b.run,cycles:r.cycles,constant:gConst(r)};},
+  init(sim){const st={parts:[],mixed:false,mixT:0};sim.st=st;rebuild(sim);if(sim.vlab&&sim.vlab.lab.id==='gravimetric')st.G=gInit(sim);return st;},
+  step(sim,dt){if(sim.st.G){gStep(sim,dt);return;}stepParts(sim,Math.min(dt,0.05));if(sim.st.mixed&&Math.abs(sim.st.mixT-2.2)<dt)sim.infoDirty=true;},
   metrics:[
     {id:'res',label:'Precipitate',unit:'',lvl:'bio',text:true,get:s=>resultText(s)},
     {id:'spec',label:'Spectator ions',unit:'',lvl:'honors',text:true,get:s=>{const o=s.st.res.o;if(!s.st.mixed)return 'Mix to find out';if(o.same)return '—';if(!o.react)return 'All of them (no reaction)';return o.spec.map(k=>ION[k].txt).join(', ')||'none';}},
@@ -172,7 +539,7 @@ const PRE={
       if(st.mixed&&r.forms&&o.ppt)h+=` ${(o.ppt.x>1?o.ppt.x+' ':'')}${ION[o.pp.c].html} : ${(o.ppt.y>1?o.ppt.y+' ':'')}${ION[o.pp.a].html} per ${o.ppt.html}. Limiting: ${r.lim}. ${r.mol.toFixed(3)} mmol × ${o.ppt.M.toFixed(2)} g/mol = ${(r.mass*1000).toFixed(1)} mg. Excess ${r.exIon||''}: ${r.excess.toFixed(2)} mmol left.`;
       h+='</p>';}
     return h;},
-  narrate(sim){const st=sim.st,r=st.res,o=r.o,A=SOL[sim.p.a],B=SOL[sim.p.b];
+  narrate(sim){if(sim.st.G&&sim.vlab)return gNarr(sim);const st=sim.st,r=st.res,o=r.o,A=SOL[sim.p.a],B=SOL[sim.p.b];
     if(!st.mixed){if(o.same)return 'Both containers hold '+A.txt+'. Pick two different solutions.';return 'The beaker holds '+A.txt+': <b>'+ION[A.cat].txt+' and '+ION[A.an].txt+' ions</b> swim apart in the water. Before you pour, ask: could '+ION[A.cat].txt+' and '+ION[B.an].txt+', or '+ION[B.cat].txt+' and '+ION[A.an].txt+', form an insoluble solid?';}
     if(o.same)return 'Mixing two samples of the same solution changes nothing.';
     if(o.redox)return '<b>Something does happen, but it is not a precipitation swap.</b> '+o.redox.note;
@@ -227,11 +594,12 @@ const PRE={
     {lvl:'ap',t:'Limiting reactant (ion)',d:'The ion that runs out first. It sets the amount of precipitate.'},{lvl:'ap',t:'Ksp and Q',d:'Ksp is the solubility product at saturation. If the ion product Q is greater than Ksp, a precipitate forms.'}],
   about:'<p>The tool decides each mix with the standard solubility rules (from ChemLab, the same rules on every page). For a salt the rules call insoluble, it also compares the ion product Q (after mixing, before reacting) with the real Ksp at 25 °C, so very dilute mixtures of slightly soluble salts such as PbCl₂ and Ag₂SO₄ can stay clear. Equations are balanced by a search over small whole numbers, so every equation shown is balanced by code; complete and net ionic equations are built by splitting the soluble strong electrolytes into ions and cancelling spectators.</p>'+
     '<p>Precipitate mass assumes the reaction goes to completion and ignores the small amount that stays dissolved. Real precipitates: AgCl white, AgI pale yellow, PbI₂ bright yellow, Cu(OH)₂ light blue, Fe(OH)₃ rust brown; Ag₂O forms (brown) instead of AgOH, and Fe(OH)₃ plus CO₂ forms instead of Fe₂(CO₃)₃. Copper(II) carbonate is really a basic carbonate. CuSO₄ + KI and FeCl₃ + KI are redox reactions and are shown that way.</p>'+
-    '<p>In the zoom, each ball stands for a fixed number of formula units (shown at the bottom of the zoom), so particle counts are in proportion to moles, rounded to whole particles. Ions are drawn the same size for clarity, not to scale. Safety: silver nitrate stains skin, and lead and barium compounds are toxic. Wear goggles and gloves, and dispose of heavy metals in the waste container, never the sink.</p>',
+    '<p>In the zoom, each ball stands for a fixed number of formula units (shown at the bottom of the zoom), so particle counts are in proportion to moles, rounded to whole particles. Ions are drawn the same size for clarity, not to scale. Safety: silver nitrate stains skin, and lead and barium compounds are toxic. Wear goggles and gloves, and dispose of heavy metals in the waste container, never the sink.</p>'+
+    '<p><b>The virtual lab bench</b> (Gravimetric Analysis, AP Chemistry). The bench runs CaCl₂ + Na₂CO₃ → CaCO₃ + 2NaCl to completion with the limiting reactant, at 100.09 g/mol for CaCO₃. The analytical balance shows the true mass on the pan minus the tare, to 0.001 g, with a last digit that wanders by ±0.001 g. The “anhydrous” CaCl₂ holds 1 to 3% absorbed water. Losses: about 2% of the solid stays in the beaker, cut by 70% with each rinse; about 4% passes the paper as fine particles if the carbonate goes in all at once, much less if it goes in slowly with stirring and less again after 10 minutes of digestion. The damp cake holds solution with dissolved NaCl (and any excess reagent) until it is washed, and dried filter paper weighs about 1% less than paper weighed at room humidity. In the oven, water leaves the surface quickly and the inside of clumps more slowly unless you break them up. Dissolved CaCO₃ (well under 1 mg) is ignored. Each student’s bench has its own seeded glassware masses, scoop sizes and reagent variation.</p>',
   initVis(sim){sim.vis.dots=[];for(let i=0;i<70;i++)sim.vis.dots.push([Math.random(),Math.random(),Math.random()]);},
   thumbSetup(sim){sim.p.a='PbNO3';sim.p.b='KI';rebuild(sim);startMix(sim);for(let i=0;i<120;i++)stepParts(sim,0.05);},
   thumbFrames:4,
-  draw(sim,ctx,vdt,k,t){const st=sim.st,r=st.res,o=r.o,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap'),T=st.mixT,mixed=st.mixed;const A=SOL[p.a],B=SOL[p.b];
+  draw(sim,ctx,vdt,k,t){if(sim.st.G&&sim.vlab){gDraw(sim,ctx,vdt,k,t);return;}const st=sim.st,r=st.res,o=r.o,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap'),T=st.mixT,mixed=st.mixed;const A=SOL[p.a],B=SOL[p.b];
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);ctx.fillStyle=PAL['cv-bench'];ctx.fillRect(0,318,400,8);
     // ----- macroscopic: beaker with A, tube with B -----
     const bx=90,by=130,bw=190,bh=188;const water=PAL['cv-water'];
