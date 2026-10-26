@@ -166,8 +166,7 @@ function drawSide(ctx,list,cs,box,k,t,budget){const n=list.length,gap=6,wEach=(b
 const RACE={
   bio:   [['water','ammonia','salt','mgo','hcl'],['peroxide','hgo','kclo3'],['al2o3','fecl3','rust'],['methane','propane'],['pbi2','caoh','h2so4','baso4'],['ethanol','alcu','smelt','nawater']],
   honors:[['al2o3','fecl3','p4o10','rust'],['kclo3','airbag','hgo'],['propane','ethanol','resp'],['pbi2','baso4','h2so4','caoh'],['ethane','butane','octane'],['fekoh','alh2so4']],
-  ap:    [['rust','p4o10','al2o3','fecl3'],['kclo3','airbag'],['ethane','butane','resp'],['fekoh','alh2so4'],['octane','pyrite','ostwald'],['kmno4','remsen','phos']]};
-const RTYPE=['Synthesis','Decomposition','Synthesis','Combustion','Double replacement','Final equation'];
+  ap:    [['rust','p4o10','al2o3','fecl3'],['kclo3','airbag'],['ethane','butane','resp'],['fekoh'],['octane','pyrite','ostwald','alh2so4'],['kmno4','remsen','phos']]};
 const CTX={water:'A hydrogen fuel cell joins hydrogen and oxygen into water, the only thing that comes out of its tailpipe.',
   ammonia:'Factories make ammonia for fertilizer from nitrogen in the air and hydrogen gas.',salt:'Sodium metal burns in chlorine gas and leaves table salt.',
   mgo:'A magnesium strip burns with a blinding white flame and leaves a white powder, magnesium oxide.',hcl:'Hydrogen and chlorine gases combine to make hydrogen chloride.',
@@ -193,8 +192,9 @@ function raceHint(e,i,lv){const t=e.type;
   if(lv==='bio'){if(POLY[e.id])return 'Hint: '+POLY[e.id]+' stays together on both sides, so count it as one unit.';
     if(t==='combustion')return 'Hint: balance C first, then H, then O last.';
     if(t==='decomposition')return 'Hint: count each element on both sides in the particle view. Fix one, then recount the others.';
-    if(t==='single replacement')return 'Hint: balance the element that changes partners first, then the other one.';
-    return 'Hint: balance the element that is not oxygen or chlorine first, then that gas last.';}
+    if(t==='single replacement')return 'Hint: balance an element that is in only one substance on each side first. Leave H and O for last.';
+    const els=Object.keys(e.r.reduce((o,x)=>Object.assign(o,x.counts),{})),gas=['O','Cl','H'].find(k=>els.includes(k)),rest=els.filter(k=>k!==gas);
+    return gas&&rest.length?'Hint: balance '+rest.join(' and ')+' first, then '+gas+' last.':'Hint: count each element on both sides in the particle view. Fix one, then recount the others.';}
   if(lv==='honors'&&(POLY[e.id]||(t==='combustion'&&i>=4)))return POLY[e.id]?'Treat '+POLY[e.id]+' as one unit.':'If O₂ needs a half, double every coefficient.';
   return '';}
 /* why a check failed: lowest terms, or which element is off, by how much, and which way to adjust */
@@ -213,7 +213,7 @@ const GAME={label:'Balance race',title:'Balance race',rounds:6,fireLabel:'Check'
   newRound(sim,i){const lv=BioLab.level==='ap'?'ap':BioLab.level==='honors'?'honors':'bio',pool=RACE[lv][i].filter(id=>LIBM[id]);
     const id=pool[Math.floor(Math.random()*pool.length)],e=LIBM[id];
     BioLab.setValues(sim,{mode:'explore',eq:id});setCoefs(sim,[]);sim.vis.th={};
-    const h=raceHint(e,i,lv),tp=i<5?RTYPE[i]:e.type.charAt(0).toUpperCase()+e.type.slice(1);
+    const h=raceHint(e,i,lv),tp=e.type.charAt(0).toUpperCase()+e.type.slice(1);
     return {id,controls:e.all.map((_,k)=>'c'+k),metrics:[],checked:null,
       prompt:`<b>Round ${i+1}: ${tp}.</b> ${CTX[id]||e.name+'.'}<br>Balance <b>${eqHtml(e)}</b> with the smallest whole-number coefficients.`+(h?` <span class="gm-hint">${h}</span>`:'')};},
   fire(sim,r){r.checked=coefs(sim,LIBM[r.id]);r.t0=performance.now();sim.infoDirty=true;},

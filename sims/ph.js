@@ -72,12 +72,15 @@ function liquid(ind,pH,natural){const base=natural||PAL['cv-water'];if(ind==='no
   const [c,a,name]=IND[ind].c(pH);const dark=natural&&hex2(natural).reduce((s,v)=>s+v,0)<300;return [mix(base,c,a*(dark?0.35:0.85)),dark?name+' (hard to see)':name];}
 
 /* ---------- mode-aware UI ---------- */
-function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;const mode=sim.p.mode,d=sim.def;
+function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;
+  /* 'target' is the Target pH game's own view. Outside a game, fall back to the pH scale. */
+  if(sim.p.mode==='target'&&!sim.game){BioLab.setValues(sim,{mode:'scale'});return;}
+  const mode=sim.p.mode,d=sim.def;
   d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
   d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});
   const btns=[...sim.ui.sec.querySelectorAll('.actions button')];
   d.actions.forEach(a=>{const b=btns.find(x=>x.textContent===a.label);if(b)b.hidden=!atLeast(a.lvl)||!a.modes.includes(mode);});
-  const want=mode==='scale'?'conc':'dil';if(sim.ui.gm&&(mode==='scale')!==(sim.gMetric==='conc')){if([...sim.ui.gm.options].some(o=>o.value===want)){sim.gMetric=want;sim.ui.gm.value=want;}}
+  const want=mode==='scale'?'conc':'dil';if(mode!=='target'&&sim.ui.gm&&(mode==='scale')!==(sim.gMetric==='conc')){if([...sim.ui.gm.options].some(o=>o.value===want)){sim.gMetric=want;sim.ui.gm.value=want;}}
   sim.infoDirty=true;}
 
 /* ---------- particles ---------- */
@@ -121,7 +124,11 @@ const PH={
     {id:'sol',label:'Solution to test',type:'select',def:'lemon',lvl:'bio',modes:['scale'],options:SOL.map(s=>({v:s.id,l:s.n+' (pH '+s.pH.toFixed(1)+')'}))},
     {id:'conc',label:'Acid concentration (both beakers)',type:'select',def:0.1,lvl:'bio',modes:['compare'],options:CONCS.map(c=>({v:c,l:cLabel(c)})),help:'Each step down is a 10× dilution.'},
     {id:'weak',label:'Weak acid in beaker B',type:'select',def:'HC2H3O2',lvl:'honors',modes:['compare'],options:[{v:'HC2H3O2',l:'Acetic acid, HC₂H₃O₂'},{v:'HCHO2',l:'Formic acid, HCHO₂'},{v:'HF',l:'Hydrofluoric acid, HF'},{v:'HNO2',l:'Nitrous acid, HNO₂',lvl:'ap'},{v:'HClO',l:'Hypochlorous acid, HClO',lvl:'ap'},{v:'HCN',l:'Hydrocyanic acid, HCN',lvl:'ap'}]},
-    {id:'ind',label:'Indicator',type:'select',def:'none',lvl:'bio',options:[{v:'none',l:'None (natural color)'},{v:'uni',l:'Universal indicator'},{v:'litmus',l:'Litmus'},{v:'phenol',l:'Phenolphthalein',lvl:'honors'},{v:'btb',l:'Bromothymol blue',lvl:'honors'}],help:'A few drops of a dye whose color depends on pH.'}
+    {id:'ind',label:'Indicator',type:'select',def:'none',lvl:'bio',options:[{v:'none',l:'None (natural color)'},{v:'uni',l:'Universal indicator'},{v:'litmus',l:'Litmus'},{v:'phenol',l:'Phenolphthalein',lvl:'honors'},{v:'btb',l:'Bromothymol blue',lvl:'honors'}],help:'A few drops of a dye whose color depends on pH.'},
+    /* Target pH game only (view 'target'): the solution the student makes. */
+    {id:'gM',label:'Number in front of the power of ten',type:'range',min:1,max:9.9,step:0.1,d:1,def:1,lvl:'bio',modes:['target'],noTrial:true,help:'Your concentration is this number × the power of ten below.'},
+    {id:'gE',label:'Concentration (power of ten)',type:'select',def:-1,lvl:'bio',modes:['target'],noTrial:true,options:G_EXP.map(e=>({v:e,l:G_DEC(e)+' M = 10'+sup(e)+' M'}))},
+    {id:'gD',label:'Dilute the stock by',type:'select',def:10,lvl:'bio',modes:['target'],noTrial:true,options:G_DIL.map(n=>({v:n,l:n.toLocaleString('en-US')+'×',lvl:G_BIO_DIL.includes(n)?undefined:'honors'})),help:'Diluting 10× means making 1 mL of stock up to 10 mL with water.'}
   ],
   actions:[
     {id:'dilute',label:'Dilute 10×',lvl:'bio',primary:true,modes:['compare'],run(sim){const i=CONCS.indexOf(+sim.p.conc);BioLab.setValues(sim,{conc:i>=0&&i<CONCS.length-1?CONCS[i+1]:CONCS[0]});}},
@@ -164,6 +171,7 @@ const PH={
     ctx.restore();legend(ctx,box.L+12,box.T+12,[{label:'HCl (strong)',color:serColor(0)},{label:r.wa.f+' (weak)',color:serColor(1)}]);
     if(id==='dil'&&box.W>520)txt(ctx,'Strong: slope 1 pH unit per 10×.  Weak: about ½.',box.L+box.W-6,box.T+box.H-10,{s:13,c:PAL['muted'],a:'right'});},
   infoPanel(sim){const p=sim.p,r=calc(p),hon=atLeast('honors'),ap=atLeast('ap');
+    if(p.mode==='target')return '<h3>Target pH</h3><p>Make the solution, then test it. The full lab has the pH scale and the strong vs weak acid comparison.</p>';
     if(p.mode==='scale'){const ind=p.ind!=='none'?IND[p.ind]:null;
       const rows=SOL.map(s=>{const L=liquid(p.ind,s.pH,s.col)[1];const on=s.id===p.sol?' style="font-weight:700"':'';
         return `<tr${on}><td>${s.n}</td><td>${s.pH.toFixed(1)}</td>${hon?`<td>${sx(Math.pow(10,-s.pH),2)}</td>`:''}<td>${s.pH<6.95?'acidic':s.pH>7.05?'basic':'neutral'}</td>${ind?`<td>${L}</td>`:''}</tr>`;}).join('');
@@ -178,6 +186,7 @@ const PH={
     else if(hon)h+=`<p class="help">Weak acids reach an equilibrium: ${wa.f} + H₂O ⇌ H₃O⁺ + ${wa.an}. Most molecules stay intact at any moment.</p>`;
     return h;},
   narrate(sim){const p=sim.p,r=calc(p),hon=atLeast('honors');
+    if(p.mode==='target')return 'Set the concentration or the dilution, then press <b>Test pH</b> to add universal indicator and read the meter.';
     if(p.mode==='scale'){const s=r.s,L=liquid(p.ind,s.pH,s.col);let t;
       if(s.id==='water')t='Pure water sits at <b>pH 7.00, neutral</b>: water makes equal amounts of H₃O⁺ and OH⁻, '+sx(1e-7,2)+' M each.';
       else if(s.pH<7){const f=Math.pow(10,7-s.pH);t=s.n+' (pH '+s.pH.toFixed(1)+') is <b>acidic</b>: it has about '+big(f)+' times more H₃O⁺ than pure water'+(hon?' ('+s.note+').':'.');}
@@ -235,7 +244,7 @@ const PH={
   about:'<p>pH values for household solutions are typical reference values at 25 °C; real samples vary (lemon juice 2.0–2.6, coffee 4.8–5.2, bleach 11–13). Vinegar’s pH is computed for 5% acetic acid (0.83 M).</p><p>In the strong vs weak view, every pH is solved exactly from the charge balance [H₃O⁺] = [OH⁻] + [A⁻] (or [Cl⁻]), using Kw = 1.0 × 10⁻¹⁴ and Ka values at 25 °C from the ChemLab data table (acetic 1.8 × 10⁻⁵, formic 1.8 × 10⁻⁴, HF 6.8 × 10⁻⁴, HNO₂ 4.5 × 10⁻⁴, HClO 3.0 × 10⁻⁸, HCN 4.9 × 10⁻¹⁰). Concentrations are used in place of activities, which is fine below about 0.1 M and less accurate at 1.0 M.</p><p>Each zoom shows 40 acid particles. The weak acid’s particles ionize and re-form at random so that, on average, the fraction ionized matches the calculated percent. With only 40 particles you will see that number flicker, the same way a real equilibrium fluctuates. Water’s own H₃O⁺ and OH⁻ (10⁻⁷ M) are too few to draw. Indicator colors are approximate. Phenolphthalein slowly fades again above about pH 13, which is not shown.</p>',
   draw(sim,ctx,vdt,k,t){const p=sim.p,r=calc(p),hon=atLeast('honors'),ap=atLeast('ap');
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
-    if(p.mode==='scale')drawScale(sim,ctx,r,k,hon,ap);else drawCompare(sim,ctx,r,k,t,hon,ap);},
+    if(p.mode==='target')drawTarget(sim,ctx,k);else if(p.mode==='scale')drawScale(sim,ctx,r,k,hon,ap);else drawCompare(sim,ctx,r,k,t,hon,ap);},
   thumbSetup(sim){sim.p.mode='compare';sim.p.ind='uni';}
 };
 
