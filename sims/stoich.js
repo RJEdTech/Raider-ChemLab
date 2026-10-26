@@ -87,6 +87,39 @@ const SIM={
     {id:'loss',label:'Product lost while collecting it',type:'range',min:0,max:40,step:1,def:15,unit:' %',lvl:'honors',help:'Spills, product left on the filter paper, side reactions'},
     {id:'wet',label:'Weigh the product before it is dry',type:'toggle',def:false,lvl:'honors'}
   ],
+  game:{label:'Perfect mix',title:'Perfect mix',rounds:6,fireLabel:'Mix',par:300,metrics:[],
+  intro:{bio:'Six mixes. Each round gives you one reactant. Use the coefficients to work out how much of the other reactant uses it all up, with nothing left over. Set the slider, then press Mix. A first-try perfect mix scores 3 points.',
+         honors:'Six mixes, from molecules to moles to grams. Use the mole ratio (and molar masses) to find the amount that leaves nothing over, set the slider, then press Mix. First-try perfect mixes score 3.'},
+  newRound(sim,i){const lv=BioLab.level,pick=a=>a[Math.floor(Math.random()*a.length)],rs=(a,b,st)=>Math.round((a+Math.random()*(b-a))/st)*st;
+    const u=lv==='bio'||i<2?'count':i<4?'mol':'g';
+    const gPool=lv==='ap'?['al','c3h8']:['water','al'];
+    let rx=u==='count'?pick(['water','nh3','ch4','al']):u==='mol'?pick(['water','nh3','ch4']):pick(gPool);
+    let R,gi=i%2,ui,cg,cu,sg,su,given,ans,tries=0;
+    const setup=()=>{R=RX[rx];ui=1-gi;cg=R.re[gi].c;cu=R.re[ui].c;sg=R.re[gi];su=R.re[ui];};setup();
+    /* Grams: both amounts must fit the 0–80 g sliders, with the answer at least 12 g so slider rounding stays under 3%.
+       Find the given range that allows that; if a pairing has none (a few grams of H₂ against all the O₂), swap roles, then try the other reaction. */
+    let gLo=8,gHi=78;
+    if(u==='g'){const opts=[];gPool.forEach(x=>[gi,1-gi].forEach(g=>opts.push([x,g])));opts.sort((a,b)=>(a[0]===rx?0:2)+(a[1]===gi?0:1)-((b[0]===rx?0:2)+(b[1]===gi?0:1)));
+      for(const [x,g] of opts){rx=x;gi=g;setup();const f=cu*su.M/(cg*sg.M);gLo=Math.ceil(Math.max(8,12/f)*2)/2;gHi=Math.floor(Math.min(78,78/f)*2)/2;if(gHi>=gLo)break;}}
+    do{tries++;if(u==='count'){const k=1+Math.floor(Math.random()*Math.floor(15/Math.max(cg,cu)));given=cg*k;ans=cu*k;}
+       else if(u==='mol'){given=rs(1,4,0.05);ans=given*cu/cg;}
+       else{given=rs(gLo,gHi,0.5);ans=given/sg.M*cu/cg*su.M;}}
+    while(tries<300&&(u==='mol'?(ans<1||ans>5):u==='g'?(ans<12||ans>78):false));
+    const suf=SUF[u],gid=LET[gi]+suf,uid=LET[ui]+suf,set={rx,units:u};set[gid]=given;set[uid]=0;if(R.re[2])set[LET[2]+suf]=0;
+    BioLab.setValues(sim,set);BioLab.reset(sim);sim.running=false;
+    const unit=u==='count'?(R.word||'molecules'):u==='mol'?'mol':'g',show=v=>u==='count'?String(v):u==='mol'?v.toFixed(2):v.toFixed(1);
+    const hint=lv==='bio'?` <span class="gm-hint">Hint: the equation says ${cg} ${one(sg)} react${cg===1?'s':''} with ${cu} ${one(su)}. Scale that up.</span>`:
+      u==='g'?` <span class="gm-hint">Grams → moles → mole ratio → moles → grams. Molar masses: ${CL.fmt(sg.f)} ${sg.M.toFixed(2)} g/mol, ${CL.fmt(su.f)} ${su.M.toFixed(2)} g/mol.</span>`:'';
+    return {rx,u,gi,ui,ans,controls:[uid],
+      prompt:`<b>Round ${i+1}: ${R.name}</b><br>You have <b>${show(given)} ${unit} of ${fh(sg)}</b>. How much ${fh(su)} reacts with all of it and leaves <b>nothing</b> left over?`+hint};},
+  fire(sim,r){BioLab.reset(sim);sim.running=true;},
+  retry(sim,r){BioLab.reset(sim);sim.running=false;},
+  poll(sim,r){if(!sim.st||frac(sim)<1)return null;const m=model(sim.p),R=m.R,tol=m.u==='count'?0:0.03;
+    const extra=m.left.map((l,k)=>m.nIn[k]>0?l/m.nIn[k]:0);
+    if(extra.every(x=>x<=tol+1e-9))return {ok:true,msg:'Perfect mix! Both reactants were used up, with nothing left over.'};
+    const k=extra[r.ui]>tol?r.ui:r.gi,s=R.re[k],amt=fmtU(m,inUnit(m,s,m.left[k]));
+    return {ok:false,msg:`${amt} ${word(m)} of ${fh(s)} ${m.left[k]===1&&m.u==='count'?'was':'were'} left over, so you used ${k===r.ui?'too much':'too little'} ${fh(R.re[r.ui])}. Check the mole ratio.`};},
+  solve(sim,r){const st=r.u==='count'?1:r.u==='mol'?0.05:0.5;const v={};v[LET[r.ui]+SUF[r.u]]=Math.round(r.ans/st)*st;BioLab.setValues(sim,v);}},
   init(sim){const m=model(sim.p),r=rng(7+Math.round(m.nIn.reduce((a,b)=>a+b,0)*13)),st={m,parts:[],done:0,pend:[],fl:[],hist:[],ht:-1};
     m.R.re.forEach((s,i)=>{for(let j=0;j<m.D[i];j++){const q=spawn(st,s.f,BOX.x+30+r()*(BOX.w-60),BOX.y+60+r()*(BOX.h-120),r);q.ri=i;st.parts.push(q);}});
     st.r=r;return st;},
