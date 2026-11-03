@@ -42,12 +42,12 @@ const CST=[[0,'#c3c7cc'],[0.22,'#c5c3bb'],[0.4,'#cec5a3'],[0.5,'#dbc078'],[0.6,'
 function hex2(h){h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));}
 function mixHex(a,b,t){const A=hex2(a),B=hex2(b);return '#'+A.map((v,i)=>Math.round(lerp(v,B[i],clamp(t,0,1))).toString(16).padStart(2,'0')).join('');}
 function cAt(x){x=clamp(x,0,1);for(let i=1;i<CST.length;i++)if(x<=CST[i][0]){const a=CST[i-1],b=CST[i];return mixHex(a[1],b[1],(x-a[0])/(b[0]-a[0]));}return CST[CST.length-1][1];}
-function look(P,dirt){const xs=xsOf(P),d=clamp(P.tarn,0,1);dirt=dirt||0;let col=cAt(xs);col=mixHex(col,'#5e4333',0.78*clamp((d-0.08)/0.92,0,1));if(dirt>0)col=mixHex(col,'#6b4a33',dirt);
+function look(P,dirt){const xs=xsOf(P),d=clamp(P.tarn,0,1);dirt=dirt||0;let col=P.c?cAt(xs):mixHex(cAt(1-pBase(P)),cAt(0),P.cov);col=mixHex(col,'#5e4333',0.78*clamp((d-0.08)/0.92,0,1));if(dirt>0)col=mixHex(col,'#6b4a33',dirt);
   return {col,shine:clamp(1-0.9*d-1.1*dirt,0.05,1),blister:P.melt>=0.25,xs};}
-function colorName(P,dirt){if(dirt>0.25)return 'dull brown';const xs=xsOf(P);let n=xs<0.25?'silver':xs<0.45?'silvery gray':xs<0.6?'pale yellow':xs<=0.8?'gold':xs<0.9?'deep gold to bronze':'copper';
+function colorName(P,dirt){if(dirt>0.25)return 'dull brown';if(!P.c)return P.cov<0.05?'copper':P.cov<0.95?'copper with silver patches':'silver';const xs=xsOf(P);let n=xs<0.25?'silver':xs<0.45?'silvery gray':xs<0.6?'pale yellow':xs<=0.8?'gold':xs<0.9?'deep gold to bronze':'copper';
   if(P.tarn>0.7)n='dark, tarnished';else if(P.tarn>0.35)n='dull '+n;if(P.melt>=0.25)n+=', blistered';return n;}
 /* approximate room-temperature phases of the Cu–Zn diagram, by mass fraction of copper */
-const PHASES=[[0.62,'α brass','α'],[0.54,'α + β′ brass','α+β′'],[0.50,'β′ brass (CuZn)','β′'],[0.41,'β′ + γ','β′+γ'],[0.33,'γ brass (Cu₅Zn₈)','γ'],[0.22,'γ + ε','γ+ε'],[0.13,'ε (CuZn₄)','ε'],[0.03,'ε + η','ε+η'],[-1,'η (zinc)','η']];
+const PHASES=[[0.97,'Copper','copper'],[0.62,'α brass','α'],[0.54,'α + β′ brass','α+β′'],[0.50,'β′ brass (CuZn)','β′'],[0.41,'β′ + γ','β′+γ'],[0.33,'γ brass (Cu₅Zn₈)','γ'],[0.22,'γ + ε','γ+ε'],[0.13,'ε (CuZn₄)','ε'],[0.03,'ε + η','ε+η'],[-1,'η (zinc)','η']];
 const phaseOf=x=>PHASES.find(p=>x>=p[0]);
 
 /* ---------- Full lab state ---------- */
@@ -466,7 +466,7 @@ const GP={
     {id:'zn',label:'Zinc plated on',unit:'µm',lvl:'honors',min:0,max:3,d:2,get:s=>pMain(s).h},
     {id:'mass',label:'Penny mass',unit:'g',lvl:'honors',min:2,max:3.5,d:3,get:s=>massOf(pMain(s))},
     {id:'rho',label:'Penny density',unit:'g/cm³',lvl:'bio',min:0,max:20,d:2,get:s=>massOf(pMain(s))/volOf(pMain(s))},
-    {id:'ph',label:'Surface phase',unit:'',lvl:'ap',text:true,get:s=>{const P=pMain(s);return P.c||P.h>0.05?phaseOf(xsOf(P))[1]:'copper (no zinc yet)';}},
+    {id:'ph',label:'Surface phase',unit:'',lvl:'ap',text:true,get:s=>{const P=pMain(s);return P.c?phaseOf(xsOf(P))[1]:P.cov>0.95?'zinc layer on copper':P.h>0.01?'copper with zinc patches':'copper (no zinc yet)';}},
     {id:'at',label:'Surface copper, atom %',unit:'%',lvl:'ap',min:0,max:100,d:0,get:s=>atPct(xsOf(pMain(s)))}
   ],
   graphs:[{id:'surf',label:'Copper at the surface vs time',lvl:'bio',custom:true},{id:'depth',label:'Copper vs depth below the surface',lvl:'honors',custom:true},{id:'dens',label:'Density comparison',lvl:'bio',custom:true}],defaultGraph:'surf',
