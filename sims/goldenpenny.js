@@ -20,7 +20,7 @@ const NZ=40,TMELT=419.5,R=8.314;
 /* effective rates, tuned to classroom timing (see About): zinc deposition, interdiffusion, surface oxidation */
 const rDep=T=>0.8*Math.exp(-50000/R*(1/(T+273.15)-1/348.15));           // µm/min with good contact
 const Dz=T=>T<100?0:3.5*Math.exp(-110000/R*(1/(T+273.15)-1/673.15));    // µm²/s
-const kTarn=T=>T<250?0:Math.exp(-90000/R*(1/(T+273.15)-1/733.15))/18;   // tarnish index per s
+const kTarn=T=>T<250?0:Math.exp(-90000/R*(1/(T+273.15)-1/733.15))/12;   // tarnish index per s
 const atPct=x=>100*(x/MCU)/(x/MCU+(1-x)/MZN);                            // Cu mass fraction to atom %
 
 function pNew(y,h){h=h||0;return {y,h,cov:h>0?1-Math.exp(-h/0.25):0,c:null,L:0,T:25,tarn:0,melt:0};}
@@ -92,7 +92,7 @@ function bubbles(ctx,x0,x1,ybot,ytop,n,t){ctx.strokeStyle=PAL['cv-bstroke'];ctx.
 function fitTxt(ctx,s,x,y,size,maxW,o){ctx.font=(o&&o.w||700)+' '+size+'px '+FONT;const w=ctx.measureText(s).width;if(w>maxW)size*=maxW/w;txt(ctx,s,x,y,Object.assign({s:size,w:700},o||{}));}
 /* the zoom on the surface: a slice through the top of the penny, colored by composition, with labels */
 function drawStrip(sim,ctx,P,k,x0,y0,w,h){const L=P.c?P.L:Math.max(P.h,0)+HCU,ppu=h/L,ap=atLeast('ap'),hon=atLeast('honors');
-  txt(ctx,'Zoom: a slice through the surface',x0-30,y0-14,{s:13*k,w:700});
+  fitTxt(ctx,'Zoom: a slice through the surface',x0-18,y0-14,13*k,800-(x0-18)-4);
   const prof=z=>{if(P.c){const i=clamp(Math.floor(z/L*NZ),0,NZ-1);return 1-P.c[i];}return z<P.h?(P.cov>0.5?0:1):1-pBase(P);};
   for(let py=0;py<h;py+=2){const z=(py+1)/ppu;ctx.fillStyle=cAt(prof(z));ctx.fillRect(x0,y0+py,w,2.2);}
   if(!P.c&&P.h>0&&P.cov<0.999){ctx.fillStyle=cAt(1-pBase(P));const hz=P.h*ppu;for(let i=0;i<10;i++){if(((i*7)%10)/10>=P.cov)ctx.fillRect(x0+i*w/10,y0,w/10,hz+1);}}
@@ -114,17 +114,17 @@ function drawStrip(sim,ctx,P,k,x0,y0,w,h){const L=P.c?P.L:Math.max(P.h,0)+HCU,pp
   for(let i=lab.length-1;i>=0;i--){const lim=(i===lab.length-1?y0+h-4:lab[i+1].y-gap);if(lab[i].y>lim)lab[i].y=lim;}
   lab.forEach((l,i)=>{const ry=y0+(show[i].z0+show[i].z1)/2*ppu;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0+w+2,ry);ctx.lineTo(x0+w+12,l.y);ctx.stroke();
     fitTxt(ctx,l.t,x0+w+16,l.y,13*k,800-(x0+w+20),{b:'middle',w:600});});
-  const core=P.y==='pre'?'Same 95% copper alloy (1.5 mm thick)':'Zinc core (about 1.5 mm thick)';fitTxt(ctx,core,x0+w+16,cy+11,12*k,800-(x0+w+20),{b:'middle',w:400,c:PAL['cv-soft']});}
+  const core=P.y==='pre'?'Same copper alloy below':'Zinc core, 1.5 mm thick';fitTxt(ctx,core,x0+w+16,cy+11,12*k,800-(x0+w+20),{b:'middle',w:400,c:PAL['cv-soft']});}
 /* atoms near the surface: each row is one depth slice (not to scale) */
-function drawAtoms(sim,ctx,P,k,x0,y0,w,h){const rows=8,cols=12,sp=Math.min(w/cols,h/rows),r=sp*0.44,ap=atLeast('ap'),L=P.c?P.L:Math.max(P.h,0)+HCU,zmax=Math.min(L,Math.max(3,(P.h||1.3)*2.5));
-  txt(ctx,'Zoom: atoms near the surface',x0,y0-14,{s:13*k,w:700});
+function drawAtoms(sim,ctx,P,k,x0,y0,w,h){const rows=7,cols=12,sp=Math.min(w/cols,h/rows),r=sp*0.44,ap=atLeast('ap'),L=P.c?P.L:Math.max(P.h,0)+HCU,zmax=Math.min(L,Math.max(3,(P.h||1.3)*2.5));
+  fitTxt(ctx,'Zoom: atoms near the surface',x0,y0-14,13*k,800-x0-4);
   const hash=(a,b)=>{let x=Math.imul(a*73856093^b*19349663,0x9E3779B1);x^=x>>>15;x=Math.imul(x,0x85ebca6b);x^=x>>>13;return (x>>>0)/4294967296;};
   let ordered=false;
   for(let j=0;j<rows;j++){const z=(j+0.5)/rows*zmax,zn=P.c?P.c[clamp(Math.floor(z/L*NZ),0,NZ-1)]:(z<P.h&&P.cov>0.5?1:pBase(P)),cu=1-zn,ord=ap&&cu>=0.47&&cu<=0.56&&P.T<455;if(ord)ordered=true;
     for(let i=0;i<cols;i++){const isZn=ord?((i+j)%2===0):hash(i+1,j+1)<zn;CL.drawAtom(ctx,x0+sp*(i+0.5),y0+sp*(j+0.5),r,isZn?'Zn':'Cu',{label:r>=10?(isZn?'Zn':'Cu'):''});}}
   const ly=y0+rows*sp+18*k;CL.drawAtom(ctx,x0+10,ly-4*k,8,'Cu',{label:''});txt(ctx,'Cu',x0+22,ly,{s:13*k,w:700,b:'middle'});CL.drawAtom(ctx,x0+70*k,ly-4*k,8,'Zn',{label:''});txt(ctx,'Zn',x0+82*k,ly,{s:13*k,w:700,b:'middle'});
-  if(ap)fitTxt(ctx,ordered?'Checkerboard rows: ordered β′ (CuZn)':'Random mixing: a solid solution',x0+130*k,ly,12*k,800-(x0+136*k),{b:'middle',w:400,c:PAL['cv-soft']});
-  fitTxt(ctx,'Top row is the surface; each row is a deeper slice',x0,ly+20*k,12*k,800-x0-8,{w:400,c:PAL['cv-soft']});}
+  txt(ctx,'Top row = surface',x0,ly+22*k,{s:12*k,b:'middle',c:PAL['cv-soft']});
+  if(ap)fitTxt(ctx,ordered?'Checkerboard: ordered β′ (CuZn)':'Random mixing: solid solution',x0,ly+44*k,12*k,800-x0-4,{b:'middle',w:400,c:PAL['cv-soft']});}
 
 function band(ctx,s,k){let fs=14*k;ctx.font='700 '+fs+'px '+FONT;const w=ctx.measureText(s).width;if(w>770)fs*=770/w;ctx.fillStyle=PAL['card'];rr(ctx,8,430-fs*0.95,784,fs*1.7,8);ctx.fill();txt(ctx,s,400,430-fs*0.1,{s:fs,w:700,a:'center',b:'middle'});}
 function fullDraw(sim,ctx,vdt,k,t){const st=sim.st,P=st.P,p=sim.p,hon=atLeast('honors'),ap=atLeast('ap');
@@ -142,7 +142,7 @@ function fullDraw(sim,ctx,vdt,k,t){const st=sim.st,P=st.P,p=sim.p,hon=atLeast('h
   else{const S=srcOf(sim),plate=p.source==='plate';fitTxt(ctx,'Step 2: heat the silver penny',16,28,15*k,290);
     if(plate){drawHotPlate(ctx,70,348,250,true);if(st.heating)drawPenny(ctx,190,340,40,L,{sy:0.22});}
     else{ctx.fillStyle='#59616b';rr(ctx,150,378,100,14,4);ctx.fill();ctx.fillStyle='#7d858e';rr(ctx,190,300,20,80,3);ctx.fill();drawFlame(ctx,200,300,t);
-      txt(ctx,'Outer flame',150,180,{s:12*k,a:'right',c:PAL['cv-soft']});txt(ctx,'Blue inner cone',178,272,{s:12*k,a:'right',c:PAL['cv-soft']});
+      txt(ctx,'Outer flame',158,180,{s:12*k,a:'right',c:PAL['cv-soft']});txt(ctx,'Blue inner cone',162,272,{s:12*k,a:'right',c:PAL['cv-soft']});
       if(st.heating){drawPenny(ctx,200,224,28,L,{sy:0.26});ctx.strokeStyle='#59616b';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(224,222);ctx.lineTo(318,196);ctx.moveTo(224,227);ctx.lineTo(318,206);ctx.stroke();}}
     // quench beaker
     const qb=CL.drawBeaker(ctx,{x:330,y:304,w:80,h:84,fill:0.6,ticks:false});if(!st.heating)drawPenny(ctx,370,384,22,L,{sy:0.25});
@@ -153,26 +153,25 @@ function fullDraw(sim,ctx,vdt,k,t){const st=sim.st,P=st.P,p=sim.p,hon=atLeast('h
   if(L.blister)pill(ctx,'Core melting: blisters',370,176,'#a33b2b','#fff',12*k);
   // right panel
   const zx=470,zy=90,zw=90,zh=250;
-  if(hon&&p.zoom==='atoms')drawAtoms(sim,ctx,P,k,445,zy,340,250);else drawStrip(sim,ctx,P,k,zx,zy,zw,zh);
-  let s;if(st.view==='bath'){s=ap?'Zn(s) + 2OH⁻ + 2H₂O → Zn(OH)₄²⁻ + H₂(g); at the penny: Zn(OH)₄²⁻ + 2e⁻ → Zn(s) + 4OH⁻':hon?'Zinc dissolves as zincate, Zn(OH)₄²⁻, and plates back out as zinc metal on the copper':'Zinc moves from the granules onto the copper penny';
-    if(hon&&!p.contact)s='Not touching the zinc: electrons from the zinc cannot reach the penny, so no zinc plates';}
-  else{const x=xsOf(P);s=!P.c||P.T<150?'Heat lets atoms in the solid move':x<0.45?'Zinc atoms spread into the copper; copper atoms spread into the zinc':x<0.6?'The surface is now brass, still zinc-rich: pale yellow':x<=0.8&&P.tarn<0.35?'Brass with '+Math.round(x*100)+'% copper at the surface looks gold':'Overheated: zinc spreads deeper and the hot surface oxidizes';
-    if(ap&&P.c)s+=' · surface: '+phaseOf(x)[1];}
+  if(hon&&p.zoom==='atoms')drawAtoms(sim,ctx,P,k,452,zy,336,190);else drawStrip(sim,ctx,P,k,zx,zy,zw,zh);
+  let s;if(st.view==='bath'){s=ap?'At the penny: Zn(OH)₄²⁻ + 2e⁻ → Zn(s) + 4OH⁻':hon?'Zinc dissolves as zincate, Zn(OH)₄²⁻, then plates out on the copper':'Zinc moves from the granules onto the penny';
+    if(hon&&!p.contact)s='No contact with the zinc, so no zinc plates';}
+  else{const x=xsOf(P);s=!P.c||P.T<150?'Heat lets the atoms move':x<0.45?'Zinc and copper atoms are mixing':x<0.6?'Zinc-rich brass: pale yellow':x<=0.8&&P.tarn<0.35?'Brass, '+Math.round(x*100)+'% copper: gold color':'Overheated: dull and oxidized';
+    if(ap&&P.c)s+=' · '+phaseOf(x)[1];}
   band(ctx,s,k);}
 function goldDraw(sim,ctx,k){const st=sim.st,y=st.y,hon=atLeast('honors');
   fitTxt(ctx,'Is it gold? Density decides',16,28,15*k,400);
-  const items=[{t:'Penny made after 1982',sub:'2.50 g · zinc core, copper skin',skin:cAt(1),core:cAt(0)},{t:'Penny made before 1982',sub:'3.11 g · 95% copper all the way through',skin:cAt(0.95),core:cAt(0.95)},
-    {t:'Golden '+(y==='pre'?'pre-1982':'post-1982')+' penny',sub:(y==='pre'?'3.11':'2.51')+' g · brass skin over the same core',skin:cAt(0.7),core:y==='pre'?cAt(0.95):cAt(0)}];
+  const items=[{t:'Penny made after 1982',sub:'2.50 g, zinc core',skin:cAt(1),core:cAt(0)},{t:'Penny made before 1982',sub:'3.11 g, 95% copper',skin:cAt(0.95),core:cAt(0.95)},
+    {t:'Golden '+(y==='pre'?'pre-1982':'post-1982')+' penny',sub:(y==='pre'?'3.11':'2.51')+' g, brass skin',skin:cAt(0.7),core:y==='pre'?cAt(0.95):cAt(0)}];
   items.forEach((it,i)=>{const Y=62+i*104;txt(ctx,it.t,24,Y,{s:13*k,w:700});ctx.fillStyle=it.core;rr(ctx,24,Y+10,370,32,6);ctx.fill();ctx.fillStyle=it.skin;ctx.fillRect(28,Y+10,362,4);ctx.fillRect(28,Y+38,362,4);
     ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,24,Y+10,370,32,6);ctx.stroke();fitTxt(ctx,it.sub,24,Y+60,12*k,390,{w:400,c:PAL['cv-soft']});});
   txt(ctx,'Skins drawn about 20× too thick to see',24,384,{s:12*k,c:PAL['cv-soft']});
   // density bars
   const P=st.P,mine=massOf(P)/volOf(P);
   const rows=[['Gold',RHO.Au,'#d9b23a'],['Copper',RHO.Cu,cAt(1)],['Penny made before 1982',COIN.pre.rho,cAt(0.95)],['Brass, 70% copper',RHO.brass,cAt(0.7)],['Zinc',RHO.Zn,cAt(0.05)],['Penny made after 1982',COIN.post.rho,cAt(0.3)],['Your golden penny',mine,PAL['s4']]];
-  const x0=440,wmax=290,rh=Math.max(40,13*k+20);txt(ctx,'Density (g/cm³)',x0,52,{s:13*k,w:700});
-  rows.forEach((r,i)=>{const Y=64+i*rh+13*k;txt(ctx,r[0],x0,Y,{s:12*k,w:i===6?700:400});const bw=wmax*r[1]/20;ctx.fillStyle=r[2];rr(ctx,x0,Y+5,bw,12,3);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,x0,Y+5,bw,12,3);ctx.stroke();
-    txt(ctx,r[1].toFixed(2),x0+bw+6,Y+11,{s:12*k,w:700,b:'middle'});});
-  band(ctx,'A penny-sized piece of gold would weigh '+GOLD_SAME.toFixed(1)+' g. Your golden penny weighs '+massOf(P).toFixed(2)+' g: it is brass, not gold',k);}
+  const x0=440,wmax=340,rh=Math.max(40,12*k+24);txt(ctx,'Density (g/cm³)',x0,52,{s:13*k,w:700});
+  rows.forEach((r,i)=>{const Y=62+i*rh+12*k;txt(ctx,r[0]+': '+r[1].toFixed(2),x0,Y,{s:12*k,w:i===6?700:400});const bw=wmax*r[1]/20;ctx.fillStyle=r[2];rr(ctx,x0,Y+5,bw,12,3);ctx.fill();ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;rr(ctx,x0,Y+5,bw,12,3);ctx.stroke();});
+  band(ctx,'Penny-sized gold: '+GOLD_SAME.toFixed(1)+' g. Your golden penny: '+massOf(P).toFixed(2)+' g',k);}
 
 /* =================== Virtual lab: The Golden Penny (Chemistry, Glugoski). Contract: VLAB.md ===================
    Bench state lives in sim.vlab.bench so it saves with the notebook. Stations: clean, bal, bath, flame, cyl. */
@@ -210,15 +209,16 @@ function vStep(sim,dt){if(sim.t<-1e-9)return;const b=gB(sim);if(!b)return;const 
 const STG=['with the five clean pennies on it','with the five silver pennies on it','with the five golden pennies on it'];
 const STG_DO=['Clean and rinse the pennies, then weigh all five together.','Weigh the five pennies after the zinc bath, once they are rinsed and dry.','Weigh the five pennies after every one has been heated and cooled.'];
 const TARE='That reading does not match the pennies alone. Take the pennies off, press Tare so the empty balance reads 0.00 g, and weigh them again.';
-function mCheck(sim,rv,v){const b=gB(sim);if(!b)return null;const L=b.bal.log.filter(l=>l.s===rv);if(!L.length)return STG_DO[rv];
+const MROWS=['After cleaning (copper)','After the zinc bath (silver)','After heating (gold)'];
+function mCheck(sim,rv,v){const b=gB(sim);if(!b)return null;rv=MROWS.indexOf(rv);const L=b.bal.log.filter(l=>l.s===rv);if(!L.length)return STG_DO[rv];
   const hit=L.find(l=>Math.abs(l.v-v)<0.005);if(hit)return hit.ok?null:TARE;const g=L.filter(l=>l.ok);return g.length?'The balance read '+g[g.length-1].v.toFixed(2)+' g '+STG[rv]+'. Check your reading.':TARE;}
-function aCheck(sim,rv,v){const m=sim.vlab.val('m','m',rv);if(!Number.isFinite(m))return 'Record the balance reading for the five pennies first.';return Math.abs(v-m/5)<=0.0055?null:'Divide your balance reading for the five pennies by 5.';}
+function aCheck(sim,rv,v){rv=MROWS.indexOf(rv);const m=sim.vlab.val('m','m',rv);if(!Number.isFinite(m))return 'Record the balance reading for the five pennies first.';return Math.abs(v-m/5)<=0.0055?null:'Divide your balance reading for the five pennies by 5.';}
 function levCheck(sim,rv,v){const b=gB(sim);if(!b)return null;const C=b.cyl;if(!C.filled)return 'Pour the water into the cylinder first.';if(rv>C.n)return rv===1?'Add the first penny, then read the water level.':'Add penny '+rv+', then read the water level.';
   const L=C.levels[rv];if(!(Math.abs(v-L)<=0.151))return 'Check your reading: look at the bottom of the meniscus in the zoom, count the 1 mL marks, and estimate the tenths.';
   const raw=sim.vlab.raw('c:v:lev:'+rv).trim();if(!/\.\d/.test(raw))return 'Record one estimated digit. This cylinder is marked every 1 mL, so read it to the nearest 0.1 mL.';return null;}
 const OBS=['Before cleaning','After cleaning','Zinc in the hot NaOH, before the pennies go in','Pennies in the zinc bath','After the zinc bath, rinsed and dried','A penny in the flame','A golden penny after cooling','The penny you overheated'];
-function obsReach(b,r){const ps=b.pens;return [true,b.clean>=1,b.bath.naoh&&b.bath.T>45,b.bath.added,b.bath.rinsed,ps.some(P=>P.heated),ps.some(P=>P.heated&&P.st==='cooled'),ps.some(P=>P.wasOver)][r];}
-function obsCheck(sim,rv,v){const b=gB(sim);if(!b||!String(v).trim())return null;return obsReach(b,rv)?null:'Do this step on the bench first, then describe what you see.';}
+function obsReach(b,r){const ps=b.pens;return [true,b.clean>=1,b.bath.naoh&&(b.bath.T>45||b.bath.added),b.bath.added,b.bath.rinsed,ps.some(P=>P.heated),ps.some(P=>P.heated&&P.st==='cooled'),ps.some(P=>P.wasOver)][r];}
+function obsCheck(sim,rv,v){rv=OBS.indexOf(rv);const b=gB(sim);if(!b||!String(v).trim())return null;return obsReach(b,rv)?null:'Do this step on the bench first, then describe what you see.';}
 const near=(x,y,tol)=>Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x-y)<=tol;
 function cCheck(id){return (sim,v,V)=>{const m0=V.val('m','m',0),m1=V.val('m','m',1),m2=V.val('m','m',2),L0=V.val('v','lev',0),L5=V.val('v','lev',5);const num=k=>BioLab.vlab.num(V.raw('k:'+k));
   if(id==='dm1'){if(!Number.isFinite(m0)||!Number.isFinite(m1))return 'Fill in the first two rows of Table 2 first.';return near(v,m1-m0,0.0051)?null:(near(v,m0-m1,0.0051)?'Subtract in the other order: the mass after the bath minus the mass before it.':'Subtract the mass after cleaning from the mass after the zinc bath (Table 2).');}
@@ -287,8 +287,7 @@ function vBath(sim,ctx,b,k,t){const bt=b.bath,D=DIAL[sim.p.dial]||DIAL.off;vHead
   txt(ctx,'Hot plate: '+D.l,205,420,{s:13*k,w:700,a:'center'});
   ctx.strokeStyle='#59616b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(360,200);ctx.quadraticCurveTo(300,190,286,226);ctx.lineTo(282,320);ctx.stroke();
   lcd(ctx,360,110,180,84,'THERMOMETER',(bt.naoh?bt.disp.toFixed(1):r1(bt.T).toFixed(1))+' °C',30,k);
-  lcd(ctx,360,206,180,84,'BATH TIMER',Math.floor(bt.t/60)+':'+String(Math.floor(bt.t%60)).padStart(2,'0'),30,k);
-  txt(ctx,'Bench clock: 10 s per second at 1×',450,312,{s:12*k,a:'center',c:PAL['cv-soft']});
+  lcd(ctx,360,206,180,84,'BATH TIMER (10×)',Math.floor(bt.t/60)+':'+String(Math.floor(bt.t%60)).padStart(2,'0'),30,k);
   if(bt.boil)pill(ctx,'Boiling: the NaOH is spattering',205,176,'#a33b2b','#fff',12*k);
   const P=b.pens[0];drawPenny(ctx,672,226,64,look(P,b.clean>=1?0:P.dirt));txt(ctx,'Close-up of penny 1',672,316,{s:12*k,a:'center',c:PAL['cv-soft']});
   if(bt.naoh)txt(ctx,'3 M NaOH: corrosive',205,444,{s:12*k,a:'center',c:PAL['cv-soft']});}
@@ -326,7 +325,7 @@ function vCyl(sim,ctx,b,k,t){const C=b.cyl,lev=C.filled?C.levels[C.n]:0;vHeader(
   if(C.filled){const yv=Yz(lev);ctx.setLineDash([7,6]);ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ZX-ZR,yv);ctx.lineTo(wl-4,yv);ctx.stroke();ctx.setLineDash([]);}
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.2832);ctx.stroke();
   pill(ctx,'Zoom: dashed line = your eye level',ZX,ZY+ZR+16,PAL['card2'],PAL['cv-ink'],12*k);
-  pill(ctx,C.n+' of 5 pennies in the cylinder',690,62,PAL['card2'],PAL['cv-ink'],12*k);
+  {const s=C.n+' of 5 pennies in',fs=12*k;ctx.font='700 '+fs+'px '+FONT;const w=ctx.measureText(s).width+fs*1.1;pill(ctx,s,794-w/2,66,PAL['card2'],PAL['cv-ink'],fs);}
   if(!C.filled)txt(ctx,'The cylinder is empty',ZX,ZY,{s:14*k,a:'center',b:'middle',c:PAL['cv-soft']});}
 function vNarr(sim){const b=gB(sim),S=b.stn,bt=b.bath,fl=b.fl;
   if(S==='clean'){if(!b.gog||!b.glo)return '<b>Safety first.</b> 3 M sodium hydroxide is corrosive to skin and eyes, and you will work with a hot plate and a flame. Put on goggles and gloves.';
@@ -398,8 +397,8 @@ const LAB={id:'golden-penny',title:'Lab 2: The Golden Penny',course:'Chemistry',
      doneHint:sim=>{const b=gB(sim);if(!b)return '';if(!b.cyl.filled)return 'Pour the water into the cylinder.';if(b.cyl.n<NP)return 'Read the level, then add the next penny.';return 'Record every water level in Table 3.';}},
     {title:'Clean up and analyze',setup:setStn('cyl'),controls:['x-clean'],text:'<p>Pour the water off the pennies and dry them. Let the zinc bath cool, and dispose of the NaOH and zinc the way your teacher directs. Wash your hands.</p><p>Then do the calculations, answer the questions and write your conclusion. Your graph draws from Table 3.</p>'}],
   tables:[
-    {id:'obs',title:'Table 1. Observations',cols:[{id:'s',label:'Stage',rows:[0,1,2,3,4,5,6,7],rowLabels:OBS},{id:'o',label:'What you see: color, shine, bubbles, other changes',input:'text',check:obsCheck}]},
-    {id:'m',title:'Table 2. Mass of the five pennies at each stage',cols:[{id:'s',label:'Stage',rows:[0,1,2],rowLabels:['After cleaning (copper)','After the zinc bath (silver)','After heating (gold)']},
+    {id:'obs',title:'Table 1. Observations',cols:[{id:'s',label:'Stage',rows:OBS},{id:'o',label:'What you see: color, shine, bubbles, other changes',input:'text',check:obsCheck}]},
+    {id:'m',title:'Table 2. Mass of the five pennies at each stage',cols:[{id:'s',label:'Stage',rows:MROWS},
       {id:'m',label:'Balance reading, 5 pennies (g)',input:'number',dp:2,check:mCheck},{id:'a',label:'Average mass of one penny (g)',input:'number',dp:3,check:aCheck}]},
     {id:'v',title:'Table 3. Water displacement in a 50 mL graduated cylinder',cols:[{id:'n',label:'Golden pennies in the cylinder',rows:[0,1,2,3,4,5],rowLabels:['0 (water only)','1','2','3','4','5']},{id:'lev',label:'Water level (mL)',input:'number',dp:1,check:levCheck}]}],
   calcs:[{id:'dm1',label:'Change in mass of the five pennies in the zinc bath',unit:'g',input:'number',check:cCheck('dm1')},{id:'zn1',label:'Mass of zinc added to one penny',unit:'g',input:'number',check:cCheck('zn1')},
@@ -420,7 +419,7 @@ const LAB={id:'golden-penny',title:'Lab 2: The Golden Penny',course:'Chemistry',
 /* ---------- definition ---------- */
 function pMain(sim){return sim.st&&sim.st.P?sim.st.P:pNew('post',0);}
 const GP={
-  id:'goldenpenny',hash:'goldenpenny',apUnit:1,order:6,tab:'The golden penny',kind:'Virtual lab',prereq:['classify','density'],
+  id:'goldenpenny',hash:'goldenpenny',apUnit:1,order:3,tab:'The golden penny',kind:'Virtual lab',prereq:['classify','density'],
   card:'Plate a penny with zinc, heat it into brass and watch it turn gold. Then use density to prove it is not gold.',
   title:'The golden penny: plating and alloys',
   lede:{bio:'Turn a penny silver in a zinc bath, then gold in a flame. Watch the copper and zinc atoms mix, and test whether you made gold.',
