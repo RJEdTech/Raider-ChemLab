@@ -17,7 +17,7 @@ BioLab.COURSES = [
     blurb: 'Tools in the order Chemistry covers them, unit by unit. Ms. Glugoski’s sections number these Units 1–9 and skip nuclear chemistry; the order is the same.',
     units: [
       { n: 'Unit 0', t: 'Intro to chemistry and lab safety', ids: ['labbench'] },
-      { n: 'Unit 1', t: 'Classifying matter and atomic structure', ids: ['classify', 'separation', 'models', 'atombuilder', 'avgmass', 'nuclear', 'halflife'] },
+      { n: 'Unit 1', t: 'Classifying matter and atomic structure', ids: ['classify', 'separation', 'goldenpenny', 'models', 'atombuilder', 'avgmass', 'nuclear', 'halflife'] },
       { n: 'Unit 2', t: 'Chemical nomenclature', ids: ['ptable', 'ionic', 'naming'] },
       { n: 'Unit 3', t: 'Chemical reactions', ids: ['balance', 'rxntypes', 'activity', 'precip'] },
       { n: 'Unit 4', t: 'Measurement', ids: ['measure', 'units', 'density'] },
@@ -32,7 +32,7 @@ BioLab.COURSES = [
     blurb: 'Tools in the order Honors Chemistry covers them: first semester, then second. Mr. Jackson’s sections start with measurement and teach electrons and the periodic table before naming; every tool is still here.',
     units: [
       { n: 'Unit 0', t: 'Intro and lab safety', ids: ['labbench'] },
-      { n: 'Unit 1', t: 'Classifying matter, the atom and nuclear chemistry', ids: ['classify', 'separation', 'models', 'atombuilder', 'avgmass', 'nuclear', 'halflife'] },
+      { n: 'Unit 1', t: 'Classifying matter, the atom and nuclear chemistry', ids: ['classify', 'separation', 'goldenpenny', 'models', 'atombuilder', 'avgmass', 'nuclear', 'halflife'] },
       { n: 'Unit 2', t: 'Nomenclature', ids: ['ptable', 'ionic', 'naming'] },
       { n: 'Unit 3', t: 'Chemical reactions and net ionic equations', ids: ['balance', 'rxntypes', 'activity', 'precip'], links: [{ lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/writing-equations/', title: 'Writing equations', label: 'Mr. Jackson’s lesson', text: 'Sentences to skeleton equations, states and diatomic elements.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/balancing-equations/', title: 'Balancing equations', label: 'Mr. Jackson’s lesson', text: 'Coefficients vs. subscripts, counting atoms, and a balancer that checks your homework.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/types-of-reactions/', title: 'Types of reactions', label: 'Mr. Jackson’s lesson', text: 'The five patterns, and how to spot each one.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/activity-series/', title: 'The activity series', label: 'Mr. Jackson’s lesson', text: 'Single replacement: who replaces whom.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/double-replacement/', title: 'Double replacement', label: 'Mr. Jackson’s lesson', text: 'Precipitates, water and net ionic equations.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/reactions/predicting-products/', title: 'Predicting products', label: 'Mr. Jackson’s lesson', text: 'Any reaction, with states, or no reaction.', kind: 'Lesson' }] },
       { n: 'Unit 4', t: 'Scientific measurement', ids: ['measure', 'units', 'density'], links: [{ lesson: true, href: 'https://jackson-classroom.github.io/chemistry/matter-and-measurement/taking-measurements/', title: 'Taking measurements', label: 'Mr. Jackson’s lesson', text: 'Reading an instrument, the estimated digit and counting significant digits.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/chemistry/matter-and-measurement/calculating-with-measurements/', title: 'Calculating with measurements', label: 'Mr. Jackson’s lesson', text: 'Significant figures in calculations, rounding and percent error.', kind: 'Lesson' }] },
@@ -70,7 +70,7 @@ BioLab.COURSES = [
 
 BioLab.TOPIC_ORDER = {
   0: ['labbench', 'measure', 'units', 'density'],
-  1: ['classify', 'separation'],
+  1: ['classify', 'separation', 'goldenpenny'],
   2: ['models', 'atombuilder', 'avgmass', 'nuclear', 'halflife'],
   3: ['light', 'spectra', 'econfig', 'pes'],
   4: ['ptable', 'trends'],
