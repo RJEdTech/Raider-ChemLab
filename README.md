@@ -16,3 +16,7 @@ The home page has a **Browse** switch: **By topic** groups the 56 tools into 15 
 **Live site:** https://rjedtech.github.io/Raider-ChemLab/
 
 Everything runs in the browser, with no logins and no data collection.
+
+## License
+
+© 2026 Jason Beyer, RJ Ed Tech. Licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/): free to share and adapt for non-commercial use with credit. See [LICENSE](LICENSE).
