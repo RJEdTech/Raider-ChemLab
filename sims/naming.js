@@ -459,6 +459,7 @@ function drawIon(ctx,f,q,cx,cy,sc,k){const atoms=ionAtoms(f);ctx.save();ctx.line
 
 /* ---------- the simulation definition ---------- */
 const SIM={
+  art:{tourQ:(...a)=>tourQ(...a),mkIonic:(...a)=>mkIonic(...a),catBySym:(...a)=>catBySym(...a),anionByF:(...a)=>anionByF(...a),mkMol:(...a)=>mkMol(...a),mol:(a,na,b,nb)=>MOLS.find(m=>m.a===a&&m.na===na&&(!b||m.b===b)&&m.nb===nb),mkAcid:(...a)=>mkAcid(...a),hydrate:(...a)=>hydrate(...a),HYD:()=>HYD,fr:(...a)=>fr(...a),PREFBOX},
   id:'naming',hash:'naming',apUnit:5,order:2,tab:'Naming compounds',kind:'Learning tool',
   card:'Walk the naming flowchart for ionic compounds, transition metals, polyatomic ions, molecules, acids and hydrates, in both directions.',
   title:'Naming compounds: the flowchart trainer',
