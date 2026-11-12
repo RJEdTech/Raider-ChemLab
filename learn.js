@@ -491,4 +491,101 @@ trends: {
 }
 });
 
+/* ---------- Intermolecular forces ---------- */
+const IMB={mode:'pair',a:'H2O',b:'CH4',temp:25,all:false};
+const imA=(ctx,k,lines)=>ckCard(ctx,k,lines,206,12,190,1.2);
+const imB=(ctx,k,lines)=>ckCard(ctx,k,lines,600,12,190,1.2);
+const imMin=v=>v==null?'still drying…':'dry at '+v.toFixed(1)+' min';
+
+BioLab.addLearn({
+imf: {
+  goals: {
+    bio: ['What intermolecular forces are: the “stickiness” between neighboring molecules', 'The three kinds: London dispersion, dipole–dipole and hydrogen bonding', 'Why stronger forces mean a higher boiling point and slower evaporation', 'Why hand sanitizer feels cold and why water is a liquid at all'],
+    honors: ['How to identify the strongest force in a substance', 'Why London forces grow with the number of electrons', 'Why a polar molecule boils higher than a nonpolar one of the same size', 'How temperature changes evaporation rate'],
+    ap: ['How to rank boiling points and justify them in an AP free response', 'How vapor pressure rises with temperature (Clausius–Clapeyron)', 'Why the boiling point is where vapor pressure reaches 1 atm', 'Why isomers with the same formula can boil 100 °C apart']
+  },
+  matters: 'Intermolecular forces decide whether something is a gas, a liquid or a solid at room temperature, how fast it evaporates and how high it boils. That is why water covers Earth, propane comes out of a grill tank as a gas, and hand sanitizer chills your skin.',
+  question: 'You pour 1 mL of water and 1 mL of ethanol, the alcohol in most hand sanitizers, into two small dishes at 25 °C. Both liquids form hydrogen bonds. Which dish is dry first, and about how many times faster?',
+  startKey: 'pair', startRun: true,
+  startOverlay(sim,ctx,LH,k){imA(ctx,k,[['Two water molecules',700],'Dashed line: the attraction']);imB(ctx,k,[['Two methane molecules',700],'Clouds: their electrons']);},
+  steps: [
+    { key: 'hb', title: 'Water vs methane: same size, different stickiness', base: IMB, fresh: true, speed: 1,
+      see: 'Left: two water molecules, joined by a dashed hydrogen bond between an H (δ+) and the O (δ−) of its neighbor. Right: two methane molecules with no partial charges. On the boiling-point line, water sits at 100 °C and methane at −161.5 °C.',
+      why: 'Both molecules have 10 electrons and almost the same mass (18 and 16 g/mol). The difference is the attraction <b>between</b> molecules. Water’s H attached to O makes a strong hydrogen bond; methane has only weak London forces. Pulling water molecules apart into a gas takes far more energy, so water boils 260 °C higher.',
+      overlay(sim,ctx,LH,k){imA(ctx,k,[['Water: hydrogen bond',700],['boils at 100 °C',700,12.5,RED]]);imB(ctx,k,[['Methane: London only',700],['boils at −161.5 °C',700,12.5,RED]]);} },
+    { key: 'ldf', title: 'London forces grow with electrons', base: IMB, set: { a: 'He', b: 'I2' }, fresh: true, speed: 1,
+      see: 'Helium (2 electrons) on the left and iodine, I₂ (106 electrons), on the right. Both are nonpolar, with only London dispersion forces. Helium boils at −268.9 °C; iodine is a purple-black solid that boils at 184 °C.',
+      why: 'London forces come from electrons sloshing to one side for an instant, making a brief dipole that tugs on the neighbor. A big electron cloud sloshes more, so the attraction is stronger. More electrons, stronger London forces, higher boiling point.',
+      overlay(sim,ctx,LH,k){imA(ctx,k,[['He: 2 electrons',700],['boils at −268.9 °C',700,12.5,RED]]);imB(ctx,k,[['I₂: 106 electrons',700],['solid; boils at 184 °C',700,12.5,RED]]);} },
+    { key: 'race', title: 'The evaporation race', base: IMB, set: { mode: 'race', a: 'H2O', b: 'C2H5OH' }, fresh: true, speed: 2,
+      see: 'Two dishes with 1.00 mL each at 25 °C: water (A) and ethanol (B). The ethanol level drops much faster, and its dish is dry in about 12 minutes of model time. The water takes about an hour.',
+      why: 'Both form hydrogen bonds, but each water molecule can make up to four, holding its small neighbors very tightly. Ethanol’s hydrogen bonding is weaker per molecule, so more of its molecules escape each second. This answers the question: ethanol is dry first, roughly 5 times faster.',
+      overlay(sim,ctx,LH,k){const st=sim.st;ckCard(ctx,k,[['Water: '+imMin(st.doneA),700,12.5,PAL['s2']],['Ethanol: '+imMin(st.doneB),700,12.5,PAL['s4']],(st.doneA&&st.doneB)?['About '+(st.doneA/st.doneB).toFixed(1)+' times faster',800,12.5,RED]:'…'],290,118,220,1.2);} },
+    { key: 'warm', title: 'Warmer means faster', base: IMB, set: { mode: 'race', a: 'H2O', b: 'C2H5OH', temp: 60 }, fresh: true, speed: 2,
+      see: 'The same race at 60 °C. Both dishes dry much faster than at 25 °C, and ethanol still wins.',
+      why: 'At a higher temperature more molecules have enough energy to break free of their neighbors, so both evaporate faster. The forces themselves don’t change, so the order stays the same. Wet clothes dry faster on a hot day for the same reason.',
+      overlay(sim,ctx,LH,k){const st=sim.st;ckCard(ctx,k,[['At 60 °C',700],['Water: '+imMin(st.doneA),600,12.5,PAL['s2']],['Ethanol: '+imMin(st.doneB),600,12.5,PAL['s4']]],290,118,220,1.2);} },
+    { lvl: 'honors', key: 'dd', title: 'Dipole–dipole: polar vs nonpolar', base: IMB, set: { a: 'HCl', b: 'F2' }, fresh: true, speed: 1,
+      see: 'HCl (left) and F₂ (right) each have 18 electrons, so their London forces are about the same. HCl is polar (δ+ H, δ− Cl) and boils at −85.1 °C; F₂ is nonpolar and boils at −188.1 °C.',
+      why: 'With the electron count matched, the extra 103 °C comes from dipole–dipole attraction: the δ+ end of one HCl lines up with the δ− end of the next. Polar molecules boil higher than nonpolar molecules of the same size.',
+      overlay(sim,ctx,LH,k){imA(ctx,k,[['HCl: 18 e⁻, polar',700],['boils at −85.1 °C',700,12.5,RED]]);imB(ctx,k,[['F₂: 18 e⁻, nonpolar',700],['boils at −188.1 °C',700,12.5,RED]]);} },
+    { lvl: 'honors', key: 'all', title: 'Every molecule has London forces', base: IMB, set: { all: true }, fresh: true, speed: 1,
+      see: 'With “List every force present” on, water’s label lists London dispersion, dipole–dipole and hydrogen bonding; methane’s lists London dispersion only.',
+      why: 'London forces act between all molecules, because all have electrons. Polar molecules add dipole–dipole, and molecules with H on N, O or F add hydrogen bonding, the strongest of the three. On a test, name the strongest force, but know they all add up.',
+      overlay(sim,ctx,LH,k){imA(ctx,k,[['Water: all three',700],['strongest: H-bonding',700,12.5,RED]]);imB(ctx,k,[['Methane: London only',700]]);} },
+    { lvl: 'ap', key: 'isomers', title: 'Same formula, 100 °C apart', base: IMB, set: { a: 'C2H5OH', b: 'CH3OCH3' }, fresh: true, speed: 1,
+      see: 'Ethanol (left) and dimethyl ether (right) are both C₂H₆O, 46.07 g/mol, 26 electrons. Ethanol boils at 78.4 °C; dimethyl ether at −24.8 °C.',
+      why: 'Same London forces, but ethanol has an O–H, so it hydrogen bonds. In dimethyl ether every H is on a carbon, so it has only dipole–dipole forces. Hydrogen bonding adds about 100 °C. A strong AP answer names the force each has and why: “ethanol has H bonded to O.”',
+      overlay(sim,ctx,LH,k){imA(ctx,k,[['Ethanol: O–H → H-bonds',700],['78.4 °C',700,12.5,RED]]);imB(ctx,k,[['Ether: no O–H',700],['−24.8 °C',700,12.5,RED]]);} },
+    { lvl: 'ap', key: 'vp', title: 'Vapor pressure and the boiling point', base: IMB, set: { mode: 'vp', a: 'H2O', b: 'C2H5OH', temp: 78 }, fresh: true, speed: 1,
+      see: 'Two sealed flasks at 78 °C, each with some liquid and its vapor above it. The label under each gives the vapor pressure: ethanol’s has reached about 750 torr, almost exactly 1 atm (760 torr), while water’s is only about 330 torr.',
+      why: 'Vapor pressure is the push of molecules escaping the liquid, and it rises steeply with temperature (Clausius–Clapeyron: ln P = −ΔH_vap/R · (1/T − 1/T_b)). Stronger forces mean a larger ΔH_vap (water 40.65 kJ/mol, ethanol 38.56) and a lower vapor pressure at the same temperature. A liquid boils when its vapor pressure equals the air pressure, so ethanol boils at 78.4 °C. In Denver, at about 0.83 atm, water boils near 95 °C.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['At 78 °C',700],['Ethanol ≈ 750 torr ≈ 1 atm',700,12.5,PAL['s4']],'→ it is boiling','Water ≈ 330 torr: not yet'],290,60,220,1.2);} }
+  ],
+  useIt: [
+    { do: 'Rub hand sanitizer until your hands are completely dry before you touch food or anything else.',
+      why: 'The ethanol has to stay on your skin long enough to work, and it evaporates fast because its intermolecular forces are weaker than water’s. The CDC says to rub until your hands feel dry, about 20 seconds, and that sanitizer works best on hands that aren’t visibly dirty or greasy.' },
+    { do: 'Store propane tanks upright and outdoors, never in a garage, basement or car.',
+      why: 'Propane has only weak London forces and boils at −42 °C, so any leak turns straight into gas, and propane gas is heavier than air and pools low. Fire-safety agencies such as the NFPA tell people to keep grill tanks outside and upright, away from buildings.' }
+  ],
+  tryIt: [
+    { title: 'the evaporation race (10 minutes)',
+      steps: ['On a dark plate or a mirror, put one drop of water and one drop of rubbing alcohol (70% isopropyl), side by side.', 'Start a timer and watch which drop disappears first.', 'Then put a drop of each on the back of your hand and notice which feels colder.'],
+      look: 'The rubbing alcohol vanishes first and feels colder: its weaker intermolecular forces let molecules escape faster, and each escaping molecule carries heat away from your skin.' }
+  ]
+}
+});
+
+BioLab.addReview({
+imf: {
+  questions: [
+  {id:'mass',kind:'test',lvl:'bio',
+    q:'Water (18 g/mol) and methane (16 g/mol) are almost the same size, yet water boils at 100 °C and methane at −161.5 °C. Why?',
+    choices:['Water molecules attract each other with hydrogen bonds; methane has only weak London forces','Water molecules are much heavier','Methane has stronger covalent bonds','Water has more electrons'],correct:0,
+    steps:['Boiling separates molecules from each other; it doesn’t break the bonds inside them.','Water has H attached to O, so its molecules hydrogen bond to their neighbors.','Methane is nonpolar, with only London forces, so far less energy pulls its molecules apart.'],
+    lab:{set:{mode:'pair',a:'H2O',b:'CH4'},look:'Compare the forces and the boiling points of water and methane.'}},
+  {id:'sanitizer',kind:'real',lvl:'bio',
+    q:'Why does hand sanitizer feel cold as it dries on your skin?',
+    choices:['Ethanol evaporates fast, and each escaping molecule carries heat away from your skin','Ethanol is stored in the fridge','Ethanol reacts with skin and absorbs heat chemically','Sanitizer contains ice crystals'],correct:0,
+    steps:['Ethanol’s intermolecular forces are weaker than water’s, so it evaporates quickly.','The molecules that escape are the fastest, most energetic ones.','Losing them lowers the average energy of what is left, and your skin, so it feels cold.'],
+    lab:{set:{mode:'race',a:'H2O',b:'C2H5OH',temp:25},look:'Race water against ethanol and compare their drying times.'}},
+  {id:'propane',kind:'real',lvl:'bio',
+    q:'Propane (C₃H₈) is sold as a liquid in grill tanks, but it comes out as a gas. What does that tell you about its intermolecular forces?',
+    choices:['They are weak: propane is nonpolar with only London forces, so it boils at −42 °C','They are strong hydrogen bonds','Propane has no intermolecular forces at all','Propane is ionic'],correct:0,
+    steps:['Propane is nonpolar, so its only attractions are London forces.','With 26 electrons those forces are weak, and propane boils at −42 °C.','It stays liquid in the tank only because it is under pressure; open the valve and it boils.'],
+    lab:{set:{mode:'pair',a:'C3H8',b:'H2O'},look:'Compare propane’s boiling point with water’s.'}},
+  {id:'halogens',kind:'test',lvl:'honors',
+    q:'F₂ is a gas, Br₂ is a liquid and I₂ is a solid at room temperature. Why?',
+    choices:['All are nonpolar, but more electrons give stronger London forces','Br₂ and I₂ form hydrogen bonds','F₂ is polar','Heavier molecules have stronger covalent bonds'],correct:0,
+    steps:['All three are nonpolar diatomic molecules, so London forces are their only attraction.','The electron count rises: 18, 70 and 106.','Bigger electron clouds are more easily distorted, so the London forces and boiling points rise: −188, 59 and 184 °C.'],
+    lab:{set:{mode:'pair',a:'F2',b:'Br2'},look:'Compare fluorine and bromine.'}},
+  {id:'isomer',kind:'ap',lvl:'ap',
+    q:'Ethanol (CH₃CH₂OH) boils at 78.4 °C and dimethyl ether (CH₃OCH₃) at −24.8 °C. Both are C₂H₆O. Which justification earns full credit?',
+    choices:['Ethanol has an H bonded to O, so it forms hydrogen bonds between molecules; in dimethyl ether every H is bonded to C, so it has only dipole–dipole and London forces, which are weaker','Ethanol is heavier than dimethyl ether','Dimethyl ether has stronger covalent bonds','Ethanol has more electrons'],correct:0,
+    steps:['Same formula, so same mass and electrons: the London forces are about equal.','Only ethanol has an O–H, needed for hydrogen bonding.','A complete answer names the force in each substance and says which part of the structure causes it.'],
+    lab:{set:{mode:'pair',a:'C2H5OH',b:'CH3OCH3'},look:'Compare the forces of the two isomers.'}}
+  ]
+}
+});
+
 })();
