@@ -274,4 +274,221 @@ econfig: {
 }
 });
 
+/* ---------- shared card for ChemLab overlays (font capped so phones fit) ---------- */
+function ckCard(ctx,k,lines,x,y,w,mx){// on phones (big k) each line grows up to mx (1.45) times but shrinks to fit the card width
+  const L=lines.map(l=>{const o=typeof l==='string'?[l]:l;const base=o[2]||12.5,wt=o[1]||500;let sz=base*Math.min(k,mx||1.45);ctx.font=wt+' '+sz+'px '+H.FONT;const tw=ctx.measureText(o[0]).width;if(tw>w-18)sz=Math.max(base*Math.min(k,1.05),sz*(w-18)/tw);return {t:o[0],sz,wt,c:o[3]||PAL['cv-ink']};});
+  const lh=Math.max(...L.map(o=>o.sz))*1.38,h=8+L.length*lh;
+  ctx.save();ctx.globalAlpha=0.97;H.rr(ctx,x,y,w,h,8);ctx.fillStyle=PAL['cv-sol'];ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=1.3;ctx.strokeStyle=PAL['cv-soft'];ctx.stroke();ctx.restore();
+  L.forEach((o,j)=>H.txt(ctx,o.t,x+9,y+4+lh*0.78+j*lh,{s:o.sz,w:o.wt,c:o.c}));return h;}
+const RED='#c8102e';
+
+/* ---------- Photoelectron spectroscopy ---------- */
+const peX=be=>780-(Math.log10(be)-Math.log10(0.3))/(Math.log10(500)-Math.log10(0.3))*720;
+function peRing(ctx,k,be,lab){const x=peX(be),yT=262,yB=450-24*k-14;ctx.save();ctx.strokeStyle=RED;ctx.lineWidth=2.5;H.rr(ctx,x-22,yT,44,yB-yT+4,8);ctx.stroke();ctx.restore();if(lab)tag(ctx,lab,x,yT-2,k,{s:11.5,hi:true});}
+const peCard=(ctx,k,lines)=>ckCard(ctx,k,lines,326,2,306);
+const peSub=(sim,lab)=>(sim.st.sub&&sim.st.sub[lab])||0;
+const PEB={el:11,src:'cu',cmp:0};
+
+BioLab.addLearn({
+pes: {
+  goals: {
+    bio: ['How a photon can knock one electron out of an atom', 'Why binding energy = photon energy − the electron’s kinetic energy', 'How to read a PES spectrum: one peak per sublevel, height = number of electrons', 'How to identify an element from its spectrum'],
+    honors: ['How to find binding energy from hν and KE', 'How peak position and peak height relate to the configuration', 'Why more protons pull every electron in tighter', 'Why a UV lamp reaches only the outer electrons'],
+    ap: ['How to justify peak positions with Coulomb’s law (charge and distance)', 'How to read configuration, Z and IE₁ off a spectrum', 'Why inner (core) electrons need hundreds of times more energy', 'How to write the evidence the way an AP free response asks for it']
+  },
+  matters: 'PES is the experiment that proves electron configurations are real. Chip makers, coatings labs and crime labs use the same method (XPS) to find out which elements are on a surface, and AP Chemistry free-response questions ask you to explain a spectrum in words.',
+  question: 'A gas cylinder has lost its label, and it holds a single element. Its PES spectrum shows three peaks, at 84.0, 4.68 and 2.08 MJ/mol, with heights 2, 2 and 6. Which gas is it?',
+  startKey: 'setup', startRun: false,
+  startOverlay(sim,ctx,LH,k){peCard(ctx,k,[['Left: the X-ray source and one atom (sodium)',700],'Middle: the analyzer measures electron speed','Bottom: the spectrum builds, electron by electron']);},
+  steps: [
+    { key: 'shoot', title: 'Photon in, electron out', base: PEB, fresh: true, speed: 0.3,
+      see: 'An X-ray photon hits a sodium atom (drawn far larger than life). One electron leaves its ring, an open circle marks the empty spot, and the electron flies into the curved analyzer.',
+      why: 'The photon hands all its energy to one electron. Part of that energy pulls the electron free of the nucleus: that part is the <b>binding energy</b>. The rest stays with the electron as <b>kinetic energy</b>, its energy of motion.',
+      overlay(sim,ctx,LH,k){peCard(ctx,k,[['Photon energy hν: 777 MJ/mol (hard X-ray)',700],'= binding energy (to free it) + kinetic energy','Each photon frees exactly one electron']);} },
+    { key: 'subtract', title: 'Binding energy = hν − KE', base: PEB, fresh: true, speed: 0.6,
+      see: 'Watch the card at the right (outlined). For each electron it shows the photon energy, subtracts the kinetic energy the analyzer measured, and gives the binding energy.',
+      why: 'Think of paying with a $20 bill: bill − change = price. Here, photon energy − kinetic energy = binding energy. Fast electrons were loosely held; slow ones were held tightly.',
+      overlay(sim,ctx,LH,k){ctx.save();ctx.strokeStyle=RED;ctx.lineWidth=3;H.rr(ctx,640,24,156,190,12);ctx.stroke();ctx.restore();const L=sim.st.last;
+        peCard(ctx,k,[['BE = hν − KE',800,12.5,RED],L?'Last one: 777 − '+(777-L.pk.BE).toFixed(L.pk.BE<10?2:0)+' = '+(L.pk.BE<10?L.pk.BE.toFixed(2):L.pk.BE.toFixed(0))+' MJ/mol ('+L.pk.lab+')':'waiting for the first electron…','Tightly held electron → slow → big BE']);} },
+    { key: 'peaks', title: 'One peak per sublevel', base: PEB, fresh: true, speed: 4,
+      see: 'Thousands of electrons later, the spectrum has four peaks. Sodium is 1s² 2s² 2p⁶ 3s¹, and there is one peak for each sublevel: 1s at 104 MJ/mol on the far left, then 2s, 2p, and 3s at 0.50 on the right.',
+      why: 'Electrons in the same sublevel are held equally tightly, so they all land at the same binding energy and pile into one peak. The axis runs high to low, left to right, as on AP exams, and it is logarithmic: 1s needs about 200 times the energy of 3s.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,104,'1s: 104');peRing(ctx,k,0.496,'3s: 0.50');peCard(ctx,k,[['Na: 1s² 2s² 2p⁶ 3s¹ → 4 peaks',700],'Far left = held tightly (close to nucleus)','Far right = held loosely (outermost)']);} },
+    { key: 'heights', title: 'Taller peak, more electrons', base: PEB, fresh: true, speed: 4,
+      see: 'The 2p peak (outlined) is three times as tall as the 2s peak, and the 3s peak is half the height of 2s. The card counts the electrons that landed in each peak.',
+      why: 'Every electron has the same chance of being hit, so a sublevel with more electrons sends more of them to the detector. Heights 2 : 2 : 6 : 1 match 1s², 2s², 2p⁶, 3s¹.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,3.67,'2p: 6 e⁻');peRing(ctx,k,6.84,'2s: 2 e⁻');const a=peSub(sim,'2s'),b=peSub(sim,'2p'),c=peSub(sim,'3s');
+        peCard(ctx,k,['Counted so far: 2s '+a+', 2p '+b+', 3s '+c,['2p ÷ 2s = '+(a?(b/a).toFixed(2):'…')+'   (6 ÷ 2 = 3)',700,12.5,RED],'3s ÷ 2s = '+(a?(c/a).toFixed(2):'…')+'   (1 ÷ 2 = 0.5)']);} },
+    { key: 'neon', title: 'The mystery gas', base: PEB, set: { el: 10 }, fresh: true, speed: 4,
+      see: 'Now the sample is the unlabeled gas. Three peaks appear, at 84.0, 4.68 and 2.08 MJ/mol, and the last is three times as tall as the other two: heights 2, 2 and 6.',
+      why: 'Three peaks with heights 2, 2, 6 means 1s² 2s² 2p⁶: 10 electrons, so 10 protons. The gas is <b>neon</b>. This answers the question. Neon’s 1s peak is at 84.0 MJ/mol, far left of sodium’s 2s, because nothing sits between those electrons and the nucleus.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,84,'84.0');peRing(ctx,k,2.081,'2.08');peCard(ctx,k,[['Heights 2 : 2 : 6 → 1s² 2s² 2p⁶',700],'2 + 2 + 6 = 10 electrons → Z = 10',['It is neon',800,12.5,RED]]);} },
+    { key: 'fluorine', title: 'Fewer protons, looser grip', base: PEB, set: { el: 9 }, fresh: true, speed: 4,
+      see: 'Fluorine, one proton fewer. Its three peaks have heights 2, 2 and 5, and every peak sits to the right of neon’s: the 1s peak is at 67.2 MJ/mol instead of 84.0.',
+      why: 'With 9 protons instead of 10, the nucleus pulls every electron a little less hard, so each one takes less energy to remove. Peak positions alone can tell elements apart, even when their peak counts match.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,67.2,'67.2');peCard(ctx,k,[['F: 9 protons, 1s² 2s² 2p⁵ (heights 2, 2, 5)',700],'1s: 67.2 MJ/mol (neon: 84.0)',['Fewer protons → every peak moves right',700,12.5,RED]]);} },
+    { lvl: 'honors', key: 'uv', title: 'A UV lamp reaches only the outside', base: PEB, set: { src: 'uv' }, fresh: true, speed: 4,
+      see: 'Back to sodium, but the source is now a UV lamp. Only the 3s peak (outlined) appears; the 1s, 2s and 2p peaks are gone.',
+      why: 'A UV photon carries only 2.05 MJ/mol. That is more than sodium’s 3s binding energy (0.50) but less than 2p’s (3.67), so the inner electrons can’t be freed. Chemists use UV-PES for outer (bonding) electrons and X-ray PES for core electrons.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,0.496,'3s only');peCard(ctx,k,[['UV photon: 2.05 MJ/mol',700],'3s needs 0.50 ✓   2p needs 3.67 ✗',['Inner electrons stay put',700,12.5,RED]]);} },
+    { lvl: 'honors', key: 'cmp', title: 'Compare neon and fluorine', base: PEB, set: { el: 10, cmp: 9 }, fresh: true, speed: 4,
+      see: 'Neon’s spectrum with fluorine’s drawn on top for comparison. Each fluorine peak sits a little to the right of the matching neon peak.',
+      why: 'Same sublevels, same distance from the nucleus, but neon has one more proton. Coulomb’s law: attraction ∝ q₁q₂ ÷ r². A larger nuclear charge at about the same r means a larger force, so every neon electron is held more tightly.',
+      overlay(sim,ctx,LH,k){peCard(ctx,k,[['Ne (10 p⁺) vs F (9 p⁺), same shells',700],'1s: 84.0 vs 67.2   2p: 2.08 vs 1.68',['More protons, same r → tighter grip',700,12.5,RED]]);} },
+    { lvl: 'ap', key: 'coulomb', title: 'Distance wins: K vs Na', base: PEB, set: { el: 19, cmp: 11 }, fresh: true, speed: 4,
+      see: 'Potassium (19 protons) with sodium (11) for comparison. Potassium’s outermost peak, 4s at 0.42 MJ/mol, is to the right of sodium’s 3s at 0.50, even though potassium has 8 more protons.',
+      why: 'For the outermost electron, the core electrons shield most of the nuclear charge: both feel about +1 (19 − 18 and 11 − 10). The 4s electron is in shell n = 4, farther out than 3s, so by Coulomb’s law (∝ 1/r²) it is held less tightly. A good AP answer names both factors: effective charge and distance.',
+      overlay(sim,ctx,LH,k){peRing(ctx,k,0.419,'K 4s');peCard(ctx,k,[['K 4s: 0.42   Na 3s: 0.50 MJ/mol',700],'Core shields both to about +1',['n = 4 is farther out → weaker attraction',700,12.5,RED]]);} }
+  ],
+  useIt: [
+    { do: 'If a doctor or dentist orders an X-ray or CT scan, it is fine to ask whether you need it and to keep a list of the scans you have had.',
+      why: 'X-ray photons carry so much energy that they knock electrons right out of atoms, exactly what happens in this spectrometer. In your body that can damage DNA, so the FDA advises patients to ask about the benefit of each exam and keep a record of their medical imaging. A scan you need is still worth the small risk.' },
+    { do: 'If you ever see “XPS” or “surface analysis” on a product test report, a phone screen coating or a medical implant, it is this experiment.',
+      why: 'X-ray photoelectron spectroscopy is how chip makers and materials labs check which elements sit on a surface, a few nanometers deep. Every element’s peaks sit at its own binding energies, and NIST keeps a public database of them so any lab can match its peaks to an element, the way you matched neon’s.' }
+  ],
+  tryIt: [
+    { title: 'the coin-toss spectrum (10 minutes)',
+      steps: ['Write the configuration of sodium on paper: 1s² 2s² 2p⁶ 3s¹. Put one small object per electron in a cup: 2 pennies (1s), 2 nickels (2s), 6 dimes (2p), 1 quarter (3s).', 'Without looking, draw one coin, tally it, and put it back. Do this 50 times.', 'Make a bar graph: one bar per coin type, in order from 1s to 3s.'],
+      look: 'The dime bar comes out about three times as tall as the penny or nickel bars, and the quarter bar about half as tall: the same 2 : 2 : 6 : 1 pattern as the PES peak heights, because every electron is equally likely to be hit.' }
+  ]
+}
+});
+
+/* ---------- Periodic trends ---------- */
+const TRB={view:'map',prop:'radius',el:'Na',cmp:'across',series:'iso10',sie:'Mg'};
+function trCell(ctx,sym,lab,k,pos){const e=ChemLab.el(sym),x=26+(e.group-1)*42.6,y=30+(e.period-1)*42.6;ctx.save();ctx.strokeStyle=RED;ctx.lineWidth=3.5;H.rr(ctx,x-2,y-2,46.6,46.6,8);ctx.stroke();ctx.restore();
+  if(lab){if(pos==='left')tag(ctx,lab,x-34,y+21,k,{s:11.5,hi:true});else tag(ctx,lab,x+21.3,pos==='above'?y-12:y+56,k,{s:11.5,hi:true});}}
+const trMapCard=(ctx,k,lines)=>ckCard(ctx,k,lines,16,394,330,1.15);
+const trMid=(ctx,k,lines)=>ckCard(ctx,k,lines,322,96,156,1.2);
+
+BioLab.addLearn({
+trends: {
+  goals: {
+    bio: ['Which atoms are big and which are small, and the pattern on the periodic table', 'Why: protons pull, inner electrons shield, and distance weakens the pull', 'Why potassium reacts more violently than sodium', 'Why ionization energy and electronegativity run opposite to size'],
+    honors: ['How to explain size with Zeff ≈ Z − core electrons and the number of shells', 'Why ionization energy and electronegativity rise across a period and fall down a group', 'Why cations are smaller and anions bigger than their atoms', 'How to compare isoelectronic ions'],
+    ap: ['How to justify a trend with Coulomb’s law (Zeff and distance) in a free-response answer', 'How to compare isoelectronic ions by nuclear charge', 'How successive ionization energies reveal the number of valence electrons', 'How to name the exceptions without hand-waving']
+  },
+  matters: 'Where an element sits on the periodic table predicts how big its atoms are, how hard it holds its electrons and how violently it reacts. That is why cesium is sealed in glass, why fluorine is never found free, and why your toothpaste and nonstick pan work.',
+  question: 'Drop a small piece of sodium in water and it fizzes and skates around. Potassium bursts into flame. Both have one valence electron. Why does potassium give its electron up more easily?',
+  startKey: 'map', startRun: true,
+  startOverlay(sim,ctx,LH,k){trMapCard(ctx,k,[['Each square: one element, colored by atomic radius',700],'Light = small atom, dark = big atom']);},
+  steps: [
+    { key: 'size', title: 'Big atoms and small atoms', base: TRB, set: { el: 'Cs' }, fresh: true, speed: 1,
+      see: 'The heat map colors each element by atomic radius. The darkest square, cesium (outlined, bottom left), is 244 pm across in radius; the lightest, helium (top right), is 28 pm.',
+      why: 'Atoms get bigger going <b>down</b> a group and smaller going <b>across</b> a period, left to right. Even cesium is tiny: 244 pm is about a quarter of a nanometer, and a million cesium atoms in a row would be half a millimeter long.',
+      overlay(sim,ctx,LH,k){trCell(ctx,'Cs');trCell(ctx,'He','smallest',k,'left');trMapCard(ctx,k,[['Biggest: Cs (bottom left, outlined)',700],['Down: bigger   Across: smaller',700,12.5,RED]]);} },
+    { key: 'inside', title: 'Inside sodium', base: TRB, set: { view: 'atom', el: 'Na', cmp: 'none' }, fresh: true, speed: 1,
+      see: 'Sodium, drawn to scale (scale bar at the bottom left). In the middle is the nucleus with 11 protons. Ten gray inner electrons surround it, and one yellow outer electron sits alone in the third shell. The red arrow is the pull on that outer electron.',
+      why: 'The 10 inner electrons sit between the nucleus and the outer electron and cancel most of the nucleus’s pull. This is <b>shielding</b>. The outer electron feels a pull of about +1 (11 − 10), not +11.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['11 protons − 10 inner electrons',700],['Outer electron feels about +1',700,12.5,RED],'(shielding)'],480,22,300,1.2);} },
+    { key: 'across', title: 'Across: one more proton, smaller atom', base: TRB, set: { view: 'atom', el: 'Na', cmp: 'across' }, fresh: true, speed: 1,
+      see: 'Sodium (left) next to magnesium (right). Magnesium has one more proton and one more outer electron, in the same third shell. Its atom is smaller: 141 pm versus 166 pm.',
+      why: 'The core of 10 inner electrons stays the same, so magnesium’s outer electrons feel about +2 instead of +1. A stronger pull at the same shell draws them in closer, so the atom shrinks even though it has more electrons.',
+      overlay(sim,ctx,LH,k){trMid(ctx,k,[['Same shells',700],'pull +1 → +2',['166 → 141 pm',800,12.5,RED]]);} },
+    { key: 'down', title: 'Down: sodium vs potassium', base: TRB, set: { view: 'atom', el: 'Na', cmp: 'down' }, fresh: true, speed: 1,
+      see: 'Sodium (left) next to potassium (right). Potassium has a fourth shell, so it is clearly bigger: 203 pm versus 166 pm. Each still has one yellow outer electron.',
+      why: 'Potassium’s 8 extra protons are shielded by 8 extra inner electrons, so its outer electron still feels about +1. But it sits a whole shell farther out, and attraction weakens with distance. Removing it takes 419 kJ/mol instead of 496, about 16% less, so potassium gives it up faster and reacts more violently. This answers the question.',
+      overlay(sim,ctx,LH,k){trMid(ctx,k,[['Both feel about +1',700],'K is farther out',['IE: 496 → 419',800,12.5,RED],'kJ/mol']);} },
+    { key: 'ie', title: 'Ionization energy: the opposite of size', base: TRB, set: { prop: 'ie', el: 'He' }, fresh: true, speed: 1,
+      see: 'The map now shows first ionization energy, the energy to pull off one electron. The pattern flips: the highest values are at the top right (helium, 2372 kJ/mol, outlined) and the lowest at the bottom left (cesium, 376, also outlined).',
+      why: 'Small atoms hold their outer electrons close, under a strong pull, so removing one costs a lot of energy. Big atoms hold them far away and loosely. That is why the most reactive metals (Cs, Rb, K) are at the bottom left.',
+      overlay(sim,ctx,LH,k){trCell(ctx,'He','2372',k,'left');trCell(ctx,'Cs');trMapCard(ctx,k,[['Small atom, close pull → hard to remove',700],['Across: higher   Down: lower',700,12.5,RED]]);} },
+    { key: 'en', title: 'Electronegativity: who grabs electrons', base: TRB, set: { prop: 'en', el: 'F' }, fresh: true, speed: 1,
+      see: 'Now the map shows electronegativity, how hard an atom pulls on electrons it shares. Fluorine (outlined) is the highest of all, 3.98. Cesium is among the lowest, 0.79.',
+      why: 'Fluorine is small with a strong pull (+7 on its outer electrons), so it pulls shared electrons toward itself harder than any other atom. That is why it is never found free in nature, only in compounds like the sodium fluoride in toothpaste.',
+      overlay(sim,ctx,LH,k){trCell(ctx,'F','3.98',k,'above');trMapCard(ctx,k,[['Fluorine: small, strong pull → 3.98',700],['Top right grabs, bottom left gives',700,12.5,RED]]);} },
+    { lvl: 'honors', key: 'ions', title: 'Same electrons, different protons', base: TRB, set: { view: 'ions', series: 'iso10' }, fresh: true, speed: 1,
+      see: 'Six ions, all with 10 electrons, drawn to scale: N³⁻, O²⁻, F⁻ (red, anions) then Na⁺, Mg²⁺, Al³⁺ (blue, cations). They shrink steadily from 146 pm to 53.5 pm.',
+      why: 'These ions are <b>isoelectronic</b>: same 10 electrons, same 1s² 2s² 2p⁶ arrangement. The only difference is the nucleus: 7 protons for N³⁻ up to 13 for Al³⁺. More protons pulling on the same electrons draws them in tighter.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['All have 10 electrons',700],'Protons: 7 → 13',['More protons → smaller ion',700,12.5,RED]],440,368,330,1.2);} },
+    { lvl: 'honors', key: 'pairs', title: 'Atoms vs their ions', base: TRB, set: { view: 'ions', series: 'pairs' }, fresh: true, speed: 1,
+      see: 'Each atom next to its ion: Na and Na⁺, Mg and Mg²⁺, Cl and Cl⁻, O and O²⁻. The cations (blue) are much smaller than their atoms; the anions (red) are bigger.',
+      why: 'Na → Na⁺ loses its whole outer shell, so the ion is far smaller (166 → 102 pm). Cl → Cl⁻ adds an electron to the same shell; the extra electron–electron repulsion spreads the cloud out (102 → 181 pm) with no extra protons to hold it in.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Cation: loses a shell → smaller',700],['Anion: extra repulsion → bigger',700,12.5,RED]],440,368,330,1.2);} },
+    { lvl: 'ap', key: 'sie', title: 'Successive ionization: count the valence electrons', base: TRB, set: { view: 'sie', sie: 'Mg' }, fresh: true, speed: 1,
+      run(sim){sim.st.removed=3;sim.st.fly=0;},
+      see: 'Magnesium with three electrons removed. On the bar chart (log scale), IE₁ = 738 and IE₂ = 1451 kJ/mol are short blue bars, then IE₃ jumps to 7733, a red bar past the dashed valence | core line.',
+      why: 'The first two electrons come from the 3s valence shell. The third must come from the n = 2 core, which is much closer to the nucleus and barely shielded (Zeff about +10). A jump of more than five times marks the end of the valence electrons, so magnesium has 2 and forms Mg²⁺.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['IE₂ → IE₃: 1451 → 7733 kJ/mol',700],['The jump = 2 valence electrons',700,12.5,RED]],392,68,250,1.15);} }
+  ],
+  useIt: [
+    { do: 'If you ever handle a metal like sodium or potassium in a lab, keep it under mineral oil, cut it on a dry surface, and never let it touch water.',
+      why: 'Group 1 metals lose their lone outer electron so easily that they react with the water in the air, and potassium reacts with water violently enough to ignite the hydrogen it makes. Lab safety guides (and the OSHA-required Safety Data Sheets for these metals) call for storage under oil and no contact with water.' },
+    { do: 'Use fluoride toothpaste, and don’t swallow it: a pea-sized amount for kids 3 to 6, the American Dental Association says.',
+      why: 'Fluorine is the most electronegative element, so it is never free in nature; in toothpaste it is the fluoride ion, F⁻. Fluoride helps rebuild tooth enamel into a harder, more acid-resistant mineral, which is why the ADA recommends brushing with it twice a day.' }
+  ],
+  tryIt: [
+    { title: 'the magnet-distance test (5 minutes)',
+      steps: ['Put a paper clip on a table. Hold a fridge magnet just above it and slowly raise the magnet until the clip stops jumping up.', 'Now slip a few sheets of paper between them, then a thin book. Note how close the magnet has to be.', 'Stack two magnets together and try again.'],
+      look: 'The pull drops fast with distance and with things in between, and two magnets pull harder. That is the atom: distance (more shells) and shielding (inner electrons) weaken the pull; more protons strengthen it.' }
+  ]
+}
+});
+
+BioLab.addReview({
+pes: {
+  questions: [
+  {id:'peakcount',kind:'test',lvl:'bio',
+    q:'Magnesium is 1s² 2s² 2p⁶ 3s². How many peaks does its PES spectrum have, and which is tallest?',
+    choices:['4 peaks; 2p is tallest','12 peaks, one per electron','3 peaks; 1s is tallest','4 peaks, all the same height'],correct:0,
+    steps:['Each sublevel gives one peak: 1s, 2s, 2p and 3s make 4.','Height counts the electrons in the sublevel.','2p holds 6 electrons; the others hold 2, so 2p is three times as tall.'],
+    lab:{set:{el:12,src:'cu',cmp:0},look:'Magnesium’s spectrum: count the peaks and compare their heights.'}},
+  {id:'height',kind:'test',lvl:'bio',
+    q:'In sodium’s spectrum, why is the 2p peak about three times as tall as the 2s peak?',
+    choices:['2p holds 6 electrons and 2s holds 2, and each electron is equally likely to be knocked out','2p electrons are held more tightly','2p electrons move faster','The X-rays aim at 2p'],correct:0,
+    steps:['The photons hit electrons at random.','A sublevel with more electrons sends more electrons to the detector.','6 ÷ 2 = 3, so the 2p peak is three times taller.'],
+    lab:{set:{el:11,src:'cu',cmp:0},look:'Watch the 2s and 2p peaks grow; compare their heights.'}},
+  {id:'xray',kind:'real',lvl:'bio',
+    q:'Why are medical X-rays called “ionizing” radiation, and why does the FDA suggest asking whether each scan is needed?',
+    choices:['X-ray photons carry enough energy to knock electrons out of atoms, which can damage DNA','X-rays make the body magnetic','X-rays heat the body like a microwave','X-rays only pass through and never interact'],correct:0,
+    steps:['An ion forms when an atom loses an electron.','X-ray photons carry so much energy (777 MJ/mol in this tool) that they can free even inner electrons, just as in PES.','In living cells that can break bonds in DNA, so each scan should be worth its small risk.'],
+    lab:{set:{el:11,src:'cu',cmp:0},look:'A hard X-ray photon can free even the 1s electrons, the most tightly held.'}},
+  {id:'leftmost',kind:'test',lvl:'honors',
+    q:'Neon’s 1s peak is at 84.0 MJ/mol, but its 2p peak is at only 2.08. Which explanation is best?',
+    choices:['1s electrons are much closer to the nucleus and are not shielded, so they feel almost the full +10','1s holds more electrons than 2p','2p electrons have more protons','The 2p electrons are moving faster'],correct:0,
+    steps:['Attraction depends on charge and distance (Coulomb’s law).','1s electrons sit in shell n = 1, close to the nucleus, with nothing between.','2p electrons sit in n = 2, farther out and shielded by the 1s pair, so they need about 40 times less energy.'],
+    lab:{set:{el:10,src:'cu',cmp:0},look:'Neon: compare the 1s peak (far left) with the 2p peak.'}},
+  {id:'kna',kind:'ap',lvl:'ap',
+    q:'Potassium’s outermost peak (0.42 MJ/mol) is at a lower binding energy than sodium’s (0.50), even though potassium has 8 more protons. Explain using Coulomb’s law.',
+    choices:['Both outer electrons feel about +1 after shielding, but potassium’s 4s electron is farther from the nucleus, so the attraction is weaker','Potassium has fewer protons than sodium','Sodium’s electron is in a higher shell','Potassium’s outer electron is not shielded at all'],correct:0,
+    steps:['Effective charge: K has 18 core electrons (19 − 18 ≈ +1); Na has 10 (11 − 10 ≈ +1).','Distance: K’s outer electron is in n = 4, Na’s in n = 3, so K’s is farther out.','Same charge, larger r → weaker attraction (∝ 1/r²) → lower binding energy.'],
+    lab:{set:{el:19,src:'cu',cmp:11},look:'Potassium with sodium dashed: compare the rightmost peaks.'}}
+  ]
+},
+trends: {
+  questions: [
+  {id:'kreact',kind:'test',lvl:'bio',
+    q:'Sodium and potassium each have one outer electron. Why does potassium react more violently with water?',
+    choices:['Its outer electron is a shell farther from the nucleus, so it is held more loosely and lost more easily','It has fewer protons','Its outer electron is not shielded','It has more outer electrons'],correct:0,
+    steps:['Inner electrons shield both outer electrons to a pull of about +1.','Potassium’s outer electron is in the fourth shell, farther out than sodium’s third.','Farther away means a weaker pull: 419 kJ/mol to remove versus 496, so potassium gives it up faster.'],
+    lab:{set:{view:'atom',el:'Na',cmp:'down'},look:'Sodium next to potassium: compare their sizes.'}},
+  {id:'across',kind:'test',lvl:'bio',
+    q:'Magnesium has one more electron than sodium, yet its atom is smaller. Why?',
+    choices:['It also has one more proton pulling on electrons in the same shell, so they are pulled in closer','Its extra electron goes into a new, smaller shell','Magnesium has fewer inner electrons','Electrons repel and shrink the atom'],correct:0,
+    steps:['Sodium and magnesium both have 10 inner electrons.','Magnesium’s 12 protons give its outer electrons a pull of about +2, versus +1 for sodium.','A stronger pull at the same shell draws the electrons in: 166 pm → 141 pm.'],
+    lab:{set:{view:'atom',el:'Na',cmp:'across'},look:'Sodium next to magnesium: compare their sizes and pulls.'}},
+  {id:'cesium',kind:'real',lvl:'bio',
+    q:'Chemical suppliers ship cesium sealed in glass ampoules, with no air. Why?',
+    choices:['Cesium, at the bottom left, loses its outer electron so easily that it reacts with air and water','Cesium is radioactive','Cesium is a gas','Cesium is the most electronegative element'],correct:0,
+    steps:['Cesium is large: its outer electron is in the sixth shell.','That electron is held very loosely (376 kJ/mol), the lowest in this tool.','So cesium reacts with oxygen and water vapor on contact, and must be sealed away from both.'],
+    lab:{set:{view:'map',prop:'ie',el:'Cs'},look:'Find cesium’s ionization energy on the map.'}},
+  {id:'isoel',kind:'test',lvl:'honors',
+    q:'O²⁻, F⁻, Na⁺ and Mg²⁺ all have 10 electrons. Which is largest?',
+    choices:['O²⁻','F⁻','Na⁺','Mg²⁺'],correct:0,
+    steps:['Isoelectronic ions have the same electrons in the same shells.','The only difference is the number of protons: O 8, F 9, Na 11, Mg 12.','Fewest protons means the weakest pull, so O²⁻ is largest (140 pm).'],
+    lab:{set:{view:'ions',series:'iso10'},look:'Compare the 10-electron ions from N³⁻ to Al³⁺.'}},
+  {id:'clion',kind:'test',lvl:'honors',
+    q:'Why is the chloride ion, Cl⁻ (181 pm), bigger than a chlorine atom (102 pm)?',
+    choices:['The extra electron adds repulsion in the same shell, with no extra proton to hold it in','Cl⁻ has an extra shell','Cl⁻ has fewer protons','Chloride loses an electron'],correct:0,
+    steps:['Cl⁻ has the same 17 protons as Cl, but 18 electrons instead of 17.','The extra electron goes into the same third shell.','More electron–electron repulsion with the same pull spreads the cloud out.'],
+    lab:{set:{view:'ions',series:'pairs'},look:'Compare Cl and Cl⁻.'}},
+  {id:'alsie',kind:'ap',lvl:'ap',
+    q:'Aluminum’s successive ionization energies are 578, 1817, 2745 and 11577 kJ/mol. How many valence electrons does it have, and why?',
+    choices:['3, because the huge jump after IE₃ means the fourth electron comes from the core','4, because there are four values','1, because IE₂ is much bigger than IE₁','2, because IE₃ is bigger than IE₂'],correct:0,
+    steps:['Each IE rises a little, because the ion is more positive.','IE₄ is more than four times IE₃: that electron comes from the n = 2 core, much closer and barely shielded.','So aluminum has 3 valence electrons and forms Al³⁺.'],
+    lab:{set:{view:'sie',sie:'Al'},look:'Remove aluminum’s electrons one at a time and watch for the jump.'}}
+  ]
+}
+});
+
 })();
