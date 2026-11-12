@@ -588,4 +588,292 @@ imf: {
 }
 });
 
+
+/* ---------- Lewis structures, VSEPR shapes, polarity (AP Chem Unit 2, Nov 12, 2026) ----------
+   Layout: lewis draws one molecule around (280, 252) with the electron budget at the top right (548–792, 10–200);
+   vsepr spins one molecule around (400, 246); polarity's bond view puts the two atoms near y 170 with the ΔEN bar
+   below, its molecule view centres on (400, 232), and its stream view leaves the top left empty. */
+const chAct=(sim,id)=>{const a=sim.def.actions.find(x=>x.id===id);if(a)a.run(sim);};
+const chMet=(sim,id)=>{const m=sim.def.metrics.find(x=>x.id===id);return m?m.get(sim):null;};
+/* cycle a control through values while a step is showing */
+function chCycle(sim,key,id,list,ms){clearInterval(sim._chC);let i=0;sim._chC=setInterval(()=>{if(sim.lnKey!==key||!sim.tour||!sim.tour.on){clearInterval(sim._chC);return;}i=(i+1)%list.length;const v={};v[id]=list[i];BioLab.setValues(sim,v);if(sim.def.id==='lewis')chAct(sim,'answer');},ms||2600);}
+const LW=[218,342];   // the two atoms of a diatomic in lewis (CX ± BL/2)
+/* lewis cards sit at the bottom right, under the electron budget, whatever its height */
+function lwCard(ctx,k,lines,LH){const h=8+lines.length*12.5*Math.min(k,1.45)*1.38;return ckCard(ctx,k,lines,548,(LH||450)-h-10,244);}
+
+BioLab.addLearn({
+lewis: {
+  goals: {
+    bio: ['How to count the valence electrons a molecule has to work with', 'Why atoms share pairs of electrons until each has 8 (hydrogen: 2)', 'When atoms need double or triple bonds', 'Why N₂, with its triple bond, barely reacts'],
+    honors: ['How to count valence electrons, including for ions', 'When atoms need double or triple bonds', 'How formal charge picks the best structure', 'What resonance means: one real structure, drawn several ways'],
+    ap: ['How to draw any Lewis structure step by step', 'How formal charge picks the best structure', 'Resonance and bond order', 'Why atoms in period 3 and below can hold more than 8']
+  },
+  matters: 'A Lewis structure is a map of where a molecule’s electrons are. It predicts the molecule’s shape, whether it is polar, how strong its bonds are and how easily it reacts. Every other Unit 2 idea starts from it.',
+  startKey: 'start', startRun: false,
+  startOverlay(sim,ctx,LH,k){if(sim.p.mol!=='N2'){BioLab.setValues(sim,{mol:'N2'});}tag(ctx,'N: 5 valence e⁻',LW[0],190,k,{s:12,hi:true});tag(ctx,'N: 5 valence e⁻',LW[1],320,k,{s:12,hi:true});
+    lwCard(ctx,k,[['The goal',700],'Every atom ends with 8 electrons','around it: its ring turns green.'],LH);},
+  steps: [
+    { key: 'count', title: 'Count the electrons', set: { mol: 'N2' }, fresh: true, pause: true,
+      see: 'Two nitrogen atoms joined by one line. The electron budget at the top right counts what you have to place: 2 × 5 = 10 valence electrons. The single bond already uses 2.',
+      why: 'Valence electrons are the outer electrons, the ones that bond. Nitrogen is in group 15, so it brings 5. Every Lewis structure starts with this total. You can’t create or lose any.',
+      overlay(sim,ctx,LH,k){tag(ctx,'1 bond = 1 shared pair = 2 e⁻',280,300,k,{s:12,hi:true});lwCard(ctx,k,[['Budget',700],'N: 5 + N: 5 = 10 electrons',['8 still to place',700,12.5,'#c8102e']],LH);} },
+    { key: 'single', title: 'Try a single bond', set: { mol: 'N2' }, fresh: true, pause: true, run(sim){chAct(sim,'outer');},
+      see: 'Lone pairs added until each N has 8 around it. Both rings turn green, but the budget turns red: this uses 14 electrons, and N₂ only has 10.',
+      why: 'With only one shared pair, each N needs 3 lone pairs (6 electrons) of its own. That is 2 + 6 + 6 = 14. Four electrons too many, so a single bond can’t work.',
+      overlay(sim,ctx,LH,k){lwCard(ctx,k,[['Single bond needs',700],'2 shared + 6 + 6 lone = 14',['Only 10 exist ✗',800,12.5,'#c8102e']],LH);} },
+    { key: 'triple', title: 'Share more: a triple bond', set: { mol: 'N2' }, fresh: true, pause: true, run(sim){chAct(sim,'answer');},
+      see: 'N≡N: three shared pairs between the atoms and one lone pair on each. Both rings are green and the budget is exactly 10.',
+      why: 'Shared electrons count for <b>both</b> atoms. Each N has 6 shared + 2 lone = 8, using only 6 + 2 + 2 = 10 electrons. Three pairs between two atoms make one of the strongest bonds known, which is why the nitrogen in air hardly reacts.',
+      overlay(sim,ctx,LH,k){tag(ctx,'3 shared pairs = 6 e⁻',280,300,k,{s:12,hi:true});lwCard(ctx,k,[['Each N counts',700],'6 shared + 2 lone = 8 ✓','Total used: 6 + 2 + 2 = 10 ✓'],LH);} },
+    { key: 'water', title: 'Water: lone pairs and hydrogen', set: { mol: 'H2O' }, fresh: true, pause: true, run(sim){chAct(sim,'answer');},
+      see: 'H₂O: 1 + 1 + 6 = 8 valence electrons. Oxygen shares one pair with each H and keeps two lone pairs.',
+      why: 'Hydrogen is full with just 2 electrons, so it only ever makes one bond. Oxygen ends with 4 shared + 4 lone = 8. Those two lone pairs will matter next: they push water into a bent shape.',
+      overlay(sim,ctx,LH,k){lwCard(ctx,k,[['H₂O',700],'Budget: 1 + 1 + 6 = 8','H is full at 2 (one bond)','O: 4 shared + 4 lone = 8'],LH);} },
+    { key: 'co2', title: 'Carbon dioxide: two double bonds', set: { mol: 'CO2' }, fresh: true, pause: true, run(sim){chAct(sim,'answer');},
+      see: 'CO₂: 4 + 6 + 6 = 16 electrons. Carbon sits in the middle with a double bond to each oxygen and no lone pairs.',
+      why: 'With single bonds, carbon would have only 4. Moving one lone pair from each O into its bond gives carbon 8 and keeps each O at 8. No lone pairs on carbon, so (next tool) CO₂ comes out straight.',
+      overlay(sim,ctx,LH,k){lwCard(ctx,k,[['CO₂',700],'Budget: 4 + 6 + 6 = 16','C: 4 shared pairs = 8','Each O: 4 shared + 4 lone = 8'],LH);} },
+    { lvl: 'honors', key: 'resonance', title: 'Resonance: the nitrate ion', set: { mol: 'NO3' }, fresh: true, pause: true, run(sim){chAct(sim,'answer');clearInterval(sim._chR);sim._chR=setInterval(()=>{if(sim.lnKey!=='resonance'||!sim.tour||!sim.tour.on){clearInterval(sim._chR);return;}chAct(sim,'res');},2200);},
+      see: 'NO₃⁻ has 5 + 18 + 1 = 24 electrons. Watch the double bond jump between the three oxygens: three resonance structures.',
+      why: 'No single drawing is right. The real ion is a blend: each N–O bond is the same length, about one and a third bonds. The extra electron (the − charge) is shared over all three oxygens, which makes the ion more stable.',
+      overlay(sim,ctx,LH,k){lwCard(ctx,k,[['NO₃⁻: 24 electrons',700],'3 equivalent structures','Real bonds: all the same length','Bond order 4 ÷ 3 ≈ 1.33'],LH);} },
+    { lvl: 'ap', key: 'expanded', title: 'More than 8: SF₄', set: { mol: 'SF4' }, fresh: true, pause: true, run(sim){chAct(sim,'answer');},
+      see: 'SF₄ has 6 + 4 × 7 = 34 electrons. After four S–F bonds and full shells on each F, one lone pair is left over, and it goes on sulfur.',
+      why: 'Sulfur is in period 3, so it has room for more than 8 around it: here 8 shared + 2 lone = 10. Atoms in period 2 (C, N, O, F) never exceed 8. Check formal charges: all are zero.',
+      overlay(sim,ctx,LH,k){lwCard(ctx,k,[['SF₄: 34 electrons',700],'4 bonds + 3 lone pairs × 4 F = 32','2 left → one lone pair on S',['S holds 10: period 3 can',700,12.5,'#c8102e']],LH);} }
+  ],
+  useIt: [
+    { do: 'On hot summer afternoons when Denver posts an ozone alert, move hard runs and practices to the morning.',
+      why: 'Ground-level ozone, O₃, forms when exhaust gases react in sunlight. Its resonance structure leaves an oxygen ready to react, and it irritates your lungs. Ozone is worst in the afternoon and early evening, so the EPA’s AirNow says to plan outdoor activity for the morning (EPA AirNow).' },
+    { do: 'Reseal an opened bag of chips tightly, or move them to an airtight container.',
+      why: 'Sealed bags are filled with nitrogen gas, N₂. Its triple bond makes it so unreactive that it leaves the oils in the chips alone. Once you open the bag, oxygen from the air gets in and slowly reacts with those oils, and the chips go stale.' }
+  ],
+  tryIt: [
+    { title: 'electron budget with candy (10 minutes)',
+      steps: ['Use small candies or coins as electrons and paper circles as atoms.', 'Build N₂ with 10 pieces: try a single bond first, then a double, then a triple.', 'Count around each atom, and remember that pieces between two atoms count for both.'],
+      look: 'Only the triple bond lets both nitrogens count 8 with exactly 10 pieces. Then try H₂O with 8 pieces and CO₂ with 16.' }
+  ]
+},
+
+vsepr: {
+  goals: {
+    bio: ['Why electron groups around an atom spread as far apart as they can', 'How lone pairs bend a molecule', 'Why water is bent and carbon dioxide is straight', 'How to name a shape from its count of atoms and lone pairs'],
+    honors: ['How to name a shape from its count of atoms and lone pairs', 'The difference between electron-domain geometry and molecular shape', 'Why lone pairs squeeze bond angles below 109.5°', 'Why a double bond counts as one electron domain'],
+    ap: ['How to predict shapes with 5 and 6 electron domains', 'Why lone pairs go in equatorial positions', 'How bond angles change with lone pairs, using real data']
+  },
+  matters: 'A molecule’s shape decides almost everything about it: whether it is polar, whether it dissolves in water, how it smells and how a drug fits into the protein it acts on. Water’s bend is why it dissolves salt and heats in a microwave.',
+  startKey: 'start', startRun: true,
+  startOverlay(sim,ctx,LH,k){if(sim.p.mode!=='real'||sim.p.mol!=='H2O')BioLab.setValues(sim,{mode:'real',mol:'H2O'});ckCard(ctx,k,[['Electron domains',700],'Each bond (single, double or triple)','and each lone pair is one domain.','Domains push each other apart.'],20,320,260);},
+  steps: [
+    { key: 'tetra', title: 'Four domains: as far apart as possible', set: { mode: 'model', nb: 4, nl: 0 }, fresh: true, speed: 1,
+      see: 'Four bonds around a central atom, spinning so you see it from every side. Each angle is 109.5°, not 90°.',
+      why: 'Electron domains are all negative, so they repel. Flat on paper they could only be 90° apart, but in 3D they reach 109.5° by pointing to the corners of a tetrahedron. That is methane, CH₄.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['4 bonds, 0 lone pairs',700],'Tetrahedral, 109.5°','Example: CH₄, methane'],20,320,240);} },
+    { key: 'pyramid', title: 'Swap one bond for a lone pair', set: { mode: 'model', nb: 3, nl: 1 }, fresh: true, speed: 1,
+      see: 'One of the four domains is now a lone pair (the yellow lobe). You still have 4 domains, but only 3 atoms: a trigonal pyramid, like ammonia, NH₃.',
+      why: 'The shape is named by where the atoms are, not the lone pair. The lone pair is held by only one nucleus, so it spreads out more and pushes the three bonds a little closer together: 107° instead of 109.5°.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['3 bonds, 1 lone pair',700],'Trigonal pyramidal, about 107°','Example: NH₃, ammonia'],20,320,240);} },
+    { key: 'bent', title: 'Two lone pairs: bent', set: { mode: 'model', nb: 2, nl: 2 }, fresh: true, speed: 1,
+      see: 'Two bonds and two lone pairs. The two atoms sit at an angle: bent, like water.',
+      why: 'Water’s oxygen has 4 domains (2 bonds, 2 lone pairs from its Lewis structure), so they spread like a tetrahedron. You only see the 2 hydrogens, so the molecule looks bent. Two lone pairs squeeze harder: 104.5°.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['2 bonds, 2 lone pairs',700],['Bent, 104.5°',700,12.5,'#c8102e'],'Example: H₂O, water'],20,320,240);} },
+    { key: 'linear', title: 'Carbon dioxide: straight', set: { mode: 'model', nb: 2, nl: 0, btype: 2 }, fresh: true, speed: 1,
+      see: 'Two double bonds and no lone pairs on the central atom: the atoms point opposite ways, 180° apart. A straight line, like CO₂.',
+      why: 'A double bond holds 4 electrons, but they sit in the same region between the two atoms, so it counts as one domain. Two domains get as far apart as possible by pointing in opposite directions. That answers the question: CO₂ is straight, water is bent.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['2 double bonds, 0 lone pairs',700],['Linear, 180°',700,12.5,'#c8102e'],'Example: CO₂'],20,320,240);} },
+    { key: 'real', title: 'Real molecules: each lone pair squeezes more', set: { mode: 'real', mol: 'CH4' }, fresh: true, speed: 1, run(sim){chCycle(sim,'real','mol',['CH4','NH3','H2O'],2800);},
+      see: 'Real molecules, one after another: methane, ammonia, water. Watch the angle label.',
+      why: 'All three have 4 electron domains around the central atom. Each lone pair added takes more room and squeezes the bonds closer: 109.5°, then 106.7°, then 104.5°.',
+      overlay(sim,ctx,LH,k){const m=sim.p.mol;ckCard(ctx,k,[['4 domains each',700],['CH₄: 0 lone pairs, 109.5°',m==='CH4'?700:500,12.5,m==='CH4'?'#c8102e':null],['NH₃: 1 lone pair, 106.7°',m==='NH3'?700:500,12.5,m==='NH3'?'#c8102e':null],['H₂O: 2 lone pairs, 104.5°',m==='H2O'?700:500,12.5,m==='H2O'?'#c8102e':null]],20,300,250);} },
+    { lvl: 'honors', key: 'ghost', title: 'Domain geometry vs shape', set: { mode: 'model', nb: 2, nl: 2, ghost: true }, fresh: true, speed: 1,
+      see: 'Water again, with faint sticks showing where ideal 109.5° bonds would be.',
+      why: 'Electron-domain geometry counts all 4 domains: tetrahedral. Molecular geometry counts only atoms: bent. On a test, name both. The real bonds sit inside the faint ones because the lone pairs push them together.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Water',700],'Domain geometry: tetrahedral','Molecular shape: bent','Faint sticks: ideal 109.5°'],20,320,250);} },
+    { lvl: 'ap', key: 'seesaw', title: 'Five domains: lone pairs go equatorial', set: { mode: 'model', nb: 4, nl: 1 }, fresh: true, speed: 1,
+      see: 'Four bonds and one lone pair: 5 domains in a trigonal bipyramid. The lone pair sits on the equator, giving a seesaw shape, like SF₄.',
+      why: 'A lone pair on the equator has only two neighbors at 90°; on the axis it would have three. Fewer 90° repulsions means lower energy, so lone pairs always take equatorial spots first.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['4 bonds, 1 lone pair',700],'Seesaw (5 domains)','Lone pair: equatorial','Example: SF₄'],20,320,240);} }
+  ],
+  useIt: [
+    { do: 'Stir microwaved food halfway through and let it stand a few minutes before you eat it.',
+      why: 'A microwave heats food by twisting bent, polar water molecules back and forth. Water isn’t spread evenly through food, so it heats unevenly and leaves cold spots where bacteria can survive. The USDA says to stir or turn the food midway and to observe the standing time, when cooking continues (USDA FSIS).' },
+    { do: 'Don’t heat plain water in a clean cup in the microwave for a long time. Put a wooden stir stick in it, or heat it on the stove.',
+      why: 'Water heated without anything to start bubbles can go past its boiling point without boiling. A small bump, like picking up the cup or adding instant coffee, can make it erupt. The FDA has reports of serious burns to people’s hands and faces from this (FDA).' }
+  ],
+  tryIt: [
+    { title: 'balloon shapes (5 minutes)',
+      steps: ['Blow up four balloons the same size and twist their knots together.', 'Let go: they settle on their own. Look at the shape they make.', 'Try two balloons, then three, then make one balloon bigger to act as a lone pair.'],
+      look: 'Four balloons point to the corners of a tetrahedron, not a flat cross; two point opposite ways; three make a flat triangle. A bigger balloon squeezes the others together, just like a lone pair.' }
+  ]
+},
+
+polarity: {
+  goals: {
+    bio: ['What electronegativity is: how hard an atom pulls on shared electrons', 'Why unequal sharing makes partial charges, δ+ and δ−', 'How a molecule’s shape decides whether it is polar overall', 'Why a charged balloon bends water but not hexane'],
+    honors: ['How ΔEN sorts bonds into nonpolar, polar and ionic', 'How bond dipoles add like arrows', 'Why polar bonds can make a nonpolar molecule', 'Why a stream bends toward both + and − charges'],
+    ap: ['How to justify polarity from shape in an AP free response', 'How measured dipole moments compare with the ΔEN picture']
+  },
+  matters: 'Polarity decides what dissolves in what (“like dissolves like”), why oil and water separate, how soap cleans and why water has such a high boiling point. It comes straight from shape and electronegativity.',
+  startKey: 'start', startRun: true,
+  startOverlay(sim,ctx,LH,k){if(sim.p.mode!=='stream'){BioLab.setValues(sim,{mode:'stream',liquid:'water',rod:'neg',dist:3});}ckCard(ctx,k,[['A charged rod 3 cm away',700],'Water: does the stream bend?','Hexane: does it bend?','+ rod or − rod: does it matter?'],20,60,280);},
+  steps: [
+    { key: 'equal', title: 'Equal sharing', set: { mode: 'bond', a: 'H', b: 'H' }, fresh: true, speed: 1,
+      see: 'Two hydrogen atoms share a pair of electrons (the yellow dots). The electron cloud is the same on both sides.',
+      why: 'Both atoms pull on the shared pair equally hard: their electronegativity is the same (2.20). Equal sharing means no charged ends. The bond is nonpolar.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['H–H',700],'EN 2.20 vs 2.20','ΔEN = 0: nonpolar'],575,34,215);} },
+    { key: 'unequal', title: 'Unequal sharing', set: { mode: 'bond', a: 'H', b: 'Cl' }, fresh: true, speed: 1,
+      see: 'Hydrogen and chlorine. The shared pair sits closer to Cl, and the cloud is red (negative) on the Cl side. Cl is δ−; H is δ+.',
+      why: 'Chlorine’s electronegativity (3.16) is higher than hydrogen’s (2.20), so it pulls the shared electrons toward itself. Each end gets a <b>partial</b> charge, written δ. The purple arrow, a bond dipole, points toward the negative end.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['H–Cl',700],'EN 2.20 vs 3.16','ΔEN = 0.96: polar covalent'],575,34,215);} },
+    { key: 'ionic', title: 'Too unequal: ionic', set: { mode: 'bond', a: 'Na', b: 'Cl' }, fresh: true, speed: 1,
+      see: 'Sodium and chlorine. The marker on the ΔEN bar jumps into the ionic zone.',
+      why: 'Na (0.93) and Cl (3.16) differ by 2.23. Chlorine pulls so much harder that it takes the electron outright: Na⁺ and Cl⁻ ions, not a shared pair. Below 0.4 bonds are nonpolar, up to about 1.8 polar, above that ionic.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Na–Cl',700],'EN 0.93 vs 3.16',['ΔEN = 2.23: ionic',700,12.5,'#c8102e']],575,34,215);} },
+    { key: 'water', title: 'Water: the dipoles add up', set: { mode: 'mol', mol: 'H2O', field: false }, fresh: true, speed: 1,
+      see: 'A water molecule turning in 3D. Each O–H bond has a blue dipole arrow pointing toward O. The big purple arrow is their sum: the molecule’s net dipole.',
+      why: 'Because water is bent (the last tool), its two bond dipoles both point partly “up” toward O. They add instead of cancelling, so the O side is negative and the H side positive. Water is polar.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['H₂O',700],'Polar bonds + bent shape',['→ polar molecule',700,12.5,'#c8102e']],560,120,228);} },
+    { key: 'co2', title: 'Carbon dioxide: they cancel', set: { mode: 'mol', mol: 'CO2', field: false }, fresh: true, speed: 1,
+      see: 'CO₂: two C=O bonds, each very polar. Look for the net dipole arrow.',
+      why: 'The two bond dipoles are equal and point in exactly opposite directions, because CO₂ is straight. They cancel, so there is no net dipole. Polar bonds, nonpolar molecule: shape decides.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['CO₂',700],'Polar bonds + straight shape',['→ cancel: nonpolar',700,12.5,'#c8102e']],560,120,228);} },
+    { key: 'field', title: 'Line them up', set: { mode: 'mol', mol: 'H2O', field: true }, fresh: true, speed: 1,
+      see: 'Charged plates switched on, + on one side and − on the other. The water molecule swings its δ− oxygen toward the + plate and stops tumbling.',
+      why: 'A polar molecule has a negative end and a positive end, so an electric field can grab it and turn it. A microwave oven does this billions of times a second, twisting water molecules back and forth, and that motion heats your food.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Field on',700],'Polar water turns to line up'],540,120,200);} },
+    { key: 'stream', title: 'Bend a stream of water', set: { mode: 'stream', liquid: 'water', rod: 'neg', dist: 3 }, fresh: true, speed: 1,
+      see: 'A thin stream of water falls past a negatively charged rod 3 cm away. The stream bends toward the rod: 1.5 cm at the bottom. The circle zooms in on the molecules.',
+      why: 'Water molecules in the stream turn their δ+ hydrogen ends toward the − rod, and the near end gets pulled harder than the far end is pushed. The whole stream leans toward the rod.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Water, − rod, 3 cm',700],['Bends 1.5 cm toward the rod',700,12.5,'#c8102e']],20,60,280);} },
+    { key: 'hexane', title: 'Now hexane', set: { mode: 'stream', liquid: 'hexane', rod: 'neg', dist: 3 }, fresh: true, speed: 1,
+      see: 'Same rod, same distance, but the buret holds hexane, a gasoline ingredient. The stream falls almost straight.',
+      why: 'Hexane is made only of C and H, whose electronegativities are close, and its shape is balanced. It has no charged ends for the rod to pull on, so it bends only about 0.1 cm.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Hexane, − rod, 3 cm',700],'Bends about 0.1 cm','Nonpolar: nothing to grab'],20,60,280);} },
+    { lvl: 'honors', key: 'pos', title: 'A + rod works too', set: { mode: 'stream', liquid: 'water', rod: 'pos', dist: 3 }, fresh: true, speed: 1,
+      see: 'Water again, with a positively charged rod. It still bends toward the rod, by the same 1.5 cm.',
+      why: 'The molecules simply turn the other way: now their δ− oxygen ends face the + rod. Whichever charge the rod has, the nearer end is the opposite charge, so the attraction always wins.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Water, + rod, 3 cm',700],['Still bends 1.5 cm toward it',700,12.5,'#c8102e'],'δ− ends now face the rod'],20,60,280);} },
+    { lvl: 'ap', key: 'debye', title: 'Measured dipole moments', set: { mode: 'mol', mol: 'NH3', field: false }, fresh: true, speed: 1,
+      see: 'Ammonia, NH₃: three polar N–H bonds in a pyramid, so they add to a net dipole toward N.',
+      why: 'The arrow model uses ΔEN only. Real dipole moments, measured in debye (D), also depend on bond length and lone pairs: H₂O 1.85 D, NH₃ 1.47 D, HCl 1.08 D. For an FRQ, justify polarity with both the bond dipoles and the shape.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Measured dipoles',700],'H₂O 1.85 D · NH₃ 1.47 D','HCl 1.08 D · CO₂ 0 D'],560,120,228);} }
+  ],
+  useIt: [
+    { do: 'After swimming or toweling off, put sunscreen back on, even if the bottle says “water resistant”.',
+      why: 'Sunscreen’s filters are mostly oily, nonpolar compounds, so they don’t dissolve in water, which is why they stay on at all. But water and towels still wear them off. U.S. rules only allow “water resistant (40 minutes)” or “(80 minutes)” on a label, and dermatologists say to reapply after that time and after toweling (AAD, FDA labeling).' },
+    { do: 'Wash greasy pans and oily hands with soap, not just water.',
+      why: 'Grease is nonpolar, so polar water slides right past it. Soap molecules have a polar end that holds water and a long nonpolar tail that dissolves into the grease, so the rinse water can carry the grease away.' },
+    { do: 'To get sticker goo or tar off something, rub it with a little cooking oil first, then wash.',
+      why: 'Like dissolves like. The sticky stuff is nonpolar, so a nonpolar oil softens and dissolves it, where water does nothing. Soap then removes the oil.' }
+  ],
+  tryIt: [
+    { title: 'bend a stream (5 minutes)',
+      steps: ['Turn a faucet on to a very thin, steady stream.', 'Rub a balloon or a plastic comb on your hair for 10 seconds.', 'Bring it close to the stream, without touching it. Then try it with the other end of the comb or with a different charged object.'],
+      look: 'The stream bends toward the balloon every time. You are pulling on the charged ends of polar water molecules, exactly like this lab.' }
+  ]
+}
+});
+
+BioLab.addReview({
+lewis: {
+  questions: [
+  {id:'n2count',kind:'test',lvl:'bio',
+    q:'How many valence electrons do you have to place in a Lewis structure of N₂?',
+    num:{ans:10,tol:0,unit:'electrons'},
+    steps:['Nitrogen is in group 15, so each atom brings 5 valence electrons.','2 × 5 = 10.','Every structure you draw must use exactly 10, no more and no less.'],
+    lab:{set:{mol:'N2'},look:'Read the electron budget at the top right.'}},
+  {id:'triple',kind:'test',lvl:'bio',
+    q:'Why does N₂ need a triple bond instead of a single bond?',
+    choices:['With a single bond, giving both atoms 8 would take 14 electrons, but N₂ only has 10; sharing three pairs lets both count 8 with just 10','Nitrogen atoms are very large','Triple bonds are always the most stable choice','A single bond would leave too many electrons over'],correct:0,
+    steps:['A single bond plus 3 lone pairs on each N uses 2 + 6 + 6 = 14.','Shared electrons count for both atoms, so sharing more saves electrons.','Triple bond: 6 shared + 1 lone pair each = 10 electrons, and each N counts 8.'],
+    lab:{set:{mol:'N2'},act:'answer',look:'Compare the budget with the single-bond version.'}},
+  {id:'hydrogen',kind:'test',lvl:'bio',
+    q:'In H₂O, why does each hydrogen have only one bond and no lone pairs?',
+    choices:['Hydrogen’s shell is full with just 2 electrons','Hydrogen has no valence electrons','Hydrogen is too small to share','Oxygen takes all of hydrogen’s electrons'],correct:0,
+    steps:['Hydrogen only has a first shell, which holds 2 electrons.','One shared pair gives it 2: full.','So hydrogen always makes exactly one bond, and is always on the outside of a structure.'],
+    lab:{set:{mol:'H2O'},act:'answer',look:'Look at the rings around each H.'}},
+  {id:'chips',kind:'real',lvl:'bio',
+    q:'Chip bags are filled with nitrogen gas before they are sealed. Why nitrogen?',
+    choices:['N₂’s triple bond is very hard to break, so it doesn’t react with the oils the way oxygen does','Nitrogen makes the chips crunchier','Nitrogen is lighter than air, so the bag floats','Nitrogen adds flavor'],correct:0,
+    steps:['Oxygen in air reacts slowly with the oils in chips, making them taste stale.','N₂ has a triple bond, one of the strongest bonds known, so it hardly reacts with anything.','Filling the bag with N₂ pushes the oxygen out and protects the chips until you open it.']},
+  {id:'fcharge',kind:'test',lvl:'honors',
+    q:'In CO₂ drawn with two C=O double bonds, what is the formal charge on carbon?',
+    choices:['0','+2','−2','+4'],correct:0,
+    steps:['Formal charge = valence electrons − lone-pair electrons − number of bonds.','Carbon: 4 − 0 − 4 = 0.','Each oxygen: 6 − 4 − 2 = 0. All zeros, so this is the best structure.'],
+    lab:{set:{mol:'CO2',fc:true},act:'answer',look:'Read the small formal-charge labels under each atom.'}},
+  {id:'resonance',kind:'test',lvl:'honors',
+    q:'Nitrate, NO₃⁻, can be drawn three ways, with the double bond to a different O each time. What is the real ion like?',
+    choices:['A blend: all three N–O bonds are the same length, between a single and a double bond','It flips between the three structures many times a second','Only one of the three really exists','It has three double bonds'],correct:0,
+    steps:['Resonance structures differ only in where the electrons are drawn.','The real ion is the average of them, not a switch between them.','All three N–O bonds are identical, with a bond order of 4 ÷ 3 ≈ 1.33.'],
+    lab:{set:{mol:'NO3'},act:'res',look:'Step through the three resonance structures.'}},
+  {id:'expand',kind:'ap',lvl:'ap',
+    q:'Why can sulfur in SF₄ have 10 electrons around it, while oxygen never has more than 8?',
+    choices:['Sulfur is in period 3, so it has room for more electrons around it; period 2 atoms like oxygen are limited to 8','Sulfur has more protons','Fluorine gives sulfur extra electrons','Oxygen is more electronegative'],correct:0,
+    steps:['Period 2 atoms (C, N, O, F) have only s and p orbitals in their valence shell: room for 8.','Period 3 and below can hold more electrons around them.','In SF₄, sulfur has 4 bonds and 1 lone pair: 10 electrons. On an FRQ, state the period as the reason.'],
+    lab:{set:{mol:'SF4'},act:'answer',look:'Count the electrons around S.'}}
+  ]
+},
+vsepr: {
+  questions: [
+  {id:'bentwhy',kind:'test',lvl:'bio',
+    q:'Water (H₂O) is bent, but carbon dioxide (CO₂) is straight. Why?',
+    choices:['Water’s O has 2 lone pairs, so it has 4 electron domains; CO₂’s C has 2 double bonds and no lone pairs, so just 2 domains','Oxygen atoms are bigger than carbon atoms','Hydrogen atoms repel each other','Double bonds are always straight'],correct:0,
+    steps:['Count domains on the central atom: bonds and lone pairs.','Water: 2 bonds + 2 lone pairs = 4 domains, which spread like a tetrahedron. Only 2 are atoms, so it looks bent (104.5°).','CO₂: 2 double bonds = 2 domains, which point opposite ways (180°).'],
+    lab:{set:{mode:'real',mol:'H2O'},look:'Compare water with CO₂ in Real molecules.'}},
+  {id:'tetra',kind:'test',lvl:'bio',
+    q:'Methane, CH₄, has four bonds around carbon. Why are the bond angles 109.5° and not 90°?',
+    choices:['In 3D, four domains get farther apart by pointing to the corners of a tetrahedron','Carbon atoms are square','Hydrogen atoms attract each other','90° only happens in rings'],correct:0,
+    steps:['Electron domains repel each other.','Flat, the best four can do is 90° apart.','In 3D they can reach 109.5° by pointing to the corners of a tetrahedron, which is farther apart.'],
+    lab:{set:{mode:'model',nb:4,nl:0},look:'Drag the molecule to see all four angles.'}},
+  {id:'microwave',kind:'real',lvl:'bio',
+    q:'A microwave oven heats food by twisting water molecules back and forth. Why would this not work on CO₂?',
+    choices:['CO₂ is straight, so its bond dipoles cancel; it has no charged ends for the oven’s field to twist','CO₂ is a gas','CO₂ molecules are too big','CO₂ has no electrons'],correct:0,
+    steps:['The oven’s changing electric field grabs molecules with a positive end and a negative end.','Water is bent, so it has a net dipole.','CO₂ is linear, so its two dipoles cancel and the field has nothing to grab.']},
+  {id:'angle',kind:'test',lvl:'honors',
+    q:'CH₄, NH₃ and H₂O all have 4 electron domains on the central atom. Rank their bond angles from largest to smallest.',
+    choices:['CH₄ > NH₃ > H₂O','H₂O > NH₃ > CH₄','All 109.5°','NH₃ > CH₄ > H₂O'],correct:0,
+    steps:['All three start from a tetrahedral 109.5°.','Lone pairs spread out more than bonds and squeeze the bonds together.','0, 1 and 2 lone pairs: 109.5°, 106.7°, 104.5°.'],
+    lab:{set:{mode:'real',mol:'NH3'},look:'Compare the angle labels for CH₄, NH₃ and H₂O.'}},
+  {id:'seesaw',kind:'ap',lvl:'ap',
+    q:'In SF₄ (5 electron domains, 1 lone pair), the lone pair is equatorial. Which justification earns credit?',
+    choices:['An equatorial lone pair has only two 90° interactions with bonds; an axial one would have three, so equatorial minimizes repulsion','Equatorial positions are bigger','The lone pair is attracted to the fluorine atoms','Axial positions are reserved for single bonds'],correct:0,
+    steps:['Repulsions at 90° are much stronger than at 120°.','Equatorial: 2 neighbors at 90°. Axial: 3 neighbors at 90°.','Fewer 90° repulsions means lower energy, so the lone pair goes equatorial: a seesaw shape.'],
+    lab:{set:{mode:'model',nb:4,nl:1},look:'Turn the model to see where the lone pair sits.'}}
+  ]
+},
+polarity: {
+  questions: [
+  {id:'stream',kind:'test',lvl:'bio',
+    q:'A charged balloon bends a stream of water but not a stream of hexane. Why?',
+    choices:['Water molecules are polar, with charged ends the balloon can pull; hexane molecules are nonpolar','Hexane is heavier','Water conducts electricity','Hexane is charged the same way as the balloon'],correct:0,
+    steps:['Water is bent with polar O–H bonds, so it has a δ− end and a δ+ end.','The molecules turn their opposite end toward the balloon and get pulled.','Hexane has only C and H, with nearly equal electronegativity, so there is nothing to grab.'],
+    lab:{set:{mode:'stream',liquid:'hexane',rod:'neg',dist:3},look:'Compare the deflection for water and hexane.'}},
+  {id:'hcl',kind:'test',lvl:'bio',
+    q:'In H–Cl, which atom gets the partial negative charge (δ−), and why?',
+    choices:['Cl, because it has the higher electronegativity and pulls the shared pair closer','H, because it is smaller','Cl, because it has more protons than all other atoms','Neither; the electrons are shared equally'],correct:0,
+    steps:['Electronegativity: H 2.20, Cl 3.16.','The more electronegative atom pulls the shared electrons toward itself.','So Cl is δ− and H is δ+. ΔEN = 0.96: polar covalent.'],
+    lab:{set:{mode:'bond',a:'H',b:'Cl'},look:'Look at where the shared pair sits.'}},
+  {id:'co2',kind:'test',lvl:'bio',
+    q:'CO₂ has two very polar C=O bonds. Is the molecule polar?',
+    choices:['No: it is straight, so the two bond dipoles point in opposite directions and cancel','Yes: polar bonds always make a polar molecule','Yes: oxygen is more electronegative','No: carbon dioxide has no bonds'],correct:0,
+    steps:['Each C=O bond dipole points toward O.','CO₂ is linear, so the two point in exactly opposite directions.','Equal and opposite arrows cancel: no net dipole, nonpolar.'],
+    lab:{set:{mode:'mol',mol:'CO2'},look:'Look for the net dipole arrow.'}},
+  {id:'soap',kind:'real',lvl:'bio',
+    q:'Why does dish soap remove grease when water alone doesn’t?',
+    choices:['Soap has a polar end that mixes with water and a nonpolar tail that dissolves in the grease, linking the two','Soap is hotter than water','Soap is acidic and burns the grease away','Water is nonpolar'],correct:0,
+    steps:['Grease is nonpolar, and water is polar: they don’t mix (“like dissolves like”).','A soap molecule has one end of each kind.','The tails grab the grease and the heads stay in the water, so rinsing carries the grease off.']},
+  {id:'positive',kind:'test',lvl:'honors',
+    q:'A negatively charged rod bends a water stream toward it. What does a positively charged rod do?',
+    choices:['Also bends it toward the rod: the molecules turn their δ− ends to face it','Pushes it away','Nothing','Freezes it'],correct:0,
+    steps:['Polar molecules can rotate.','Near a + rod they turn their δ− oxygen end toward it.','The nearer opposite charge is pulled harder than the far end is pushed, so the stream bends toward either rod.'],
+    lab:{set:{mode:'stream',liquid:'water',rod:'pos',dist:3},look:'Compare the deflection with a + rod and a − rod.'}},
+  {id:'bf3',kind:'ap',lvl:'ap',
+    q:'BF₃ (trigonal planar) has polar B–F bonds but no net dipole, while NH₃ (trigonal pyramidal) is polar. Which justification is best?',
+    choices:['In BF₃ the three bond dipoles are 120° apart in a plane and cancel; in NH₃ the pyramid shape (from N’s lone pair) leaves a net dipole toward N','B–F bonds are nonpolar','NH₃ has more atoms','Fluorine is less electronegative than nitrogen'],correct:0,
+    steps:['Both have 3 polar bonds to the central atom.','BF₃ has no lone pair: flat, symmetric, and the dipoles cancel.','NH₃’s lone pair makes a pyramid: the dipoles all point partly toward N and add. Name both the bond dipoles and the shape.'],
+    lab:{set:{mode:'mol',mol:'BF3'},look:'Compare BF₃ with NH₃.'}}
+  ]
+}
+});
+
 })();
