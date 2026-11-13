@@ -876,4 +876,265 @@ polarity: {
 }
 });
 
+
+/* ---------- The mole, percent composition and hydrates (Nov 13, 2026): Honors Chemistry Unit 5 ---------- */
+const MOC=(ctx,k,L)=>ckCard(ctx,k,L,250,282,300);
+const PIEC=(ctx,k,L)=>ckCard(ctx,k,L,485,190,300);
+const LABC=(ctx,k,L)=>ckCard(ctx,k,L,272,224,256);
+const EMPC=(ctx,k,L)=>ckCard(ctx,k,L,420,238,360);
+const run1=(sim,ids)=>ids.forEach(id=>chAct(sim,id));
+const n2=v=>(+v).toFixed(2),n3=v=>(+v).toFixed(3),ok=v=>v!==null&&v!==''&&isFinite(+v)&&+v>0;
+const hyDone=sim=>/^Yes/.test(String(chMet(sim,'const')||''));
+
+BioLab.addLearn({
+mole: {
+  goals: {
+    bio: ['What a mole is: a counting number, like a dozen', 'How to go from grams to moles to particles, and back', 'Why equal moles weigh different amounts'],
+    honors: ['Grams ↔ moles ↔ particles with molar mass and Avogadro’s number', 'Why equal moles have different masses, and equal masses have different counts', 'Moles of gas at STP (22.4 L/mol)'],
+    ap: ['Molar mass, Avogadro’s number and dimensional analysis', 'Gas volume at STP and moles in solution (M × L)', 'Moving between every box on the road map']
+  },
+  matters: 'Atoms are far too small to count, so chemists count them by weighing. Every recipe in a chemistry lab, every medicine dose and every reaction you balance runs through this one idea.',
+  question: 'A one-ounce gold coin is 31.1 g of gold. How many gold atoms is that, and how many grams of water would hold the same number of molecules?',
+  startKey: 'hub', startRun: false,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Start here: grams',118,215,k,{s:12});tag(ctx,'Moles: the hub',400,215,k,{s:12});tag(ctx,'Particles',680,215,k,{s:12});},
+  steps: [
+    { key: 'hub', title: 'A mole is a counting number', set: { mode: 'map', sub: 'H2O', from: 'g', to: 'n', amt: 36 }, fresh: true, pause: true, focus: [290,90,220,120],
+      see: 'The road map, set to 36.0 g of water. The Moles box sits in the middle with arrows to every other box.',
+      why: 'A mole is 6.022 × 10²³ things, the way a dozen is 12. Chemists picked that number so that 1 mole of atoms weighs its atomic mass in grams. Every conversion passes through moles.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['1 mole = 6.022 × 10²³ particles',700,14],['like 1 dozen = 12 eggs'],['Avogadro’s number']]);} },
+    { key: 'gtomol', title: 'Grams → moles: divide by molar mass', set: { mode: 'map', sub: 'H2O', from: 'g', to: 'n', amt: 36 }, pause: true, focus: [10,40,500,170],
+      see: 'The arrow from Mass to Moles is labeled ÷ 18.02 g/mol. 36.0 g of water becomes 2.00 mol.',
+      why: 'Molar mass is grams per mole. Dividing grams by grams-per-mole leaves moles: 36.0 g ÷ 18.02 g/mol = 2.00 mol.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['36.0 g ÷ 18.02 g/mol',700,14],['= '+chMet(sim,'mol'),700,14,RED],['units: g ÷ (g/mol) = mol']]);} },
+    { key: 'molar', title: 'Where 18.02 g/mol comes from', set: { mode: 'map', sub: 'H2O', from: 'g', to: 'n', amt: 36 }, pause: true, focus: [8,90,220,120],
+      see: 'Look at the Mass box and the 18.02 g/mol on its arrow. The card adds it up from the periodic table.',
+      why: 'Add the atomic masses: H₂O has 2 H (1.008 each) and 1 O (16.00). 2(1.008) + 16.00 = 18.02 g/mol.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['Molar mass of H₂O',700,14],['2 × 1.008 (H) + 16.00 (O)'],['= 18.02 g/mol',700,14,RED]]);} },
+    { key: 'tonum', title: 'Moles → particles: × Avogadro’s number', set: { mode: 'map', sub: 'H2O', from: 'g', to: 'n', amt: 36 }, pause: true, focus: [290,40,500,170],
+      see: 'The arrow from Moles to Particles is × 6.022 × 10²³. 2.00 mol of water is 1.20 × 10²⁴ molecules.',
+      why: 'Each mole is 6.022 × 10²³ particles, so multiply: 2.00 × 6.022 × 10²³ = 1.20 × 10²⁴.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['2.00 mol × 6.022 × 10²³',700,14],['= '+chMet(sim,'n'),700,14,RED]]);} },
+    { key: 'gold', title: 'The gold coin', set: { mode: 'map', sub: 'Au', from: 'g', to: 'n', amt: 31.1 }, fresh: true, pause: true,
+      see: 'The map now holds the 31.1 g gold coin: 0.158 mol, or 9.51 × 10²² gold atoms.',
+      why: 'Gold’s molar mass is 196.97 g/mol, so 31.1 ÷ 196.97 = 0.158 mol. The same 0.158 mol of water weighs only 0.158 × 18.02 = 2.84 g, about half a teaspoon: each gold atom is about 11 times heavier than a water molecule.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['Gold: '+chMet(sim,'mol')+' = '+chMet(sim,'n'),700,13],['Same count of water molecules:'],['0.158 mol × 18.02 g/mol = 2.84 g',700,14,RED]]);} },
+    { key: 'samemol', title: 'Same moles, different masses', set: { mode: 'scale', basis: 'mol', nmol: 1 }, fresh: true, pause: true,
+      see: 'Five pans each hold exactly 1 mol: carbon, water, salt, gold and sugar. Each has 6.02 × 10²³ particles, but the balances read 12.01 g up to 342.3 g.',
+      why: 'Same count, different particle masses. A sugar molecule (C₁₂H₂₂O₁₁) is far heavier than a carbon atom, so a mole of sugar is a far bigger pile.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Every pan: 1 mol = 6.02 × 10²³ particles',700,14],['Heavier particles → heavier pan']],20,70,400);} },
+    { key: 'samemass', title: 'Same mass, different counts', set: { mode: 'scale', basis: 'g', gmass: 20 }, fresh: true, pause: true,
+      see: 'Now every pan holds 20 g. The particle counts under the pans are no longer equal: carbon has the most and sugar the fewest.',
+      why: 'Lighter particles means more of them fit in the same mass: 20 g of carbon is 1.67 mol, but 20 g of gold is only 0.10 mol. That is why reactions are planned in moles, not grams.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['Every pan: 20 g',700,14],['Carbon: 20 ÷ 12.01 = 1.67 mol (most particles)'],['Gold: 20 ÷ 196.97 = 0.10 mol']],20,70,400);} },
+    { key: 'big', title: 'How big is a mole?', set: { mode: 'big', obj: 'water' }, fresh: true, pause: true,
+      see: 'A power-of-ten ladder puts a mole (6.02 × 10²³) far past the stars in the Milky Way and the grains of sand on Earth’s beaches. Below, a mole of water is only 18 mL, about one big gulp.',
+      why: 'The number is enormous because molecules are tiny: one water molecule is about 0.28 nm across. A huge count of tiny things still makes a small amount.' },
+    { key: 'stp', lvl: 'honors', title: 'Gas at STP: 22.4 L per mole', set: { mode: 'map', sub: 'CO2', from: 'mol', to: 'L', amt: 2 }, fresh: true, pause: true,
+      see: 'The map starts from 2.00 mol of CO₂ and converts to gas volume: 44.8 L.',
+      why: 'At STP (0 °C and 1 atm) one mole of any gas fills about 22.4 L, whatever the gas, because gas particles are far apart and their own size hardly matters.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['2.00 mol × 22.4 L/mol',700,14],['= 44.8 L at STP',700,14,RED]]);} },
+    { key: 'soln', lvl: 'ap', title: 'Moles in solution: M × L', set: { mode: 'map', sub: 'NaCl', from: 'V', to: 'g', amt: 0.5, molar: 1 }, fresh: true, pause: true,
+      see: 'Start from 0.500 L of 1.00 M salt water and convert to grams of NaCl: 29.2 g.',
+      why: 'Molarity is moles per liter, so moles = M × L = 1.00 × 0.500 = 0.500 mol, and 0.500 mol × 58.44 g/mol = 29.2 g.',
+      overlay(sim,ctx,LH,k){MOC(ctx,k,[['0.500 L × 1.00 mol/L = 0.500 mol',700,13],['0.500 mol × 58.44 g/mol = 29.2 g',700,13,RED]]);} }
+  ],
+  useIt: [
+    { do: 'In lab, weigh out reactants using molar mass instead of trying to measure “equal amounts”.',
+      why: 'Reactions combine particles in fixed ratios. 20 g of carbon and 20 g of gold are very different numbers of atoms, as the balances showed.' },
+    { do: 'When you scale a recipe or a lab up or down, scale every ingredient by the same factor.',
+      why: 'The ratio of particles is what matters. Doubling one ingredient alone leaves the extra unused, like an excess reactant.' },
+    { do: 'Before a calculation, estimate: is my answer a sip, a spoonful or a bucket?',
+      why: 'A mole of a small molecule is a handful: 18 mL of water, 58 g of salt. If your answer says 10²⁴ grams, you multiplied where you should have divided.' }
+  ],
+  tryIt: [
+    { title: 'count rice by weighing (10 minutes)',
+      steps: ['Count out exactly 100 grains of rice and weigh them on a kitchen scale (in grams).', 'Weigh a full cup of the same rice.', 'Divide: cup mass ÷ (mass of 100 grains ÷ 100) = grains in the cup.'],
+      look: 'You counted thousands of grains without counting them, just by knowing the mass of one. Chemists do the same with atoms, using molar mass.' }
+  ]
+},
+
+percentcomp: {
+  goals: {
+    bio: ['What percent composition means: each element’s share of the mass', 'Why the lightest atoms can be most of the atoms but little of the mass', 'How the magnesium oxide lab finds a formula by weighing'],
+    honors: ['Percent composition from a formula', 'Empirical formula from percents or masses', 'Molecular formula from the empirical formula and molar mass'],
+    ap: ['Mass data to mole ratios', 'Empirical and molecular formulas', 'Combustion analysis and oxygen by difference']
+  },
+  matters: 'Nutrition labels, fertilizer bags and supplement bottles all list elements by their share of the mass. The same math lets a chemist name an unknown compound from a few weighings.',
+  question: 'Nutrition labels list sodium, not salt. If a recipe uses 10 g of table salt, NaCl, how many grams of sodium is that? Would 10 g of baking soda, NaHCO₃, add more sodium or less?',
+  startKey: 'water', startRun: false,
+  steps: [
+    { key: 'water', title: 'Most of the atoms, little of the mass', set: { mode: 'pie', cmp: 'H2O', smass: 10 }, fresh: true, pause: true, focus: [150,70,330,330],
+      see: 'Water’s pie: oxygen takes 88.8% of the mass and hydrogen only 11.2%, even though 2 of the 3 atoms are hydrogen. Compare the two bars on the right.',
+      why: 'An oxygen atom (16.00) outweighs two hydrogen atoms (2 × 1.008 = 2.016) about 8 to 1. Percent composition is about mass, not about counting atoms.',
+      overlay(sim,ctx,LH,k){PIEC(ctx,k,[['H₂O = 18.02 g/mol',700,14],['O: 16.00 ÷ 18.02 = 88.8%'],['H: 2.016 ÷ 18.02 = 11.2%']]);} },
+    { key: 'salt', title: 'How much sodium is in salt?', set: { mode: 'pie', cmp: 'NaCl', smass: 10 }, fresh: true, pause: true,
+      see: 'Table salt’s pie: sodium is 39.3% of the mass, so the 10 g sample holds 3.93 g of sodium.',
+      why: 'Na is 22.99 and Cl is 35.45, so NaCl is 58.44 g/mol and sodium’s share is 22.99 ÷ 58.44 = 39.3%. Multiply by the sample: 10 g × 0.393 = 3.93 g.',
+      overlay(sim,ctx,LH,k){PIEC(ctx,k,[['Na: 22.99 ÷ 58.44 = 39.3%',700,14],['10 g of salt × 0.393 = 3.93 g sodium',700,13,RED]]);} },
+    { key: 'soda', title: 'Baking soda has less sodium', set: { mode: 'pie', cmp: 'NaHCO3', smass: 10 }, fresh: true, pause: true,
+      see: 'Baking soda’s pie: sodium is only 27.4%, so 10 g holds 2.74 g of sodium.',
+      why: 'Same one sodium per formula, but the rest (HCO₃ = 61.0) is heavier than chlorine (35.45), so sodium gets a smaller share of the mass.',
+      overlay(sim,ctx,LH,k){PIEC(ctx,k,[['NaHCO₃ = 84.01 g/mol',700,14],['Na: 22.99 ÷ 84.01 = 27.4%'],['10 g → 2.74 g sodium (less than salt)',700,13,RED]]);} },
+    { key: 'mgadd', title: 'The magnesium oxide lab: weigh', set: { mode: 'mgo' }, fresh: true, speed: 1, focus: [540,240,240,200], run(sim){run1(sim,['empty','add']);},
+      see: 'An empty crucible and lid are weighed, then a coil of magnesium ribbon is added and weighed again.',
+      why: 'The difference between the two readings is the exact mass of magnesium, about 0.3 g. Everything later is found by subtraction.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['Step 1: mass of Mg',700,14],['(crucible + Mg) − (empty crucible)']]);} },
+    { key: 'burn', title: 'Burn it: oxygen joins the magnesium', set: { mode: 'mgo' }, speed: 0.5, focus: [[90,190,190,250],[300,50,220,220]], run(sim){run1(sim,['heat']);},
+      see: 'The crucible heats with its lid slightly open. In the circle, red oxygen joins the green magnesium.',
+      why: 'Magnesium combines with oxygen from the air: 2Mg + O₂ → 2MgO. The lid lets air in but keeps the white MgO smoke from escaping.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['2Mg + O₂ → 2MgO',700,14],['Oxygen comes from the air.']]);} },
+    { key: 'mgweigh', title: 'Weigh the product: the extra mass is oxygen', set: { mode: 'mgo' }, speed: 3, focus: [540,240,240,200], run(sim){run1(sim,['heat']);if(sim.p.water)chAct(sim,'waterA');chAct(sim,'weigh');},
+      see: 'After cooling, the crucible is heavier than before heating. The card turns the masses into moles.',
+      why: 'The gain is the mass of oxygen that joined. Change both masses to moles and divide: about 1 mol O per mol Mg, so the formula is MgO.',
+      overlay(sim,ctx,LH,k){const r=chMet(sim,'ratio'),a=chMet(sim,'mMg'),o=chMet(sim,'mO');LABC(ctx,k,ok(r)&&ok(o)?[['Mg '+n3(a)+' g, O gained '+n3(o)+' g',700,12.5],['mol O ÷ mol Mg = '+n2(r),700,14,RED],['≈ 1 : 1 → MgO']]:[['Heating, cooling, weighing…',700,14],['The ratio appears after the last weighing.']]);} },
+    { key: 'emp', title: 'Percents → moles', set: { mode: 'emp', unk: 'glucose', given: 'pct' }, fresh: true, pause: true, focus: [0,40,800,300], run(sim){sim.st.step=3;},
+      see: 'Mystery compound A is 40.00% C, 6.71% H and 53.29% O. The table turns those percents into moles, then divides each by the smallest.',
+      why: 'Assume 100 g, so the percents become grams. Divide each by its atomic mass to get moles, then divide by the smallest to get the simplest ratio.',
+      overlay(sim,ctx,LH,k){EMPC(ctx,k,[['Assume 100 g: 40.00 g C, 6.71 g H, 53.29 g O',700,12.5],['÷ atomic mass → moles; ÷ smallest → ratio']]);} },
+    { key: 'ratio', title: 'The simplest ratio: CH₂O', set: { mode: 'emp', unk: 'glucose', given: 'pct' }, pause: true, focus: [0,40,800,420], run(sim){sim.st.step=4;},
+      see: 'The ratio row reads 1 : 2 : 1, and the empirical formula CH₂O appears.',
+      why: 'An empirical formula is the smallest whole-number ratio of atoms. It doesn’t yet say how many of each are in one molecule.',
+      overlay(sim,ctx,LH,k){EMPC(ctx,k,[['C 1 : H 2 : O 1',700,14],['Empirical formula: CH₂O',700,14,RED]]);} },
+    { key: 'molec', lvl: 'honors', title: 'The molecular formula: C₆H₁₂O₆', set: { mode: 'emp', unk: 'glucose', given: 'pct' }, pause: true, focus: [0,40,800,420], run(sim){sim.st.step=5;},
+      see: 'Using the molar mass, 180.2 g/mol, the molecular formula C₆H₁₂O₆ appears beside the empirical one.',
+      why: 'CH₂O weighs 30.03 g/mol. 180.2 ÷ 30.03 = 6, so multiply every subscript by 6: glucose.',
+      overlay(sim,ctx,LH,k){EMPC(ctx,k,[['180.2 ÷ 30.03 = 6',700,14],['CH₂O × 6 = C₆H₁₂O₆',700,14,RED]]);} },
+    { key: 'comb', lvl: 'ap', title: 'Combustion analysis', set: { mode: 'comb' }, fresh: true, speed: 0.6, focus: [0,40,800,420], run(sim){sim.st.burnT=0;},
+      see: 'A 0.50 g sample burns in oxygen. The water and CO₂ absorbers gain mass as the products flow through.',
+      why: 'All of the sample’s carbon ends up in CO₂ and all its hydrogen in H₂O. Oxygen is found by difference, because some oxygen in the products came from the O₂ used to burn it.',
+      overlay(sim,ctx,LH,k){EMPC(ctx,k,[['C from CO₂, H from H₂O, O by difference',700,13]]);} }
+  ],
+  useIt: [
+    { do: 'Count sodium, not salt, on food labels: 1 teaspoon of salt is about 2,300 mg of sodium.',
+      why: 'Salt is only 39% sodium by mass. The FDA’s Daily Value for sodium, 2,300 mg, is about the sodium in one teaspoon of table salt.' },
+    { do: 'Compare calcium supplements by the calcium they contain, not the tablet’s mass.',
+      why: 'Calcium carbonate is 40% calcium by mass and calcium citrate only 21%, so the same size tablet gives very different amounts. The NIH Office of Dietary Supplements lists both figures.' },
+    { do: 'Read the three numbers on a fertilizer bag as percents by mass.',
+      why: 'The first number is percent nitrogen. Ammonium nitrate, NH₄NO₃, is 35% nitrogen, so it is sold as 34-0-0.' }
+  ],
+  tryIt: [
+    { title: 'the sodium hunt (5 minutes)',
+      steps: ['Find two packaged foods at home and read the sodium (mg) per serving.', 'Divide by 2,300 mg to get the percent of a day’s limit.', 'Divide the sodium by 0.393 to find how many grams of salt that would be.'],
+      look: 'A serving of soup or chips can be a quarter of a day’s sodium. Dividing by 0.393 undoes salt’s 39.3% sodium share.' }
+  ]
+},
+
+hydrate: {
+  goals: {
+    bio: ['What a hydrate is: water built into a crystal', 'How to find the percent water by heating and weighing', 'Why you heat to constant mass'],
+    honors: ['Percent water from lab data', 'The formula of a hydrate: x = mol H₂O ÷ mol salt', 'Which lab mistakes push x up or down'],
+    ap: ['Mass data to mole ratios', 'Error analysis for each technique choice', 'Reading the mass vs. temperature curve']
+  },
+  matters: 'Drywall, Epsom salt and the humidity cards packed with electronics all hold water inside their crystals. The lab you do in class finds exactly how much, using only a balance and a burner.',
+  question: 'Epsom salt from the drugstore is MgSO₄·7H₂O: water is built right into the crystals. If you heat 2.00 g of it until the mass stops changing, how much of it leaves as water?',
+  startKey: 'crystal', startRun: false,
+  steps: [
+    { key: 'crystal', title: 'Water inside a crystal', set: { hyd: 'cu' }, fresh: true, pause: true, focus: [325,60,195,195],
+      see: 'The circle zooms into blue copper(II) sulfate pentahydrate. Each Cu²⁺ (blue) and SO₄²⁻ pair has small water molecules (red and white) built into the crystal around it.',
+      why: 'A hydrate is an ionic solid with a fixed number of water molecules per formula unit. CuSO₄·5H₂O has 5, and they make up 36.1% of its mass.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['CuSO₄·5H₂O',700,14],['5 H₂O per CuSO₄ = 36.1% water by mass']]);} },
+    { key: 'empty', title: 'Weigh the empty crucible', speed: 1, focus: [560,300,220,160], run(sim){run1(sim,['weighEmpty']);},
+      see: 'The clean, dry crucible goes on the balance and its mass is recorded.',
+      why: 'Every later reading includes the crucible, so you will subtract this number from each one.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['Reading 1: empty crucible',700,14],['Subtract it from every later reading.']]);} },
+    { key: 'add', title: 'Add the hydrate and weigh', speed: 1, focus: [560,300,220,160], run(sim){run1(sim,['add']);},
+      see: 'About 2 g of blue crystals go into the crucible, and the balance reads higher.',
+      why: 'The difference between the two readings is the exact mass of hydrate.',
+      overlay(sim,ctx,LH,k){const m=chMet(sim,'mh');LABC(ctx,k,[['Mass of hydrate',700,14],[(ok(m)?n3(m)+' g':'(crucible + crystals) − empty'),700,14,RED]]);} },
+    { key: 'heat', title: 'Heat: the water leaves', speed: 0.5, focus: [[90,230,200,230],[325,60,195,195]], run(sim){run1(sim,['heat']);},
+      see: 'The crucible heats over the burner. In the circle, water molecules break away from the ions and drift off as vapor. The ions stay.',
+      why: 'Heat breaks the attractions holding water in the crystal. Only the water leaves; the copper and sulfate ions stay behind as anhydrous CuSO₄.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['CuSO₄·5H₂O → CuSO₄ + 5H₂O(g)',700,13],['Water leaves; the salt stays.']]);} },
+    { key: 'cool', title: 'Cool in a desiccator, then weigh', speed: 0.7, focus: [[340,320,160,140],[560,300,220,160]], run(sim){run1(sim,['cool']);},
+      see: 'Tongs move the crucible into the desiccator to cool, then onto the balance. It weighs less than before heating.',
+      why: 'The desiccator keeps the dry salt from pulling water back out of the air while it cools. The mass lost is water.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['Lighter = water lost',700,14],['Cool dry, or it re-absorbs water.']]);} },
+    { key: 'constant', title: 'Repeat until constant mass', speed: 3, focus: [0,0,800,500], run(sim){run1(sim,['auto']);},
+      see: 'Heat, cool and weigh, again and again. The mass drops a lot at first, then levels off.',
+      why: 'When two weighings in a row agree within 0.005 g, all the water is gone. Stopping after one heating would leave water behind and make your percent too low.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['Heatings: '+chMet(sim,'heats'),700,14],['Constant mass? '+chMet(sim,'const')]]);} },
+    { key: 'pct', title: 'Percent water', speed: 3,
+      see: 'The card divides the water lost by the hydrate’s mass. It comes out close to the accepted 36.1%.',
+      why: '% water = mass of water lost ÷ mass of hydrate × 100.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,hyDone(sim)?[['Water lost: '+n3(chMet(sim,'mw'))+' g of '+n3(chMet(sim,'mh'))+' g',700,12.5],['% water = '+n2(chMet(sim,'pct'))+'%',700,14,RED],['accepted: 36.1%']]:[['Heating to constant mass…',700,14],['% water appears when the mass stops changing.']]);} },
+    { key: 'epsom', title: 'Epsom salt: about half is water', set: { hyd: 'mg' }, fresh: true, speed: 6, run(sim){run1(sim,['weighEmpty','add','auto']);},
+      see: 'Now the same lab with Epsom salt, MgSO₄·7H₂O. About half of the mass leaves as water: 51.2%.',
+      why: 'Seven waters (7 × 18.02 = 126.1 g) out of 246.47 g/mol is 51.2%. So 2.00 g of Epsom salt loses about 1.02 g of water.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['MgSO₄·7H₂O',700,14],hyDone(sim)?['% water = '+n2(chMet(sim,'pct'))+'%   (accepted 51.2%)',700,13,RED]:['Heating to constant mass…',500,12.5]]);} },
+    { key: 'x', lvl: 'honors', title: 'Find x', set: { hyd: 'cu' }, fresh: true, speed: 6, run(sim){run1(sim,['weighEmpty','add','auto']);},
+      see: 'Back to copper sulfate. The card turns both masses into moles and divides.',
+      why: 'x = mol H₂O ÷ mol anhydrous salt, rounded to a whole number. For copper(II) sulfate it comes out at 5.',
+      overlay(sim,ctx,LH,k){const d=hyDone(sim);LABC(ctx,k,[['mol H₂O ÷ mol CuSO₄',700,14],d?[(+chMet(sim,'molw')).toFixed(4)+' ÷ '+(+chMet(sim,'mola')).toFixed(4),500,12]:['Heating to constant mass…',500,12],['x = '+(d?n2(chMet(sim,'x'))+' ≈ '+Math.round(chMet(sim,'x')):'…'),700,14,RED]]);} },
+    { key: 'airx', lvl: 'honors', title: 'A mistake: cooling in open air', set: { hyd: 'cu', cool: 'air' }, fresh: true, speed: 6, run(sim){run1(sim,['weighEmpty','add','auto']);},
+      see: 'The same lab, but the crucible cools on the open bench. x comes out below 5.',
+      why: 'Dry CuSO₄ pulls water vapor back from the air while it cools, so each weighing is too heavy. The water you calculate is too small, so % water and x come out low.',
+      overlay(sim,ctx,LH,k){LABC(ctx,k,[['Cooled in open air',700,14],hyDone(sim)?['x = '+n2(chMet(sim,'x'))+'  (should be 5)',700,14,RED]:['Heating to constant mass…',500,12.5]]);} }
+  ],
+  useIt: [
+    { do: 'Keep the humidity cards and silica gel packets that come with electronics, and check them.',
+      why: 'Many humidity cards use cobalt(II) chloride, which is blue when dry and pink as a hydrate. Pink means the air in the box is damp. (Keep the packets away from small children and pets.)' },
+    { do: 'Store Epsom salt, baking soda and other powders sealed and dry.',
+      why: 'Many salts pull water from the air to form hydrates, which makes them cake into lumps and changes how much of the real compound is in each spoonful.' },
+    { do: 'Leave the drywall between a garage and a house in place.',
+      why: 'Gypsum, CaSO₄·2H₂O, is about 21% water by mass. In a fire that water must boil off before the wall fails, which slows the fire. Building codes require gypsum board between attached garages and homes for that reason.' }
+  ],
+  tryIt: [
+    { title: 'Epsom salt crystals (overnight)',
+      steps: ['Stir Epsom salt into half a cup of hot tap water until no more dissolves.', 'Brush a thin layer onto a dark plate or piece of black paper.', 'Leave it overnight in a warm, dry place.'],
+      look: 'Long, needle-shaped crystals grow. Water molecules are part of each crystal, which is why the label says MgSO₄·7H₂O, not just MgSO₄.' }
+  ]
+}
+});
+
+BioLab.addReview({
+mole:{questions:[
+  {id:'whymole',kind:'test',lvl:'bio',q:'Why do chemists count atoms in moles instead of one by one?',choices:['Atoms are too small and too many to count, so they are counted by weighing a known number at once','A mole is a unit of mass','Moles are easier to spell','Atoms can only be counted in groups of 12'],correct:0,
+    steps:['Even a drop of water holds over 10²¹ molecules.','A mole is a fixed count, 6.022 × 10²³, chosen so 1 mol of atoms weighs its atomic mass in grams.','So weighing out the molar mass in grams counts out a mole of particles.']},
+  {id:'divide',kind:'test',lvl:'bio',q:'To change 36.0 g of water to moles, why do you divide by 18.02 g/mol instead of multiplying?',choices:['Dividing makes the number smaller','You always divide in chemistry','Molar mass is grams per mole, so grams ÷ (grams per mole) leaves moles','Multiplying would give particles'],correct:2,
+    steps:['Write the units: g ÷ (g/mol) = g × (mol/g) = mol.','36.0 g ÷ 18.02 g/mol = 2.00 mol.','If you multiplied, the units would be g²/mol, a sign the setup is wrong.']},
+  {id:'samemass',kind:'test',lvl:'bio',q:'20 g of carbon and 20 g of gold sit on two pans. Which holds more atoms, and why?',choices:['Gold, because it is denser','The same, because the masses are equal','Gold, because its atoms are bigger','Carbon, because each carbon atom is much lighter, so more of them fit in 20 g'],correct:3,
+    steps:['Carbon: 20 ÷ 12.01 = 1.67 mol. Gold: 20 ÷ 196.97 = 0.10 mol.','Moles count particles, so carbon has about 16 times as many atoms.','Equal masses are not equal numbers of particles.']},
+  {id:'gulp',kind:'real',lvl:'bio',q:'About how much water is one mole of water molecules?',choices:['About a gallon','About 18 mL, a big gulp','About a swimming pool','About a single drop'],correct:1,
+    steps:['One mole of water is 18.02 g.','Water is 1.00 g/mL, so 18 g is 18 mL.','The count (6.02 × 10²³) is huge, but each molecule is tiny.']},
+  {id:'hatoms',kind:'test',lvl:'honors',q:'How many hydrogen atoms are in 1.00 mol of H₂O?',choices:['6.02 × 10²³','3.01 × 10²³','1.20 × 10²⁴','2'],correct:2,
+    steps:['1.00 mol of H₂O is 6.02 × 10²³ molecules.','Each molecule has 2 H atoms.','2 × 6.02 × 10²³ = 1.20 × 10²⁴ H atoms.']},
+  {id:'stp',kind:'test',lvl:'honors',q:'Why does 1 mol of CO₂ fill the same 22.4 L at STP as 1 mol of He, even though CO₂ molecules are much bigger?',choices:['Gas particles are so far apart that their own size barely matters to the volume','CO₂ shrinks at 0 °C','Helium expands more','It doesn’t: CO₂ fills more'],correct:0,
+    steps:['In a gas, almost all the volume is empty space between particles.','Equal numbers of particles at the same temperature and pressure take up equal volumes (Avogadro’s law).','So 1 mol of any ideal gas fills about 22.4 L at 0 °C and 1 atm.']},
+  {id:'molarity',kind:'test',lvl:'ap',q:'How many grams of NaCl are in 250. mL of 2.00 M NaCl? (NaCl = 58.44 g/mol)',choices:['117 g','0.500 g','14.6 g','29.2 g'],correct:3,
+    steps:['Moles = M × L = 2.00 mol/L × 0.250 L = 0.500 mol.','Grams = 0.500 mol × 58.44 g/mol = 29.2 g.','Convert mL to L first: 250. mL = 0.250 L.']}
+]},
+percentcomp:{questions:[
+  {id:'mostmass',kind:'test',lvl:'bio',q:'Two of water’s three atoms are hydrogen. Why is water 88.8% oxygen by mass?',choices:['Percent composition counts atoms','One oxygen atom (16.00) is about 8 times heavier than two hydrogen atoms together (2.016)','Oxygen atoms are larger','Hydrogen has no mass'],correct:1,
+    steps:['Percent composition is about each element’s share of the mass.','O: 16.00 g/mol; 2 H: 2.016 g/mol; total 18.02 g/mol.','16.00 ÷ 18.02 = 88.8% oxygen.']},
+  {id:'samepct',kind:'test',lvl:'bio',q:'You analyze 100 g of water instead of 10 g. Why does the percent oxygen stay 88.8%?',choices:['Because the balance is the same','Because percent always equals 88.8','It doesn’t; it rises to 100%','Every sample of a pure compound has the same composition (law of definite proportions)'],correct:3,
+    steps:['The mass of oxygen grows with the sample: 8.88 g to 88.8 g.','But the whole sample grows by the same factor.','So the ratio, and the percent, never change for a pure compound.']},
+  {id:'sodiumlabel',kind:'real',lvl:'bio',q:'A recipe calls for 5.0 g of table salt (NaCl, 39.3% sodium). About how much sodium is that?',choices:['5.0 g','12.7 g','2.0 g','0.39 g'],correct:2,
+    steps:['Sodium is 39.3% of salt’s mass.','5.0 g × 0.393 = 1.97 g, about 2.0 g, or almost 2,000 mg.','That is close to a whole day’s 2,300 mg limit.']},
+  {id:'calcium',kind:'real',lvl:'bio',q:'Why can two calcium tablets of the same mass give different amounts of calcium?',choices:['Different calcium compounds have different percents of calcium by mass (carbonate 40%, citrate 21%)','One is fake','Calcium changes in the bottle','The body absorbs every compound the same'],correct:0,
+    steps:['The tablet is a compound, not pure calcium.','Calcium carbonate is 40% Ca by mass; calcium citrate is about 21%.','So 1,000 mg of carbonate holds about 400 mg of calcium, but 1,000 mg of citrate only about 210 mg.']},
+  {id:'lidoff',kind:'test',lvl:'honors',q:'In the MgO lab, white smoke escapes because the lid was off. Why does your O : Mg ratio come out too low?',choices:['Smoke adds oxygen','The smoke is MgO; losing it makes the product too light, so the oxygen gained looks too small','The Mg reacts faster','The ratio isn’t affected'],correct:1,
+    steps:['The white smoke is the product, MgO.','Less product on the balance means a smaller mass gain.','Less “oxygen” per magnesium gives a ratio below 1.']},
+  {id:'fe2o3',kind:'test',lvl:'honors',q:'An iron oxide gives 1.00 Fe : 1.50 O. Why is its empirical formula Fe₂O₃ and not FeO₂?',choices:['Iron always comes in pairs','Oxygen must be odd','1.50 is not close to a whole number, so multiply both by 2 to get 2 : 3','You round 1.50 to 2'],correct:2,
+    steps:['Only round when a value is within about 0.1 of a whole number.','1.50 is halfway, so find the smallest multiplier that makes it whole: × 2.','2 Fe : 3 O → Fe₂O₃. Rounding to FeO₂ is the most common mistake.']},
+  {id:'diff',kind:'test',lvl:'ap',q:'In combustion analysis, why is the sample’s oxygen found by difference rather than from the products?',choices:['Oxygen escapes as a gas','The absorbers hold oxygen','The sample contains no oxygen','Some of the oxygen in the CO₂ and H₂O came from the O₂ used to burn the sample'],correct:3,
+    steps:['Every C in the CO₂ and every H in the H₂O came from the sample.','But oxygen in those products came partly from the burning O₂.','So subtract the C and H masses from the sample mass to find O.']}
+]},
+hydrate:{questions:[
+  {id:'whatis',kind:'test',lvl:'bio',q:'What makes CuSO₄·5H₂O a hydrate?',choices:['Water molecules are built into its crystal in a fixed ratio: 5 per CuSO₄','It dissolves in water','It is wet on the outside','It is made in water'],correct:0,
+    steps:['A hydrate is an ionic solid with water inside its crystal structure.','The ·5H₂O tells you there are 5 water molecules per formula unit.','Heating drives that water off and leaves the anhydrous salt.']},
+  {id:'constant',kind:'test',lvl:'bio',q:'Why do you heat the hydrate again and again until two weighings agree?',choices:['To make the crucible clean','To make sure all the water has left; stopping early leaves water in and makes % water too low','To warm the balance','Because the rules say three times'],correct:1,
+    steps:['Most water leaves in the first heating, but not all of it.','When the mass stops changing, no water is left to lose.','Stopping early undercounts the water lost, so % water and x come out low.']},
+  {id:'white',kind:'test',lvl:'bio',q:'Blue copper(II) sulfate turns almost white when heated. Why?',choices:['The copper burns away','The crucible paints it white','It turns into salt','The blue color comes from water bonded to the Cu²⁺ ions; without it, anhydrous CuSO₄ is nearly white'],correct:3,
+    steps:['In the hydrate, water molecules surround each Cu²⁺.','That arrangement absorbs red-orange light, so it looks blue.','Remove the water and the color goes; add water back and it turns blue again.']},
+  {id:'drywall',kind:'real',lvl:'bio',q:'Why does drywall (gypsum, CaSO₄·2H₂O) slow down a house fire?',choices:['About 21% of its mass is water that must boil off before the wall heats through','Gypsum is fireproof paint','It reflects heat','It contains a fire extinguisher'],correct:0,
+    steps:['Gypsum is a hydrate with water in its crystals.','In a fire, heat goes into driving that water off first.','While the water boils away, the wall stays near 100 °C, slowing the fire’s spread.']},
+  {id:'aircool',kind:'test',lvl:'honors',q:'A student cools the crucible on the open bench. Why do % water and x come out too low?',choices:['The crucible loses mass in air','Cooling makes the balance read low','Dry salt pulls water vapor back from the air, so it weighs too much and the calculated water lost is too small','Air adds oxygen'],correct:2,
+    steps:['Anhydrous salts are hygroscopic: they absorb water vapor.','A heavier “dry” sample means less apparent water lost.','Less water lost → lower % water and a smaller x.']},
+  {id:'spatter',kind:'test',lvl:'honors',q:'A student uses a strong flame from the start and hears popping. Why does % water come out too high?',choices:['The flame adds water','Boiling water spatters solid out of the crucible, and that lost solid is counted as water','The salt gets heavier','It doesn’t change % water'],correct:1,
+    steps:['Water boiling inside crystals can burst them and throw solid out.','You calculate water lost from the mass lost.','Lost solid adds to the mass lost, so % water and x come out too high.']},
+  {id:'xcalc',kind:'test',lvl:'ap',q:'A 2.000 g sample of MgSO₄·xH₂O leaves 0.977 g of MgSO₄ (120.36 g/mol). What is x?',choices:['7','5','6','8'],correct:0,
+    steps:['Water lost = 2.000 − 0.977 = 1.023 g ÷ 18.02 = 0.05677 mol.','MgSO₄ = 0.977 ÷ 120.36 = 0.008117 mol.','x = 0.05677 ÷ 0.008117 = 6.99 ≈ 7: MgSO₄·7H₂O, Epsom salt.']}
+]}
+});
+
 })();
