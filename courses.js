@@ -13,7 +13,7 @@ BioLab.setSections({
 });
 
 BioLab.COURSES = [
-  { id: 'chem', name: 'Chemistry',
+  { id: 'chem',finals:[{"t": "Chemistry fall final review", "units": [0, 1, 2, 3], "note": "Covers Units 0 to 3, through chemical reactions. Your teacher decides what is on the final, so check the study guide."}], name: 'Chemistry',
     blurb: 'Tools in the order Chemistry covers them, unit by unit. Ms. Glugoski’s sections number these Units 1–9 and skip nuclear chemistry; the order is the same.',
     units: [
       { n: 'Unit 0', t: 'Intro to chemistry and lab safety', ids: ['labbench'] },
@@ -28,7 +28,7 @@ BioLab.COURSES = [
       { n: 'Unit 8', t: 'Electrons', ids: ['light', 'spectra', 'econfig', 'trends'] }
     ],
     further: ['lewis', 'vsepr', 'orbitals', 'rates'] },
-  { id: 'honors', name: 'Honors Chemistry',
+  { id: 'honors',finals:[{"t": "Honors Chemistry fall final review", "units": [0, 1, 2, 3, 4, 5, [6, ["hydrate"]]], "note": "Covers Units 1 to 5: matter and the atom, naming, reactions, measurement, and the mole (with hydrates). Your teacher decides what is on the final, so check the study guide."}], name: 'Honors Chemistry',
     blurb: 'Tools in the order Honors Chemistry covers them: first semester, then second. Mr. Jackson’s sections start with measurement and teach electrons and the periodic table before naming; every tool is still here. Electron configurations also appear in Unit 1 because some sections quiz on them alongside atomic mass in September.',
     units: [
       { n: 'Unit 0', t: 'Intro and lab safety', ids: ['labbench'] },
@@ -44,7 +44,7 @@ BioLab.COURSES = [
       { n: 'Unit 9', t: 'Thermochemistry and kinetics', ids: ['calorimetry', 'coldpack', 'enthalpy', 'rates'] }
     ],
     further: ['pes', 'equilibrium', 'beerslaw', 'orbitals'] },
-  { id: 'ap', name: 'AP Chemistry',
+  { id: 'ap',finals:[{"t": "AP Chemistry fall final review", "units": [0, 1, 2, 3, 4], "note": "Covers AP Units 1 to 5, through kinetics. Your teacher decides what is on the final, so check the study guide."}], name: 'AP Chemistry',
     blurb: 'Tools grouped by the nine AP Chemistry units. Both sections teach Units 1–5 and the first half of Unit 7 in the fall, then thermochemistry, solubility equilibrium, acids and bases, and Unit 9 in the spring.',
     units: [
       { n: 'Unit 1', t: 'Atomic structure and properties', ids: ['mole', 'avgmass', 'percentcomp', 'econfig', 'pes', 'trends'], links: [{ lesson: true, href: 'https://jackson-classroom.github.io/ap-chemistry/unit-1/', title: 'Electron configuration and PES (1.5–1.6)', label: 'Mr. Jackson’s lesson', text: 'Where the electrons actually are, and the experiment that proves it.', kind: 'Lesson' }] },
