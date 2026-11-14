@@ -425,4 +425,229 @@ ksp: {
   ]
 }
 });
+/* ---- Feb–Mar units: kinetic molecular theory, states, phase diagrams, gas stoichiometry (added Nov 14, 2026) ---- */
+const KM=(ctx,k,L)=>card(ctx,k,L,526,256,266);
+const KR=(ctx,k,L)=>card(ctx,k,L,330,40,300);
+const STT=(ctx,k,L)=>card(ctx,k,L,430,388,350);
+const PDC=(ctx,k,L)=>card(ctx,k,L,530,384,262);
+const GSM=(ctx,k,L)=>card(ctx,k,L,632,40,160);
+const GSB=(ctx,k,L)=>card(ctx,k,L,20,60,190);
+const doAct=(sim,id)=>{const a=(sim.def.actions||[]).find(z=>z.id===id);if(a)a.run(sim);};
+const txt=(sim,id)=>{const v=met(sim,id);return v==null||v!==v?'—':String(v);};
+
+BioLab.addLearn({
+kmt: {
+  goals: {
+    bio: ['Gas molecules are always moving, at many different speeds', 'Hotter means faster', 'Light molecules move faster than heavy ones at the same temperature'],
+    honors: ['Temperature measures average kinetic energy', 'Graham’s law: rate ∝ 1/√M', 'Partial pressures add up (Dalton’s law)'],
+    ap: ['The Maxwell–Boltzmann distribution', 'u_rms = √(3RT/M)', 'Why KE depends only on T, not on the gas']
+  },
+  matters: 'Why you can smell cookies from across the house, why helium balloons go flat overnight, and why tires look low on a cold morning all come down to how fast gas molecules move.',
+  question: 'At room temperature, which moves faster: a helium atom or a heavy xenon atom? And do they carry the same energy?',
+  startKey: 'box', startRun: true,
+  steps: [
+    { key: 'box', title: 'Molecules in a box', set: { mode: 'dist', gasA: 'N2', T: 300, gasB: 'none' }, fresh: true, speed: 1,
+      see: 'Nitrogen at 300 K. The molecules zip around and bounce off the walls and each other. The bar chart shows how many have each speed.',
+      why: 'No two molecules have the same speed for long, because collisions trade energy. The average is about 470 m/s, faster than a jet airliner.',
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['N₂ at '+f0(sim.p.T)+' K',700,14],'Average speed: '+f0(met(sim,'vA'))+' m/s','Average energy: '+f2(met(sim,'keA'))+' kJ/mol']);} },
+    { key: 'hot', title: 'Heat it up', set: { mode: 'dist', gasA: 'N2', T: 600, gasB: 'none' }, fresh: true, speed: 1,
+      cause: { from: { T: 300 }, delay: 0.8, dur: 2, label: 'Temperature' },
+      see: 'Double the temperature to 600 K. The average energy doubles, and the speed rises by about 40%.',
+      why: { bio: 'Temperature is a measure of how much the molecules jiggle. Hotter gas means faster molecules.', honors: 'Average kinetic energy ∝ T, so it doubles. KE = ½mv², so speed goes as √T: √2 ≈ 1.41 times faster.' },
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['N₂ at '+f0(sim.p.T)+' K',700,14],'Average speed: '+f0(met(sim,'vA'))+' m/s','Average energy: '+f2(met(sim,'keA'))+' kJ/mol']);} },
+    { key: 'he', title: 'A lighter gas', set: { mode: 'dist', gasA: 'He', T: 300, gasB: 'none' }, fresh: true, speed: 1,
+      see: 'Helium at 300 K averages about 1,250 m/s. Its average energy is the same 3.7 kJ/mol as nitrogen.',
+      why: 'Same temperature, same average kinetic energy. A light molecule has to move faster to carry the same energy.',
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['He at 300 K',700,14],'Average speed: '+f0(met(sim,'vA'))+' m/s',['Average energy: '+f2(met(sim,'keA'))+' kJ/mol',700,13,GRN]]);} },
+    { key: 'xe', title: 'A heavy gas', set: { mode: 'dist', gasA: 'Xe', T: 300, gasB: 'none' }, fresh: true, speed: 1,
+      see: 'Xenon (131 g/mol) crawls along at about 220 m/s, with the same 3.7 kJ/mol of energy.',
+      why: 'Mass and speed trade off: KE = ½mv². Heavier molecules move slower at the same temperature.',
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['Xe at 300 K',700,14],'Average speed: '+f0(met(sim,'vA'))+' m/s',['Average energy: '+f2(met(sim,'keA'))+' kJ/mol',700,13,GRN]]);} },
+    { key: 'mix', lvl: 'honors', title: 'A mixture', set: { mode: 'dist', gasA: 'N2', T: 300, gasB: 'He', nA: 100, nB: 50 }, fresh: true, speed: 1,
+      see: 'Add 50 helium atoms to the 100 nitrogen molecules. Each gas pushes on the walls on its own, and the pressures add up.',
+      why: 'Dalton’s law: P_total = P_N₂ + P_He. Each gas’s share of the pressure matches its share of the molecules, here 2/3 and 1/3.',
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['N₂ + He',700,14],'P(N₂) '+f2(met(sim,'PA'))+' + P(He) '+f2(met(sim,'PB'))+' atm','Total: '+f2(met(sim,'Pt'))+' atm']);} },
+    { key: 'race', title: 'The diffusion race', set: { mode: 'race', pair: 'hcl' }, fresh: true, speed: 1,
+      see: 'NH₃ starts at the left end of the tube and HCl at the right. Where they meet, a white ring of NH₄Cl forms, closer to the HCl end.',
+      why: { bio: 'Ammonia molecules are lighter (17 g/mol vs. 36.5 g/mol), so they travel farther in the same time.', honors: 'Graham’s law: rate ratio = √(36.46 ÷ 17.03) = 1.46. The NH₃ travels 1.46 times as far.' },
+      overlay(sim,ctx,LH,k){KR(ctx,k,[['NH₃ + HCl',700,14],'NH₃: '+f1(met(sim,'dA'))+' cm   HCl: '+f1(met(sim,'dB'))+' cm','Ratio: '+f2(met(sim,'dr'))]);} },
+    { key: 'hbr', lvl: 'honors', title: 'A heavier acid', set: { mode: 'race', pair: 'hbr' }, fresh: true, speed: 1,
+      see: 'Swap HCl for HBr (80.9 g/mol). The ring forms even closer to the acid end.',
+      why: 'The heavier the acid, the slower it travels: √(80.91 ÷ 17.03) = 2.18.',
+      overlay(sim,ctx,LH,k){KR(ctx,k,[['NH₃ + HBr',700,14],'NH₃: '+f1(met(sim,'dA'))+' cm   HBr: '+f1(met(sim,'dB'))+' cm','Ratio: '+f2(met(sim,'dr'))]);} },
+    { key: 'rms', lvl: 'ap', title: 'The speed formula', set: { mode: 'dist', gasA: 'N2', T: 300, gasB: 'none' }, fresh: true, speed: 1,
+      see: 'Compare the measured rms speed with u_rms = √(3RT/M) and the most probable speed at the peak of the curve.',
+      why: '√(3 × 8.314 × 300 ÷ 0.0280) = 517 m/s. The curve’s peak (most probable) sits below the average, which sits below u_rms, because the long tail of fast molecules pulls the averages up.',
+      overlay(sim,ctx,LH,k){KM(ctx,k,[['N₂ at 300 K',700,14],'√(3RT/M) = '+f0(met(sim,'rmsT'))+' m/s','Most probable: '+f0(met(sim,'vmp'))+' m/s']);} }
+  ],
+  useIt: [
+    { do: 'Check tire pressure on a cold morning before you add air.',
+      why: 'Cold air molecules move slower and hit the tire walls less hard, so the gauge reads low. It rises again as the tires warm.' },
+    { do: 'Notice helium balloons go flat faster than air-filled ones.', lvl: 'honors',
+      why: 'Light, fast helium atoms escape through tiny gaps in the rubber about 2.6 times faster than air.' }
+  ],
+  tryIt: [
+    { title: 'perfume across the room (5 minutes, with a partner)',
+      steps: ['Stand at opposite ends of a room.', 'One person opens a perfume or vanilla bottle; the other starts a timer.', 'Stop when the smell arrives.'],
+      look: 'It takes many seconds, even though molecules move hundreds of meters per second. They collide with air billions of times a second and wander, so diffusion is slow.' }
+  ]
+},
+states: {
+  goals: {
+    bio: ['Solid, liquid and gas: what the particles are doing', 'Why the temperature stops rising while ice melts or water boils', 'Heating and cooling curves'],
+    honors: ['q = mcΔT on the slopes, q = mΔH on the plateaus', 'Why boiling takes much more energy than melting', 'Reading a heating curve'],
+    ap: ['Phase changes break attractions, not raise kinetic energy', 'Boiling point depends on pressure', 'Intermolecular forces and ΔH_vap']
+  },
+  matters: 'A pot of water on the stove sits at 100 °C until it boils dry. Ice keeps a drink at 0 °C until it melts. Sweat cools you because evaporating takes energy.',
+  question: 'You heat ice steadily. Does the temperature rise at a steady rate all the way to steam?',
+  startKey: 'ice', startRun: true,
+  steps: [
+    { key: 'ice', title: 'Warming the ice', set: { sub: 'water', start: 'solid', power: 50, mass: 50, P: 1 }, fresh: true, speed: 1,
+      see: 'A 100 W heater warms 50 g of ice from −40 °C. The particles vibrate faster in place and the temperature climbs.',
+      why: 'In a solid the particles are locked in place but jiggle. Adding heat makes them jiggle faster, which is a higher temperature.',
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Heat added: '+f1(met(sim,'q'))+' kJ']);} },
+    { key: 'melt', title: 'Melting: the flat part', set: { sub: 'water', start: 'solid', power: 50, mass: 50, P: 1 }, speed: 1,
+      see: 'At 0 °C the temperature stops rising even though the heater stays on. The ice melts bit by bit.',
+      why: 'The heat now goes into breaking the ice’s hydrogen-bond framework, not into making particles move faster. The temperature waits until all the ice has melted.',
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Heat added: '+f1(met(sim,'q'))+' kJ']);} },
+    { key: 'liq', title: 'Warming the water', set: { sub: 'water', start: 'liquid', power: 50, mass: 50, P: 1 }, fresh: true, speed: 1,
+      see: 'Liquid water warms from 0 °C toward 100 °C. The slope is less steep than for ice.',
+      why: 'Water’s specific heat (4.18 J/g·°C) is about twice ice’s, so the same heater warms it about half as fast.',
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Heat added: '+f1(met(sim,'q'))+' kJ']);} },
+    { key: 'boil', title: 'Boiling: the long flat part', set: { sub: 'water', start: 'liquid', power: 50, mass: 50, P: 1 }, speed: 4,
+      see: 'At 100 °C the temperature stops again. Boiling takes much longer than melting did.',
+      why: { bio: 'Turning liquid into gas pulls the molecules completely apart, which takes a lot of energy.', honors: 'ΔH_vap = 2260 J/g vs. ΔH_fus = 334 J/g: boiling 50 g takes 113 kJ, almost 7 times the 16.7 kJ to melt it.' },
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Heat added: '+f1(met(sim,'q'))+' kJ']);} },
+    { key: 'cool', title: 'A cooling curve', set: { sub: 'water', start: 'gas', power: -50, mass: 50, P: 1 }, fresh: true, speed: 2,
+      see: 'Run it backward: cool steam. The temperature falls to 100 °C and stays there while the steam condenses.',
+      why: 'Condensing gives back the same 2260 J/g that boiling took. That released heat is why a steam burn is worse than a hot-water burn.',
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Heat flow: '+f0(met(sim,'W'))+' W']);} },
+    { key: 'press', lvl: 'ap', title: 'Boiling in Aurora', set: { sub: 'water', start: 'liquid', power: 100, mass: 50, P: 0.83 }, fresh: true, speed: 2,
+      see: 'At 0.83 atm, about the air pressure in Aurora, water boils at about 95 °C.',
+      why: 'Water boils when its vapor pressure equals the pressure pushing down on it. Less air pressure means it reaches that point at a lower temperature, so pasta cooks a little slower here.',
+      overlay(sim,ctx,LH,k){STT(ctx,k,[[f1(met(sim,'T'))+' °C · '+txt(sim,'phase'),700,14],'Boiling point at '+f2(sim.p.P)+' atm: '+f1(met(sim,'tb'))+' °C']);} }
+  ],
+  useIt: [
+    { do: 'Put ice in a cooler instead of just cold drinks.',
+      why: 'Melting ice soaks up 334 J for every gram while staying at 0 °C. Cold drinks alone warm up much faster.' },
+    { do: 'Be careful with steam from a kettle or a microwaved bag.', lvl: 'honors',
+      why: 'Steam releases 2260 J/g as it condenses on your skin, on top of the heat from cooling. That’s far more than the same mass of 100 °C water.' }
+  ],
+  tryIt: [
+    { title: 'watch the plateau (15 minutes)',
+      steps: ['Put a kitchen thermometer in a glass of crushed ice and a little water.', 'Read it every minute as the ice melts on the counter.', 'Keep going until all the ice is gone.'],
+      look: 'It stays near 0 °C the whole time ice remains, then starts climbing. That flat stretch is the melting plateau.' }
+  ]
+},
+phasediagram: {
+  goals: {
+    bio: ['A phase diagram shows the state at every temperature and pressure', 'Crossing a line means a phase change', 'Why water boils at a lower temperature in Colorado'],
+    honors: ['Triple point and critical point', 'Why ice melts under pressure (water’s odd melting line)', 'Sublimation: dry ice and freeze-drying'],
+    ap: ['Supercritical fluids', 'Reading slopes: the Clapeyron relation', 'Comparing water and CO₂']
+  },
+  matters: 'Pressure cookers, freeze-dried astronaut food, dry ice and decaf coffee all depend on pushing a substance across a line on its phase diagram.',
+  question: 'Water boils at 100 °C at sea level. Does it boil at the same temperature in Aurora?',
+  startKey: 'read', startRun: true,
+  steps: [
+    { key: 'read', title: 'Reading the map', set: { sub: 'water', Tw: 25, lpw: 0 }, fresh: true, pause: true,
+      see: 'The red dot is water at 25 °C and 1 atm. It sits in the liquid region. The lines are where two phases can exist together.',
+      why: 'Temperature runs left to right and pressure bottom to top (on a log scale). Solid is cold and squeezed, gas is hot and spread out.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'heat', title: 'Heat it', set: { sub: 'water', Tw: 25, lpw: 0 }, fresh: true, speed: 1, run(sim){doAct(sim,'heat');},
+      see: 'Heat at 1 atm. The dot moves right, stops on the boiling line at 100 °C, then crosses into gas.',
+      why: 'Crossing a line is a phase change. At 1 atm, water’s boiling line sits at 100 °C.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'aurora', title: 'Heat it in Aurora', set: { sub: 'water', Tw: 25, lpw: -0.08 }, fresh: true, speed: 1, run(sim){doAct(sim,'heat');},
+      see: 'Start at 0.83 atm, the air pressure here. The dot hits the boiling line at about 95 °C.',
+      why: 'The boiling line slopes up: lower pressure, lower boiling point. Water in Aurora boils about 5 °C cooler than at sea level.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'cooker', lvl: 'honors', title: 'A pressure cooker', set: { scene: 'cooker' }, fresh: true, speed: 1, run(sim){doAct(sim,'go');},
+      see: 'At 2.0 atm inside a pressure cooker, water doesn’t boil until about 121 °C.',
+      why: 'Higher pressure pushes the boiling point up. Hotter water cooks food much faster, which is why pressure cookers are popular at altitude.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'skate', lvl: 'honors', title: 'Ice under a skate', set: { scene: 'skate' }, fresh: true, speed: 1, run(sim){doAct(sim,'go');},
+      see: 'Squeeze ice at −5 °C. Unlike most substances, it moves toward liquid.',
+      why: 'Water’s melting line tilts left, because liquid water is denser than ice. Squeezing favors the denser phase. (The thin water layer under real skates comes mostly from friction, though.)',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'dry', title: 'Dry ice', set: { scene: 'dryice' }, fresh: true, speed: 1, run(sim){doAct(sim,'go');},
+      see: 'Switch to CO₂. Solid dry ice warming at 1 atm turns straight into gas at −78.5 °C, with no liquid.',
+      why: 'CO₂’s triple point is at 5.1 atm. Below that pressure there is no liquid region, so the solid sublimes.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'freeze', lvl: 'honors', title: 'Freeze-drying', set: { scene: 'freeze' }, fresh: true, speed: 1, run(sim){doAct(sim,'go');},
+      see: 'Frozen food at −20 °C in a vacuum chamber. The ice turns straight to vapor.',
+      why: 'Below water’s triple-point pressure (0.006 atm) ice sublimes. The food dries without ever thawing, so it keeps its shape.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} },
+    { key: 'scf', lvl: 'ap', title: 'Supercritical CO₂', set: { scene: 'scf' }, fresh: true, speed: 1, run(sim){doAct(sim,'go');},
+      see: 'Heat CO₂ at 100 atm past 31 °C. It becomes a supercritical fluid, neither liquid nor gas.',
+      why: 'Above the critical point there is no boiling line to cross. Supercritical CO₂ flows like a gas but dissolves like a liquid, which is how coffee is decaffeinated.',
+      overlay(sim,ctx,LH,k){PDC(ctx,k,[[txt(sim,'ph'),700,14],f1(met(sim,'T'))+' °C, '+txt(sim,'P')+' atm']);} }
+  ],
+  useIt: [
+    { do: 'Follow the high-altitude directions on a box of cake or pasta.',
+      why: 'Water boils at about 95 °C here, so food cooks slower and liquids evaporate faster.' },
+    { do: 'Handle dry ice with gloves and keep it in a vented cooler.', lvl: 'honors',
+      why: 'It sits at −78.5 °C and sublimes into CO₂ gas, which can build up pressure in a sealed container.' }
+  ],
+  tryIt: [
+    { title: 'boil water in a syringe (5 minutes, with an adult)',
+      steps: ['Pull some warm (not boiling) tap water into a plastic syringe, about a third full.', 'Cap the tip with your finger and pull the plunger back hard.'],
+      look: 'The water bubbles even though it is only warm. Lowering the pressure lowered its boiling point below its temperature.' }
+  ]
+},
+gasstoich: {
+  goals: {
+    bio: ['Collecting a gas made in a reaction', 'One mole of any gas takes up the same volume at the same T and P', 'Using the gas volume to find moles'],
+    honors: ['Dalton’s law: subtract water vapor pressure', 'PV = nRT, and correcting to STP', 'How lab mistakes change your answer'],
+    ap: ['Finding R from your own data', 'Finding a molar mass from a gas (butane)', 'Propagating errors']
+  },
+  matters: 'Car airbags, baking soda in bread and the oxygen masks on airplanes all depend on knowing how much gas a reaction will make.',
+  question: 'A tiny 0.030 g piece of magnesium dissolves in acid. How much hydrogen gas will it make?',
+  startKey: 'react', startRun: true,
+  steps: [
+    { key: 'react', title: 'Mg + HCl → H₂', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, fresh: true, speed: 1,
+      see: 'A 0.030 g magnesium ribbon reacts with acid in an upside-down tube of water. Hydrogen bubbles push the water down: 37.2 mL.',
+      why: 'Mg + 2HCl → MgCl₂ + H₂. One mole of Mg makes one mole of H₂, and the acid is in excess, so the ribbon decides how much gas forms.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['Mg + HCl',700,14],'Gas: '+f1(met(sim,'vol'))+' mL']);} },
+    { key: 'moles', title: 'Moles of hydrogen', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, speed: 2,
+      see: 'Moles of Mg = 0.030 g ÷ 24.31 g/mol = 1.23 × 10⁻³ mol, so the tube holds 1.23 × 10⁻³ mol of H₂.',
+      why: { bio: 'Divide the volume by the moles: 37.2 mL ÷ 0.00123 mol ≈ 30 L per mole. That is the volume of one mole of gas here in Aurora.', honors: 'Molar volume at room conditions = V ÷ n ≈ 30.1 L/mol, bigger than 22.4 L at STP because it is warmer and the air pressure is lower.' },
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['n = '+txt(sim,'nMg'),700,12.5],'V = '+f1(met(sim,'vol'))+' mL','1 mol here: '+f1(met(sim,'VmRoom'))+' L']);} },
+    { key: 'vapor', lvl: 'honors', title: 'Subtract the water vapor', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, speed: 2,
+      see: 'The gas in the tube is hydrogen plus water vapor. At 22 °C the vapor pushes 19.8 mmHg, so the hydrogen alone is at 610.2 mmHg.',
+      why: 'Dalton’s law: P_total = P_H₂ + P_H₂O. Use only the dry hydrogen’s pressure in PV = nRT.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['Dry H₂',700,13.5],'630 − '+f1(met(sim,'Pw'))+' = '+f1(met(sim,'Pdry'))+' mmHg']);} },
+    { key: 'stp', lvl: 'honors', title: 'Correct to STP', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, speed: 2,
+      see: 'Correcting the dry gas to 0 °C and 1 atm gives 22.4 L per mole, within 0.1% of the accepted value.',
+      why: 'V_STP = V × (P/760) × (273.15/T). Every gas behaves nearly the same, so one mole fills about 22.4 L at STP whatever gas it is.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['At STP',700,13.5],f2(met(sim,'VmSTP'))+' L/mol','Error: '+f1(met(sim,'err'))+'%']);} },
+    { key: 'oops', lvl: 'honors', title: 'A lab mistake', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'oxide' }, fresh: true, speed: 2,
+      see: 'This ribbon had a dull oxide coating. Only 34.3 mL of gas forms, and the molar volume comes out 7.9% low.',
+      why: 'MgO reacts with acid but makes no H₂. You weighed 0.030 g as if it were all Mg, so you expected more gas than you got. Sand the ribbon shiny first.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['Oxide coating',700,13.5],'Gas: '+f1(met(sim,'vol'))+' mL',['Error: '+f1(met(sim,'err'))+'%',700,12.5,RED]]);} },
+    { key: 'butane', title: 'Weigh a gas: butane', set: { mode: 'lighter', tRel: 4, Tw: 22, Pbar: 630, errL: 'none' }, fresh: true, speed: 1,
+      see: 'Release butane from a lighter under water into a tube. The lighter loses 0.14 g and the tube collects 72.7 mL.',
+      why: { bio: 'Moles of gas from its volume, mass from the balance: molar mass = grams ÷ moles = 58 g/mol, which matches C₄H₁₀.', honors: 'n = PV/RT with the dry pressure = 2.41 × 10⁻³ mol. M = 0.140 g ÷ 0.00241 mol = 58.1 g/mol.' },
+      overlay(sim,ctx,LH,k){GSB(ctx,k,[['Butane lighter',700,14],'Mass lost: '+f2(met(sim,'dm'))+' g','Gas: '+f1(met(sim,'vol'))+' mL','Molar mass: '+f1(met(sim,'M'))+' g/mol']);} },
+    { key: 'wet', lvl: 'honors', title: 'Forgot to dry the lighter', set: { mode: 'lighter', tRel: 4, Tw: 22, Pbar: 630, errL: 'wet' }, fresh: true, speed: 1,
+      see: 'Water left on the lighter makes it seem to lose only 0.11 g. The molar mass comes out 21% low.',
+      why: 'The trapped water adds mass back on the second weighing, so the mass lost looks too small. Always dry the lighter before reweighing.',
+      overlay(sim,ctx,LH,k){GSB(ctx,k,[['Wet lighter',700,14],'Mass lost: '+f2(met(sim,'dm'))+' g',['Molar mass: '+f1(met(sim,'M'))+' g/mol',700,12.5,RED]]);} },
+    { key: 'R', lvl: 'ap', title: 'Find R yourself', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, fresh: true, speed: 2,
+      see: 'With moles from the Mg, and P, V and T measured, you can solve PV = nRT for R.',
+      why: 'R = PV/nT = (610.2/760 atm)(0.0372 L) ÷ (1.23 × 10⁻³ mol × 295.15 K) ≈ 0.0820 L·atm/(mol·K), within 0.1% of 0.08206.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['R from your data',700,13.5],Number.isFinite(met(sim,'Rx'))?met(sim,'Rx').toFixed(4)+' L·atm/(mol·K)':'reacting…']);} }
+  ],
+  useIt: [
+    { do: 'Expect bread and cake to rise more at altitude.',
+      why: 'Lower air pressure lets the same moles of CO₂ from baking soda or yeast take up more volume. High-altitude recipes use less leavening.' },
+    { do: 'Leave room in a sealed bag of chips on a drive up to the mountains.', lvl: 'honors',
+      why: 'Same moles of gas, lower outside pressure: the bag puffs up and can pop.' }
+  ],
+  tryIt: [
+    { title: 'a balloon of CO₂ (10 minutes)',
+      steps: ['Put 1 tablespoon (about 14 g) of baking soda in a deflated balloon.', 'Pour vinegar into a bottle and stretch the balloon over the top.', 'Tip the soda in and watch the balloon fill.'],
+      look: 'Each mole of baking soda can make one mole of CO₂. 14 g is about 0.17 mol, which would fill about 5 L at Aurora’s pressure if the vinegar has enough acid.' }
+  ]
+}
+});
 })();
