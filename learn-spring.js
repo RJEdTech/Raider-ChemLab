@@ -982,4 +982,222 @@ buffers: {
   ]
 }
 });
+/* ---- Apr–May units: light, spectra, Gibbs energy, galvanic cells (added Nov 14, 2026) ---- */
+const LTC=(ctx,k,L)=>card(ctx,k,L,560,362,232);
+const SPH=(ctx,k,L)=>card(ctx,k,L,12,276,250);
+const SPF=(ctx,k,L)=>card(ctx,k,L,12,8,240);
+const GBS=(ctx,k,L)=>card(ctx,k,L,480,398,310);
+const GBP=(ctx,k,L)=>card(ctx,k,L,12,360,250);
+const GBG=(ctx,k,L)=>card(ctx,k,L,546,270,248);
+const GVC=(ctx,k,L)=>card(ctx,k,L,292,312,224);
+const GV6=(ctx,k,L)=>card(ctx,k,L,530,330,262);
+
+BioLab.addLearn({
+light: {
+  goals: {
+    bio: ['Light is a wave with a wavelength and a frequency', 'Shorter wavelength means more energy per photon', 'Only photons with enough energy can break a bond'],
+    honors: ['c = λν and E = hν', 'Energy per mole of photons vs. bond energy', 'Why brightness doesn’t make weak photons strong'],
+    ap: ['The photoelectric effect and work function', 'Kinetic energy of ejected electrons', 'Light as both a wave and a particle']
+  },
+  matters: 'Sunburn, the ozone layer, solar panels, photosynthesis and the reason UV-C lamps can disinfect a room all come down to how much energy one photon carries.',
+  question: 'A very bright red light and a dim violet light shine on the same molecules. Which one can break their bonds?',
+  startKey: 'green', startRun: true,
+  steps: [
+    { key: 'green', title: 'Wavelength and frequency', set: { pre: 'custom', ll: -6.2839966563652006, target: 'none', ph: false }, fresh: true, speed: 1,
+      see: 'Green light: 520 nm between crests, 5.77 × 10¹⁴ waves passing each second.',
+      why: { bio: 'All light travels at the same speed, so shorter waves must pass by more often: higher frequency.', honors: 'c = λν: ν = (3.00 × 10⁸ m/s) ÷ (5.20 × 10⁻⁷ m) = 5.77 × 10¹⁴ Hz.' },
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['λ = '+txt(sim,'lamt'),700,14],txt(sim,'reg'),'Energy vs. red: '+txt(sim,'rel')]);} },
+    { key: 'red', title: 'A red laser', set: { pre: 'red', target: 'none', ph: true }, fresh: true, speed: 1,
+      see: 'A 650 nm red laser. Each photon carries about 184 kJ per mole of photons.',
+      why: 'Light comes in packets called photons. The photon’s energy depends only on its wavelength: E = hc/λ.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Red laser, '+txt(sim,'lamt'),700,14],'Per mole of photons: '+txt(sim,'Emt')]);} },
+    { key: 'vio', title: 'A violet laser', set: { pre: 'vio', target: 'none', ph: true }, fresh: true, speed: 1,
+      see: 'A 405 nm violet laser: each photon has 1.73 times the energy of a red one, 295 kJ/mol.',
+      why: 'Shorter wavelength, higher frequency, more energy per photon. UV-B at 300 nm reaches 399 kJ/mol, enough to damage DNA.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Violet laser, '+txt(sim,'lamt'),700,14],'Per mole of photons: '+txt(sim,'Emt'),'vs. red light: '+txt(sim,'rel')]);} },
+    { key: 'bondred', title: 'Red light on Cl₂', set: { pre: 'red', target: 'bond', bond: 'cl2', bright: 100, ph: true }, fresh: true, speed: 1,
+      see: 'Bright red light floods the chlorine molecules. Not one bond breaks.',
+      why: 'Breaking a Cl–Cl bond takes 242 kJ/mol. A red photon has only 184 kJ/mol. One photon hits one bond, so piling on more weak photons doesn’t help.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Bright red on Cl₂',700,14],'Photon: '+txt(sim,'Emt'),['Bond needs 242 kJ/mol',700,13,RED]]);} },
+    { key: 'bondvio', title: 'Violet light on Cl₂', set: { pre: 'vio', target: 'bond', bond: 'cl2', bright: 20, ph: true }, fresh: true, speed: 1,
+      see: 'Now dim violet light. Molecules start splitting apart.',
+      why: 'Each 295 kJ/mol photon has enough energy to break a 242 kJ/mol bond. Brightness only sets how many photons arrive; the wavelength sets what each can do.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Dim violet on Cl₂',700,14],'Photon: '+txt(sim,'Emt'),['Enough to break the bond',700,13,GRN]]);} },
+    { key: 'pe', lvl: 'ap', title: 'The photoelectric effect', set: { pre: 'vio', target: 'metal', metal: 'na', bright: 60, ph: true }, fresh: true, speed: 1,
+      see: 'Violet light knocks electrons out of sodium metal. Green light at 532 nm, just past sodium’s 525 nm threshold, would eject none, however bright.',
+      why: 'An electron escapes only if one photon has more energy than the work function φ (2.36 eV for Na). KE = hν − φ = 3.06 − 2.36 = 0.70 eV. Einstein’s explanation of this won him the Nobel Prize.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Violet on sodium',700,14],'Photon: '+txt(sim,'evt'),'Fastest electron: '+txt(sim,'ket')]);} }
+  ],
+  useIt: [
+    { do: 'Wear sunscreen even on cloudy days.',
+      why: 'UV photons carry enough energy per photon to break bonds in skin DNA. Clouds dim the light but don’t change each photon’s energy.' },
+    { do: 'Notice “UV-C” on disinfecting lamps and water purifiers.', lvl: 'honors',
+      why: 'At 254 nm each photon has about 470 kJ/mol, enough to break bonds in microbes’ DNA and RNA.' }
+  ],
+  tryIt: [
+    { title: 'glow-in-the-dark test (5 minutes)',
+      steps: ['In a dark room, shine a red phone flashlight (red filter or red app screen) on a glow-in-the-dark toy for 30 seconds.', 'Turn the light off and look. Then do the same with a white or blue light.'],
+      look: 'Red light barely makes it glow; blue or white light charges it brightly. Red photons don’t have enough energy to excite the glowing chemical.' }
+  ]
+},
+spectra: {
+  goals: {
+    bio: ['Atoms give off light only at certain colors', 'Each element has its own fingerprint of lines', 'Flame tests identify metals by color'],
+    honors: ['Electrons jump between fixed energy levels', 'ΔE = hν for each line', 'Emission vs. absorption spectra'],
+    ap: ['The Balmer, Lyman and Paschen series', 'Energy per mole of photons', 'Spectra as evidence for quantized energy']
+  },
+  matters: 'Fireworks colors, neon signs, sodium street lamps and the way astronomers know what stars are made of all come from electrons jumping between energy levels.',
+  question: 'Hot hydrogen gas glows. Will its light make a full rainbow, or just a few colors?',
+  startKey: 'h3', startRun: true,
+  steps: [
+    { key: 'h3', title: 'Excite hydrogen', set: { mode: 'hydrogen', nhi: 3, spec: 'emission' }, fresh: true, speed: 1,
+      see: 'Electrons get kicked up to level 3, then fall back down. Falls that end on level 2 send out a red photon at 656 nm, the red line in the spectroscope. Falls to level 1 give ultraviolet you can’t see.',
+      why: 'An electron in an atom can only have certain energies, like rungs on a ladder. Falling from one rung to a lower one releases exactly the energy difference as one photon of one color.',
+      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Up to level 3',700,14],'Last drop: '+txt(sim,'last')]);} },
+    { key: 'h6', title: 'Higher levels', set: { mode: 'hydrogen', nhi: 6, spec: 'emission' }, fresh: true, speed: 1,
+      cause: { from: { nhi: 3 }, delay: 0.6, dur: 1.5, label: 'Excite up to level' },
+      see: 'Excite up to level 6. Four visible lines appear: red 656, blue-green 486, blue 434 and violet 410 nm.',
+      why: 'Falls that end on level 2 are visible. Bigger drops release more energy, so they are bluer. Hydrogen’s spectrum is these four lines, not a rainbow.',
+      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Up to level 6',700,14],'Visible lines: '+txt(sim,'nvis')]);} },
+    { key: 'abs', lvl: 'honors', title: 'Absorption', set: { mode: 'hydrogen', nhi: 6, spec: 'absorption' }, fresh: true, speed: 1,
+      see: 'Shine white light through cool hydrogen. The rainbow has dark gaps at exactly the same four wavelengths.',
+      why: 'An electron can absorb a photon only if its energy matches a jump up. Those colors are removed. Astronomers read these dark lines in starlight to tell what stars are made of.',
+      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Absorption spectrum',700,14],'Same lines, now dark']);} },
+    { key: 'li', title: 'Flame test: lithium', set: { mode: 'flame', salt: 'li' }, fresh: true, speed: 1,
+      see: 'Lithium chloride in the flame glows crimson red.',
+      why: 'Heat excites the lithium atoms’ electrons; as they fall back they emit lithium’s own set of lines, mostly red. The chloride doesn’t color the flame.',
+      overlay(sim,ctx,LH,k){SPF(ctx,k,[[txt(sim,'fsalt'),700,13.5],'Flame: '+txt(sim,'fcol'),'Brightest line: '+txt(sim,'fline')]);} },
+    { key: 'na', title: 'Flame test: sodium', set: { mode: 'flame', salt: 'na' }, fresh: true, speed: 1,
+      see: 'Sodium glows bright yellow-orange, from its strong line at 589 nm.',
+      why: 'That is the same 589 nm glow as old orange sodium street lamps. Even a trace of sodium (from your fingers) can swamp other colors in a flame test.',
+      overlay(sim,ctx,LH,k){SPF(ctx,k,[[txt(sim,'fsalt'),700,13.5],'Flame: '+txt(sim,'fcol'),'Brightest line: '+txt(sim,'fline')]);} },
+    { key: 'cu', title: 'Flame test: copper', set: { mode: 'flame', salt: 'cu' }, fresh: true, speed: 1,
+      see: 'Copper gives a blue-green flame.',
+      why: 'Every element has a different set of energy levels, so a different set of colors. Firework makers use strontium for red, barium for green and copper for blue.',
+      overlay(sim,ctx,LH,k){SPF(ctx,k,[[txt(sim,'fsalt'),700,13.5],'Flame: '+txt(sim,'fcol'),'Brightest line: '+txt(sim,'fline')]);} },
+    { key: 'dE', lvl: 'ap', title: 'Energy of a line', set: { mode: 'hydrogen', nhi: 3, spec: 'emission' }, fresh: true, speed: 1,
+      see: 'Each drop the card reports has its own photon energy. The 3 → 2 drop gives the red 656 nm line.',
+      why: 'ΔE = hc/λ = (6.63 × 10⁻³⁴)(3.00 × 10⁸)/(656 × 10⁻⁹) = 3.03 × 10⁻¹⁹ J, or 182 kJ per mole of photons. Drops ending on level 1 (Lyman) are UV; on level 3 (Paschen), infrared.',
+      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Last drop: '+txt(sim,'last').replace(/^n = /,''),700,12.5],'ΔE = '+txt(sim,'elast')]);} }
+  ],
+  useIt: [
+    { do: 'Look at fireworks colors and guess the metal.',
+      why: 'Red is strontium or lithium, orange-yellow sodium, green barium, blue copper. Blue is hardest to make bright, which is why it’s rare.' },
+    { do: 'Look at a streetlight through a diffraction-grating sticker or a CD.', lvl: 'honors',
+      why: 'An LED makes a smooth band of colors; a sodium or mercury lamp shows separate lines, its element’s fingerprint.' }
+  ],
+  tryIt: [
+    { title: 'CD spectroscope (10 minutes)',
+      steps: ['Hold an old CD or DVD near a light so the rainbow reflection shows.', 'Compare sunlight, an LED bulb and a fluorescent tube.'],
+      look: 'Sunlight gives a smooth rainbow. A fluorescent tube shows bright separate lines from the mercury inside it.' }
+  ]
+},
+gibbs: {
+  goals: {
+    bio: ['Entropy measures how spread out energy and particles are', 'Things naturally spread out; they don’t un-spread by themselves', 'Some reactions only happen at high temperature'],
+    honors: ['Predicting the sign of ΔS', 'ΔG = ΔH − TΔS decides if a reaction is favorable', 'The four combinations of ΔH and ΔS signs'],
+    ap: ['S = k ln W', 'The crossover temperature T = ΔH/ΔS', 'ΔG° = −RT ln K']
+  },
+  matters: 'Why ice melts at room temperature, why a cold pack gets cold, why limestone only turns into lime in a hot kiln, and why making ammonia for fertilizer needs a careful balance of temperature.',
+  question: 'Gas particles are all held on one side of a box. Remove the divider. Could they ever all end up back on that side by themselves?',
+  startKey: 'spread', startRun: true,
+  steps: [
+    { key: 'spread', title: 'Gas spreads out', set: { mode: 'spread', N: 40, wall: false }, fresh: true, speed: 1,
+      see: 'Remove the divider. The 40 particles quickly spread to about half on each side and stay that way.',
+      why: 'There are far more ways to arrange particles spread out than bunched up. Random motion lands on the likely arrangements, so the gas spreads. That is entropy increasing.',
+      overlay(sim,ctx,LH,k){GBS(ctx,k,[['40 particles',700,14],'On the left now: '+f0(met(sim,'nL'))+' ('+f0(met(sim,'fL'))+'%)']);} },
+    { key: 'odds', lvl: 'honors', title: 'The odds', set: { mode: 'spread', N: 4, wall: false }, fresh: true, speed: 1,
+      see: 'With only 4 particles, all of them are on the left fairly often: 1 time in 16. With 40 it is 1 in a trillion.',
+      why: 'Each particle has a 1/2 chance of being on the left: (1/2)ᴺ for all of them. With a mole of particles, it never happens. That is why entropy only increases.',
+      overlay(sim,ctx,LH,k){GBS(ctx,k,[[f0(sim.p.N)+' particles',700,14],'All on the left: '+txt(sim,'Pall')]);} },
+    { key: 'boil', title: 'Predict: water boiling', set: { mode: 'predict', proc: 'boil', reveal: true }, fresh: true, pause: true,
+      see: 'Liquid water turning to gas: entropy goes up a lot, +119 J/K per mole.',
+      why: 'Gas molecules spread through a huge volume and move freely. Going from 0 to 1 mole of gas is a big increase in disorder.',
+      overlay(sim,ctx,LH,k){GBP(ctx,k,[[txt(sim,'sign'),700,13.5],'Moles of gas: '+txt(sim,'gas')]);} },
+    { key: 'haber', lvl: 'honors', title: 'Predict: making ammonia', set: { mode: 'predict', proc: 'haber', reveal: true }, fresh: true, pause: true,
+      see: 'N₂ + 3H₂ → 2NH₃: entropy goes down, −198 J/K.',
+      why: 'Four moles of gas become two. Fewer gas particles means fewer ways to arrange them. Counting moles of gas is the quickest way to predict ΔS.',
+      overlay(sim,ctx,LH,k){GBP(ctx,k,[[txt(sim,'sign'),700,13.5],'Moles of gas: '+txt(sim,'gas')]);} },
+    { key: 'lime', lvl: 'honors', title: 'Limestone at room temperature', set: { mode: 'gibbs', rx: 'caco3', T: 298 }, fresh: true, pause: true,
+      see: 'CaCO₃ → CaO + CO₂ at 298 K: ΔG = +130.6 kJ. It doesn’t happen.',
+      why: 'ΔG = ΔH − TΔS. The reaction absorbs heat (ΔH = +178.3 kJ) but makes a gas (ΔS = +160.2 J/K). At room temperature, TΔS is only 47.7 kJ, not enough to win.',
+      overlay(sim,ctx,LH,k){GBG(ctx,k,[['T = '+f0(sim.p.T)+' K',700,14],'ΔG = '+f1(met(sim,'dG'))+' kJ']);} },
+    { key: 'kiln', lvl: 'honors', title: 'Heat the kiln', set: { mode: 'gibbs', rx: 'caco3', T: 1300 }, fresh: true,
+      cause: { from: { T: 298 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'Raise to 1300 K. ΔG turns negative, −30 kJ. Now limestone breaks down into lime.',
+      why: 'The TΔS term grows with temperature. Above the crossover, ΔH/ΔS = 1113 K, entropy wins. That is why lime kilns run red-hot.',
+      overlay(sim,ctx,LH,k){GBG(ctx,k,[['T = '+f0(sim.p.T)+' K',700,14],'ΔG = '+f1(met(sim,'dG'))+' kJ']);} },
+    { key: 'nh3', lvl: 'ap', title: 'Ammonia: the opposite case', set: { mode: 'gibbs', rx: 'haber', T: 700 }, fresh: true,
+      cause: { from: { T: 298 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'The Haber reaction is favorable at 298 K (ΔG = −32.8 kJ) but unfavorable at 700 K (+46.9 kJ).',
+      why: 'ΔH < 0 and ΔS < 0, so it is favorable only below about 463 K. Factories still run near 700 K because the reaction is too slow when cold, then use high pressure and remove ammonia to push the yield up.',
+      overlay(sim,ctx,LH,k){GBG(ctx,k,[['T = '+f0(sim.p.T)+' K',700,14],'ΔG = '+f1(met(sim,'dG'))+' kJ']);} }
+  ],
+  useIt: [
+    { do: 'Notice that a dropped drop of food coloring spreads through water by itself but never gathers back.',
+      why: 'Spreading out is overwhelmingly more likely. Undoing it takes work, like a refrigerator pumping heat out.' },
+    { do: 'Use a cold pack: it gets cold even though no one cools it.', lvl: 'honors',
+      why: 'Dissolving ammonium nitrate absorbs heat (ΔH > 0), but the ions spreading into water raise entropy enough that ΔG < 0.' }
+  ],
+  tryIt: [
+    { title: 'shuffled cards (5 minutes)',
+      steps: ['Sort a deck of cards by suit.', 'Shuffle it five times and look.', 'Keep shuffling: does it ever go back to sorted?'],
+      look: 'There is one sorted order and about 8 × 10⁶⁷ shuffled ones. Shuffling always moves toward disorder, just like entropy.' }
+  ]
+},
+galvanic: {
+  goals: {
+    bio: ['A battery is a chemical reaction that pushes electrons through a wire', 'The more reactive metal gives up electrons (oxidation)', 'The salt bridge completes the circuit'],
+    honors: ['Anode, cathode, oxidation and reduction', 'E°cell = E°cathode − E°anode', 'Why the anode loses mass and the cathode gains it'],
+    ap: ['ΔG° = −nFE° and K', 'The Nernst equation: concentration changes the voltage', 'Electrolysis: forcing a reaction backward']
+  },
+  matters: 'Every battery in your phone, car and laptop is a galvanic cell. The same chemistry explains why ships carry zinc blocks to protect their steel hulls.',
+  question: 'A zinc strip and a copper strip sit in their own solutions, connected by a wire. Which way will electrons flow?',
+  startKey: 'cell', startRun: true,
+  steps: [
+    { key: 'cell', title: 'Zinc and copper', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      see: 'The voltmeter reads 1.10 V. Electrons flow through the wire from zinc to copper.',
+      why: 'Zinc gives up electrons more easily than copper. Zinc atoms become Zn²⁺ ions (oxidation); at the copper strip, Cu²⁺ ions grab electrons and become copper metal (reduction).',
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['Voltmeter: '+f2(met(sim,'volt'))+' V',700,14],'Anode: '+txt(sim,'anode'),txt(sim,'flow')]);} },
+    { key: 'bridge', title: 'Pull the salt bridge', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: false, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      cause: { from: { bridge: true }, delay: 0.6, dur: 1, label: 'Salt bridge' },
+      see: 'Remove the salt bridge. The voltage drops to 0 and the current stops.',
+      why: 'Without the bridge, positive charge piles up on the zinc side and negative on the copper side, which stops the electrons. The bridge lets ions move to keep both sides neutral.',
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['No salt bridge',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V']);} },
+    { key: 'mass', lvl: 'honors', title: 'Watch the masses', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 4,
+      see: 'Let the cell run. The zinc strip slowly loses mass and the copper strip gains it.',
+      why: 'The anode dissolves as Zn → Zn²⁺ + 2e⁻. At the cathode, Cu²⁺ + 2e⁻ → Cu plates onto the strip. A battery runs down as its anode is used up.',
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['Current: '+f0(met(sim,'mA'))+' mA',700,13.5],'Zinc: '+f2(met(sim,'mL'))+' g','Copper: '+f2(met(sim,'mR'))+' g']);} },
+    { key: 'mgag', title: 'A bigger voltage', set: { mode: 'cell', left: 'Mg', right: 'Ag', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      see: 'Magnesium and silver: 3.17 V.',
+      why: { bio: 'The farther apart two metals are in how easily they give up electrons, the bigger the voltage.', honors: 'E°cell = E°cathode − E°anode = +0.80 − (−2.37) = 3.17 V.' },
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['Mg and Ag',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V','Anode: '+txt(sim,'anode')]);} },
+    { key: 'six', lvl: 'honors', title: 'The six-way lab', set: { mode: 'six', set: 'A', pair: 0 }, fresh: true, speed: 1,
+      run(sim){doAct(sim,'allsix');},
+      see: 'Four metals on salt-soaked paper. The voltmeter measures all six pairs.',
+      why: 'From the readings you can rank the metals by how easily they give up electrons, the same order as a table of standard reduction potentials.',
+      overlay(sim,ctx,LH,k){GV6(ctx,k,[['Six-way lab',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V']);} },
+    { key: 'nernst', lvl: 'ap', title: 'Concentration matters', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 0.01 }, fresh: true, speed: 1,
+      cause: { from: { cR: 1 }, delay: 0.6, dur: 1, label: 'Right ion concentration' },
+      see: 'Dilute the Cu²⁺ to 0.01 M. The voltage drops from 1.10 to 1.04 V.',
+      why: 'E = E° − (0.0592/n) log Q, with Q = [Zn²⁺]/[Cu²⁺] = 100. Less Cu²⁺ means less push to reduce it. As a battery runs, Q grows and its voltage sags.',
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['[Cu²⁺] = 0.01 M',700,14],'E° = '+f2(met(sim,'E0'))+' V','E = '+f2(met(sim,'E'))+' V']);} },
+    { key: 'dG', lvl: 'ap', title: 'ΔG and K', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, pause: true,
+      see: 'For the zinc–copper cell, ΔG° = −212 kJ/mol and K ≈ 10³⁷.',
+      why: 'ΔG° = −nFE° = −2 × 96,485 × 1.10 J. A positive E° means a negative ΔG°: the reaction runs on its own. K is so large the reaction goes essentially to completion.',
+      overlay(sim,ctx,LH,k){GVC(ctx,k,[['E° = '+f2(met(sim,'E0'))+' V',700,14],'ΔG° = '+f1(met(sim,'dG'))+' kJ/mol','K = '+txt(sim,'K')]);} }
+  ],
+  useIt: [
+    { do: 'Don’t mix old and new batteries in a device.',
+      why: 'The old ones have lower voltage (their Q is larger) and can be driven backward by the new ones, leaking or heating.' },
+    { do: 'Notice zinc blocks on boat hulls and water heater anode rods.', lvl: 'honors',
+      why: 'Zinc and magnesium give up electrons more easily than steel, so they corrode instead of the hull: a “sacrificial anode.”' }
+  ],
+  tryIt: [
+    { title: 'a lemon battery (15 minutes)',
+      steps: ['Push a galvanized (zinc-coated) nail and a copper coin or wire into a lemon, about 2 cm apart.', 'Touch the leads of a multimeter to them, or connect several lemons in series to an LED.'],
+      look: 'One lemon gives about 0.9 V. Zinc is the anode, copper the cathode, and the lemon juice carries ions like the salt bridge.' }
+  ]
+}
+});
 })();
