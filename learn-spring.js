@@ -20,8 +20,77 @@ const CP=(ctx,k,L)=>card(ctx,k,L,14,58,262);
 const EN=(ctx,k,L)=>card(ctx,k,L,486,60,302);
 const EQ=(ctx,k,L)=>card(ctx,k,L,324,58,172);
 const KS=(ctx,k,L)=>card(ctx,k,L,30,96,214);
+const GL=(ctx,k,L)=>card(ctx,k,L,388,236,200);
 
 BioLab.addLearn({
+gaslaws: {
+  goals: {
+    bio: ['Gas pressure is molecules hitting the walls', 'Heating a sealed gas raises its pressure; squeezing it does too', 'At steady pressure, a warmer gas takes up more room'],
+    honors: ['Boyle’s, Charles’s and Gay-Lussac’s laws, always in kelvins', 'Avogadro’s law: pressure goes with the amount of gas', 'PV = nRT ties them together'],
+    ap: ['R from your own readings', 'When real gases stop acting ideal (Z ≠ 1)', 'Explaining each law with molecular speed and collision rate']
+  },
+  matters: 'Car tires going soft on the first cold morning, a bag of chips puffing up on the drive to the mountains, and a pressure cooker all follow the same few rules about how gas molecules move.',
+  question: 'A sealed, rigid box of gas goes from 0 °C to 273 °C. Does the pressure go up 273 times, double, or stay the same?',
+  startKey: 'hits', startRun: true,
+  steps: [
+    { key: 'hits', title: 'Pressure is molecules hitting walls', set: { mode: 'box', hold: 'V', vol: 22.4, T: 273, mol: 1 }, fresh: true, speed: 0.4,
+      see: 'One mole of gas locked in 22.4 L at 273 K (0 °C). Each orange flash on a wall is a molecule bouncing off it. The gauge reads about 1.0 atm.',
+      why: 'Every bounce pushes on the wall. Billions of bounces each second add up to a steady push on every square centimeter: that is pressure.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['Wall hits',700,14],f0(met(sim,'hits'))+' per second (dots shown)','Pressure: '+f2(met(sim,'P'))+' atm']);} },
+    { key: 'heat', title: 'Heat it: same box, more pressure', set: { mode: 'box', hold: 'V', vol: 22.4, T: 546, mol: 1 }, speed: 0.4,
+      cause: { from: { T: 273 }, delay: 1, dur: 3, label: 'Temperature', ring: [200, 438, 70] },
+      see: 'The heater takes the gas from 273 K to 546 K. The molecules speed up, the wall flashes come faster, and the pressure climbs to about 2.0 atm.',
+      why: { bio: 'Faster molecules hit the walls more often and harder. Double the kelvin temperature and the pressure doubles. That is why tire pressure drops on a cold morning.', honors: 'Gay-Lussac’s law: at constant V and n, P ∝ T in kelvins. 273 → 546 K doubles T, so P doubles. In °C (0 → 273) the ratio makes no sense, which is why gas laws use kelvins.' },
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['Gas: '+f0(met(sim,'TK'))+' K (started at 273)',700,13.5,RED],'Pressure: '+f2(met(sim,'P'))+' atm','Wall hits: '+f0(met(sim,'hits'))+' per second']);} },
+    { key: 'squeeze', title: 'Squeeze it: half the space', set: { mode: 'box', hold: 'V', vol: 11.2, T: 273, mol: 1 }, fresh: true, speed: 0.4,
+      cause: { from: { vol: 22.4 }, delay: 1, dur: 3, label: 'Volume', ring: [200, 210, 60] },
+      see: 'Back to 273 K. The piston pushes down from 22.4 L to 11.2 L. The same molecules, at the same speed, now hit the walls about twice as often. The pressure doubles to about 2.0 atm.',
+      why: 'Half the space means each molecule reaches a wall twice as often. Boyle’s law: at constant temperature, P × V stays the same, so halving V doubles P.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['V = '+f1(met(sim,'V'))+' L',700,14],'Pressure: '+f2(met(sim,'P'))+' atm','Wall hits: '+f0(met(sim,'hits'))+' per second']);} },
+    { key: 'float', title: 'Let the piston float', set: { mode: 'box', hold: 'P', vol: 22.4, T: 546, mol: 1 }, fresh: true, speed: 0.4,
+      cause: { from: { T: 273 }, delay: 1, dur: 3, label: 'Temperature', ring: [200, 438, 70] },
+      see: 'Now the piston is free to move. As the gas heats to 546 K, it pushes the piston up until the volume doubles to 44.8 L. The pressure stays at 1.0 atm.',
+      why: 'Faster molecules push harder, so the piston rises until the wall hits spread over more space and the pressure matches the outside again. Charles’s law: at constant P, V ∝ T in kelvins.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['Gas: '+f0(met(sim,'TK'))+' K',700,14,RED],'V = '+f1(met(sim,'V'))+' L','Pressure: '+f2(met(sim,'P'))+' atm']);} },
+    { key: 'balloon', title: 'A balloon in hot and cold water', set: { mode: 'balloon', bath: 'boil' }, fresh: true, speed: 0.6,
+      cause: { from: { bath: 'ice' }, delay: 2.5, label: 'Water bath' },
+      see: 'A balloon goes from ice water (273 K) into boiling water (373 K). It shrinks to about 1.85 L in the ice, then swells to about 2.53 L in the boiling water.',
+      why: 'The rubber keeps the pressure inside close to the air outside, so the balloon behaves like the floating piston: the volume follows the kelvin temperature. 373 ÷ 273 = 1.37, and 2.53 ÷ 1.85 = 1.37.',
+      overlay(sim,ctx,LH,k){card(ctx,k,[['Balloon: '+f2(met(sim,'V'))+' L',700,14],'Gas at '+f0(met(sim,'TK'))+' K'],600,20,188);} },
+    { key: 'syringe', lvl: 'honors', title: 'Boyle’s law with a syringe', set: { mode: 'syringe', syr: 5 }, fresh: true, speed: 0.6,
+      cause: { from: { syr: 10 }, delay: 1, dur: 3, label: 'Plunger position' },
+      see: 'A sealed syringe with 10 mL of air at 1.0 atm. The plunger pushes in to 5 mL, and the pressure rises to about 2.0 atm.',
+      why: 'P₁V₁ = P₂V₂: (1.0 atm)(10 mL) = P₂(5 mL), so P₂ = 2.0 atm. You can feel it: the further you push, the harder the air pushes back.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['V = '+f1(met(sim,'Vml'))+' mL',700,14],'Pressure: '+f2(met(sim,'P'))+' atm','P × V ≈ '+f1(met(sim,'P')*met(sim,'Vml'))+' atm·mL']);} },
+    { key: 'amount', lvl: 'honors', title: 'Less gas, less pressure', set: { mode: 'box', hold: 'V', vol: 22.4, T: 273, mol: 0.5 }, fresh: true, speed: 0.4,
+      cause: { from: { mol: 1 }, delay: 1, dur: 2.5, label: 'Amount of gas' },
+      see: 'Half the gas is let out of the locked 22.4 L box at 273 K. Fewer molecules means fewer wall hits, and the pressure falls to about 0.5 atm.',
+      why: 'Avogadro’s law: at the same T and V, pressure is proportional to the number of molecules. Together, the laws make PV = nRT.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['n = '+String(met(sim,'nmol'))+' mol',700,14],'Pressure: '+f2(met(sim,'P'))+' atm']);} },
+    { key: 'r', lvl: 'ap', title: 'Measure R yourself', set: { mode: 'box', hold: 'V', vol: 22.4, T: 546, mol: 1 }, fresh: true, speed: 0.4,
+      see: 'Same 1 mol in 22.4 L, now at 546 K. Divide your readings: PV ÷ nT.',
+      why: 'R = PV ÷ nT = (2.0 atm)(22.4 L) ÷ (1 mol)(546 K) ≈ 0.0821 L·atm/(mol·K). Any ideal gas, any conditions, gives the same R.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['R from your readings',700,13.5],f2(met(sim,'P'))+' × 22.4 ÷ (1 × '+f0(met(sim,'TK'))+')',['= '+(Number.isFinite(met(sim,'Rx'))?met(sim,'Rx').toFixed(4):'—'),700,13.5,RED]]);} },
+    { key: 'real', lvl: 'ap', title: 'When gases stop acting ideal', set: { mode: 'box', hold: 'V', vol: 2, T: 300, mol: 1.5, gas: 'CO2' }, fresh: true, speed: 0.4,
+      cause: { from: { gas: 'ideal' }, delay: 1, label: 'Gas' },
+      see: '1.5 mol of CO₂ squeezed into 2 L. The real pressure comes out below what PV = nRT predicts: Z = PV ÷ nRT drops below 1.',
+      why: 'Crowded together, real CO₂ molecules attract each other, so they hit the walls a little less hard. Ideal gases have no attractions and no size; real gases act ideal only when molecules are far apart.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['CO₂, crowded',700,14],'Pressure: '+f2(met(sim,'P'))+' atm',['Z = '+(Number.isFinite(met(sim,'Z'))?met(sim,'Z').toFixed(3):'—'),700,13.5,RED]]);} }
+  ],
+  useIt: [
+    { do: 'Check tire pressure with the tires cold, and top them up when the weather turns cold.',
+      why: 'A drop from 70 °F to 20 °F lowers the pressure by about 10%. Underinflated tires grip worse, wear faster and waste gas.' },
+    { do: 'Open a sealed bag of chips slowly after driving up to the mountains.',
+      why: 'The bag was sealed at lower altitude. Outside pressure falls as you climb, so the gas inside expands and the bag puffs up (Boyle’s law).' },
+    { do: 'Never heat a sealed can or bottle, or throw an aerosol can in a fire.', lvl: 'honors',
+      why: 'At constant volume, pressure rises with kelvin temperature until the container bursts.' }
+  ],
+  tryIt: [
+    { title: 'the bottle in the freezer (15 minutes)',
+      steps: ['Take an empty plastic water bottle, squeeze nothing out, and cap it tightly at room temperature.', 'Put it in the freezer for 10–15 minutes.', 'Take it out and leave it on the counter.'],
+      look: 'The bottle crumples in the cold as the air inside loses pressure, then slowly fills back out as it warms. Same air, same amount: only the temperature changed.' }
+  ]
+},
 calorimetry: {
   goals: {
     bio: ['Heat always flows from hot to cold until the temperatures match', 'Why the same heat changes a metal’s temperature far more than water’s', 'How burning a snack under a can measures the energy in food'],
