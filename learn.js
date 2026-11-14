@@ -1830,4 +1830,126 @@ precip: {
 }
 });
 
+/* periodic table and reaction types */
+const PTC=(ctx,k,L)=>ckCard(ctx,k,L,16,512,420,1.3);
+function ptWalk(sim,tau,list,t0,dt){const i=Math.max(0,Math.min(list.length-1,Math.floor((tau-t0)/dt)));if(tau>=t0&&sim.p.el!==list[i])BioLab.setValues(sim,{el:list[i]});return i;}
+const ptN=sim=>String(chMet(sim,'name'));
+const RXC=(ctx,k,L)=>ckCard(ctx,k,L,486,402,304,1.25);
+const rxDone=sim=>/^(Synthesis|Decomposition|Single|Double|Combustion)/.test(String(chMet(sim,'type')));
+function rxCard(sim,ctx,k,tau){const ev=String(chMet(sim,'evid')),ty=String(chMet(sim,'type'));RXC(ctx,k,[[tau<1.2?'About to start…':'Evidence: '+ev,700,12.5],rxDone(sim)?['Type: '+ty,700,13,KR]:'Type: watch first…']);}
+BioLab.addLearn({
+ptable: {
+  goals: {
+    bio: ['How the periodic table is organized into periods and groups', 'Reading an element’s square: number, symbol, name and mass', 'Where metals, nonmetals and metalloids sit, and which elements are solids, liquids or gases'],
+    honors: ['Valence electrons and common ion charges by group', 'The s, p, d and f blocks', 'Families: alkali metals, alkaline earth metals, halogens and noble gases'],
+    ap: ['Why atomic number, not mass, sets the order', 'Melting and boiling points across the table', 'Using position to predict properties']
+  },
+  matters: 'The periodic table lets you predict how an element behaves without memorizing it: that sodium explodes in water, that neon won’t react, that chlorine and fluorine are dangerous gases. Chemists used its gaps to predict elements before anyone found them.',
+  startKey: 'table', startRun: false,
+  steps: [
+    { key: 'period', title: 'Periods: one more proton each step', set: { mode: 'explore', color: 'cat', el: 'Na' }, fresh: true, speed: 1,
+      see: 'Watch the selection walk across period 3, from sodium to argon.',
+      why: 'Each step to the right adds one proton (and one electron), so the atomic number climbs by 1. The period number is how many electron shells the atoms use: every element in row 3 uses 3.',
+      overlay(sim,ctx,LH,k,tau){ptWalk(sim,tau,['Na','Mg','Al','Si','P','S','Cl','Ar'],1,1.3);PTC(ctx,k,[[ptN(sim)+': atomic number '+chMet(sim,'Z'),700,13.5,KR],'Period 3: three electron shells']);} },
+    { key: 'group', title: 'Groups: same outer electrons', set: { mode: 'explore', color: 'family', el: 'Li' }, fresh: true, speed: 1,
+      see: 'Now the selection walks down group 1, the alkali metals.',
+      why: 'Every element in a group has the same number of outer (valence) electrons, so they react alike. All the alkali metals have 1 and react with water; they get more violent going down the group because that electron sits farther from the nucleus.',
+      overlay(sim,ctx,LH,k,tau){ptWalk(sim,tau,['Li','Na','K','Rb','Cs'],1,1.5);PTC(ctx,k,[[ptN(sim)+': group 1, period '+({Li:2,Na:3,K:4,Rb:5,Cs:6}[sim.p.el]||''),700,13.5,KR],'1 valence electron, like every alkali metal']);} },
+    { key: 'metals', title: 'Metals, nonmetals, metalloids', set: { mode: 'explore', color: 'metal', el: 'Si' }, fresh: true, pause: true,
+      see: 'The table colored by type. The staircase line runs from boron down to astatine.',
+      why: 'Metals (left of the staircase) are shiny, bend instead of shattering and conduct electricity. Nonmetals (right) are mostly gases or brittle solids. Metalloids along the line, like silicon, are in between, which is exactly why silicon makes good computer chips.' },
+    { key: 'warm', title: 'Warm it up a little', set: { mode: 'explore', color: 'state', temp: 100, el: 'Ga' }, fresh: true, speed: 1,
+      cause: { from: { temp: 25 }, delay: 1.5, dur: 5, label: 'Temperature' },
+      see: 'Room temperature, 25 °C. Watch it warm to 100 °C, the boiling point of water, and look for squares that turn blue (liquid) or red (gas).',
+      why: 'Cesium (28 °C) and gallium (30 °C) melt first: gallium would melt in your hand. Rubidium, potassium and sodium follow, and liquid bromine boils away at 59 °C. Each element changes state at its own temperature.',
+      overlay(sim,ctx,LH,k){PTC(ctx,k,[['Temperature: '+Math.round(sim.p.temp)+' °C (was 25)',700,13.5,KR],'Blue = liquid, red = gas']);} },
+    { key: 'hot', title: 'Much hotter', set: { mode: 'explore', color: 'state', temp: 3000, el: 'W' }, fresh: true, speed: 1,
+      cause: { from: { temp: 100 }, delay: 1.5, dur: 7, label: 'Temperature' },
+      see: 'From 100 °C, watch the temperature climb to 3,000 °C.',
+      why: 'Most metals melt between a few hundred and about 2,000 °C, and many boil away by 3,000 °C. Tungsten holds out longest: it melts at 3,422 °C, which is why it was used for light-bulb filaments.',
+      overlay(sim,ctx,LH,k){PTC(ctx,k,[['Temperature: '+Math.round(sim.p.temp)+' °C (was 100)',700,13.5,KR],'Tungsten (W) is still solid']);} },
+    { key: 'cold', lvl: 'honors', title: 'Cool it down', set: { mode: 'explore', color: 'state', temp: -200, el: 'N' }, fresh: true, speed: 1,
+      cause: { from: { temp: 25 }, delay: 1.5, dur: 6, label: 'Temperature' },
+      see: 'Back at 25 °C, watch the temperature drop to −200 °C.',
+      why: 'Gases turn liquid as they cool: chlorine at −34 °C, radon at −62 °C, oxygen at −183 °C, nitrogen at −196 °C. Only hydrogen, helium and neon are still gases at −200 °C. Liquid nitrogen at −196 °C is how doctors freeze off warts.',
+      overlay(sim,ctx,LH,k){PTC(ctx,k,[['Temperature: '+Math.round(sim.p.temp)+' °C (was 25)',700,13.5,KR],'Watch the red gases turn blue']);} },
+    { key: 'ions', lvl: 'honors', title: 'Valence electrons and ion charges', set: { mode: 'explore', color: 'ions', el: 'O' }, fresh: true, pause: true,
+      see: 'The table colored by the ions each element usually forms.',
+      why: 'Main-group atoms gain or lose electrons to reach 8 valence electrons. Group 1 loses 1 (1+), group 2 loses 2 (2+), group 16 gains 2 (2−) and group 17 gains 1 (1−). Noble gases already have 8 and almost never react.' },
+    { key: 'order', lvl: 'ap', title: 'Ordered by protons, not mass', set: { mode: 'explore', color: 'mass', el: 'Te' }, fresh: true, speed: 1,
+      see: 'Watch the selection step from tellurium to iodine.',
+      why: 'Tellurium (127.60 g/mol) is heavier than iodine (126.90), yet it comes first. Moseley showed in 1913 that the true order is atomic number, 52 then 53, and iodine belongs with the halogens it acts like.',
+      overlay(sim,ctx,LH,k,tau){ptWalk(sim,tau,['Te','I'],1.5,2.5);PTC(ctx,k,[[ptN(sim)+': Z = '+chMet(sim,'Z')+', '+Number(chMet(sim,'mass')).toFixed(2)+' g/mol',700,13.5,KR],'Order follows Z, even when mass goes down']);} }
+  ],
+  useIt: [
+    { do: 'Read an element’s group to guess how it behaves before you look it up.',
+      why: 'Sodium, potassium and lithium all react with water; chlorine, bromine and iodine are all disinfectants. Elements in a column act alike.' },
+    { do: 'Check the label on a lithium battery and keep damaged ones away from water and heat.',
+      why: 'Lithium is an alkali metal: it reacts with water and air. Swollen or punctured lithium batteries can catch fire.' },
+    { do: 'Notice that the elements your body needs most (C, H, O, N) are all light nonmetals.', lvl: 'honors',
+      why: 'Light nonmetals share electrons to build the long, varied molecules of life. Metals like Na, K, Ca and Fe are needed too, but as ions.' }
+  ],
+  tryIt: [
+    { title: 'the periodic table scavenger hunt (15 minutes)',
+      steps: ['Pick 10 items around your house: foil, a penny, table salt, a pencil, a battery, a soda can, and so on.', 'Find at least one element in each (look at the label if needed) and find it on the table.', 'Mark each one as a metal, nonmetal or metalloid.'],
+      look: 'Most of the elements you find are metals on the left side. The nonmetals you find (C, O, Cl, N, Si in sand or glass) cluster on the right.' }
+  ]
+},
+rxntypes: {
+  goals: {
+    bio: ['The evidence that a chemical change has happened', 'The five main types of reactions', 'Writing word and skeleton equations'],
+    honors: ['Classifying reactions from the pattern A + B, AB, A + BC and AB + CD', 'Balancing each type with states of matter', 'How the amount of reactant changes the heat released'],
+    ap: ['Which types are redox reactions', 'Reaction enthalpy and heat released', 'Predicting products from the type']
+  },
+  matters: 'Rusting cars, baking soda volcanoes, camp stoves, antacids and the hand warmers in your coat are all one of a handful of reaction types. Spotting the pattern lets you predict what forms.',
+  startKey: 'bench', startRun: true, startSpeed: 1,
+  steps: [
+    { key: 'alcu', title: 'Single replacement', set: { rxn: 'alcu', guess: 'none' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Aluminum foil in blue copper(II) chloride. Watch for evidence of a chemical change.',
+      why: 'The blue fades, red-brown copper builds up on the foil and the solution gets hot. Aluminum (A) replaces copper (B) in its compound: A + BC → AC + B, a single replacement.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'r',()=>chAct(sim,'run'));rxCard(sim,ctx,k,tau);} },
+    { key: 'mg', title: 'Synthesis', set: { rxn: 'mg', guess: 'none' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'A strip of magnesium burns in air. (Never look straight at it in real life.)',
+      why: 'Magnesium and oxygen combine into one product, white magnesium oxide: A + B → AB. Two or more things joining into one is synthesis. The blinding light and heat are evidence too.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'r',()=>chAct(sim,'run'));rxCard(sim,ctx,k,tau);} },
+    { key: 'cuco3', title: 'Decomposition', set: { rxn: 'cuco3', guess: 'none' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Green copper(II) carbonate is heated.',
+      why: 'It breaks into black copper(II) oxide and carbon dioxide gas: AB → A + B. One compound splitting into simpler substances is decomposition, and it usually needs energy, here from the flame.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'r',()=>chAct(sim,'run'));rxCard(sim,ctx,k,tau);} },
+    { key: 'agcl', title: 'Double replacement', set: { rxn: 'agcl', guess: 'none' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Silver nitrate and sodium chloride solutions are mixed.',
+      why: 'The ions swap partners: AgNO₃ + NaCl → AgCl + NaNO₃, the pattern AB + CD → AD + CB. A white solid, silver chloride, falls out. Double replacements usually make a precipitate, a gas or water.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'r',()=>chAct(sim,'run'));rxCard(sim,ctx,k,tau);} },
+    { key: 'ch4', title: 'Combustion', set: { rxn: 'ch4', guess: 'none' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Methane, natural gas, burns in a Bunsen burner.',
+      why: 'A fuel made of carbon and hydrogen reacts with oxygen to make carbon dioxide and water, releasing heat and light: CH₄ + 2O₂ → CO₂ + 2H₂O. That is combustion, the reaction in gas stoves, furnaces and car engines.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'r',()=>chAct(sim,'run'));rxCard(sim,ctx,k,tau);} },
+    { key: 'amt', lvl: 'honors', title: 'More reactant, more heat', set: { rxn: 'alcu', guess: 'none', amt: 2 }, fresh: true, speed: 1,
+      cause: { from: { amt: 1 }, delay: 1.2, dur: 1.5, at: [200,86], label: 'Amount of reactant' },
+      run(sim){chAtReset(sim);},
+      see: 'Back to aluminum in copper(II) chloride. Before it starts, watch the copper chloride solution get twice as concentrated.',
+      why: 'Twice as much Cu²⁺ in the same 50 mL means twice as much reaction, so twice the heat goes into about the same amount of water. The temperature rise roughly doubles.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,3,'r',()=>chAct(sim,'run'));const d=Number(chMet(sim,'dT'));RXC(ctx,k,[['Amount: '+sim.p.amt.toFixed(2)+'× (was 1×)',700,13],['Temperature rise: '+(isNaN(d)?'…':d.toFixed(1)+' °C'),700,13,KR]]);} }
+  ],
+  useIt: [
+    { do: 'Use a single-use hand warmer on a cold day, and read its label.',
+      why: 'It holds iron powder that combines with oxygen from the air once you open it: a synthesis reaction that releases heat for hours.' },
+    { do: 'Keep a working carbon monoxide detector near gas appliances.',
+      why: 'Complete combustion of natural gas makes CO₂ and water. With too little oxygen it makes carbon monoxide instead, which you can’t see or smell.' },
+    { do: 'Take an antacid for heartburn rather than drinking baking-soda water often.', lvl: 'honors',
+      why: 'Both neutralize stomach acid in a double replacement that makes water and CO₂, but too much baking soda adds a lot of sodium. The antacid is dosed for the job.' }
+  ],
+  tryIt: [
+    { title: 'the baking soda balloon (10 minutes)',
+      steps: ['Put 2 tablespoons of baking soda into a balloon using a funnel.', 'Pour ½ cup of vinegar into a bottle and stretch the balloon over the mouth without spilling the powder.', 'Lift the balloon so the baking soda falls in.'],
+      look: 'It fizzes and the balloon inflates with carbon dioxide gas, evidence of a chemical change. The bottle also feels a little cold. This is a double replacement whose product, carbonic acid, decomposes into water and CO₂.' }
+  ]
+}
+});
+
 })();
