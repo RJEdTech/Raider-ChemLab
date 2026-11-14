@@ -650,4 +650,218 @@ gasstoich: {
   ]
 }
 });
+/* ---- Feb–Mar units: solutions (added Nov 14, 2026) ---- */
+const DSC=(ctx,k,L)=>card(ctx,k,L,694,36,100);
+const MB=(ctx,k,L)=>card(ctx,k,L,582,8,210);
+const MF=(ctx,k,L)=>card(ctx,k,L,14,180,240);
+const MD=(ctx,k,L)=>card(ctx,k,L,206,70,124);
+const SC=(ctx,k,L)=>card(ctx,k,L,92,118,240);
+const SG=(ctx,k,L)=>card(ctx,k,L,300,62,170);
+const CLG=(ctx,k,L)=>card(ctx,k,L,232,4,300);
+
+BioLab.addLearn({
+dissolve: {
+  goals: {
+    bio: ['Water pulls salt apart into ions but leaves oil alone', 'Saturated means no more will dissolve', 'Stirring, heat and small pieces speed dissolving up'],
+    honors: ['Like dissolves like: polar and nonpolar', 'Strong, weak and nonelectrolytes', 'Rate of dissolving vs. how much can dissolve'],
+    ap: ['Percent ionization and conductivity', 'Ion–dipole and hydrogen-bond attractions', 'Why HCl ionizes fully and acetic acid barely']
+  },
+  matters: 'Salt on icy roads, sports drinks with electrolytes, and why oil-based stains need soap all come down to what water can and can’t pull apart.',
+  question: 'Salt and sugar both disappear in water. Do they dissolve the same way?',
+  startKey: 'salt', startRun: true,
+  steps: [
+    { key: 'salt', title: 'Salt in water', set: { solute: 'NaCl', mass: 20, T: 25, stir: false }, fresh: true, speed: 1,
+      see: 'Water molecules surround the Na⁺ and Cl⁻ ions at the crystal’s surface and carry them off one by one. The bulb lights up.',
+      why: 'Water is polar: its O end is slightly negative and its H ends slightly positive. Each end grabs the opposite ion. Loose ions carry current, so salt water conducts.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['NaCl',700,13],f1(met(sim,'dis'))+' g in','Bulb: '+txt(sim,'bulb')]);} },
+    { key: 'stir', title: 'Stir it', set: { solute: 'NaCl', mass: 20, T: 25, stir: true }, fresh: true, speed: 1,
+      see: 'With the stirrer on, the same 20 g dissolves about 4 times faster.',
+      why: 'Stirring carries the salty water away from the crystal and brings fresh water in. It changes how fast salt dissolves, not how much can.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Stirred',700,13],f1(met(sim,'dis'))+' g in']);} },
+    { key: 'sat', title: 'Too much salt', set: { solute: 'NaCl', mass: 50, T: 25, stir: true }, fresh: true, speed: 1,
+      see: 'Add 50 g. Only about 36 g dissolves; about 14 g stays on the bottom. The solution is saturated.',
+      why: 'At 25 °C, 100 g of water can hold at most 36 g of salt. Past that, ions leave the crystal and rejoin it at the same rate.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[[txt(sim,'state'),700,12],f1(met(sim,'dis'))+' g in',f1(met(sim,'left'))+' g left']);} },
+    { key: 'sugar', title: 'Sugar', set: { solute: 'sugar', mass: 20, T: 25, stir: true }, fresh: true, speed: 1,
+      see: 'Sugar dissolves too, but the bulb stays off.',
+      why: 'Water pulls whole sugar molecules away by hydrogen bonding, but they don’t break into ions. No ions, no current: sugar is a nonelectrolyte.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Sugar',700,13],f1(met(sim,'dis'))+' g in','Bulb: '+txt(sim,'bulb')]);} },
+    { key: 'oil', title: 'Oil', set: { solute: 'oil', mass: 20, T: 25, stir: true }, fresh: true, speed: 1,
+      see: 'Oil floats in a separate layer, even with stirring.',
+      why: 'Oil molecules are nonpolar. Water molecules stick to each other more strongly than to oil, so they squeeze the oil out. Like dissolves like.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Oil',700,13],'Two layers']);} },
+    { key: 'weak', lvl: 'honors', title: 'Strong and weak', set: { solute: 'acetic', mass: 20, T: 25, stir: true }, fresh: true, speed: 1,
+      see: 'Vinegar’s acetic acid mixes in completely, but the bulb is only dim. HCl (try it) lights it brightly.',
+      why: 'HCl breaks into ions 100% of the time: a strong electrolyte. Only a fraction of a percent of acetic acid molecules ionize: a weak electrolyte.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Acetic acid',700,12],'Bulb: '+txt(sim,'bulb'),f2(met(sim,'ion'))+'% ions']);} },
+    { key: 'hot', lvl: 'honors', title: 'Hot water and sugar', set: { solute: 'sugar', mass: 60, T: 80, stir: true }, fresh: true, speed: 1,
+      see: 'At 80 °C water can hold about 360 g of sugar per 100 g, almost twice as much as at 25 °C.',
+      why: 'For most solids, solubility rises with temperature. That is how candy makers and rock-candy kits make supersaturated syrups.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Sugar, 80 °C',700,12],'Max: '+f0(met(sim,'lim'))+' g']);} }
+  ],
+  useIt: [
+    { do: 'Use dish soap, not just water, on greasy pans.',
+      why: 'Soap molecules have a nonpolar tail that grabs grease and a polar head that grabs water, so the grease rinses away.' },
+    { do: 'Stir or crush to dissolve something faster.', lvl: 'honors',
+      why: 'More surface and fresh water at the surface speed dissolving. They don’t raise the most that can dissolve; only temperature (for solids) does that.' }
+  ],
+  tryIt: [
+    { title: 'salt, sugar, oil (5 minutes)',
+      steps: ['Fill three clear glasses with warm water.', 'Add a spoon of salt to one, sugar to another, and cooking oil to the third.', 'Stir each for 30 seconds.'],
+      look: 'Salt and sugar disappear; oil floats in a layer. Taste is not a lab test, but salt water and sugar water would taste different because different particles are spread through them.' }
+  ]
+},
+molarity: {
+  goals: {
+    bio: ['Molarity = moles of solute ÷ liters of solution', 'More solute or less water makes a solution more concentrated', 'Using a volumetric flask to make an exact solution'],
+    honors: ['Converting grams to moles to molarity', 'Dilution: M₁V₁ = M₂V₂', 'Why you fill to the mark after dissolving'],
+    ap: ['Molality, mass percent, ppm and mole fraction', 'Hydrates: include the water in the molar mass', 'Saturation limits']
+  },
+  matters: 'Medicine doses, IV bags, pool chemicals and the concentration of a sports drink all use concentration. A nurse diluting a drug uses the same M₁V₁ = M₂V₂ you’ll use here.',
+  question: 'You dissolve the same amount of copper sulfate in twice as much water. Is the solution half as concentrated?',
+  startKey: 'mix', startRun: false,
+  steps: [
+    { key: 'mix', title: 'Moles per liter', set: { mode: 'beaker', solute: 'CuSO4', n: 0.5, V: 0.5 }, fresh: true, pause: true,
+      see: '0.500 mol of copper sulfate in 0.500 L of solution: 1.00 M. The blue color shows how concentrated it is.',
+      why: 'Molarity counts particles (moles) per liter of the final solution. 0.5 mol ÷ 0.5 L = 1.0 mol/L.',
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['n = '+f2(sim.p.n)+' mol, V = '+f2(sim.p.V)+' L',700,14],'M = '+f2(met(sim,'M'))+' M']);} },
+    { key: 'water', title: 'Add water', set: { mode: 'beaker', solute: 'CuSO4', n: 0.5, V: 1 }, fresh: true,
+      cause: { from: { V: 0.5 }, delay: 0.6, dur: 2.5, label: 'Solution volume' },
+      see: 'Fill to 1.0 L with the same 0.5 mol. The concentration halves to 0.50 M and the blue gets paler.',
+      why: 'Same number of copper ions spread through twice the volume. The moles didn’t change; only the volume did.',
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['n = '+f2(sim.p.n)+' mol, V = '+f2(sim.p.V)+' L',700,14],'M = '+f2(met(sim,'M'))+' M']);} },
+    { key: 'more', title: 'Add solute', set: { mode: 'beaker', solute: 'CuSO4', n: 1, V: 1 }, fresh: true,
+      cause: { from: { n: 0.5 }, delay: 0.6, dur: 2.5, label: 'Solute amount' },
+      see: 'Keep the 1.0 L and add a second 0.5 mol. The concentration doubles to 1.00 M and the blue deepens.',
+      why: 'Twice the moles in the same volume, twice the concentration. Grams of solute = moles × molar mass (249.7 g/mol for the blue hydrate). There is a limit, though: past about 1.4 M, extra copper sulfate won’t dissolve.',
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['n = '+f2(sim.p.n)+' mol, V = '+f2(sim.p.V)+' L',700,14],'M = '+f2(met(sim,'M'))+' M','Mass: '+f1(met(sim,'g'))+' g']);} },
+    { key: 'flask', title: 'Make it exactly', set: { mode: 'flask', solute: 'CuSO4', fl: '250', mg: 6.24 }, fresh: true, speed: 1,
+      see: 'The real way: weigh 6.24 g, transfer it to a 250.00 mL flask, dissolve in some water, fill to the mark, then mix.',
+      why: '6.24 g ÷ 249.68 g/mol = 0.0250 mol. Filling to the mark after dissolving makes the solution exactly 0.250 L, so M = 0.0250 ÷ 0.250 = 0.100 M.',
+      overlay(sim,ctx,LH,k,tau){[2,4,6,8].forEach((t,i)=>{if(tau>=t&&sim['_fl'+i]!==sim.lnT0){sim['_fl'+i]=sim.lnT0;doAct(sim,'next');}});MF(ctx,k,[[txt(sim,'stepT'),700,12.5],'Moles: '+f2(met(sim,'mol')*1000)+' mmol','M = '+(Number.isFinite(met(sim,'M'))?met(sim,'M').toFixed(3)+' M':'not yet')]);} },
+    { key: 'dilute', lvl: 'honors', title: 'Dilute a stock', set: { mode: 'dilute', M1: 1, V1: '10', V2: '100' }, fresh: true, speed: 1, run(sim){doAct(sim,'skip');},
+      see: 'Pipet 10.00 mL of 1.00 M stock into a 100.00 mL flask and fill to the mark: 0.100 M.',
+      why: 'The moles you pipetted don’t change when you add water: M₁V₁ = M₂V₂. 1.00 × 10.00 = M₂ × 100.00, so M₂ = 0.100 M, a tenfold dilution.',
+      overlay(sim,ctx,LH,k){MD(ctx,k,[['M₁V₁ = M₂V₂',700,13],'Factor: '+f0(met(sim,'fac'))+'×','M₂ = '+f2(met(sim,'M2'))+' M']);} },
+    { key: 'other', lvl: 'ap', title: 'Other units', set: { mode: 'beaker', solute: 'CuSO4', n: 0.5, V: 0.5 }, fresh: true, pause: true,
+      see: 'The same 1.00 M solution in other units: molality, mass percent and mole fraction.',
+      why: 'Molality uses kilograms of water, not liters of solution, so it doesn’t change with temperature. That is why colligative properties use it.',
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['1.00 M CuSO₄',700,14],'Molality: '+f2(met(sim,'molal'))+' m','Mass percent: '+f1(met(sim,'wp'))+'%']);} }
+  ],
+  useIt: [
+    { do: 'Follow mixing directions for drink powders and cleaners exactly.',
+      why: 'The directions set the concentration. Too much water makes a weak solution; too little can make it too strong or unsafe.' },
+    { do: 'Use M₁V₁ = M₂V₂ any time you dilute something.', lvl: 'honors',
+      why: 'Diluting bleach, juice concentrate or a stock solution in lab is the same math.' }
+  ],
+  tryIt: [
+    { title: 'food-coloring dilutions (10 minutes)',
+      steps: ['Put 10 drops of food coloring in a cup with 100 mL of water.', 'Pour 10 mL of it into a second cup and add 90 mL of water.', 'Repeat once more into a third cup.'],
+      look: 'Each cup is ten times paler: a 1 : 10 dilution each time. The third cup is 1/100 as concentrated as the first.' }
+  ]
+},
+solcurve: {
+  goals: {
+    bio: ['Reading a solubility curve', 'Saturated, unsaturated and supersaturated', 'Most solids dissolve better hot; gases dissolve better cold'],
+    honors: ['Crystals that form on cooling', 'Supersaturated solutions and seed crystals', 'Why warm water holds less oxygen'],
+    ap: ['Recrystallization and percent recovery', 'Henry’s law for gases', 'Compounds whose solubility drops with heat']
+  },
+  matters: 'Rock candy, purifying a drug by recrystallization, and fish kills in warm summer lakes all follow from how solubility changes with temperature.',
+  question: 'You dissolve 80 g of potassium nitrate in hot water, then let it cool. What happens to the dissolved salt?',
+  startKey: 'read', startRun: true,
+  steps: [
+    { key: 'read', title: 'Reading the curve', set: { view: 'solid', solute: 'KNO3', mass: 80, T: 40 }, fresh: true, speed: 1,
+      see: '80 g of KNO₃ in 100 g of water at 40 °C. The curve says only 63.9 g can dissolve, so 16.1 g stays as crystals.',
+      why: 'The curve is the saturation limit at each temperature. Above the line you can’t dissolve more; the extra stays solid.',
+      overlay(sim,ctx,LH,k){SC(ctx,k,[[txt(sim,'state'),700,14],'Dissolved: '+f1(met(sim,'md'))+' g','Crystals: '+f1(met(sim,'mc'))+' g']);} },
+    { key: 'warm', title: 'Warm it', set: { view: 'solid', solute: 'KNO3', mass: 80, T: 60 }, fresh: true, speed: 1,
+      cause: { from: { T: 40 }, delay: 0.6, dur: 2.5, label: 'Temperature' },
+      see: 'At 60 °C the limit jumps to 110 g. All 80 g dissolves, with room for 30 g more.',
+      why: 'For KNO₃ the curve rises steeply. Hot water can hold far more.',
+      overlay(sim,ctx,LH,k){SC(ctx,k,[[txt(sim,'state'),700,14],'Limit: '+f1(met(sim,'S'))+' g','Dissolved: '+f1(met(sim,'md'))+' g']);} },
+    { key: 'cool', title: 'Cool it', set: { view: 'solid', solute: 'KNO3', mass: 80, T: 20 }, fresh: true, speed: 1,
+      cause: { from: { T: 60 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'Cool to 20 °C. Crystals rain out: only 31.6 g can stay dissolved, so 48.4 g comes back out as solid.',
+      why: 'As the limit drops below 80 g, the extra has nowhere to go. That is crystallization, the way chemists purify solids.',
+      overlay(sim,ctx,LH,k){SC(ctx,k,[[txt(sim,'state'),700,14],'Dissolved: '+f1(met(sim,'md'))+' g','Crystals: '+f1(met(sim,'mc'))+' g']);} },
+    { key: 'nacl', title: 'Salt barely changes', set: { view: 'solid', solute: 'NaCl', mass: 40, T: 100 }, fresh: true, speed: 1,
+      cause: { from: { T: 20 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'Table salt’s curve is almost flat: about 36 g at room temperature and only 40 g at 100 °C.',
+      why: 'Every compound has its own curve. Heating salt water won’t dissolve much more salt.',
+      overlay(sim,ctx,LH,k){SC(ctx,k,[['NaCl',700,14],'Limit: '+f1(met(sim,'S'))+' g at '+f0(sim.p.T)+' °C']);} },
+    { key: 'super', lvl: 'honors', title: 'Supersaturated', set: { view: 'solid', solute: 'KNO3', mass: 80, T: 40 }, fresh: true, speed: 1,
+      run(sim){doAct(sim,'super');},
+      see: 'Dissolve all 80 g hot, then cool it gently without disturbing it. At 40 °C it still holds 80 g, more than the 63.9 g limit. A seed crystal drops in after 4 s.',
+      why: 'A supersaturated solution is unstable: the extra solute needs a surface to start crystals. The seed gives it one, and 16 g crashes out at once. Hand warmers work the same way.',
+      overlay(sim,ctx,LH,k,tau){actAt(sim,tau,'seed',4);SC(ctx,k,[[txt(sim,'state'),700,14],'Dissolved: '+f1(met(sim,'md'))+' g','Limit: '+f1(met(sim,'S'))+' g']);} },
+    { key: 'gas', title: 'Oxygen in a lake', set: { view: 'gas', T: 30, P: 'sea' }, fresh: true, speed: 1,
+      cause: { from: { T: 10 }, delay: 1, dur: 3, label: 'Temperature' },
+      see: 'Cold 10 °C water holds about 11 mg of O₂ per liter. Warm the lake to 30 °C and it drops to about 7.6 mg/L as oxygen escapes.',
+      why: 'Gases dissolve better in cold water, the opposite of most solids. Warm summer water, and water warmed by power plants, can leave fish short of oxygen.',
+      overlay(sim,ctx,LH,k){SG(ctx,k,[['Lake at '+f0(sim.p.T)+' °C',700,13.5],'O₂: '+f1(met(sim,'o2'))+' mg/L',txt(sim,'fish')]);} },
+    { key: 'denver', lvl: 'honors', title: 'A mountain lake', set: { view: 'gas', T: 40, P: 'denver' }, fresh: true, speed: 1,
+      see: 'At Denver’s air pressure the same 40 °C water holds only 5.3 mg/L instead of 6.4 at sea level.',
+      why: 'Henry’s law: dissolved gas is proportional to the gas’s pressure above the water. Less air pressure, less oxygen dissolved.',
+      overlay(sim,ctx,LH,k){SG(ctx,k,[['Denver, 40 °C',700,13.5],'O₂: '+f1(met(sim,'o2'))+' mg/L',txt(sim,'fish')]);} }
+  ],
+  useIt: [
+    { do: 'Store soda cold if you want it to stay fizzy.',
+      why: 'CO₂, like oxygen, dissolves better in cold liquid. Warm soda loses its gas faster.' },
+    { do: 'Make rock candy by cooling a hot, very sweet syrup slowly around a string.', lvl: 'honors',
+      why: 'As the syrup cools the sugar limit drops, and the string gives crystals a place to grow.' }
+  ],
+  tryIt: [
+    { title: 'how much salt vs. sugar (15 minutes)',
+      steps: ['Measure 100 mL of room-temperature water into each of two cups.', 'Stir in salt one teaspoon at a time into one, and sugar into the other, until no more dissolves.', 'Count the teaspoons.'],
+      look: 'Sugar dissolves several times more than salt by mass. Repeat with hot water: sugar gains a lot, salt barely changes, just like the curves.' }
+  ]
+},
+colligative: {
+  goals: {
+    bio: ['Dissolving something lowers the freezing point and raises the boiling point', 'Why salt melts ice on roads', 'More particles, bigger effect'],
+    honors: ['ΔTf = i·Kf·m and ΔTb = i·Kb·m', 'The van ’t Hoff factor i', 'Vapor pressure lowering'],
+    ap: ['Measured vs. ideal van ’t Hoff factors', 'Finding a molar mass from ΔTf', 'Why it depends on number of particles, not their identity']
+  },
+  matters: 'Road salt, antifreeze in car radiators, and ice cream makers all use the same trick: dissolved particles keep water from freezing.',
+  question: 'Salt and sugar at the same concentration: which one lowers water’s freezing point more?',
+  startKey: 'salt', startRun: true,
+  steps: [
+    { key: 'salt', title: 'Salt water freezes colder', set: { view: 'freeze', solute: 'nacl', m: 1, realI: false }, fresh: true, speed: 4,
+      see: 'Pure water and 1 m salt water cool in an ice–salt bath. The salt water doesn’t start freezing until −3.72 °C.',
+      why: 'To freeze, water molecules must line up in a crystal. Dissolved ions get in the way, so it has to be colder before ice can form.',
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['NaCl, 1 m: freezes at '+f2(met(sim,'fp'))+' °C',700,13.5],'Thermometer: '+f1(met(sim,'T'))+' °C']);} },
+    { key: 'sugar', title: 'Sugar: half the effect', set: { view: 'freeze', solute: 'sugar', m: 1, realI: false }, fresh: true, speed: 4,
+      see: 'At the same 1 m concentration, sugar water freezes at −1.86 °C, half as far below zero.',
+      why: { bio: 'Each NaCl splits into two ions, Na⁺ and Cl⁻. Each sugar stays one molecule. The effect depends on how many particles are dissolved, not what they are.', honors: 'i = 2 for NaCl, i = 1 for sugar. ΔTf = i·Kf·m = 1 × 1.86 × 1 = 1.86 °C.' },
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['Sugar, 1 m: freezes at '+f2(met(sim,'fp'))+' °C',700,13.5],'Particles per unit: 1']);} },
+    { key: 'cacl2', title: 'Calcium chloride', set: { view: 'freeze', solute: 'cacl2', m: 1, realI: false }, fresh: true, speed: 4,
+      see: 'CaCl₂ ice melt: −5.58 °C, three times the sugar effect.',
+      why: 'CaCl₂ breaks into three ions: Ca²⁺ and two Cl⁻. That is why it works in colder weather than rock salt.',
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['CaCl₂, 1 m: freezes at '+f2(met(sim,'fp'))+' °C',700,13.5],'i = 3']);} },
+    { key: 'boil', title: 'Boiling point goes up', set: { view: 'boil', solute: 'nacl', m: 1, realI: false }, fresh: true, speed: 4,
+      see: '1 m salt water boils at about 101.0 °C, about 1 °C above pure water.',
+      why: { bio: 'Dissolved particles also make it harder for water molecules to escape as vapor, so you have to heat it a bit more. The effect is small: salting pasta water doesn’t make it noticeably hotter.', honors: 'ΔTb = i·Kb·m = 2 × 0.512 × 1 = 1.02 °C.' },
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['NaCl, 1 m: boils at '+f2(met(sim,'bp'))+' °C',700,13.5],'Thermometer: '+f1(met(sim,'T'))+' °C']);} },
+    { key: 'conc', lvl: 'honors', title: 'Double the concentration', set: { view: 'freeze', solute: 'nacl', m: 2, realI: false }, fresh: true, speed: 4,
+      see: '2 m salt water freezes at −7.44 °C: twice as far below zero.',
+      why: 'ΔTf is proportional to molality. Double m, double ΔTf.',
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['NaCl, 2 m: freezes at '+f2(met(sim,'fp'))+' °C',700,13.5],'ΔTf = '+f2(met(sim,'dTf'))+' °C']);} },
+    { key: 'real', lvl: 'ap', title: 'Real ions stick together', set: { view: 'freeze', solute: 'nacl', m: 1, realI: true }, fresh: true, speed: 4,
+      see: 'With measured van ’t Hoff factors, 1 m NaCl freezes at −3.53 °C, not −3.72 °C.',
+      why: 'Some Na⁺ and Cl⁻ ions pair up in solution and act as one particle, so the real i is about 1.9 instead of 2. The more concentrated the solution, the more ion pairing.',
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['Measured i: '+f2(met(sim,'ieff')),700,13.5],'Freezes at '+f2(met(sim,'fp'))+' °C']);} }
+  ],
+  useIt: [
+    { do: 'Use rock salt only down to about −10 °C; switch to calcium chloride when it’s colder.',
+      why: 'Salt can’t melt ice below the coldest freezing point its brine can reach. CaCl₂ makes three ions and works at much lower temperatures.' },
+    { do: 'Use a 50/50 antifreeze mix in a car, not pure antifreeze.', lvl: 'honors',
+      why: 'The water–glycol mixture both freezes lower and boils higher than plain water, protecting the engine in winter and summer.' }
+  ],
+  tryIt: [
+    { title: 'ice cream in a bag (15 minutes)',
+      steps: ['Put ½ cup milk, 1 tablespoon sugar and a little vanilla in a small zip bag.', 'Put it inside a big bag with ice and ⅓ cup of salt.', 'Shake for 5–10 minutes, wearing gloves.'],
+      look: 'The salt makes the ice water colder than 0 °C, cold enough to freeze the milk. A thermometer in the ice bath reads well below zero.' }
+  ]
+}
+});
 })();
