@@ -1713,4 +1713,121 @@ ionic: {
 }
 });
 
+/* activity series and precipitation */
+const ACC=(ctx,k,L)=>ckCard(ctx,k,L,470,446,320,1.25);
+const PRC=(ctx,k,L)=>ckCard(ctx,k,L,56,62,240,1.3);
+const prRes=sim=>String(chMet(sim,'res'));
+BioLab.addLearn({
+activity: {
+  goals: {
+    bio: ['How a more active metal pushes a less active metal out of solution', 'How to read a well plate and rank metals into an activity series', 'Which metals react with acid to make hydrogen gas'],
+    honors: ['Single-replacement reactions as electron transfer', 'Which atom is oxidized and which ion is reduced', 'Writing net ionic equations for metal displacement'],
+    ap: ['The activity series as reduction potentials in reverse', 'E°cell and ΔG° for a displacement reaction', 'Predicting whether a reaction is thermodynamically favored']
+  },
+  matters: 'Galvanized nails, zinc blocks bolted to boat hulls, gold that never tarnishes and the copper-plated zinc in a modern penny all come down to which metals give up electrons most easily.',
+  startKey: 'plate', startRun: true, startSpeed: 1,
+  steps: [
+    { key: 'cuag', title: 'Copper in silver nitrate', set: { metal: 'Cu', sol: 'Ag' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Watch a piece of copper go into a well of silver nitrate. The zoom shows the copper surface.',
+      why: 'Copper atoms give electrons to silver ions. The silver ions become silver metal on the copper (the gray crystals), and the copper atoms leave as blue Cu²⁺ ions. Copper is more active than silver, so it wins the electrons tug-of-war.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.4,'t',()=>chAct(sim,'test'));} },
+    { key: 'cuzn', title: 'Copper in zinc nitrate', set: { metal: 'Cu', sol: 'Zn' }, fresh: true, speed: 1,
+      cause: { from: { sol: 'Ag' }, delay: 1.5, at: [214,6], label: 'Solution' },
+      run(sim){chAtReset(sim);},
+      see: 'The same copper, but watch the solution change from silver nitrate to zinc nitrate before the copper goes in.',
+      why: 'Zn²⁺ ions bump into the copper, but nothing happens. Zinc holds onto electrons less tightly than copper does, so copper can’t give its electrons to zinc ions. Copper is less active than zinc.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,2,'t',()=>chAct(sim,'test'));} },
+    { key: 'acid', title: 'Metals in acid', set: { metal: 'Zn', sol: 'H' }, fresh: true, speed: 1,
+      cause: { from: { metal: 'Cu' }, delay: 3.5, at: [214,6], label: 'Metal' },
+      run(sim){chAtReset(sim);},
+      see: 'First copper goes into hydrochloric acid. Then watch the metal change to zinc.',
+      why: 'Zinc gives electrons to H⁺ ions, which pair up as bubbles of hydrogen gas, H₂. Metals above hydrogen in the series do this; copper and silver sit below hydrogen and don’t react with HCl.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1,'c',()=>chAct(sim,'test'));chAt(sim,tau,3.8,'z',()=>chAct(sim,'test'));} },
+    { key: 'series', title: 'Build the series', set: { metal: 'Cu', sol: 'Ag' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Watch the whole plate get filled. Count how many solutions each metal reacts with.',
+      why: 'A metal that replaces many ions is very active; one that replaces none is the least active. Ranking them gives the activity series: Mg > Zn > Fe > Pb > (H) > Cu > Ag. Any metal can replace the ions of metals below it.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'a',()=>chAct(sim,'all'));} },
+    { key: 'redox', lvl: 'honors', title: 'Oxidized and reduced', set: { metal: 'Zn', sol: 'Cu' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Zinc goes into copper(II) nitrate. Copper metal coats the zinc and the blue color fades.',
+      why: 'Zinc atoms lose electrons (oxidized: Zn → Zn²⁺ + 2e⁻). Copper ions gain them (reduced: Cu²⁺ + 2e⁻ → Cu). The nitrate ions are spectators. LEO the lion says GER: Loss of Electrons is Oxidation, Gain is Reduction.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'t',()=>chAct(sim,'test'));} },
+    { key: 'ecell', lvl: 'ap', title: 'The series is E°', set: { metal: 'Zn', sol: 'Cu' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);chAct(sim,'test');},
+      see: 'Zinc in Cu²⁺ again, with the cell potential and free energy.',
+      why: 'E°cell = E°(Cu²⁺/Cu) − E°(Zn²⁺/Zn) = 0.34 − (−0.76) = +1.10 V, and ΔG° = −nFE° = −212 kJ. Positive E° and negative ΔG° mean the reaction is thermodynamically favored, the same 1.10 V a zinc–copper battery gives.' }
+  ],
+  useIt: [
+    { do: 'Use galvanized (zinc-coated) nails and screws for outdoor projects.',
+      why: 'Zinc is more active than iron, so it corrodes first and protects the steel underneath, even where the coating is scratched.' },
+    { do: 'Don’t store acidic foods like tomato sauce in aluminum or tin-plated cans once opened.',
+      why: 'Acids react with active metals, pulling metal ions into the food and pitting the can. Glass or plastic containers don’t react.' },
+    { do: 'Notice the zinc blocks bolted to boat hulls and water heaters (sacrificial anodes).', lvl: 'honors',
+      why: 'The more active zinc or magnesium is oxidized instead of the steel. Replacing the block every few years is cheaper than replacing the hull or tank.' }
+  ],
+  tryIt: [
+    { title: 'the copper-plated nail (20 minutes)',
+      steps: ['Soak about 20 dull pennies in ¼ cup of white vinegar with 1 teaspoon of salt for 5 minutes, then take them out.', 'Scrub a steel nail clean and drop it into the vinegar.', 'Check it after 10 minutes, then again after an hour.'],
+      look: 'The nail gets a pinkish copper coating. Copper ions dissolved off the pennies, and the more active iron gives them electrons so they plate out as copper metal.' }
+  ]
+},
+precip: {
+  goals: {
+    bio: ['What happens to ionic compounds when they dissolve', 'Why mixing two clear solutions can make a solid', 'How to name the precipitate'],
+    honors: ['Using solubility rules to predict a precipitate', 'Spectator ions and the net ionic equation', 'Molecular, complete ionic and net ionic equations'],
+    ap: ['Stoichiometry and the limiting ion', 'Mass of precipitate from volumes and molarities', 'Q compared with Ksp']
+  },
+  matters: 'Water plants, circuit-board shops and labs use precipitation to pull toxic metals like lead out of water. Hard-water scale, kidney stones and the white film in your shower are precipitates too.',
+  startKey: 'beaker', startRun: true, startSpeed: 1,
+  steps: [
+    { key: 'ions', title: 'Ions in water', set: { a: 'AgNO3', b: 'NaCl' }, fresh: true, speed: 1,
+      see: 'The beaker holds silver nitrate solution and the test tube holds sodium chloride solution. Both look like plain water. The zoom shows what is really there.',
+      why: 'Ionic compounds that dissolve split into separate ions: Ag⁺ and NO₃⁻ in the beaker. The ions are spread out and surrounded by water, so you can’t see them.',
+      overlay(sim,ctx,LH,k){PRC(ctx,k,[['Both clear and colorless',700,13],'Beaker: Ag⁺ + NO₃⁻ ions','Tube: Na⁺ + Cl⁻ ions']);} },
+    { key: 'mix', title: 'Pour them together', set: { a: 'AgNO3', b: 'NaCl' }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);},
+      see: 'Watch the test tube get poured into the beaker, in the beaker and in the zoom.',
+      why: 'Ag⁺ and Cl⁻ attract so strongly that water can’t keep them apart. They lock into a solid lattice: white silver chloride, AgCl. That solid forming from two solutions is a precipitate, and the cloudiness is billions of tiny crystals.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.5,'m',()=>chAct(sim,'mix'));PRC(ctx,k,[[tau<1.5?'About to pour…':'Precipitate: '+prRes(sim),700,13,tau<1.5?PAL['cv-ink']:KR]]);} },
+    { key: 'spect', lvl: 'honors', title: 'Spectator ions', set: { a: 'AgNO3', b: 'NaCl', hide: true }, fresh: true, speed: 0.6,
+      cause: { from: { hide: false }, delay: 4, label: 'Fade the spectator ions' },
+      run(sim){chAtReset(sim);chAct(sim,'mix');},
+      see: 'The mixed beaker. Watch the ions that didn’t react fade out.',
+      why: 'Na⁺ and NO₃⁻ float around before and after; they never change. Leave out these spectator ions and you get the net ionic equation, which shows only what reacts: Ag⁺(aq) + Cl⁻(aq) → AgCl(s).',
+      overlay(sim,ctx,LH,k){PRC(ctx,k,[['Spectators: '+String(chMet(sim,'spec')),700,12.5],['Ag⁺ + Cl⁻ → AgCl(s)',700,13,KR]]);} },
+    { key: 'none', title: 'Not every mix makes a solid', set: { a: 'Na2SO4', b: 'NaCl' }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);},
+      see: 'Sodium sulfate in the beaker, sodium chloride in the tube. Watch them mix.',
+      why: 'All four ions are still free in the water: nothing pairs up into an insoluble compound, so nothing happens. Compounds of sodium, potassium, ammonium and nitrate are always soluble.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.5,'m',()=>chAct(sim,'mix'));PRC(ctx,k,[[tau<1.5?'About to pour…':'Precipitate: '+prRes(sim),700,13,tau<1.5?PAL['cv-ink']:KR]]);} },
+    { key: 'yellow', title: 'Lead iodide: a yellow solid', set: { a: 'PbNO3', b: 'KI' }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);},
+      see: 'Lead(II) nitrate and potassium iodide, both clear. Watch them mix.',
+      why: 'Pb²⁺ and I⁻ form bright yellow lead(II) iodide, PbI₂. Each Pb²⁺ needs two I⁻ to balance the charge. Precipitates like this are how labs detect, and remove, lead in water.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.5,'m',()=>chAct(sim,'mix'));PRC(ctx,k,[[tau<1.5?'About to pour…':'Precipitate: '+prRes(sim),700,13,tau<1.5?PAL['cv-ink']:KR]]);} },
+    { key: 'limit', lvl: 'ap', title: 'The limiting ion sets the mass', set: { a: 'AgNO3', b: 'NaCl', va: 10 }, fresh: true, speed: 0.6,
+      cause: { from: { va: 25 }, delay: 1.2, dur: 2, label: 'Volume of A' },
+      run(sim){chAtReset(sim);},
+      see: 'Before mixing, watch the silver nitrate drop from 25 mL to 10 mL. Then the solutions mix.',
+      why: '10 mL × 0.100 M = 1.00 mmol Ag⁺ against 2.50 mmol Cl⁻. Ag⁺ runs out first, so only 1.00 mmol AgCl forms: 1.00 mmol × 143.3 g/mol = 0.143 g. With 25 mL of each it was 0.358 g.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,4,'m',()=>chAct(sim,'mix'));const m=Number(chMet(sim,'mass'));PRC(ctx,k,[['A: '+Math.round(sim.p.va)+' mL (was 25)',700,13],['AgCl: '+(isNaN(m)?'…':m.toFixed(3)+' g')+' (was 0.358 g)',700,13,KR],'Limiting ion: '+String(chMet(sim,'lim'))]);} }
+  ],
+  useIt: [
+    { do: 'If your home has hard water, clean faucets and showerheads with vinegar.',
+      why: 'The white crust is a calcium carbonate precipitate left when hard water evaporates. Vinegar’s acid dissolves it.' },
+    { do: 'Drink plenty of water, especially in hot weather.',
+      why: 'The most common kidney stones are calcium oxalate, a precipitate that forms when urine is concentrated. More water keeps the ions dilute enough to stay dissolved.' },
+    { do: 'In an older home, have the water tested for lead.', lvl: 'honors',
+      why: 'Lead pipes and solder can release Pb²⁺. Labs detect it at parts per billion, and treatment plants add phosphate so a thin insoluble lead phosphate layer lines old pipes.' }
+  ],
+  tryIt: [
+    { title: 'the milk precipitate (10 minutes)',
+      steps: ['Warm ½ cup of milk (not boiling) and stir in 1 tablespoon of vinegar.', 'Stir for a minute, then let it sit.', 'Pour it through a coffee filter or paper towel.'],
+      look: 'White clumps (curds) separate from a clear liquid. The acid makes the milk protein casein fall out of solution, a precipitate you can filter and dry, the same way labs collect AgCl.' }
+  ]
+}
+});
+
 })();
