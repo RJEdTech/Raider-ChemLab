@@ -1600,4 +1600,117 @@ density: {
 }
 });
 
+/* balance and ionic */
+const BLC=(ctx,k,L)=>ckCard(ctx,k,L,584,32,208,1.25);
+const blSt=sim=>String(chMet(sim,'status'));
+const IOC=(ctx,k,L,x,y)=>ckCard(ctx,k,L,x||108,y||58,250,1.3);
+const ioF=sim=>String(chMet(sim,'formula'));
+BioLab.addLearn({
+balance: {
+  goals: {
+    bio: ['What the parts of a chemical equation mean', 'Why every atom on the left must show up on the right', 'How to balance an equation by changing coefficients, never subscripts'],
+    honors: ['Balancing combustion reactions in a smart order (C, then H, then O)', 'Why a balanced equation conserves mass', 'Reading coefficients as particle and mole ratios'],
+    ap: ['Balancing charge as well as atoms in ionic and redox equations', 'Electrons lost must equal electrons gained', 'Half-reactions in acidic solution']
+  },
+  matters: 'A balanced equation is a recipe that tells you how much of each ingredient you need. Grill tanks, car engines, rocket fuel and the airbag in your steering wheel are all designed from balanced equations.',
+  startKey: 'eq', startRun: false,
+  steps: [
+    { key: 'ones', title: 'Count the atoms', set: { mode: 'explore', eq: 'water' }, fresh: true, pause: true,
+      see: 'Hydrogen and oxygen make water, with every coefficient at 1. The scales at the bottom weigh each element: left side against right side.',
+      why: 'Atoms are never created or destroyed in a reaction; they are only rearranged. Here hydrogen balances (2 and 2), but there are 2 oxygen atoms on the left and only 1 on the right. One oxygen atom has vanished, which can’t happen.',
+      overlay(sim,ctx,LH,k){BLC(ctx,k,[['H: 2 left, 2 right ✓',700,13],['O: 2 left, 1 right ✗',700,13,KR]]);} },
+    { key: 'fixo', title: 'Make two waters', set: { mode: 'explore', eq: 'water', c2: 2 }, fresh: true, speed: 1,
+      cause: { from: { c2: 1 }, delay: 1.5, dur: 0.8, ring: [470,72,30], label: 'Water coefficient' },
+      see: 'Watch the coefficient in front of H₂O go from 1 to 2. The particle view gets a second water molecule, and the scales tip.',
+      why: 'A coefficient multiplies the whole molecule. 2H₂O means 2 oxygen atoms and 4 hydrogen atoms. Oxygen now balances, but hydrogen is off the other way: 2 on the left, 4 on the right.',
+      overlay(sim,ctx,LH,k){BLC(ctx,k,[['H₂O: '+sim.p.c2+' (was 1)',700,13],sim.p.c2>1?'O: 2 left, 2 right ✓':'O: 2 left, 1 right ✗',sim.p.c2>1?['H: 2 left, 4 right ✗',700,13,KR]:'H: 2 left, 2 right ✓']);} },
+    { key: 'fixh', title: 'Then fix hydrogen', set: { mode: 'explore', eq: 'water', c0: 2, c2: 2 }, fresh: true, speed: 1,
+      cause: { from: { c0: 1 }, delay: 1.5, dur: 0.8, ring: [266,72,30], label: 'Hydrogen coefficient' },
+      see: 'Watch the coefficient in front of H₂ go from 1 to 2.',
+      why: 'Now there are 4 H and 2 O on each side, and every scale is level. 2H₂ + O₂ → 2H₂O is balanced: 2 hydrogen molecules react with 1 oxygen molecule to make 2 water molecules.',
+      so: 'Leave a coefficient of 1 unwritten, and use the smallest whole numbers that work.',
+      overlay(sim,ctx,LH,k){BLC(ctx,k,[['H₂: '+sim.p.c0+' (was 1)',700,13],sim.p.c0>1?['H: 4 left, 4 right ✓',700,13,KG]:['H: 2 left, 4 right ✗',700,13,KR],'O: 2 left, 2 right ✓']);} },
+    { key: 'sub', title: 'Never change a subscript', set: { mode: 'explore', eq: 'water', c0: 2, c2: 2 }, fresh: true, pause: true,
+      see: 'The balanced equation, 2H₂ + O₂ → 2H₂O.',
+      why: 'Changing H₂O to H₂O₂ would also have made the oxygen count work, but H₂O₂ is hydrogen peroxide, a different substance that bleaches hair. Subscripts say what the substance is; coefficients say how many. Only coefficients may change.' },
+    { key: 'propane', lvl: 'honors', title: 'Balance propane, and mass balances too', set: { mode: 'explore', eq: 'propane', c0: 1, c1: 5, c2: 3, c3: 4 }, fresh: true, speed: 1,
+      cause: { from: { c1: 1, c2: 1, c3: 1 }, delay: 1.5, dur: 4, label: 'Coefficients' },
+      see: 'A gas grill burns propane, C₃H₈. Watch the coefficients climb to 1, 5, 3, 4, and compare the mass of the reactants with the mass of the products.',
+      why: 'Balance C first (3 CO₂), then H (4 H₂O), then O last because it appears in both products: 3 × 2 + 4 = 10 O atoms, so 5 O₂. Once every element balances, the reactants and products weigh exactly the same.',
+      overlay(sim,ctx,LH,k){const a=Number(chMet(sim,'mR')),b=Number(chMet(sim,'mP')),ok=Math.abs(a-b)<0.01;ctx.save();ctx.strokeStyle=ok?KG:KR;ctx.lineWidth=2.5;[[306,152],[708,152]].forEach(([x,y])=>{H.rr(ctx,x,y,84,26,6);ctx.stroke();});ctx.restore();if(ok)tag(ctx,'Same mass on both sides',400,152,k,{s:11.5,hi:true});} },
+    { key: 'charge', lvl: 'ap', title: 'Charge must balance too', set: { mode: 'redox', req: 'cuag', c0: 1, c1: 2, c2: 1, c3: 2 }, fresh: true, speed: 1,
+      cause: { from: { c1: 1, c3: 1 }, delay: 2, dur: 1, ring: [660,440,66], label: 'Silver coefficients' },
+      see: 'Copper metal in silver nitrate: Cu + Ag⁺ → Cu²⁺ + Ag. Atoms balance with all 1s, but read the charges. Watch both silver coefficients go to 2.',
+      why: 'With all 1s the charge is +1 on the left and +2 on the right. Each copper atom loses 2 electrons and each Ag⁺ gains only 1, so it takes 2 Ag⁺. Electrons lost must equal electrons gained.',
+  }
+  ],
+  useIt: [
+    { do: 'Grill and run gas heaters only outdoors or with good airflow.',
+      why: 'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O needs 5 oxygen molecules for every propane. Without enough oxygen, the burning makes carbon monoxide instead, which is odorless and deadly.' },
+    { do: 'Double a recipe by doubling every ingredient.',
+      why: 'That is exactly what multiplying all the coefficients in an equation does. The ratio is what matters, which is why chemists use the smallest whole numbers.' },
+    { do: 'Never mix bleach with ammonia or acids when cleaning.', lvl: 'honors',
+      why: 'Balanced equations predict the products, and these mixtures make toxic chloramine or chlorine gas. Poison control centers get thousands of calls a year about it.' }
+  ],
+  tryIt: [
+    { title: 'candy molecules (10 minutes)',
+      steps: ['Use two colors of candy or LEGO bricks: one for hydrogen, one for oxygen.', 'Build an O₂ (2 oxygen) and an H₂ (2 hydrogen), then try to rebuild all of them into H₂O molecules.', 'Add H₂ molecules until every piece is used and nothing is left over.'],
+      look: 'One O₂ and one H₂ leave an oxygen with no partner. Two H₂ and one O₂ make exactly two H₂O with nothing left over: 2H₂ + O₂ → 2H₂O.' }
+  ]
+},
+ionic: {
+  goals: {
+    bio: ['How a metal and a nonmetal trade electrons to make ions', 'Why opposite charges hold an ionic compound together', 'How to write a formula so the charges add to zero'],
+    honors: ['Using the crisscross method and reducing subscripts', 'Naming ionic compounds, including transition metals and polyatomic ions', 'Why ionic compounds form crystals, not molecules'],
+    ap: ['Coulomb’s law and lattice energy', 'Why bigger charges and smaller ions mean higher melting points', 'Comparing NaCl, MgO and other lattices']
+  },
+  matters: 'Table salt, the calcium compounds in your bones, the road salt spread before snowstorms and the electrolytes in a sports drink are all ionic compounds. Their charges decide their formulas and how they behave.',
+  startKey: 'atoms', startRun: false,
+  steps: [
+    { key: 'transfer', title: 'One electron moves', set: { view: 'transfer', metal: 'Na', anion: 'Cl' }, fresh: true, speed: 0.5,
+      run(sim){chAct(sim,'replay');},
+      see: 'Sodium has 1 outer electron; chlorine has 7. Watch the electron move, the ions form and then pull together.',
+      why: 'Sodium holds its single outer electron loosely, and chlorine pulls hard on electrons. After the move, Na⁺ has 11 protons and 10 electrons and Cl⁻ has 17 protons and 18 electrons. The opposite charges attract: that attraction is the ionic bond.',
+      overlay(sim,ctx,LH,k){const a=sim.st.at;IOC(ctx,k,a<1?[['Na: 1 outer e⁻   Cl: 7 outer e⁻',700,13]]:a<3.8?[['The electron moves Na → Cl',700,13,KR]]:a<5?[['Na⁺ (10 e⁻) and Cl⁻ (18 e⁻)',700,13,KR],'Na⁺ shrinks, Cl⁻ grows']:[['+1 and −1 attract: NaCl',700,13,KG]]);} },
+    { key: 'mg', title: 'Two electrons need two chlorines', set: { view: 'transfer', metal: 'Mg', anion: 'Cl' }, fresh: true, speed: 0.6,
+      cause: { from: { metal: 'Na' }, delay: 2, at: [400,330], label: 'Metal' },
+      see: 'The same chlorine, but watch the metal change from sodium to magnesium.',
+      why: 'Magnesium has 2 outer electrons to give away, and each chlorine can take only 1. So one Mg²⁺ needs two Cl⁻ to balance: +2 + 2(−1) = 0. The formula becomes MgCl₂.',
+      overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.metal==='Mg'?' (was NaCl)':''),700,13.5,KR],sim.p.metal==='Mg'?'Mg gives 2 e⁻, each Cl takes 1':'Na gives 1 e⁻, Cl takes 1']);} },
+    { key: 'oxide', title: 'Change the nonmetal', set: { view: 'transfer', metal: 'Mg', anion: 'O' }, fresh: true, speed: 0.6,
+      cause: { from: { anion: 'Cl' }, delay: 2, at: [400,330], label: 'Nonmetal' },
+      see: 'Magnesium again. Watch chlorine get swapped for oxygen.',
+      why: 'Oxygen has 6 outer electrons and needs 2 more, exactly what magnesium gives up. Mg²⁺ and O²⁻ balance one to one: MgO. The charges, not the atom counts, set the formula.',
+      overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.anion==='O'?' (was MgCl₂)':''),700,13.5,KR],sim.p.anion==='O'?'+2 and −2: one of each':'+2 and −1: two Cl⁻']);} },
+    { key: 'al', lvl: 'honors', title: 'Crisscross: Al₂O₃', set: { view: 'transfer', metal: 'Al', anion: 'O' }, fresh: true, speed: 0.6,
+      cause: { from: { metal: 'Mg' }, delay: 2, at: [400,330], label: 'Metal' },
+      see: 'Oxygen stays. Watch magnesium get swapped for aluminum, which forms Al³⁺.',
+      why: 'Crisscross the charge numbers: Al³⁺ and O²⁻ give Al₂O₃. Check it: 2(+3) + 3(−2) = 0. The smallest whole-number ratio that cancels the charges is 2 : 3.',
+      so: 'Al₂O₃ is the thin, tough coating that keeps aluminum cans and foil from rusting away. As rubies and sapphires, it is also the second-hardest natural mineral.',
+      overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.metal==='Al'?' (was MgO)':''),700,13.5,KR],'Ions: '+String(chMet(sim,'ratio'))+'  (cations : anions)']);} },
+    { key: 'lattice', title: 'A crystal, not a molecule', set: { view: 'lattice', metal: 'Na', anion: 'Cl' }, fresh: true, speed: 0.5,
+      see: 'A real grain of salt: ions packed in a repeating 3D pattern.',
+      why: 'Each Na⁺ is surrounded by six Cl⁻ and each Cl⁻ by six Na⁺. There is no separate NaCl molecule; the formula only gives the 1 : 1 ratio. Because every ion is held in every direction, salt is hard, brittle and melts at 801 °C.' },
+    { key: 'energy', lvl: 'ap', title: 'Bigger charges, stronger lattice', set: { view: 'energy', metal: 'Mg', anion: 'O' }, fresh: true, speed: 0.5,
+      cause: { from: { metal: 'Na', anion: 'Cl' }, delay: 2, label: 'Ions' },
+      see: 'The lattice energy chart, starting at NaCl. Watch the ions change to Mg²⁺ and O²⁻.',
+      why: 'Coulomb’s law: the attraction grows with q₊ × q₋ and falls with distance. MgO has 4 times the charge product of NaCl and smaller ions, so its lattice energy is about 3,850 kJ/mol against 786, and it melts at 2,852 °C instead of 801 °C.',
+      overlay(sim,ctx,LH,k){const U=Number(chMet(sim,'U')),m=Number(chMet(sim,'mp'));IOC(ctx,k,[[ioF(sim)+': '+(isNaN(U)?'…':chNum(U))+' kJ/mol',700,13.5,KR],'Melts at '+(isNaN(m)?'…':chNum(m))+' °C'],14,346);} }
+  ],
+  useIt: [
+    { do: 'Drink something with electrolytes after a long, sweaty workout.',
+      why: 'Sweat carries away Na⁺ and Cl⁻ ions. Your nerves and muscles use those ions to send signals, so replacing them along with water helps prevent cramps.' },
+    { do: 'Expect road salt to stop working on very cold days.',
+      why: 'Dissolved ions lower water’s freezing point, but plain NaCl stops melting ice near −10 °C (about 15 °F). Crews switch to CaCl₂, whose 3 ions per formula unit work at much lower temperatures.' },
+    { do: 'Read “calcium carbonate” on an antacid or calcium supplement as an ionic compound: Ca²⁺ and CO₃²⁻.', lvl: 'honors',
+      why: 'The carbonate ion reacts with stomach acid, and the calcium is what your bones use. Knowing the ions tells you what the compound does.' }
+  ],
+  tryIt: [
+    { title: 'salt crystals under a magnifier (5 minutes, plus a day)',
+      steps: ['Look at a few grains of table salt with a magnifying glass or a phone camera zoomed in.', 'Stir salt into a little warm water until no more dissolves, pour it onto a dark plate, and leave it for a day.', 'Look at the new crystals that grow as the water evaporates.'],
+      look: 'The grains and the new crystals are little cubes. That shape comes from the ions’ 1 : 1 cube-shaped pattern, repeated billions of times.' }
+  ]
+}
+});
+
 })();
