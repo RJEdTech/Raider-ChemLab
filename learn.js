@@ -1142,6 +1142,7 @@ hydrate:{questions:[
 const rtSync=sim=>{if(sim.def.sync)sim.def.sync(sim);};
 const rtM=(sim,id)=>{const v=chMet(sim,id);return typeof v==='number'?v:NaN;};
 const rtF=(v,d)=>isNaN(v)?'…':v.toFixed(d==null?1:d);
+function rtTw(sim,tau,spec,t0,dur){const f=ease(clamp((tau-t0)/dur,0,1)),o={};for(const id in spec){const [a,b,st]=spec[id];let v=a+(b-a)*f;if(st)v=Math.round(v/st)*st;if(Math.abs(sim.p[id]-v)>1e-6)o[id]=v;}if(Object.keys(o).length)BioLab.setValues(sim,o);return f;}
 const rtH=sim=>{const v=rtM(sim,'half');return isNaN(v)?'Halfway: still reacting…':'Halfway in '+v.toFixed(1)+' s';};
 const RC=(ctx,k,L)=>ckCard(ctx,k,L,24,66,300);
 const KR='#c8102e',KG='#1b7a3a',KB='#1f5fbf',KP='#6a3fa0';
@@ -1172,10 +1173,10 @@ rates: {
       see: 'The curve shows how many particles have each amount of energy. Only the shaded tail past the red Eₐ line can get over the hill: about 5% at 300 K.',
       why: 'Particles in a gas or liquid don’t all move at the same speed. Most are near the average, and only a few are moving fast enough at any moment.',
       overlay(sim,ctx,LH,k){RC(ctx,k,[['300 K',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% of particles',700,12.5,KR],'The rest can’t react, however often they hit']);} },
-    { key: 'heat', title: 'Heat it up', set: { T: 450 }, fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[16,58,452,424]],
-      see: 'At 450 K the particles move faster and the curve stretches right. The shaded tail past Eₐ grows from about 5% to about 15%, and AB forms about 4 times as fast.',
+    { key: 'heat', title: 'Heat it up', fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[16,58,452,424]],
+      see: 'Watch the temperature climb from 300 K to 450 K. The particles speed up, the energy curve stretches right, and the shaded tail past Eₐ grows from about 5% to about 15%. AB now forms about 4 times as fast.',
       why: { bio: 'Hotter particles hit more often, but the big change is that many more hits are hard enough. That is why food spoils fast on a warm counter and slowly in the fridge.', honors: 'Collisions per second rise only about 9% (speed ∝ √T), but the fraction past Eₐ triples. The tail of the curve is what makes rate so sensitive to temperature.' },
-      overlay(sim,ctx,LH,k){RC(ctx,k,[['450 K (was 300 K)',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (was 4.6%)',700,12.5,KR],[rtH(sim)+' (300 K: 24 s)',700,12.5,KG]]);} },
+      overlay(sim,ctx,LH,k,tau){const f=rtTw(sim,tau,{T:[300,450,5]},1,3);RC(ctx,k,[[(f<1?'Heating… ':'')+Math.round(sim.p.T)+' K (started at 300 K)',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (started at 4.6%)',700,12.5,KR],'Ones that react: '+rtF(rtM(sim,'succ'),1)+'% of collisions']);} },
     { key: 'conc', title: 'More particles, more collisions', set: { cA: 1 }, fresh: true, speed: 0.5, run: rtSync,
       see: 'A fresh batch with twice as much A: 1.0 M instead of 0.5 M. The box is more crowded and collisions per second about double.',
       why: { bio: 'More A in the same space means more A–B hits every second. The share that work stays the same, so the rate about doubles.', ap: 'Collisions per second scale with [A][B], so rate = k[A][B]. Doubling [A] doubles Z and the rate while k, which depends on f and p, stays fixed.' },
@@ -1188,10 +1189,10 @@ rates: {
       see: 'Back to 300 K. The readouts give the three pieces of collision theory.',
       why: 'Reactions per second = collisions per second (Z) × fraction with E ≥ Eₐ (f) × fraction with the right orientation (p). The Arrhenius equation k = A·e^(−Eₐ/RT) packs Z and p into A and f into the exponential.',
       overlay(sim,ctx,LH,k){const Z=rtM(sim,'Z'),f=rtM(sim,'fE')/100,p=rtM(sim,'p');RC(ctx,k,[['Collision theory',700,14],'Z = '+rtF(Z,0)+' collisions/s','f = '+rtF(100*f,1)+'%   p = '+rtF(p,2),['Z × f × p ≈ '+rtF(Z*f*p,1)+' reactions/s',700,12.5,KG]]);} },
-    { key: 'cat', title: 'A catalyst lowers the hill', set: { cat: true }, fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[488,286,300,196]],
-      see: 'Add a catalyst at 300 K. The dashed green path has a lower hill, so the green Eₐ line moves left and the shaded tail grows to about 22%. The batch gets halfway in about 5 s instead of 24.',
+    { key: 'cat', title: 'A catalyst lowers the hill', fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[488,286,300,196]],
+      see: 'Still 300 K. Watch what happens when the catalyst goes in: a lower, dashed green path appears on the energy diagram, the green Eₐ line jumps left on the energy curve, and the shaded tail grows from about 5% to about 22%. Yellow flashes come much more often.',
       why: { bio: 'A catalyst gives the reaction an easier path. The particles have the same energy as before; there is just a lower hill to climb. The catalyst itself is not used up.', honors: 'The catalyst lowers Eₐ but doesn’t change ΔH or the particles’ energy distribution. It speeds the forward and reverse reactions alike and is not used up.' },
-      overlay(sim,ctx,LH,k){RC(ctx,k,[['Catalyst, still 300 K',700,14],['Past the lower Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (was 4.6%)',700,12.5,KG],rtH(sim)+' (no catalyst: 24 s)']);} },
+      overlay(sim,ctx,LH,k,tau){if(tau>1.5&&!sim.p.cat)BioLab.setValues(sim,{cat:true});RC(ctx,k,[[sim.p.cat?'Catalyst added, still 300 K':'No catalyst yet…',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (without catalyst: 4.6%)',700,12.5,KG],'Ones that react: '+rtF(rtM(sim,'succ'),1)+'% of collisions']);} },
     { key: 'mg', title: 'Solids react only at the surface', set: { rxn: 'mg' }, fresh: true, speed: 0.5, run: rtSync,
       see: 'Now a chunk of magnesium in 1 M hydrochloric acid. H⁺ ions (pink) hit the metal and H₂ bubbles rise. Only the outside atoms can be hit.',
       why: 'Acid can’t reach the atoms buried inside the chunk. Of the 12 Mg atoms, only 10 faces are touching acid at first, so the bubbles come slowly: about 0.2 per second.',
