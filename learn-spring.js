@@ -864,4 +864,122 @@ colligative: {
   ]
 }
 });
+/* ---- Feb–Mar units: pH and buffers (added Nov 14, 2026) ---- */
+const PHS=(ctx,k,L)=>card(ctx,k,L,12,4,224);
+const PHC=(ctx,k,L)=>card(ctx,k,L,312,384,160);
+const BFA=(ctx,k,L)=>card(ctx,k,L,12,64,134);
+const BFB=(ctx,k,L)=>card(ctx,k,L,414,64,130);
+const sg=v=>!Number.isFinite(v)?'—':(v>=0?'+':'−')+Math.abs(v).toFixed(2);
+const addAt=(sim,tau,id,times)=>times.forEach((t,i)=>{const key='_ad'+id+i;if(tau>=t&&sim[key]!==sim.lnT0){sim[key]=sim.lnT0;doAct(sim,id);}});
+const bf=(sim,ctx,k,head)=>{BFA(ctx,k,[['Water',700,13],'pH '+f2(met(sim,'pw')),'change '+sg(met(sim,'dw'))]);BFB(ctx,k,[[head||'Buffer',700,13],'pH '+f2(met(sim,'pb')),['change '+sg(met(sim,'db')),700,12.5,GRN]]);};
+
+BioLab.addLearn({
+ph: {
+  goals: {
+    bio: ['The pH scale: acidic, neutral and basic', 'Each pH step is a factor of 10', 'Indicators show pH by color'],
+    honors: ['pH = −log[H₃O⁺] and pH + pOH = 14', 'Strong acids ionize completely; weak acids barely', 'Why a weak acid’s pH changes less on dilution'],
+    ap: ['Kw = [H₃O⁺][OH⁻] = 1.0 × 10⁻¹⁴', 'Ka and percent ionization', 'Percent ionization rises as a weak acid is diluted']
+  },
+  matters: 'Your stomach, your blood, swimming pools, soil for gardens and the ocean all have a pH that has to stay in range. Blood that drifts from 7.4 to 7.0 is a medical emergency.',
+  question: 'Lemon juice is pH 2 and black coffee is pH 5. Is lemon juice a little more acidic than coffee, or a lot?',
+  startKey: 'lemon', startRun: false,
+  steps: [
+    { key: 'lemon', title: 'Lemon juice', set: { mode: 'scale', sol: 'lemon', ind: 'none' }, fresh: true, pause: true,
+      see: 'Lemon juice reads pH 2.00. The tall red bar is the concentration of H₃O⁺ ions: 1 × 10⁻² M.',
+      why: 'Acids put extra H₃O⁺ ions in water. The lower the pH, the more H₃O⁺. Below 7 is acidic.',
+      overlay(sim,ctx,LH,k){PHS(ctx,k,[['pH '+f2(met(sim,'pH'))+' · '+txt(sim,'kind'),700,14],'[H₃O⁺] = '+txt(sim,'h')+' M']);} },
+    { key: 'coffee', title: 'Coffee: 1,000 times less acidic', set: { mode: 'scale', sol: 'coffee', ind: 'none' }, fresh: true, pause: true,
+      see: 'Black coffee is pH 5.00: [H₃O⁺] = 1 × 10⁻⁵ M.',
+      why: 'Three pH units is a factor of 10 × 10 × 10 = 1,000. Lemon juice has 1,000 times more H₃O⁺ than coffee.',
+      overlay(sim,ctx,LH,k){PHS(ctx,k,[['pH '+f2(met(sim,'pH'))+' · '+txt(sim,'kind'),700,14],'[H₃O⁺] = '+txt(sim,'h')+' M']);} },
+    { key: 'water', title: 'Neutral water', set: { mode: 'scale', sol: 'water', ind: 'none' }, fresh: true, pause: true,
+      see: 'Pure water is pH 7.00. The H₃O⁺ and OH⁻ bars are exactly equal.',
+      why: 'Water itself splits very slightly into H₃O⁺ and OH⁻, 1 × 10⁻⁷ M of each. Neutral means they are equal.',
+      overlay(sim,ctx,LH,k){PHS(ctx,k,[['pH '+f2(met(sim,'pH'))+' · '+txt(sim,'kind'),700,14],'[H₃O⁺] = '+txt(sim,'h')+' M']);} },
+    { key: 'bleach', title: 'Bleach: basic', set: { mode: 'scale', sol: 'bleach', ind: 'none' }, fresh: true, pause: true,
+      see: 'Bleach is pH 12.6. Now the OH⁻ bar towers over the H₃O⁺ bar.',
+      why: { bio: 'Bases add OH⁻ ions. Above 7 is basic. As OH⁻ goes up, H₃O⁺ goes down.', honors: 'pOH = 14 − 12.6 = 1.4, so [OH⁻] = 10⁻¹·⁴ = 0.040 M. [H₃O⁺][OH⁻] stays 1.0 × 10⁻¹⁴.' },
+      overlay(sim,ctx,LH,k){PHS(ctx,k,[['pH '+f2(met(sim,'pH'))+' · '+txt(sim,'kind'),700,14],'[OH⁻] = '+txt(sim,'oh')+' M']);} },
+    { key: 'ind', title: 'Universal indicator', set: { mode: 'scale', sol: 'oj', ind: 'uni' }, fresh: true, speed: 1,
+      see: 'Add universal indicator and step through the solutions. The color tracks the pH: red for acids, green near neutral, purple for strong bases.',
+      why: 'An indicator is a weak acid whose two forms are different colors. Which form wins depends on the pH.',
+      overlay(sim,ctx,LH,k,tau){addAt(sim,tau,'nexts',[2,4,6,8,10,12]);PHS(ctx,k,[['pH '+f2(met(sim,'pH'))+' · '+txt(sim,'kind'),700,14],'Universal indicator']);} },
+    { key: 'cmp', lvl: 'honors', title: 'Strong vs. weak acid', set: { mode: 'compare', conc: 0.1, weak: 'HC2H3O2', ind: 'none' }, fresh: true, pause: true,
+      see: 'Both beakers hold 0.10 M acid. HCl is pH 1.00; acetic acid is pH 2.88.',
+      why: 'HCl ionizes completely, so [H₃O⁺] = 0.10 M. Only about 1.3% of acetic acid molecules ionize. Strong and weak describe how much ionizes, not how much acid is in the beaker.',
+      overlay(sim,ctx,LH,k){PHC(ctx,k,[['0.10 M each',700,13],'HCl: pH '+f2(met(sim,'pHs')),'Acetic: pH '+f2(met(sim,'pHw'))]);} },
+    { key: 'dil', lvl: 'honors', title: 'Dilute both 10×', set: { mode: 'compare', conc: 0.01, weak: 'HC2H3O2', ind: 'none' }, fresh: true, pause: true,
+      cause: { from: { conc: 0.1 }, delay: 0.6, dur: 1, label: 'Concentration' },
+      see: 'Dilute both to 0.010 M. HCl rises a full unit to pH 2.00. Acetic acid rises only to 3.38.',
+      why: 'Diluting a weak acid lets more of it ionize (now 4.2%), which partly makes up for the dilution. Its pH changes by only about half a unit.',
+      overlay(sim,ctx,LH,k){PHC(ctx,k,[['0.010 M each',700,13],'HCl: pH '+f2(met(sim,'pHs')),'Acetic: pH '+f2(met(sim,'pHw'))]);} },
+    { key: 'ka', lvl: 'ap', title: 'Ka and percent ionized', set: { mode: 'compare', conc: 0.1, weak: 'HF', ind: 'none' }, fresh: true, pause: true,
+      see: 'Swap in HF (Ka = 6.8 × 10⁻⁴). At 0.10 M it is about 8% ionized and pH 2.10.',
+      why: 'A bigger Ka means a stronger weak acid. Solve Ka = x²/(C − x) for x = [H₃O⁺]; then pH = −log x and percent ionized = x/C × 100.',
+      overlay(sim,ctx,LH,k){PHC(ctx,k,[['HF, 0.10 M',700,13],'Ka = '+txt(sim,'ka'),f1(met(sim,'ion'))+'% ionized']);} }
+  ],
+  useIt: [
+    { do: 'Rinse your mouth with water after drinking soda or sports drinks.',
+      why: 'Their pH is about 2.5 to 3.5, acidic enough to soften tooth enamel. Water brings the pH in your mouth back up.' },
+    { do: 'Never mix bleach with acidic cleaners or ammonia.', lvl: 'honors',
+      why: 'Bleach (pH 12.6) reacts with acids to release chlorine gas and with ammonia to make chloramines. Both are toxic to breathe.' }
+  ],
+  tryIt: [
+    { title: 'red-cabbage indicator (20 minutes)',
+      steps: ['Chop some red cabbage, cover it with hot water and let it sit 10 minutes. Strain off the purple liquid.', 'Pour a little into clear cups.', 'Add lemon juice to one, baking soda to another and nothing to a third.'],
+      look: 'Acids turn it pink-red, bases green-blue. Cabbage contains a natural indicator that changes color with pH, just like the universal indicator here.' }
+  ]
+},
+buffers: {
+  goals: {
+    bio: ['A buffer keeps pH steady when acid or base is added', 'Plain water has no protection', 'Your blood is buffered'],
+    honors: ['A buffer is a weak acid plus its base form', 'Which form soaks up added acid and which soaks up base', 'Buffer capacity: it can run out'],
+    ap: ['Henderson–Hasselbalch: pH = pKa + log([A⁻]/[HA])', 'Choosing a buffer: pKa near the target pH', 'Concentration sets capacity; ratio sets pH']
+  },
+  matters: 'Your blood stays between pH 7.35 and 7.45 even as your muscles dump acid into it during exercise. That is a buffer at work, and the same chemistry protects lakes, pools and medicines.',
+  question: 'Add the same squirt of acid to plain water and to a buffer. How different can the pH changes really be?',
+  startKey: 'start', startRun: false,
+  steps: [
+    { key: 'start', title: 'Two beakers', set: { dose: 1, sys: 'acetate', conc: 0.1, ratio: 1 }, fresh: true, pause: true,
+      see: 'Beaker A is plain water at pH 7.00. Beaker B is an acetic acid / acetate buffer at pH 4.74.',
+      why: 'The buffer holds equal amounts of a weak acid (HC₂H₃O₂) and its base form (C₂H₃O₂⁻). Together they can absorb either acid or base.',
+      overlay(sim,ctx,LH,k){bf(sim,ctx,k);} },
+    { key: 'acid', title: 'Add 1 mL of acid', set: { dose: 1, sys: 'acetate', conc: 0.1, ratio: 1 }, fresh: true, speed: 1,
+      see: '1.0 mL of 1.0 M HCl goes into each beaker. The water crashes 5 pH units to 2.0. The buffer drops only 0.18.',
+      why: 'In the buffer, the base form grabs the added H⁺ and becomes the weak acid: C₂H₃O₂⁻ + H⁺ → HC₂H₃O₂. The H⁺ is used up instead of staying free.',
+      overlay(sim,ctx,LH,k,tau){addAt(sim,tau,'acid',[1.2]);bf(sim,ctx,k);} },
+    { key: 'base', title: 'Add base instead', set: { dose: 1, sys: 'acetate', conc: 0.1, ratio: 1 }, fresh: true, speed: 1,
+      see: 'Add 1.0 mL of 1.0 M NaOH instead. Water jumps to pH 12; the buffer rises only 0.18.',
+      why: 'Now the weak-acid form reacts with the added OH⁻: HC₂H₃O₂ + OH⁻ → C₂H₃O₂⁻ + H₂O. Each form handles one direction.',
+      overlay(sim,ctx,LH,k,tau){addAt(sim,tau,'base',[1.2]);bf(sim,ctx,k);} },
+    { key: 'run', lvl: 'honors', title: 'Running out', set: { dose: 1, sys: 'acetate', conc: 0.1, ratio: 1 }, fresh: true, speed: 1,
+      see: 'Keep adding acid, 1 mL at a time. The buffer holds for the first four, then its pH crashes once 5 mL have gone in.',
+      why: 'The buffer started with 5.0 mmol of the base form. Each mL of acid uses 1 mmol. Once it is gone, nothing is left to grab H⁺. That limit is the buffer capacity.',
+      overlay(sim,ctx,LH,k,tau){addAt(sim,tau,'acid',[1.2,2.4,3.6,4.8,6,7.2]);BFA(ctx,k,[['Water',700,13],'pH '+f2(met(sim,'pw'))]);BFB(ctx,k,[['Buffer',700,13],'pH '+f2(met(sim,'pb')),'Base left: '+f1(met(sim,'nA'))+' mmol']);} },
+    { key: 'conc', lvl: 'honors', title: 'A stronger buffer', set: { dose: 1, sys: 'acetate', conc: 0.5, ratio: 1 }, fresh: true, speed: 1,
+      see: 'Same six additions into a 0.50 M buffer. It barely moves: down only about 0.2.',
+      why: 'Five times the concentration means 25 mmol of each form, five times the capacity. Concentration sets how much a buffer can absorb.',
+      overlay(sim,ctx,LH,k,tau){addAt(sim,tau,'acid',[1.2,2.4,3.6,4.8,6,7.2]);bf(sim,ctx,k,'0.50 M buffer');} },
+    { key: 'blood', lvl: 'ap', title: 'Blood’s buffer', set: { dose: 1, sys: 'blood', conc: 0.1, ratio: 1 }, fresh: true, pause: true,
+      see: 'Switch to the carbonic acid / bicarbonate system. Blood sits at pH 7.40 because it holds about 20 times more HCO₃⁻ than H₂CO₃.',
+      why: 'pH = pKa + log([A⁻]/[HA]) = 6.1 + log 20 = 7.4. Your lungs fine-tune it by breathing off CO₂, which removes H₂CO₃.',
+      overlay(sim,ctx,LH,k){BFB(ctx,k,[['Blood',700,13],'pH '+f2(met(sim,'pb')),'HH: '+f2(met(sim,'hh'))]);} },
+    { key: 'ratio', lvl: 'ap', title: 'Set the pH with the ratio', set: { dose: 1, sys: 'acetate', conc: 0.1, ratio: 10 }, fresh: true, pause: true,
+      see: 'A 10 : 1 ratio of base form to acid form gives pH 5.74, one unit above the pKa.',
+      why: 'log 10 = 1, so pH = 4.74 + 1. The ratio sets the pH; pick a weak acid with a pKa within about 1 unit of the pH you want.',
+      overlay(sim,ctx,LH,k){BFB(ctx,k,[['10 : 1',700,13],'pH '+f2(met(sim,'pb')),'HH: '+f2(met(sim,'hh'))]);} }
+  ],
+  useIt: [
+    { do: 'Notice why you breathe hard after sprinting.',
+      why: 'Muscles release acid into your blood. Breathing faster blows off CO₂, which helps the bicarbonate buffer pull the pH back to 7.4.' },
+    { do: 'Keep pool water buffered (“total alkalinity”) before adjusting pH.', lvl: 'honors',
+      why: 'Without enough bicarbonate buffer, small amounts of acid or chlorine swing the pH wildly.' }
+  ],
+  tryIt: [
+    { title: 'antacid as a buffer (10 minutes)',
+      steps: ['Make red-cabbage indicator (see the pH Learn it) and pour it into two cups.', 'Dissolve a crushed antacid tablet in one cup.', 'Add vinegar to each cup a teaspoon at a time.'],
+      look: 'The plain cup turns pink right away. The antacid cup stays blue-green much longer, because the carbonate soaks up the acid until it runs out.' }
+  ]
+}
+});
 })();
