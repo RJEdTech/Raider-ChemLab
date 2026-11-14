@@ -1285,4 +1285,319 @@ ratelaw: {
 }
 });
 
+/* ===== Atoms and the nucleus: atombuilder, nuclear, halflife ===== */
+function chAt(sim,tau,t,key,fn){const m=sim._chAt||(sim._chAt={});if(tau>=t&&!m[key]){m[key]=1;fn();sim.infoDirty=true;}}
+const chAtReset=sim=>{sim._chAt={};};
+const chRing=(ctx,x,y,r)=>{ctx.save();ctx.strokeStyle=KR;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.stroke();ctx.restore();};
+const chNum=v=>Math.round(v).toLocaleString('en-US');
+/* atom builder */
+const ABX=248,ABY=242;
+const ABC=(ctx,k,L)=>{ctx.save();ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(500,203,296,124);ctx.restore();return ckCard(ctx,k,L,506,206,284);};
+const abEl=sim=>String(chMet(sim,'el')).split(' (')[0];
+const abIso=sim=>abEl(sim)+'-'+(sim.p.p+sim.p.neu);
+const abQ=sim=>String(chMet(sim,'q')).split(' (')[0];
+const abShells=e=>{const o=[];let r=e;[2,8,8,2].forEach(c=>{if(r>0){o.push(Math.min(r,c));r-=c;}});return o;};
+/* nuclear */
+const NUC=(ctx,k,L)=>ckCard(ctx,k,L,284,224,194,1.3);
+const NUS=(ctx,k,L)=>ckCard(ctx,k,L,120,338,360);
+const nuCps=sim=>chMet(sim,'cps');const nuF=v=>v<10?v.toFixed(1):chNum(v-0.5);
+const nuWas=sim=>{sim._nuWas=nuCps(sim);};
+/* half-life */
+const HLC=(ctx,k,L)=>ckCard(ctx,k,L,14,34,262);
+const hlLeft=sim=>Math.round(chMet(sim,'rem'));
+function hlShakes(sim,tau,times){times.forEach((t,i)=>chAt(sim,tau,t,'s'+i,()=>{chAct(sim,'shake');(sim._hl=sim._hl||[]).push(hlLeft(sim));}));}
+const hlSeq=sim=>[sim._hl0].concat(sim._hl||[]).join(' → ');
+const hlDot=sim=>{const a=Number(chMet(sim,'age'))||0;return [70+a/45000*400,370-sim.p.pct*3.3,18];};
+
+BioLab.addLearn({
+atombuilder: {
+  goals: {
+    bio: ['Which particle decides the element, which sets the mass, and which sets the charge', 'How isotopes and ions are different', 'How electrons fill shells, and why the outer shell matters'],
+    honors: ['Reading and writing isotope notation with a charge', 'How cations and anions form, and what happens to the outer shell', 'Why some isotopes are radioactive: the band of stability'],
+    ap: ['Isoelectronic ions and electron configurations', 'Why almost all of an atom’s mass sits in a tiny nucleus', 'How the neutron-to-proton ratio predicts decay']
+  },
+  matters: 'A sports drink lists sodium, but there is no sodium metal in it: it holds Na⁺ ions. Carbon-14 dates old bones, and iodized salt carries I⁻ ions for your thyroid. All of it comes down to counting three particles.',
+  startKey: 'atom', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'The nucleus: protons and neutrons',ABX,ABY+70,k,{s:12,hi:true});},
+  steps: [
+    { key: 'element', title: 'Protons decide the element', set: { p: 7, neu: 7, e: 7 }, fresh: true, speed: 0.5,
+      cause: { from: { p: 6, e: 6 }, dur: 2, ring: [648,96,80], at: [248,40], label: 'Protons' },
+      see: 'Carbon-13 has 6 protons. Watch one more proton go into the nucleus (and one more electron, to keep it neutral). The big symbol flips from C to N.',
+      why: 'The number of protons, the atomic number Z, is an element’s ID. Every carbon atom has 6 and every nitrogen atom has 7. Change the protons and you have a different element, which is why no ordinary chemical reaction can turn lead into gold.',
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Protons: '+sim.p.p+' (was 6)',700,14,KR],'Element: '+abEl(sim)+' (was carbon)','Mass number: '+(sim.p.p+sim.p.neu)+' (was 13)']);} },
+    { key: 'isotope', title: 'Neutrons change the mass, not the element', set: { p: 6, neu: 8, e: 6 }, fresh: true, speed: 0.5,
+      cause: { from: { neu: 6 }, ring: [ABX,ABY,54], at: [248,40], label: 'Neutrons' },
+      see: 'Carbon-12. Watch two neutrons go into the nucleus. It is still carbon, still neutral, but now it is carbon-14.',
+      why: 'Neutrons have no charge, so they don’t change the element or the charge. They only add mass: mass number A = protons + neutrons. Atoms of one element with different neutrons are isotopes.',
+      so: { honors: 'Carbon-14 has 8 neutrons for 6 protons, which is too many. Its nucleus is radioactive, and that slow decay is what carbon dating measures.' },
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Neutrons: '+sim.p.neu+' (was 6)',700,14,KR],'Element: '+abEl(sim)+' (same)','Mass number: '+(sim.p.p+sim.p.neu)+' (was 12)','Charge: '+abQ(sim)+' (same)']);} },
+    { key: 'cation', title: 'Lose an electron: a positive ion', set: { p: 11, neu: 12, e: 10 }, fresh: true, speed: 0.5,
+      cause: { from: { e: 11 }, ring: [ABX,ABY,162], at: [248,40], label: 'Electrons' },
+      see: 'A neutral sodium atom has 11 electrons. Watch the single electron in its outer shell leave.',
+      why: 'With 11 protons (+) and only 10 electrons (−), one positive charge is left over: Na⁺, a cation. It is still sodium because the protons didn’t change. Electrons are so light that the mass number stays 23.',
+      so: 'Losing that one outer electron leaves sodium with a full outer shell. That is why sodium is almost always found as Na⁺, like the sodium listed on a sports drink.',
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Electrons: '+sim.p.e+' (was 11)',700,14,KR],'Charge: '+abQ(sim)+' (was 0)','Element: '+abEl(sim)+' (same)','Shells: '+abShells(sim.p.e).join(', ')+' (was 2, 8, 1)']);} },
+    { key: 'anion', title: 'Gain an electron: a negative ion', set: { p: 17, neu: 18, e: 18 }, fresh: true, speed: 0.5,
+      cause: { from: { e: 17 }, ring: [ABX,ABY,162], at: [248,40], label: 'Electrons' },
+      see: 'A neutral chlorine atom has 7 electrons in its outer shell. Watch one more electron come in.',
+      why: 'Now 18 electrons (−) outnumber 17 protons (+), so the charge is 1−: the chloride ion, Cl⁻, an anion. Its outer shell goes from 7 to a full 8.',
+      so: { bio: 'Metals like sodium tend to lose electrons and nonmetals like chlorine tend to gain them. Table salt is Na⁺ and Cl⁻ ions packed together.', honors: 'Metals lose outer electrons to form cations; nonmetals gain them to form anions, and both end up with a full outer shell. Table salt is a lattice of Na⁺ and Cl⁻.' },
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Electrons: '+sim.p.e+' (was 17)',700,14,KR],'Charge: '+abQ(sim)+' (was 0)','Outer shell: '+abShells(sim.p.e).slice(-1)[0]+' electrons (was 7)']);} },
+    { key: 'shells', title: 'Electrons fill shells from the inside out', set: { p: 11, neu: 12, e: 11 }, fresh: true, speed: 0.5,
+      cause: { from: { e: 0 }, delay: 1, dur: 5.5, ring: [ABX,ABY,162], at: [248,40], label: 'Electrons' },
+      see: 'A bare sodium nucleus. Watch electrons go in one at a time: the first shell fills at 2, the second at 8, and the 11th electron has to start a third shell.',
+      why: 'Inner shells are closer to the nucleus and lower in energy, so they fill first. In this model the first shell holds 2 and the second holds 8. Sodium ends up with just 1 electron in its outer shell, the one it lost two steps ago.',
+      overlay(sim,ctx,LH,k){const sh=abShells(sim.p.e);ABC(ctx,k,[['Electrons: '+sim.p.e+' of 11',700,14,KR],'Shells: '+(sh.length?sh.join(', '):'none yet'),'Outer shell: '+(sh.length?sh[sh.length-1]:0)+' electron'+((sh.length?sh[sh.length-1]:0)===1?'':'s')]);} },
+    { key: 'band', lvl: 'honors', title: 'Too many neutrons: radioactive', set: { p: 8, neu: 12, e: 8 }, fresh: true, speed: 0.5,
+      cause: { from: { neu: 8 }, delay: 1.2, dur: 5, ring: [ABX,ABY,56], at: [248,40], label: 'Neutrons' },
+      see: 'Oxygen-16 is stable. Watch neutrons go in one at a time and keep an eye on the green Stable label and the band graph below. Oxygen-17 and oxygen-18 stay stable; at oxygen-19 the label turns radioactive.',
+      why: 'Neutrons help hold a nucleus together without adding any repulsion, but past a point extra neutrons make it unstable. Light nuclei are stable only when neutrons ≈ protons. Oxygen-20 has 12 neutrons for 8 protons, so a neutron turns into a proton (β⁻ decay) within seconds.',
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Neutrons: '+sim.p.neu+' (was 8)',700,14,KR],'Oxygen-'+(8+sim.p.neu)+'   N : Z = '+Number(chMet(sim,'nz')).toFixed(2),'Nucleus: '+chMet(sim,'stab')]);} },
+    { key: 'tiny', title: 'The nucleus is tiny', set: { p: 6, neu: 6, e: 6, scale: true }, fresh: true, speed: 0.5,
+      cause: { from: { scale: false }, delay: 1.5, label: 'Drawing' },
+      see: 'Carbon-12 drawn the usual way, then redrawn to scale. The nucleus shrinks to a speck inside the red circle.',
+      why: 'Real atoms are tens of thousands of times wider than their nucleus. The usual drawing blows the nucleus up so you can see the protons and neutrons.',
+      so: { bio: 'An atom is almost all empty space, yet almost all its mass is in that speck.', honors: 'More than 99.9% of the mass is in the nucleus, because protons and neutrons are each about 1,836 times heavier than an electron.' } },
+    { key: 'isoel', lvl: 'ap', title: 'Same electrons, different element', set: { p: 12, neu: 12, e: 10 }, fresh: true, speed: 0.5,
+      cause: { from: { p: 10, neu: 10 }, dur: 2.5, ring: [ABX,ABY,54], at: [248,40], label: 'Nucleus' },
+      see: 'Neon has 10 electrons. Watch 2 protons and 2 neutrons go into the nucleus while the electrons stay at 10. Now it is Mg²⁺.',
+      why: 'Mg²⁺ and Ne are isoelectronic: same 10 electrons, same configuration 1s² 2s² 2p⁶. The 12 protons in Mg²⁺ pull those electrons in harder, so Mg²⁺ is smaller than a neon atom.',
+      overlay(sim,ctx,LH,k){ABC(ctx,k,[['Protons: '+sim.p.p+' (was 10)',700,14,KR],'Electrons: '+sim.p.e+' (same)','Charge: '+abQ(sim),String(chMet(sim,'cfg'))]);} }
+  ],
+  useIt: [
+    { do: 'Read “sodium 450 mg” on a soup or sports-drink label as sodium ions, Na⁺.',
+      why: 'Sodium metal reacts violently with water. Na⁺ has lost its one outer electron, so it is stable in water, and your nerves and muscles depend on it.' },
+    { do: 'Use iodized salt, which most table salt in the US is.',
+      why: 'It carries iodide ions, I⁻: iodine atoms that each gained an electron. Your thyroid needs iodine to make its hormones.' },
+    { do: 'If you live on a ground floor or have a basement, test the air for radon.', lvl: 'honors',
+      why: 'Radon-222 has 86 protons and 136 neutrons, far too many to be stable, so it is radioactive. The EPA calls it the leading cause of lung cancer among people who don’t smoke. Test kits are inexpensive.' }
+  ],
+  tryIt: [
+    { title: 'candy atoms (10 minutes)',
+      steps: ['Pick three kinds of small candy or dried beans: one for protons, one for neutrons, one for electrons.', 'On a paper plate, build carbon-12: 6 protons and 6 neutrons in the middle, 2 electrons on an inner circle and 4 on an outer circle.', 'Swap in two extra neutrons, then take one electron away, then add a proton. After each change, name what you have.'],
+      look: 'Neutrons change only the mass number (carbon-14). Electrons change only the charge (a carbon ion). Only the extra proton changes the element, to nitrogen.' }
+  ]
+},
+nuclear: {
+  goals: {
+    bio: ['Why some nuclei are unstable and give off radiation', 'What alpha, beta and gamma radiation are', 'What stops each kind of radiation'],
+    honors: ['Writing and balancing nuclear equations', 'How alpha and beta decay change A and Z', 'Half-value layers: why lead thins gamma rays but never stops all of them'],
+    ap: ['Exponential attenuation, I = I₀e^(−μx)', 'Mass defect and E = Δmc²', 'Why fusion and fission both release energy']
+  },
+  matters: 'Smoke detectors, cancer treatment, medical scans, nuclear power and the radon in some basements all depend on how unstable nuclei break down and what it takes to stop the radiation they give off.',
+  startKey: 'nuc', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Protons red, neutrons gray',150,300,k,{s:12,hi:true});},
+  steps: [
+    { key: 'beta', title: 'Beta decay: a neutron becomes a proton', set: { mode: 'decay', nuc: 'C14' }, fresh: true, speed: 0.4,
+      run(sim){chAtReset(sim);sim.st.dstate='parent';},
+      see: 'Carbon-14: 6 protons and 8 neutrons. Watch it decay. One neutron turns into a proton and an electron, and the electron shoots out as a beta particle.',
+      why: 'Carbon-14 has too many neutrons for its protons. Turning a neutron into a proton fixes that. With 7 protons it is now nitrogen-14; the mass number stays 14 because a proton replaced a neutron.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.6,'d',()=>chAct(sim,'decay'));const d=sim.st.dstate!=='parent';if(tau>1.2&&tau<6)chRing(ctx,150,196,62);
+        NUC(ctx,k,d?[['C-14 → N-14',700,14,KR],'Protons 6 → 7','Neutrons 8 → 7','Mass number 14 (same)']:[['Carbon-14',700,14],'6 p, 8 n','Watch the nucleus…']);} },
+    { key: 'alpha', title: 'Alpha decay: lose 2 protons and 2 neutrons', set: { mode: 'decay', nuc: 'U238' }, fresh: true, speed: 0.4,
+      run(sim){chAtReset(sim);sim.st.dstate='parent';},
+      see: 'Uranium-238 is huge: 92 protons and 146 neutrons. Watch it throw out an alpha particle, a clump of 2 protons and 2 neutrons (a helium-4 nucleus).',
+      why: 'No nucleus with more than 83 protons is stable; the protons repel each other too strongly. Losing an alpha particle drops Z by 2 and A by 4, so uranium-238 becomes thorium-234.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.6,'d',()=>chAct(sim,'decay'));const d=sim.st.dstate!=='parent';if(tau>1.2&&tau<6)chRing(ctx,150,196,78);
+        NUC(ctx,k,d?[['U-238 → Th-234',700,14,KR],'Protons 92 → 90','Neutrons 146 → 144','Mass number 238 → 234']:[['Uranium-238',700,14],'92 p, 146 n','Watch the nucleus…']);} },
+    { key: 'gamma', title: 'Gamma: only energy leaves', set: { mode: 'decay', nuc: 'Tc99m' }, fresh: true, speed: 0.4,
+      run(sim){chAtReset(sim);sim.st.dstate='parent';},
+      see: 'Technetium-99m has extra energy stored in its nucleus (the m means excited). Watch it release that energy as a gamma ray.',
+      why: 'A gamma ray is light with far more energy than X-rays. No particles leave, so protons, neutrons, A and Z all stay the same; the nucleus just calms down.',
+      so: 'Hospitals inject Tc-99m for bone and heart scans: the gamma rays pass out of the body to a camera, and its 6-hour half-life means it is mostly gone in a day.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.6,'d',()=>chAct(sim,'decay'));const d=sim.st.dstate!=='parent';if(tau>1.2&&tau<6)chRing(ctx,150,196,66);
+        NUC(ctx,k,d?[['Tc-99m → Tc-99',700,14,KR],'Protons 43 (same)','Neutrons 56 (same)','Lost: energy only']:[['Tc-99m',700,14],'43 p, 56 n','Watch the nucleus…']);} },
+    { key: 'balance', lvl: 'honors', title: 'Balance the equation', set: { mode: 'decay', nuc: 'C14' }, fresh: true, pause: true, focus: [10,318,470,122],
+      run(sim){sim.st.dstate='done';sim.st.dt=2;},
+      see: 'The equation for carbon-14’s beta decay. Mass numbers sit on top, atomic numbers on the bottom.',
+      why: 'Both rows must add up the same on each side: 14 = 14 + 0 on top and 6 = 7 + (−1) on the bottom. The beta particle is written ⁰₋₁e: almost no mass and a charge of −1. To find a missing product, subtract.' },
+    { key: 'paper', title: 'Paper stops alpha particles', set: { mode: 'shield', rad: 'alpha', paper: true }, fresh: true, speed: 1,
+      cause: { from: { paper: false }, delay: 2, ring: [270,200,60], at: [560,8], label: 'Sheet of paper' }, run: nuWas,
+      see: 'Alpha particles from americium-241, the source in a smoke detector, fly to the Geiger counter. Watch a single sheet of paper slide into their path.',
+      why: 'Alpha particles are big and carry a 2+ charge, so they slam into atoms constantly and lose their energy fast. A sheet of paper, a few centimeters of air or the dead outer layer of your skin stops them.',
+      so: 'That is why a smoke detector is safe on the ceiling. Alpha emitters are dangerous only inside the body, if breathed in or swallowed.',
+      overlay(sim,ctx,LH,k){NUS(ctx,k,[['Alpha particles (Am-241)',700,13.5],['Geiger counter: '+nuF(nuCps(sim))+' counts/s',700,13,KR],'Before the paper: '+nuF(sim._nuWas||0)+' counts/s']);} },
+    { key: 'betapaper', title: 'Beta particles go through paper', set: { mode: 'shield', rad: 'beta', paper: true }, fresh: true, speed: 1,
+      cause: { from: { paper: false }, delay: 2, ring: [270,200,60], at: [560,8], label: 'Sheet of paper' }, run: nuWas,
+      see: 'Now beta particles, fast electrons from strontium-90. Watch the same sheet of paper go in.',
+      why: 'A beta particle is about 7,000 times lighter than an alpha particle and carries only a 1− charge, so it slips through paper. It takes something denser.',
+      overlay(sim,ctx,LH,k){NUS(ctx,k,[['Beta particles (Sr-90)',700,13.5],['Geiger counter: '+nuF(nuCps(sim))+' counts/s',700,13,KR],'Before the paper: '+nuF(sim._nuWas||0)+' counts/s']);} },
+    { key: 'betaal', title: 'Aluminum stops beta particles', set: { mode: 'shield', rad: 'beta', paper: true, al: true }, fresh: true, speed: 1,
+      cause: { from: { al: false }, delay: 2, ring: [390,200,60], at: [560,8], label: 'Aluminum, 3 mm' }, run: nuWas,
+      see: 'Paper still in place. Watch a 3 mm sheet of aluminum slide in.',
+      why: 'Aluminum packs far more electrons into each millimeter than paper, so the beta particles lose their energy within a few millimeters. Only natural background radiation reaches the counter.',
+      overlay(sim,ctx,LH,k){NUS(ctx,k,[['Beta particles (Sr-90)',700,13.5],['Geiger counter: '+nuF(nuCps(sim))+' counts/s',700,13,KR],'Before the aluminum: '+nuF(sim._nuWas||0)+' counts/s']);} },
+    { key: 'gammalead', title: 'Gamma rays need lead', set: { mode: 'shield', rad: 'gamma', paper: true, al: true, lead: true }, fresh: true, speed: 1,
+      cause: { from: { lead: false }, delay: 2, ring: [500,200,62], at: [560,8], label: 'Lead block' }, run: nuWas,
+      see: 'Gamma rays from cobalt-60 go straight through the paper and the aluminum. Watch a 5 cm block of lead slide in.',
+      why: 'Gamma rays have no mass and no charge, so they only stop when they happen to hit an electron. Lead packs in lots of electrons, so most are stopped, but even 5 cm lets about 1 in 25 through.',
+      overlay(sim,ctx,LH,k){NUS(ctx,k,[['Gamma rays (Co-60)',700,13.5],['Geiger counter: '+nuF(nuCps(sim))+' counts/s',700,13,KR],'Before the lead: '+nuF(sim._nuWas||0)+' counts/s']);} },
+    { key: 'hvl', lvl: 'honors', title: 'Each centimeter of lead halves it', set: { mode: 'shield', rad: 'gamma', lead: true, pbx: 5 }, fresh: true, speed: 1,
+      cause: { from: { pbx: 0.5 }, delay: 1.5, dur: 6, ring: [500,200,62], at: [560,8], label: 'Lead thickness' },
+      see: 'Lead alone, starting thin. Watch the block thicken from 0.5 cm to 5 cm while the counter drops.',
+      why: 'Every 1.05 cm of lead (the half-value layer) stops half of the gamma rays that reach it. The count halves, then halves again, but it never reaches zero.',
+      so: { ap: 'That is exponential attenuation: I = I₀e^(−μx) with μ = ln 2 ÷ 1.05 cm ≈ 0.66 cm⁻¹. Switch the graph to Gamma rays through lead to see it.' },
+      overlay(sim,ctx,LH,k){const h=Number(chMet(sim,'hvl'));NUS(ctx,k,[['Lead: '+sim.p.pbx.toFixed(1)+' cm = '+(sim.p.pbx/h).toFixed(1)+' half-value layers',700,13.5,KR],'Geiger counter: '+nuF(nuCps(sim))+' counts/s','Getting through: '+Number(chMet(sim,'pct')).toFixed(1)+'%']);} },
+    { key: 'mass', lvl: 'ap', title: 'Mass becomes energy', set: { mode: 'energy', rxn: 'fusion' }, fresh: true, pause: true,
+      see: 'Deuterium and tritium fuse into helium-4 and a neutron. Add up the masses before and after.',
+      why: 'The products weigh 0.0189 u less. E = Δmc² turns that missing mass into 17.6 MeV. Fusion of light nuclei and fission of heavy ones both release energy because both make nuclei that are held together more tightly, closer to iron-56.' }
+  ],
+  useIt: [
+    { do: 'Keep a working smoke detector on every floor, and never take one apart.',
+      why: 'Ionization detectors hold a tiny amount of americium-241. Its alpha particles can’t get through the case or even your skin, but the source shouldn’t be handled or broken open.' },
+    { do: 'Test your home for radon if you have a basement or live on the ground floor.',
+      why: 'Radon is a gas that gives off alpha particles. Your skin would stop them, but breathing radon in puts it right next to the cells of your lungs.' },
+    { do: 'At the dentist, wear the lead apron, and expect the tech to step out of the room.', lvl: 'honors',
+      why: 'X-rays behave like gamma rays: lead stops most of them, and distance cuts exposure more. Each X-ray is a small dose, and these habits keep the total low.' }
+  ],
+  tryIt: [
+    { title: 'read your smoke detector (5 minutes)',
+      steps: ['Take a smoke detector off its mount (or look at a new one in its package).', 'Find the label on the back. Look for “Americium-241” and an amount in microcuries (µCi), or for the word “photoelectric”.', 'Put it back and press the test button.'],
+      look: 'Ionization detectors list about 1 µCi of americium-241, about a third of a microgram. Photoelectric detectors use a light beam and have no radioactive source at all.' }
+  ]
+},
+halflife: {
+  goals: {
+    bio: ['Why decay is random for one atom but predictable for many', 'What a half-life is', 'How carbon-14 tells the age of things that were once alive'],
+    honors: ['Finding a half-life from data, and N = N₀(½)ⁿ', 'How the chance of decay sets the half-life', 'Working out an age from the percent left'],
+    ap: ['First-order decay: N = N₀e^(−kt) with k = ln 2 / t½', 'Why ln N vs time is a straight line', 'Random scatter in small samples']
+  },
+  matters: 'Half-lives decide how long a medical tracer stays in your body, how long nuclear waste has to be stored, and how scientists date bones, wood and ancient art.',
+  startKey: 'cup', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Each candy is one radioactive atom',180,420,k,{s:12,hi:true});},
+  steps: [
+    { key: 'one', title: 'One shake', set: { mode: 'candy', N: 100, prob: 0.5, auto: false }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);sim._hl=[];sim._hl0=hlLeft(sim);},
+      see: '100 candies, all mark side up: none decayed yet. Watch one shake. Each candy that lands blank side up has decayed, and it comes out of the cup.',
+      why: 'Every candy has the same 1 in 2 chance. You can’t say which ones will decay, but about half of them will. Real atoms work the same way: one atom’s decay is pure chance.',
+      overlay(sim,ctx,LH,k,tau){hlShakes(sim,tau,[1.6]);const n=sim._hl.length?sim._hl[0]:null;HLC(ctx,k,n==null?[['100 candies, none decayed',700,13.5],'Watch one shake…']:[['Before: 100   After: '+n,700,13.5,KR],'Decayed this shake: '+(100-n)+' (about half)']);} },
+    { key: 'halves', title: 'Half of what is left, each time', set: { mode: 'candy', N: 100, prob: 0.5, auto: false }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);sim._hl=[];sim._hl0=hlLeft(sim);},
+      see: 'A fresh cup of 100. Watch four shakes in a row, and watch the bars on the right.',
+      why: 'Each shake removes about half of the candies that are still in the cup, not half of the original 100. So 100 → about 50 → 25 → 12 → 6. The time for half to decay is the half-life: here, 1 shake.',
+      so: { honors: 'After n half-lives, N = N₀ × (½)ⁿ. After 4 shakes that is 100 × 1/16 ≈ 6.' },
+      overlay(sim,ctx,LH,k,tau){hlShakes(sim,tau,[1.6,4,6.4,8.8]);const L=sim._hl,n=L.length,prev=n>1?L[n-2]:sim._hl0;HLC(ctx,k,[['Left: '+hlSeq(sim),700,13.5,KR],n?'Shake '+n+': '+(prev-L[n-1])+' of '+prev+' decayed':'Watch four shakes…']);} },
+    { key: 'odds', lvl: 'honors', title: 'Lower odds, longer half-life', set: { mode: 'candy', N: 100, prob: 1/6, auto: false }, fresh: true, speed: 0.6,
+      cause: { from: { prob: 0.5 }, delay: 1.2, label: 'Chance to decay' },
+      run(sim){chAtReset(sim);sim._hl=[];sim._hl0=100;},
+      see: 'Now each atom is a die: it decays only on a 1 in 6. Watch six rolls.',
+      why: 'With a smaller chance each step, fewer decay per step and it takes longer to lose half: about 3.8 steps instead of 1. Each isotope has its own fixed chance per second, which is why half-lives range from fractions of a second to billions of years.',
+      overlay(sim,ctx,LH,k,tau){hlShakes(sim,tau,[3,4.8,6.6,8.4,10.2,12]);HLC(ctx,k,[['Left: '+hlSeq(sim),700,13,KR],'Predicted half-life: '+Number(chMet(sim,'tth')).toFixed(1)+' shakes (was 1)']);} },
+    { key: 'many', title: 'Chance evens out', set: { mode: 'candy', N: 100, prob: 0.5, auto: false }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);},
+      see: 'One run of 100 candies is bumpy. Watch 20 more runs get averaged in.',
+      why: 'With few atoms, luck matters. The average of many runs lands right on 50, 25, 12.5. A real sample holds trillions of atoms, so its decay follows the half-life almost exactly.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.6,'t',()=>chAct(sim,'trials'));HLC(ctx,k,tau<1.6?[['One cup, one run',700,13.5],'Watch 20 more runs…']:[['21 runs averaged',700,13.5,KR],'The average follows ½, ¼, ⅛…']);} },
+    { key: 'date', title: 'Carbon dating', set: { mode: 'date', pct: 25 }, fresh: true, speed: 0.5,
+      cause: { from: { pct: 100 }, delay: 1.5, dur: 4.5, ring: hlDot, at: [270,8], label: 'Carbon-14 left' },
+      see: 'A living thing has the same carbon-14 level as the air, 100%. After it dies, the carbon-14 decays and isn’t replaced. Watch the level fall from 100% to 25%.',
+      why: '100% → 50% is one half-life (5,730 years) and 50% → 25% is a second. So a bone with 25% of its carbon-14 left died about 11,460 years ago.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['C-14 left: '+Math.round(sim.p.pct)+'% (was 100%)',700,13.5,KR],'Half-lives: '+Number(chMet(sim,'hls')).toFixed(2),'Age: '+chNum(Number(chMet(sim,'age')))+' years'],272,46,212);} },
+    { key: 'older', lvl: 'honors', title: 'Each halving adds 5,730 years', set: { mode: 'date', pct: 3 }, fresh: true, speed: 0.5,
+      cause: { from: { pct: 50 }, delay: 1.5, dur: 6, ring: hlDot, at: [270,8], label: 'Carbon-14 left' },
+      see: 'Start at 50%: one half-life. Watch the level keep falling and the age climb.',
+      why: 'Every time the carbon-14 halves, 5,730 more years have passed: 50% is 5,730 years, 25% is 11,460, 12.5% is 17,190, 6.25% is 22,920. By about 50,000 years too little is left to measure, so carbon dating can’t date dinosaurs.',
+      overlay(sim,ctx,LH,k){ckCard(ctx,k,[['C-14 left: '+Math.round(sim.p.pct)+'% (was 50%)',700,13.5,KR],'Half-lives: '+Number(chMet(sim,'hls')).toFixed(2),'Age: '+chNum(Number(chMet(sim,'age')))+' years'],272,46,212);} },
+    { key: 'iodine', title: 'A real isotope: iodine-131', set: { mode: 'iso', iso: 'I131', step: 1 }, fresh: true, speed: 0.6,
+      run(sim){chAtReset(sim);sim._hl=[];sim._hl0=Math.round(chMet(sim,'remI'));},
+      see: 'Iodine-131, used to treat thyroid cancer, has a half-life of 8.02 days. Each step here is one half-life. Watch three steps.',
+      why: '200 atoms → about 100 → 50 → 25 in about 24 days. After 10 half-lives (80 days) less than 0.1% is left, which is why hospitals store I-131 waste for a few months before it is thrown out.',
+      so: { ap: 'k = ln 2 ÷ t½ = 0.0864 per day, and N = N₀e^(−kt). Plot ln N against time and you get a straight line with slope −k.' },
+      overlay(sim,ctx,LH,k,tau){[1.6,4,6.4].forEach((t,i)=>chAt(sim,tau,t,'i'+i,()=>{chAct(sim,'stepT');sim._hl.push(Math.round(chMet(sim,'remI')));}));
+        HLC(ctx,k,[['Atoms left: '+hlSeq(sim),700,13.5,KR],'Time: '+chMet(sim,'el')]);} }
+  ],
+  useIt: [
+    { do: 'After a nuclear-medicine scan, follow the instructions you are given, often to drink extra water.',
+      why: 'The usual tracer, technetium-99m, has a 6-hour half-life, so after a day only about 1/16 is left, and drinking water flushes it out even faster.' },
+    { do: 'Be skeptical of any headline that says a dinosaur bone was carbon dated.',
+      why: 'After about 50,000 years (roughly 9 half-lives) too little carbon-14 is left to measure. Dinosaurs died out 66 million years ago, so they are dated with isotopes like uranium-238 and potassium-40 in nearby volcanic rock.' },
+    { do: 'Count back from bedtime before an afternoon energy drink.', lvl: 'honors',
+      why: 'Caffeine leaves most adults’ blood with a half-life of about 5 hours. 200 mg at 4 pm still leaves about 100 mg at 9 pm and 50 mg at 2 am, the same halving math as radioactive decay.' }
+  ],
+  tryIt: [
+    { title: 'the coin half-life (10 minutes)',
+      steps: ['Put 50 coins in a cup, shake, and pour them out.', 'Set aside every coin that lands tails up: those atoms have decayed. Count the heads and put them back in the cup.', 'Repeat until no coins are left, writing down the count after each shake.'],
+      look: 'About half disappear each time: 50 → 25 → 12 → 6 → 3. With so few coins the end gets bumpy; average your numbers with a few classmates and the pattern smooths out.' }
+  ]
+}
+});
+
+/* density */
+const DNC=(ctx,k,L)=>ckCard(ctx,k,L,232,100,250,1.3);
+const DNL=(ctx,k,L)=>ckCard(ctx,k,L,500,366,290,1.3);
+const dnM=(sim,id,d)=>{const v=chMet(sim,id);return Number.isFinite(v)?v.toFixed(d==null?2:d):'…';};
+BioLab.addLearn({
+density: {
+  goals: {
+    bio: ['How to find density from mass and volume', 'Why a bigger piece of the same material has the same density', 'Why things sink or float'],
+    honors: ['Volume by ruler and by water displacement', 'Why a floating object fools displacement', 'Using density to identify a material, with percent error'],
+    ap: ['Significant figures in a calculated density', 'Why density depends on atomic mass and packing', 'How temperature changes the density of water']
+  },
+  matters: 'Density is how a jeweler spots fake gold, why a life jacket keeps you up, why oil spills float, and how a cook checks if an egg is still fresh.',
+  question: 'You find an unlabeled chunk of gray metal in the shop. How could you tell what it is without damaging it?',
+  startKey: 'lab', startRun: true, startSpeed: 1,
+  steps: [
+    { key: 'measure', title: 'Mass and volume', set: { mode: 'measure', obj: 'al', size: 2, vmethod: 'ruler' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'An aluminum block. Watch it go on the balance, then get measured with a ruler.',
+      why: 'Mass is how much matter there is (grams). Volume is how much space it takes up (cm³): for a block, length × width × height. Density divides one by the other: D = m ÷ V.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'w',()=>chAct(sim,'weigh'));chAt(sim,tau,3.6,'r',()=>chAct(sim,'ruler'));} },
+    { key: 'size', title: 'Bigger block, same density', set: { mode: 'measure', obj: 'al', size: 1, vmethod: 'ruler' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);sim._dn=[];},
+      see: 'Watch four aluminum blocks get measured, from small to large. Mass and volume both grow, but compare the densities.',
+      why: 'A bigger block has more atoms, so more mass, but it takes up more space in exactly the same proportion. The ratio m ÷ V stays about 2.70 g/cm³. Density is a property of the material, not of the piece.',
+      overlay(sim,ctx,LH,k,tau){[1,3,5,7].forEach((t,i)=>chAt(sim,tau,t,'z'+i,()=>{BioLab.setValues(sim,{size:i+1});chAct(sim,'all');sim._dn.push('Size '+(i+1)+': '+dnM(sim,'mass')+' g ÷ '+dnM(sim,'vol')+' cm³ = '+dnM(sim,'dens'));}));
+        const L=sim._dn.length?sim._dn.map((s,i)=>i===sim._dn.length-1?[s,700,12.5,KR]:s):['Watch the sizes…'];DNC(ctx,k,[['Density = mass ÷ volume',700,13.5]].concat(L));} },
+    { key: 'lead', title: 'Same size, different material', set: { mode: 'measure', obj: 'pb', size: 2, vmethod: 'ruler' }, fresh: true, speed: 1,
+      cause: { from: { obj: 'al' }, delay: 2.5, label: 'Sample' },
+      run(sim){chAtReset(sim);chAct(sim,'all');sim._dnW=dnM(sim,'dens');},
+      see: 'The aluminum block, measured. Watch it get swapped for a lead block of the same size, and watch the atoms on the right.',
+      why: 'Lead atoms (207 u) are almost 8 times heavier than aluminum atoms (27 u), and they pack about as tightly. So the same space holds about 4 times the mass: 11.3 g/cm³ against 2.70.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,2.8,'m',()=>chAct(sim,'all'));DNC(ctx,k,[[(sim.p.obj==='pb'?'Lead':'Aluminum')+': D = '+dnM(sim,'dens')+' g/cm³',700,13.5,KR],'Aluminum was '+sim._dnW+' g/cm³','Same volume: '+dnM(sim,'vol')+' cm³']);} },
+    { key: 'disp', lvl: 'honors', title: 'Volume by water displacement', set: { mode: 'measure', obj: 'al', size: 2, vmethod: 'disp' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Read the water level, then watch the block go in.',
+      why: 'The water rises by exactly the block’s volume, because the block pushes that much water out of its way. 1 mL = 1 cm³. This works for odd shapes a ruler can’t measure, like a rock or a key.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.5,'d',()=>chAct(sim,'all'));} },
+    { key: 'float', lvl: 'honors', title: 'A floating block fools displacement', set: { mode: 'measure', obj: 'wood', size: 2, vmethod: 'disp', push: true }, fresh: true, speed: 1,
+      cause: { from: { push: false }, delay: 2.5, label: 'Push it under' },
+      run(sim){chAtReset(sim);chAct(sim,'all');sim._dnW=[dnM(sim,'vol',1),dnM(sim,'dens')];},
+      see: 'Wood floats, so only part of it sits under the water and the reading is too small. Watch a thin wire push it all the way under.',
+      why: 'A floating block only pushes aside its own mass of water, not its whole volume. Pushed under, it displaces its full volume, so the density comes out right: about 0.60 g/cm³.',
+      overlay(sim,ctx,LH,k){DNC(ctx,k,[['Volume: '+dnM(sim,'vol',1)+' cm³ (was '+sim._dnW[0]+')',700,13.5,KR],'Density: '+dnM(sim,'dens')+' g/cm³ (was '+sim._dnW[1]+')','Wood is about 0.60 g/cm³']);} },
+    { key: 'column', title: 'Sink or float', set: { mode: 'column', liq: 'column' }, fresh: true, speed: 1,
+      run(sim){chAtReset(sim);},
+      see: 'Four liquids poured in layers, then six objects dropped in. Watch where each one stops.',
+      why: 'Liquids stack with the densest on the bottom. An object sinks through any layer less dense than it is and stops on the first layer that is denser.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,1.2,'d',()=>chAct(sim,'dropc'));} },
+    { key: 'egg', title: 'Salt makes an egg float', set: { mode: 'column', liq: 'salt' }, fresh: true, speed: 1,
+      cause: { from: { liq: 'water' }, delay: 4, label: 'Liquid' },
+      run(sim){chAtReset(sim);sim.st.dropT=0;},
+      see: 'The objects in plain water. The fresh egg (1.03 g/cm³) sinks. Watch the water get swapped for salt water.',
+      why: 'Dissolved salt adds mass without adding much volume, so salt water is denser: about 1.07 g/mL. Now the water is denser than the egg, and the egg floats.',
+      so: 'The same idea is why it is easier to float in the ocean than in a pool, and easiest of all in the Dead Sea.',
+      overlay(sim,ctx,LH,k,tau){chAt(sim,tau,4.1,'d',()=>{sim.st.dropT=0;});const s=sim.p.liq==='salt';DNL(ctx,k,[['Fresh egg: 1.03 g/cm³',700,13.5],s?['Salt water, 1.07 g/mL: the egg floats',700,12.5,KR]:['Water, 1.00 g/mL: the egg sinks',700,12.5,KR],s?'In plain water it sank':'Watch the liquid change…']);} },
+    { key: 'warm', lvl: 'ap', title: 'Warm water is less dense', set: { mode: 'column', liq: 'water', temp: 90 }, fresh: true, speed: 1,
+      cause: { from: { temp: 4 }, delay: 1.5, dur: 4.5, label: 'Water temperature' },
+      run(sim){sim.st.dropT=0;},
+      see: 'Water at 4 °C, where it is densest. Watch it heat to 90 °C.',
+      why: 'Faster-moving molecules push each other farther apart, so the same mass takes up more space. Water drops from 0.99997 to about 0.965 g/cm³. That is why hot water floats on cold water, and why careful density work always records the temperature.',
+      overlay(sim,ctx,LH,k){DNL(ctx,k,[['Water at '+Math.round(sim.p.temp)+' °C',700,13.5],['Density: '+dnM(sim,'wd',5)+' g/cm³',700,12.5,KR],'At 4 °C it was 0.99997 g/cm³']);} }
+  ],
+  useIt: [
+    { do: 'Check an egg before you cook it: put it in a glass of water.',
+      why: 'As an egg ages, water escapes through the shell and an air pocket grows, so its density drops. A fresh egg sinks and lies flat; an egg that stands up or floats is old.' },
+    { do: 'Wear a life jacket on a boat, even if you can swim.',
+      why: 'Its foam is full of air, far less dense than water, so it keeps your head up even if you are hurt, tired or knocked out.' },
+    { do: 'Don’t trust a “gold” item just because it is heavy.', lvl: 'honors',
+      why: 'Gold is 19.3 g/cm³. Jewelers check density by weighing an item in air and in water. Tungsten (19.25 g/cm³) is the one common metal that can fake it, which is why gold bars get drilled or scanned too.' }
+  ],
+  tryIt: [
+    { title: 'the floating egg (5 minutes)',
+      steps: ['Put a raw egg in a tall glass of tap water and watch it sink.', 'Take it out and stir in salt, about 1 tablespoon at a time.', 'Put the egg back in after each spoonful.'],
+      look: 'After a few tablespoons the egg floats, because the salt water is now denser than the egg. Pour plain water gently on top and the egg can hang in the middle, between the two layers.' }
+  ]
+}
+});
+
 })();
