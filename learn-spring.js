@@ -75,7 +75,12 @@ gaslaws: {
       cause: { from: { gas: 'ideal' }, delay: 1, label: 'Gas' },
       see: '1.5 mol of CO₂ squeezed into 2 L. The real pressure comes out below what PV = nRT predicts: Z = PV ÷ nRT drops below 1.',
       why: 'Crowded together, real CO₂ molecules attract each other, so they hit the walls a little less hard. Ideal gases have no attractions and no size; real gases act ideal only when molecules are far apart.',
-      overlay(sim,ctx,LH,k){GL(ctx,k,[['CO₂, crowded',700,14],'Pressure: '+f2(met(sim,'P'))+' atm',['Z = '+(Number.isFinite(met(sim,'Z'))?met(sim,'Z').toFixed(3):'—'),700,13.5,RED]]);} }
+      overlay(sim,ctx,LH,k){GL(ctx,k,[['CO₂, crowded',700,14],'Pressure: '+f2(met(sim,'P'))+' atm',['Z = '+(Number.isFinite(met(sim,'Z'))?met(sim,'Z').toFixed(3):'—'),700,13.5,RED]]);} },
+    { key: 'hook', title: 'Your question: the can on the dashboard', set: { mode: 'box', hold: 'V', vol: 22.4, T: 343 }, fresh: true, speed: 1,
+      cause: { from: { T: 273 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'A sealed can at 1.00 atm and 0 °C warms to 70 °C on a dashboard. The pressure climbs to about 1.26 atm.',
+      why: 'Gay-Lussac: P₂ = P₁ × T₂/T₁ = 1.00 × 343 K / 273 K = 1.26 atm, using kelvins. That is why aerosol cans warn you never to leave them in a hot car.',
+      overlay(sim,ctx,LH,k){GL(ctx,k,[[f0(met(sim,'TC'))+' °C',700,14],'Pressure: '+f2(met(sim,'P'))+' atm']);} }
   ],
   useIt: [
     { do: 'Check tire pressure with the tires cold, and top them up when the weather turns cold.',
@@ -408,7 +413,11 @@ ksp: {
     { key: 'cube', lvl: 'ap', title: 'PbI₂: Ksp = 4s³', set: { mode: 'dissolve', salt: 'PbI2', amt: '100' }, fresh: true, speed: 0.6,
       see: 'Each PbI₂ that dissolves gives one Pb²⁺ and two I⁻. The readouts show [I⁻] is exactly twice [Pb²⁺].',
       why: '[Pb²⁺] = s and [I⁻] = 2s, so Ksp = s(2s)² = 4s³. With Ksp = 9.8 × 10⁻⁹, s = 1.35 × 10⁻³ M. Compare Ksp values directly only for salts with the same ion ratio.',
-      overlay(sim,ctx,LH,k){KS(ctx,k,[['PbI₂ ⇌ Pb²⁺ + 2I⁻',700,13.5],'s = '+String(met(sim,'s')),['Ksp = 4s³',700,13,RED]]);} }
+      overlay(sim,ctx,LH,k){KS(ctx,k,[['PbI₂ ⇌ Pb²⁺ + 2I⁻',700,13.5],'s = '+String(met(sim,'s')),['Ksp = 4s³',700,13,RED]]);} },
+    { key: 'hook', title: 'Your question: the barium shake', set: { mode: 'dissolve', salt: 'BaSO4', amt: '500' }, fresh: true, speed: 0.6,
+      see: 'Stir 500 mg of BaSO₄ into 100 mL of water. Only about 0.24 mg dissolves; the other 499.8 mg stays solid.',
+      why: 'BaSO₄’s Ksp is tiny (1.1 × 10⁻¹⁰), so only about 10⁻⁵ M of Ba²⁺ ever gets into solution. The solid coats the gut and shows up white on the X-ray, while too little barium dissolves to poison you.',
+      overlay(sim,ctx,LH,k){KS(ctx,k,[['500 mg BaSO₄',700,14],'Still solid: '+f1(met(sim,'solid'))+' mg',String(met(sim,'state')||'')]);} }
   ],
   useIt: [
     { do: 'Drink plenty of water, especially in hot weather or after sports.',
@@ -635,7 +644,11 @@ gasstoich: {
     { key: 'R', lvl: 'ap', title: 'Find R yourself', set: { mode: 'mg', mgMass: 0.03, Tw: 22, Pbar: 630, errM: 'none' }, fresh: true, speed: 2,
       see: 'With moles from the Mg, and P, V and T measured, you can solve PV = nRT for R.',
       why: 'R = PV/nT = (610.2/760 atm)(0.0372 L) ÷ (1.23 × 10⁻³ mol × 295.15 K) ≈ 0.0820 L·atm/(mol·K), within 0.1% of 0.08206.',
-      overlay(sim,ctx,LH,k){GSM(ctx,k,[['R from your data',700,13.5],Number.isFinite(met(sim,'Rx'))?met(sim,'Rx').toFixed(4)+' L·atm/(mol·K)':'reacting…']);} }
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['R from your data',700,13.5],Number.isFinite(met(sim,'Rx'))?met(sim,'Rx').toFixed(4)+' L·atm/(mol·K)':'reacting…']);} },
+    { key: 'hook', title: 'Your question: don’t overflow the tube', set: { mode: 'mg', mgMass: 0.04, Tw: 22, Pbar: 630, errM: 'none' }, fresh: true, speed: 1,
+      see: '0.040 g of magnesium fills the 50 mL tube to 49.6 mL. Any more and the hydrogen overflows.',
+      why: 'n = PV/RT = (610.2/760 atm)(0.050 L) ÷ (0.08206 × 295.15 K) = 1.66 × 10⁻³ mol of H₂, which takes 0.040 g of Mg. At sea level (760 mmHg) the gas is squeezed smaller, so about 0.049 g would fit.',
+      overlay(sim,ctx,LH,k){GSM(ctx,k,[['0.040 g Mg',700,14],'Gas: '+f1(met(sim,'vol'))+' mL of 50']);} }
   ],
   useIt: [
     { do: 'Expect bread and cake to rise more at altitude.',
@@ -697,7 +710,11 @@ dissolve: {
     { key: 'hot', lvl: 'honors', title: 'Hot water and sugar', set: { solute: 'sugar', mass: 60, T: 80, stir: true }, fresh: true, speed: 1,
       see: 'At 80 °C water can hold about 360 g of sugar per 100 g, almost twice as much as at 25 °C.',
       why: 'For most solids, solubility rises with temperature. That is how candy makers and rock-candy kits make supersaturated syrups.',
-      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Sugar, 80 °C',700,12],'Max: '+f0(met(sim,'lim'))+' g']);} }
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Sugar, 80 °C',700,12],'Max: '+f0(met(sim,'lim'))+' g']);} },
+    { key: 'hook', title: 'Your question: sugar in iced tea', set: { solute: 'sugar', mass: 25, T: 5, stir: false }, fresh: true, speed: 2,
+      see: '25 g of sugar in 100 g of 5 °C tea. Some sits on the bottom at first, then it all dissolves.',
+      why: 'Even cold water can hold about 184 g of sugar per 100 g, so the tea was nowhere near full: the sugar was just slow in cold, unstirred water. Salt is different: it tops out at about 36 g, hot or cold.',
+      overlay(sim,ctx,LH,k){DSC(ctx,k,[['Sugar, 5 °C',700,12],f1(met(sim,'dis'))+' g in',f1(met(sim,'left'))+' g left']);} }
   ],
   useIt: [
     { do: 'Use dish soap, not just water, on greasy pans.',
@@ -746,7 +763,11 @@ molarity: {
     { key: 'other', lvl: 'ap', title: 'Other units', set: { mode: 'beaker', solute: 'CuSO4', n: 0.5, V: 0.5 }, fresh: true, pause: true,
       see: 'The same 1.00 M solution in other units: molality, mass percent and mole fraction.',
       why: 'Molality uses kilograms of water, not liters of solution, so it doesn’t change with temperature. That is why colligative properties use it.',
-      overlay(sim,ctx,LH,k){MB(ctx,k,[['1.00 M CuSO₄',700,14],'Molality: '+f2(met(sim,'molal'))+' m','Mass percent: '+f1(met(sim,'wp'))+'%']);} }
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['1.00 M CuSO₄',700,14],'Molality: '+f2(met(sim,'molal'))+' m','Mass percent: '+f1(met(sim,'wp'))+'%']);} },
+    { key: 'hook', title: 'Your question: IV saline', set: { mode: 'beaker', solute: 'NaCl', n: 0.075, V: 0.5 }, fresh: true, pause: true,
+      see: '0.075 mol of NaCl (4.38 g) in 0.500 L makes 0.15 M saline. Top it up to 1.000 L and it drops to 0.075 M.',
+      why: 'moles = M × V = 0.15 × 0.500 = 0.075 mol. Doubling the volume halves the concentration. IV saline has to match the salt level of blood; too dilute and blood cells swell, too strong and they shrink.',
+      overlay(sim,ctx,LH,k){MB(ctx,k,[['NaCl, '+f2(sim.p.n)+' mol',700,13.5],'V = '+f2(sim.p.V)+' L','M = '+f2(met(sim,'M'))+' M']);} }
   ],
   useIt: [
     { do: 'Follow mixing directions for drink powders and cleaners exactly.',
@@ -802,7 +823,12 @@ solcurve: {
     { key: 'denver', lvl: 'honors', title: 'A mountain lake', set: { view: 'gas', T: 40, P: 'denver' }, fresh: true, speed: 1,
       see: 'At Denver’s air pressure the same 40 °C water holds only 5.3 mg/L instead of 6.4 at sea level.',
       why: 'Henry’s law: dissolved gas is proportional to the gas’s pressure above the water. Less air pressure, less oxygen dissolved.',
-      overlay(sim,ctx,LH,k){SG(ctx,k,[['Denver, 40 °C',700,13.5],'O₂: '+f1(met(sim,'o2'))+' mg/L',txt(sim,'fish')]);} }
+      overlay(sim,ctx,LH,k){SG(ctx,k,[['Denver, 40 °C',700,13.5],'O₂: '+f1(met(sim,'o2'))+' mg/L',txt(sim,'fish')]);} },
+    { key: 'hook', title: 'Your question: growing crystals', set: { view: 'solid', solute: 'NaCl', mass: 40, T: 20 }, fresh: true, speed: 1,
+      cause: { from: { T: 100 }, delay: 0.6, dur: 3, label: 'Temperature' },
+      see: 'Salt-saturated boiling water (about 40 g) cooled to 20 °C gives back only about 4 g of crystals.',
+      why: 'Salt’s curve is nearly flat: 39.8 g at 100 °C vs. 36.0 g at 20 °C. Potassium nitrate works far better: 200 g dissolves at 100 °C and about 168 g crystallizes on cooling.',
+      overlay(sim,ctx,LH,k){SC(ctx,k,[['NaCl, '+f0(sim.p.T)+' °C',700,14],'Dissolved: '+f1(met(sim,'md'))+' g','Crystals: '+f1(met(sim,'mc'))+' g']);} }
   ],
   useIt: [
     { do: 'Store soda cold if you want it to stay fizzy.',
@@ -849,7 +875,11 @@ colligative: {
     { key: 'real', lvl: 'ap', title: 'Real ions stick together', set: { view: 'freeze', solute: 'nacl', m: 1, realI: true }, fresh: true, speed: 4,
       see: 'With measured van ’t Hoff factors, 1 m NaCl freezes at −3.53 °C, not −3.72 °C.',
       why: 'Some Na⁺ and Cl⁻ ions pair up in solution and act as one particle, so the real i is about 1.9 instead of 2. The more concentrated the solution, the more ion pairing.',
-      overlay(sim,ctx,LH,k){CLG(ctx,k,[['Measured i: '+f2(met(sim,'ieff')),700,13.5],'Freezes at '+f2(met(sim,'fp'))+' °C']);} }
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['Measured i: '+f2(met(sim,'ieff')),700,13.5],'Freezes at '+f2(met(sim,'fp'))+' °C']);} },
+    { key: 'hook', title: 'Your question: rock salt or CaCl₂?', set: { view: 'freeze', solute: 'cacl2', m: 2, realI: false }, fresh: true, speed: 4,
+      see: 'At 2 m, rock salt brine refreezes at −7.44 °C; calcium chloride brine at −11.2 °C.',
+      why: 'CaCl₂ gives three ions per formula unit, NaCl two: ΔTf = 3 × 1.86 × 2 = 11.2 °C. On a −10 °C road, rock salt brine would freeze again; calcium chloride keeps it clear.',
+      overlay(sim,ctx,LH,k){CLG(ctx,k,[['CaCl₂, 2 m: freezes at '+f2(met(sim,'fp'))+' °C',700,13.5],'(NaCl at 2 m: −7.44 °C)']);} }
   ],
   useIt: [
     { do: 'Use rock salt only down to about −10 °C; switch to calcium chloride when it’s colder.',
@@ -916,7 +946,11 @@ ph: {
     { key: 'ka', lvl: 'ap', title: 'Ka and percent ionized', set: { mode: 'compare', conc: 0.1, weak: 'HF', ind: 'none' }, fresh: true, pause: true,
       see: 'Swap in HF (Ka = 6.8 × 10⁻⁴). At 0.10 M it is about 8% ionized and pH 2.10.',
       why: 'A bigger Ka means a stronger weak acid. Solve Ka = x²/(C − x) for x = [H₃O⁺]; then pH = −log x and percent ionized = x/C × 100.',
-      overlay(sim,ctx,LH,k){PHC(ctx,k,[['HF, 0.10 M',700,13],'Ka = '+txt(sim,'ka'),f1(met(sim,'ion'))+'% ionized']);} }
+      overlay(sim,ctx,LH,k){PHC(ctx,k,[['HF, 0.10 M',700,13],'Ka = '+txt(sim,'ka'),f1(met(sim,'ion'))+'% ionized']);} },
+    { key: 'hook', title: 'Your question: cola, coffee and milk', set: { mode: 'scale', sol: 'cola', ind: 'none' }, fresh: true, pause: true,
+      see: 'Cola is pH 2.5. That is 10^2.5 ≈ 316 times more H₃O⁺ than coffee (pH 5.0) and about 16,000 times more than milk (pH 6.7).',
+      why: 'Each pH unit is ×10, so subtract the pHs and raise 10 to that power. Enamel starts dissolving below about pH 5.5: cola and sports drinks are well below it, coffee is near it, milk is safely above.',
+      overlay(sim,ctx,LH,k){PHS(ctx,k,[['Cola: pH '+f2(met(sim,'pH')),700,14],'[H₃O⁺] = '+txt(sim,'h')+' M']);} }
   ],
   useIt: [
     { do: 'Rinse your mouth with water after drinking soda or sports drinks.',
@@ -1026,7 +1060,11 @@ light: {
     { key: 'pe', lvl: 'ap', title: 'The photoelectric effect', set: { pre: 'vio', target: 'metal', metal: 'na', bright: 60, ph: true }, fresh: true, speed: 1,
       see: 'Violet light knocks electrons out of sodium metal. Green light at 532 nm, just past sodium’s 525 nm threshold, would eject none, however bright.',
       why: 'An electron escapes only if one photon has more energy than the work function φ (2.36 eV for Na). KE = hν − φ = 3.06 − 2.36 = 0.70 eV. Einstein’s explanation of this won him the Nobel Prize.',
-      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Violet on sodium',700,14],'Photon: '+txt(sim,'evt'),'Fastest electron: '+txt(sim,'ket')]);} }
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['Violet on sodium',700,14],'Photon: '+txt(sim,'evt'),'Fastest electron: '+txt(sim,'ket')]);} },
+    { key: 'hook', title: 'Your question: sunburn at the ski area', set: { pre: 'uvb', target: 'none', ph: true }, fresh: true, speed: 1,
+      see: 'A 300 nm UV-B photon carries 399 kJ/mol, 2.33 times the energy of a 700 nm red photon.',
+      why: 'Each UV-B photon can break bonds in skin DNA; a red photon can’t, no matter how bright the lamp. At altitude and on snow you get more UV, so you burn faster on the slopes.',
+      overlay(sim,ctx,LH,k){LTC(ctx,k,[['UV-B, '+txt(sim,'lamt'),700,14],'Per mole of photons: '+txt(sim,'Emt'),'vs. red light: '+txt(sim,'rel')]);} }
   ],
   useIt: [
     { do: 'Wear sunscreen even on cloudy days.',
@@ -1078,7 +1116,11 @@ spectra: {
     { key: 'dE', lvl: 'ap', title: 'Energy of a line', set: { mode: 'hydrogen', nhi: 3, spec: 'emission' }, fresh: true, speed: 1,
       see: 'Each drop the card reports has its own photon energy. The 3 → 2 drop gives the red 656 nm line.',
       why: 'ΔE = hc/λ = (6.63 × 10⁻³⁴)(3.00 × 10⁸)/(656 × 10⁻⁹) = 3.03 × 10⁻¹⁹ J, or 182 kJ per mole of photons. Drops ending on level 1 (Lyman) are UV; on level 3 (Paschen), infrared.',
-      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Last drop: '+txt(sim,'last').replace(/^n = /,''),700,12.5],'ΔE = '+txt(sim,'elast')]);} }
+      overlay(sim,ctx,LH,k){SPH(ctx,k,[['Last drop: '+txt(sim,'last').replace(/^n = /,''),700,12.5],'ΔE = '+txt(sim,'elast')]);} },
+    { key: 'hook', title: 'Your question: which red firework?', set: { mode: 'flame', salt: 'sr' }, fresh: true, speed: 1,
+      see: 'Strontium’s brightest red line is at 662 nm, plus a set of other red and orange lines. Lithium’s is at 671 nm.',
+      why: 'The two flames look nearly the same to your eye, but each element has its own pattern of lines. Match the firework’s lines to the reference spectra and you know which salt the maker used.',
+      overlay(sim,ctx,LH,k){SPF(ctx,k,[[txt(sim,'fsalt'),700,13.5],'Flame: '+txt(sim,'fcol'),'Brightest line: '+txt(sim,'fline')]);} }
   ],
   useIt: [
     { do: 'Look at fireworks colors and guess the metal.',
