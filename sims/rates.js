@@ -332,5 +332,6 @@ function arrow(ctx,x1,y1,x2,y2,c){const a=Math.atan2(y2-y1,x2-x1),h=8;ctx.stroke
   ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-Math.cos(a-0.5)*h,y2-Math.sin(a-0.5)*h);ctx.lineTo(x2-Math.cos(a+0.5)*h,y2-Math.sin(a+0.5)*h);ctx.closePath();ctx.fill();}
 RATES.controls[0].onChange=sim=>syncMode(sim);
 RATES.onLevel=syncMode;
+RATES.sync=syncMode;
 BioLab.register(RATES);
 })();

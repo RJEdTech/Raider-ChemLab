@@ -1137,4 +1137,151 @@ hydrate:{questions:[
 ]}
 });
 
+
+/* ===== Kinetics: rates (collision theory) and ratelaw ===== */
+const rtSync=sim=>{if(sim.def.sync)sim.def.sync(sim);};
+const rtM=(sim,id)=>{const v=chMet(sim,id);return typeof v==='number'?v:NaN;};
+const rtF=(v,d)=>isNaN(v)?'…':v.toFixed(d==null?1:d);
+const rtH=sim=>{const v=rtM(sim,'half');return isNaN(v)?'Halfway: still reacting…':'Halfway in '+v.toFixed(1)+' s';};
+const RC=(ctx,k,L)=>ckCard(ctx,k,L,24,66,300);
+const KR='#c8102e',KG='#1b7a3a',KB='#1f5fbf',KP='#6a3fa0';
+function rlCard(ctx,k,L,LH){const s=Math.max(...L.map(l=>typeof l==='string'?12.5:(l[2]||12.5)));const h=8+L.length*s*Math.min(k,1.45)*1.38;return ckCard(ctx,k,L,14,(LH||500)-h-10,288);}
+const rlTX=sim=>{const v=chMet(sim,'tX');return typeof v==='number'&&!isNaN(v)?v.toFixed(1)+' s':'not yet…';};
+
+BioLab.addLearn({
+rates: {
+  goals: {
+    bio: ['Why particles must collide to react, and why most collisions just bounce', 'What the energy hill (activation energy) is', 'Why heat, concentration, surface area and catalysts speed reactions up'],
+    honors: ['Collision theory: how often, how hard, and which way particles hit', 'Activation energy and the Maxwell–Boltzmann curve', 'Why heating raises the rate far more than it raises collisions', 'How a catalyst lowers Eₐ without changing ΔH'],
+    ap: ['Rate = collision frequency × fraction with E ≥ Eₐ × orientation factor', 'Maxwell–Boltzmann tails and why k depends so strongly on T', 'Why rate ∝ [A][B] for this one-step reaction', 'Catalysts and surface area in collision terms']
+  },
+  matters: 'Fridges, kindling, the enzymes in your body and the catalytic converter in a car all work by controlling one thing: how often particles collide hard enough to react.',
+  startKey: 'box', startRun: true, startSpeed: 0.5,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Zoomed in on a tiny drop of solution',242,462,k,{s:12,hi:true});},
+  steps: [
+    { key: 'bounce', title: 'Most collisions just bounce', fresh: true, speed: 0.15, run: rtSync,
+      see: { bio: 'Slowed way down. Rings mark collisions. A gray ring was too gentle and the particles just bounced. A yellow flash worked: A and B stuck together as AB.', honors: 'Slowed way down. A gray ring was too gentle. A purple ring had enough energy but hit the wrong side of B. A yellow flash reacted.' },
+      why: 'Particles have to hit each other to react, but a hit only works if it is hard enough and lined up right. At room temperature only about 2 collisions in 100 make AB.',
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['300 K (room temperature)',700,14],'Collisions per second: '+rtF(rtM(sim,'Z'),0),['Ones that react: '+rtF(rtM(sim,'succ'),1)+'%',700,12.5,KG]]);} },
+    { key: 'hill', title: 'The energy hill', fresh: true, speed: 0.5, run: rtSync, focus: [488,286,300,196],
+      see: 'The energy diagram shows A + B climbing a hill before dropping down to AB. The height of the hill is the activation energy, Eₐ: 10 kJ/mol here.',
+      why: 'Old bonds have to start breaking before new ones can form, and that costs energy up front. A collision with less than Eₐ rolls back down and the particles bounce apart.',
+      so: { honors: 'AB ends up 30 kJ/mol lower than A + B, so the reaction releases heat (ΔH = −30 kJ/mol). Eₐ and ΔH are separate: a reaction can release lots of energy and still be slow.' },
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['The energy hill',700,14],['Eₐ = 10 kJ/mol to get over the top',600,12.5,KR],'ΔH = −30 kJ/mol: energy given off']);} },
+    { key: 'tail', title: 'Who has enough energy?', fresh: true, speed: 0.5, run: rtSync, focus: [488,58,300,172],
+      see: 'The curve shows how many particles have each amount of energy. Only the shaded tail past the red Eₐ line can get over the hill: about 5% at 300 K.',
+      why: 'Particles in a gas or liquid don’t all move at the same speed. Most are near the average, and only a few are moving fast enough at any moment.',
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['300 K',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% of particles',700,12.5,KR],'The rest can’t react, however often they hit']);} },
+    { key: 'heat', title: 'Heat it up', set: { T: 450 }, fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[16,58,452,424]],
+      see: 'At 450 K the particles move faster and the curve stretches right. The shaded tail past Eₐ grows from about 5% to about 15%, and AB forms about 4 times as fast.',
+      why: { bio: 'Hotter particles hit more often, but the big change is that many more hits are hard enough. That is why food spoils fast on a warm counter and slowly in the fridge.', honors: 'Collisions per second rise only about 9% (speed ∝ √T), but the fraction past Eₐ triples. The tail of the curve is what makes rate so sensitive to temperature.' },
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['450 K (was 300 K)',700,14],['Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (was 4.6%)',700,12.5,KR],[rtH(sim)+' (300 K: 24 s)',700,12.5,KG]]);} },
+    { key: 'conc', title: 'More particles, more collisions', set: { cA: 1 }, fresh: true, speed: 0.5, run: rtSync,
+      see: 'A fresh batch with twice as much A: 1.0 M instead of 0.5 M. The box is more crowded and collisions per second about double.',
+      why: { bio: 'More A in the same space means more A–B hits every second. The share that work stays the same, so the rate about doubles.', ap: 'Collisions per second scale with [A][B], so rate = k[A][B]. Doubling [A] doubles Z and the rate while k, which depends on f and p, stays fixed.' },
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['[A] = 1.0 M (was 0.5 M)',700,14],'Collisions per second at the start: about 2×','Share that react: '+rtF(rtM(sim,'succ'),1)+'% (same)',['Starting rate: 0.039 M/s (was 0.020)',700,12.5,KG]]);} },
+    { key: 'orient', lvl: 'honors', title: 'Orientation matters', set: { T: 600 }, fresh: true, speed: 0.15, run: rtSync,
+      see: 'At 600 K most hits have enough energy, yet many still fail (purple rings). Only the dark half of each B can react.',
+      why: 'Bonds can only form where the reacting atoms meet. A collision on the wrong side of B bounces off however hard it is. Here the orientation factor p = 0.5.',
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['600 K',700,14],'Past Eₐ: '+rtF(rtM(sim,'fE'),1)+'%',['Ones that react: '+rtF(rtM(sim,'succ'),1)+'% (about half)',700,12.5,KP],'Purple ring = energy enough, wrong side']);} },
+    { key: 'math', lvl: 'ap', title: 'Rate = Z × f × p', fresh: true, speed: 0.5, run: rtSync,
+      see: 'Back to 300 K. The readouts give the three pieces of collision theory.',
+      why: 'Reactions per second = collisions per second (Z) × fraction with E ≥ Eₐ (f) × fraction with the right orientation (p). The Arrhenius equation k = A·e^(−Eₐ/RT) packs Z and p into A and f into the exponential.',
+      overlay(sim,ctx,LH,k){const Z=rtM(sim,'Z'),f=rtM(sim,'fE')/100,p=rtM(sim,'p');RC(ctx,k,[['Collision theory',700,14],'Z = '+rtF(Z,0)+' collisions/s','f = '+rtF(100*f,1)+'%   p = '+rtF(p,2),['Z × f × p ≈ '+rtF(Z*f*p,1)+' reactions/s',700,12.5,KG]]);} },
+    { key: 'cat', title: 'A catalyst lowers the hill', set: { cat: true }, fresh: true, speed: 0.5, run: rtSync, focus: [[488,58,300,172],[488,286,300,196]],
+      see: 'Add a catalyst at 300 K. The dashed green path has a lower hill, so the green Eₐ line moves left and the shaded tail grows to about 22%. The batch gets halfway in about 5 s instead of 24.',
+      why: { bio: 'A catalyst gives the reaction an easier path. The particles have the same energy as before; there is just a lower hill to climb. The catalyst itself is not used up.', honors: 'The catalyst lowers Eₐ but doesn’t change ΔH or the particles’ energy distribution. It speeds the forward and reverse reactions alike and is not used up.' },
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['Catalyst, still 300 K',700,14],['Past the lower Eₐ: '+rtF(rtM(sim,'fE'),1)+'% (was 4.6%)',700,12.5,KG],rtH(sim)+' (no catalyst: 24 s)']);} },
+    { key: 'mg', title: 'Solids react only at the surface', set: { rxn: 'mg' }, fresh: true, speed: 0.5, run: rtSync,
+      see: 'Now a chunk of magnesium in 1 M hydrochloric acid. H⁺ ions (pink) hit the metal and H₂ bubbles rise. Only the outside atoms can be hit.',
+      why: 'Acid can’t reach the atoms buried inside the chunk. Of the 12 Mg atoms, only 10 faces are touching acid at first, so the bubbles come slowly: about 0.2 per second.',
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['One chunk, 1 M HCl',700,14],'Faces touching acid: '+rtF(rtM(sim,'surfA'),0),['H₂ bubbles: '+rtF(rtM(sim,'bub'),2)+' per second',700,12.5,KG]]);} },
+    { key: 'powder', title: 'Powder: same metal, more surface', set: { rxn: 'mg', surf: 'powder' }, fresh: true, speed: 0.5, run: rtSync,
+      see: 'The same 12 Mg atoms as a powder. Now 24 faces touch the acid, and bubbles come about 2.4 times as fast.',
+      why: 'Breaking a solid into small pieces exposes more atoms, so more H⁺ ions hit Mg every second. Doubling the acid instead gives about 0.40 bubbles per second; doing both gives about 0.97.',
+      so: 'That is why you start a fire with kindling, not a log, and why fine flour or sawdust in the air can explode.',
+      overlay(sim,ctx,LH,k){RC(ctx,k,[['Powder, 1 M HCl',700,14],'Faces touching acid: '+rtF(rtM(sim,'surfA'),0)+' (chunk: 10)',['H₂ bubbles: '+rtF(rtM(sim,'bub'),2)+' per second (chunk: 0.20)',700,12.5,KG]]);} }
+  ],
+  useIt: [
+    { do: 'Get leftovers into the fridge within 2 hours, and keep it at 40 °F (4 °C) or colder.',
+      why: 'Cold slows the reactions that bacteria use to grow. The USDA’s “danger zone” is 40–140 °F, where bacteria can double in as little as 20 minutes.' },
+    { do: 'Start a campfire with kindling and small sticks, then add logs.',
+      why: 'Small pieces have far more surface touching the air, so oxygen can react with more of the wood at once, just like the powdered magnesium.' },
+    { do: 'Soak burnt-on pans in hot water, not cold.', lvl: 'honors',
+      why: 'Heating raises the share of molecules with enough energy to react, and dish soap and dissolving go faster too. A 10 °C rise often doubles or triples a reaction rate.' }
+  ],
+  tryIt: [
+    { title: 'the fizzing tablet race (10 minutes)',
+      steps: ['Fill three clear cups with the same amount of water: one cold from the fridge, one at room temperature, one hot from the tap.', 'Drop a whole effervescent antacid tablet into each at the same moment and time how long until the fizzing stops.', 'Now use two room-temperature cups: one whole tablet, and one tablet crushed into powder in a folded paper first.'],
+      look: 'The hot cup finishes first and the cold one last. The powder finishes much faster than the whole tablet, even though it is the same amount.' }
+  ]
+},
+ratelaw: {
+  goals: {
+    bio: ['How to measure how fast a reaction goes, with a stopwatch', 'Why doubling one reactant can double the rate while doubling another does nothing', 'What a half-life is and why it stays the same for some reactions'],
+    honors: ['Finding the order of each reactant by changing one at a time', 'Writing a rate law, rate = k[A]ᵐ[B]ⁿ, from data', 'Initial rate as the slope at t = 0', 'Telling zero, first and second order apart from graphs'],
+    ap: ['Method of initial rates and rate-law units', 'Integrated rate laws and half-lives', 'How k changes with temperature (Arrhenius)', 'How a mechanism’s slow step sets the rate law']
+  },
+  matters: 'Rate laws tell you how long things last: how fast a medicine leaves your blood, how long food dye takes to fade, how quickly pollution breaks down. They also reveal what molecules are actually doing, step by step.',
+  startKey: 'clock', startRun: true, startSpeed: 1,
+  startOverlay(sim,ctx,LH,k){tag(ctx,'Looking down into the flask at an X',158,72,k,{s:12,hi:true});tag(ctx,'Sulfur builds up until the X is hidden',555,158,k,{s:12,hi:true});},
+  steps: [
+    { key: 'clock', title: 'The sulfur clock', fresh: true, speed: 1.5, run: rtSync,
+      see: 'Thiosulfate (0.100 M) and hydrochloric acid (1.0 M) make tiny grains of solid sulfur. The flask clouds over until the X underneath disappears, at about 30 s.',
+      why: 'The X vanishes when the same amount of sulfur has formed, about 2 mM. So a faster reaction hides it sooner, and 1 ÷ time works as a measure of the rate.',
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Trial 1',700,14],'[S₂O₃²⁻] = 0.100 M, [HCl] = 1.0 M',['X hidden at: '+rlTX(sim),700,12.5,KG]],LH);} },
+    { key: 'half', title: 'Half the thiosulfate', set: { cS: 0.05 }, fresh: true, speed: 3, run: rtSync,
+      see: 'Same acid, half the thiosulfate: 0.050 M. The X now takes about 61 s to disappear, twice as long.',
+      why: { bio: 'Half as many thiosulfate ions means half as many reactions each second, so it takes twice as long to make the same amount of sulfur.', honors: 'Halving [S₂O₃²⁻] halves the rate, so rate ∝ [S₂O₃²⁻]¹: first order in thiosulfate.' },
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Trial 2',700,14],'[S₂O₃²⁻] = 0.050 M (half), [HCl] = 1.0 M',['X hidden at: '+rlTX(sim)+' (trial 1: 30 s)',700,12.5,KG]],LH);} },
+    { key: 'acid', title: 'Double the acid', set: { cHs: 2 }, fresh: true, speed: 1.5, run: rtSync,
+      see: 'Thiosulfate back at 0.100 M, acid doubled to 2.0 M. The X disappears at about 30 s, the same as trial 1.',
+      why: { bio: 'Adding more of a reactant doesn’t always speed things up. Here the slow part of the reaction doesn’t use H⁺, so extra acid changes nothing you can time.', honors: 'Doubling [H⁺] leaves the rate unchanged: zero order in H⁺, even though the equation has 2H⁺. Orders come from experiments, not from coefficients.' },
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Trial 3',700,14],'[S₂O₃²⁻] = 0.100 M, [HCl] = 2.0 M (double)',['X hidden at: '+rlTX(sim)+' (trial 1: 30 s)',700,12.5,KG]],LH);} },
+    { key: 'law', lvl: 'honors', title: 'Write the rate law', set: { gm: 1, gn: 0, check: true }, fresh: true, speed: 1.5, run: rtSync,
+      see: 'Put the trials together: halving thiosulfate halved the rate; doubling acid did nothing. The orders are set to m = 1 and n = 0, and the check confirms the rate law.',
+      why: 'rate = k[S₂O₃²⁻]¹[H⁺]⁰ = k[S₂O₃²⁻]. With an order known, one trial gives k: k = rate ÷ [S₂O₃²⁻].',
+      so: { ap: 'The overall order is m + n = 1, so k has units of s⁻¹ in a first-order law; check how units change for other orders.' },
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Three trials',700,14],'0.100 M, 1.0 M → 30 s','0.050 M, 1.0 M → 61 s (rate ÷ 2)','0.100 M, 2.0 M → 30 s (no change)',['rate = k[S₂O₃²⁻]¹[H⁺]⁰',700,12.5,KP]],LH);} },
+    { key: 'initial', lvl: 'honors', title: 'Initial rate is a slope', set: { rxnI: 'cv' }, fresh: true, speed: 1, run: rtSync,
+      see: 'Crystal violet, a purple dye, fading in base. A colorimeter tracks the color. The dashed tangent at the start is the initial rate.',
+      why: 'Right at t = 0 you know exactly what concentrations you mixed, before products build up or reactants run low. Comparing initial rates across trials gives each order.',
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Crystal violet + OH⁻',700,14],['Initial rate: '+String(chMet(sim,'r0'))+' M/s',700,12.5,KG],'= steepness of the dashed line at t = 0'],LH);} },
+    { key: 'decay', title: 'Half, then half again', set: { mode: 'integrated', rxnG: 'cv' }, fresh: true, speed: 1, run: rtSync,
+      see: 'Now follow one batch of crystal violet over time. The color drops fast at first, then slower. It loses half in about 69 s, then half of what is left in the next 69 s.',
+      why: 'The fewer dye ions are left, the fewer react each second. For this reaction each half-life is the same length, no matter how much dye you start with.',
+      so: 'After 3 half-lives, about 208 s, only 1/8 is left. The same math tells doctors how long a medicine stays in your blood.',
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['Crystal violet fading',700,14],['Half-life: '+String(chMet(sim,'half')),700,12.5,KG],'Now: '+String(chMet(sim,'cnow'))+' (started at 10 µM)'],LH);} },
+    { key: 'linear', lvl: 'honors', title: 'Which graph is straight?', set: { mode: 'integrated', rxnG: 'cv' }, fresh: true, speed: 1, run: rtSync,
+      see: 'The three graphs plot the same data as [A], ln[A] and 1/[A] against time. Only ln[A] is a straight line (R² = 1.000).',
+      why: 'Each order has its own straight-line graph: [A] for zero order, ln[A] for first order, 1/[A] for second order. The straight one tells you the order; its slope gives k.',
+      overlay(sim,ctx,LH,k){const r=id=>rtF(rtM(sim,id),3);rlCard(ctx,k,[['R² (1.000 = straight)',700,14],'[A] vs t: '+r('R2a'),['ln[A] vs t: '+r('R2b')+'  → first order',700,12.5,KG],'1/[A] vs t: '+r('R2c')],LH);} },
+    { key: 'second', lvl: 'honors', title: 'Second order: half-lives grow', set: { mode: 'integrated', rxnG: 'second' }, fresh: true, speed: 1, run: rtSync,
+      see: '2NO₂ → 2NO + O₂ starting at 20 mM. Now 1/[A] is the straight line, and the first half-life (92 s) is followed by one twice as long.',
+      why: 'For second order, rate = k[A]², so as [A] drops the rate drops even faster. Each half-life is double the one before: t½ = 1 / (k[A]₀).',
+      overlay(sim,ctx,LH,k){const r=id=>rtF(rtM(sim,id),3);rlCard(ctx,k,[['NO₂, second order',700,14],'First half-life: '+String(chMet(sim,'half')),['1/[A] vs t: R² = '+r('R2c'),700,12.5,KG],'ln[A] vs t: R² = '+r('R2b')],LH);} },
+    { key: 'arr', lvl: 'ap', title: 'Temperature changes k', set: { mode: 'integrated', rxnG: 'first', T: 45 }, fresh: true, speed: 1, run: rtSync,
+      see: 'N₂O₅ breaking down at 45 °C. At 25 °C its half-life is 5.6 hours; at 45 °C it is about 25 minutes.',
+      why: 'k = A·e^(−Eₐ/RT). With Eₐ = 103 kJ/mol, each 10 °C raises k about 3.5 to 4 times. A plot of ln k against 1/T is a straight line with slope −Eₐ/R.',
+      overlay(sim,ctx,LH,k){rlCard(ctx,k,[['N₂O₅ at 45 °C',700,14],['k = '+String(chMet(sim,'kint')),700,12.5,KR],'At 25 °C: k = 3.46 × 10⁻⁵ s⁻¹','Half-life: '+String(chMet(sim,'half'))+' (25 °C: 5.56 h)'],LH);} },
+    { key: 'mech', lvl: 'ap', title: 'The slow step sets the rate', set: { mode: 'mech', mech: 'b' }, fresh: true, pause: true, run: rtSync,
+      see: '2NO₂ + F₂ → 2NO₂F has the experimental rate law rate = k[NO₂][F₂]. This proposed mechanism starts with a slow step and ends with a fast one.',
+      why: 'The slow step is the bottleneck, so its reactants (one NO₂ and one F₂) give the rate law. The steps add up to the overall equation, and F is an intermediate. The data support this mechanism, though they can never prove it.' }
+  ],
+  useIt: [
+    { do: 'Take medicine on the schedule on the label, not whenever you remember.',
+      why: 'Your body removes most drugs at a rate proportional to how much is in your blood, so each half-life removes half. Dosing intervals are set from that half-life to keep the level in a safe, working range.' },
+    { do: 'Test one change at a time when you troubleshoot anything.',
+      why: 'That is the method of initial rates: the sulfur clock only revealed which reactant mattered because each trial changed one concentration. Change two at once and you can’t tell which one did it.' },
+    { do: 'Store opened medicines and vitamins somewhere cool and dry, not in a hot car or a steamy bathroom.', lvl: 'ap',
+      why: 'Their breakdown reactions follow rate laws with k that rises steeply with temperature, so heat shortens their shelf life. The FDA advises against bathroom-cabinet storage for this reason.' }
+  ],
+  tryIt: [
+    { title: 'the fading food dye (15 minutes)',
+      steps: ['Add 3 drops of blue food coloring to a clear glass of water and stir.', 'Add about 1 tablespoon of household bleach (an adult should handle the bleach; open a window).', 'Stand the glass on white paper and note the time every time the color looks about half as strong as before.'],
+      look: 'The color fades quickly at first, then more slowly. If each “half as blue” takes about the same time, the fading is close to first order. Try a second glass with more bleach and compare.' }
+  ]
+}
+});
+
 })();

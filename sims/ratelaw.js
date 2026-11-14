@@ -392,5 +392,6 @@ function drawEq(ctx,s,x,y,size){const parts=s.split(/((?<=^|\s|[0-9])F(?=\s|$))/
 
 RL.controls.forEach(c=>{if(c.id==='mode'||c.id==='rxnI'||c.id==='rxnG')c.onChange=sim=>syncMode(sim);});
 RL.onLevel=sim=>{syncMode(sim);};
+RL.sync=syncMode;
 BioLab.register(RL);
 })();
