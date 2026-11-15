@@ -8,6 +8,61 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "china-co2-q3-2026",
+  "week": "2026-11-15",
+  "date": "2026-11-06",
+  "title": "China's carbon dioxide emissions fell 3.1% in July to September, the largest quarterly drop since 2020",
+  "summary": "An analysis for Carbon Brief by Lauri Myllyvirta of the Centre for Research on Energy and Clean Air (CREA) estimates that China's CO<sub>2</sub> emissions fell 3.1% from a year earlier in the third quarter of 2026, as coal and oil use fell and new clean power grew faster than electricity demand.",
+  "numbers": [
+   "CO<sub>2</sub> down 3.1% year on year in July to September; down about 0.5% for the year so far (estimate) (<a href=\"https://www.carbonbrief.org/analysis-chinas-quarterly-co2-falls-3-in-largest-drop-since-covid\" target=\"_blank\" rel=\"noopener\">Carbon Brief, Nov 6, 2026</a>).",
+   "Coal use down 3%; coal-fired power generation down 3.3% (<a href=\"https://www.carbonbrief.org/analysis-chinas-quarterly-co2-falls-3-in-largest-drop-since-covid\" target=\"_blank\" rel=\"noopener\">Carbon Brief, Nov 6, 2026</a>).",
+   "Oil use down 4%; oil used for transport down 9% (<a href=\"https://www.carbonbrief.org/analysis-chinas-quarterly-co2-falls-3-in-largest-drop-since-covid\" target=\"_blank\" rel=\"noopener\">Carbon Brief, Nov 6, 2026</a>).",
+   "Solar, wind and nuclear generated 110 TWh more electricity than a year earlier (<a href=\"https://www.carbonbrief.org/analysis-chinas-quarterly-co2-falls-3-in-largest-drop-since-covid\" target=\"_blank\" rel=\"noopener\">Carbon Brief, Nov 6, 2026</a>).",
+   "Electric vehicles were 67% of passenger car sales and 50% of heavy truck sales in September (<a href=\"https://www.carbonbrief.org/analysis-chinas-quarterly-co2-falls-3-in-largest-drop-since-covid\" target=\"_blank\" rel=\"noopener\">Carbon Brief, Nov 6, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Every carbon atom leaves as CO<sub>2</sub>",
+   "html": "When a fuel burns completely, each carbon atom bonds with two oxygen atoms from the air to make CO<sub>2</sub>. That means the mass of CO<sub>2</sub> is <b>bigger</b> than the mass of fuel: C (12.01 g/mol) becomes CO<sub>2</sub> (44.01 g/mol). For octane, 2 C<sub>8</sub>H<sub>18</sub> + 25 O<sub>2</sub> &rarr; 16 CO<sub>2</sub> + 18 H<sub>2</sub>O, so 1 mol of octane (114.23 g) makes 8 mol of CO<sub>2</sub>. Using less coal and oil cuts CO<sub>2</sub> in direct proportion."
+  },
+  "hook": {
+   "prompt": "Use molar masses C = 12.01, H = 1.008, O = 16.00 g/mol.",
+   "parts": [
+    {
+     "label": "(a) How many kg of CO<sub>2</sub> form when 1.00 kg of pure carbon burns completely?",
+     "answer": 3.66,
+     "tol": 0.02,
+     "unit": "kg CO₂"
+    },
+    {
+     "label": "(b) How many kg of CO<sub>2</sub> form when 1.00 kg of octane burns completely?",
+     "answer": 3.08,
+     "tol": 0.02,
+     "unit": "kg CO₂"
+    },
+    {
+     "label": "(c) A truck fleet burned 1,000 kg of fuel (treat it as octane) last year and 9% less this year. How many fewer kg of CO<sub>2</sub>?",
+     "answer": 277,
+     "tol": 3,
+     "unit": "kg CO₂"
+    }
+   ],
+   "worked": "(a) 1.00 kg C &divide; 12.01 g/mol = 83.26 mol C, which makes 83.26 mol CO<sub>2</sub> &times; 44.01 g/mol = 3,664 g, so <b>3.66 kg</b>. Shortcut: 44.01 &divide; 12.01. (b) Octane: 8(12.01) + 18(1.008) = 114.22 g/mol. 1,000 g &divide; 114.22 = 8.755 mol octane &times; 8 = 70.04 mol CO<sub>2</sub> &times; 44.01 = 3,082 g, so <b>3.08 kg</b>. (c) 9% of 1,000 kg = 90 kg less fuel. 90 &times; 3.08 = <b>277 kg</b> less CO<sub>2</sub>."
+  },
+  "hides": "This is one quarter; for the year so far the drop is only about 0.5%. Not all of it comes from clean energy: the analysis also points to an oil supply disruption that raised prices, mild weather, slower economic growth and less construction. The total is an estimate built from official and commercial data, not a direct measurement of CO<sub>2</sub> in the air, and the page gives percentages, not tonnes.",
+  "evidence": "Moderate: an independent analysis by an energy research group, published by a specialist climate news site, not peer-reviewed. China's official annual figures will come later.",
+  "investigate": "<a href=\"https://ourworldindata.org/co2-emissions\" target=\"_blank\" rel=\"noopener\">Our World in Data</a> charts CO<sub>2</sub> emissions by country since 1750. Compare China, the United States and India per person. Which is highest per person, and which is highest in total?",
+  "related": [
+   {
+    "href": "index.html#stoich",
+    "label": "Stoichiometry"
+   },
+   {
+    "href": "index.html#mole",
+    "label": "The mole"
+   }
+  ]
+ },
+ {
   "id": "germany-ev-2026",
   "week": "2026-11-08",
   "date": "2026-11-04",
