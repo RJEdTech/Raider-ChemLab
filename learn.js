@@ -1970,4 +1970,134 @@ rxntypes: {
 }
 });
 
+
+/* ---------- measure (Sandy Robertson's Honors Chemistry Unit 4: reading instruments, sig figs, percent error) ---------- */
+BioLab.addLearn((function(){
+const MC=(ctx,k,L,x,y,w)=>ckCard(ctx,k,L,x==null?196:x,y==null?64:y,w||178,1.25);
+const mM=(sim,id)=>{const m=sim.def.metrics.find(x=>x.id===id);return m?m.get(sim):null;};
+let mAt={};const mAtR=()=>{mAt={};};
+function at(sim,tau,t,key,fn){if(tau>=t&&!mAt[key]){mAt[key]=1;fn();sim.infoDirty=true;}}
+const val=(sim,v)=>{sim.st.val=v;sim.st.ans='';sim.st.res=null;sim.st.reveal=false;};
+const rd=(sim,v,inst)=>{BioLab.setValues(sim,{inst});val(sim,v);};
+const n2=v=>Number.isFinite(+v)?(+v).toFixed(2):'…';
+const prob=(sim,op,vals)=>{sim.st.prob={op,vals};sim.st.showAns=false;sim.st.ans='';sim.st.res=null;};
+return {
+measure: {
+  goals: {
+    bio: ['How to read a graduated cylinder: the bottom of the meniscus, with your eye level with it', 'Why looking from above or below gives a wrong reading (parallax)', 'How many digits to write: every digit you are sure of, plus one estimate', 'Accuracy, precision and percent error'],
+    honors: ['Reading a cylinder, ruler and balance to the right digit, and each tool’s uncertainty', 'Why looking from above or below gives a wrong reading (parallax)', 'Counting and rounding significant figures', 'Sig figs when you multiply, divide, add and subtract, and percent error'],
+    ap: ['Reading any instrument to one estimated digit, and its uncertainty', 'Sig figs in calculations, and keeping digits until the last step', 'How uncertainty carries through a calculation']
+  },
+  matters: 'Every number in a lab starts as a reading off a tool. Misread the cylinder and every calculation after it, density, moles, percent error, is wrong too. The same skill measures liquid medicine and follows a recipe.',
+  startKey: 'read', startRun: false,
+  steps: [
+    { key: 'marks', title: 'The marks you can see', set: { mode: 'read', inst: 'c10' }, fresh: true, pause: true,
+      run(sim){val(sim,6.43);},
+      see: 'A 10 mL graduated cylinder, the size for small, careful volumes. The circle zooms in on the scale right at the water’s surface.',
+      why: 'The long numbered lines are every 1 mL and the small lines every 0.1 mL. The water is past the 6.4 line but not yet at 6.5, so you are sure of <b>6.4 mL</b>. Those are your certain digits.',
+      overlay(sim,ctx,LH,k){MC(ctx,k,[['Marks every 0.1 mL',700,13],['Sure of: 6.4 mL',700,13,KR],'Between 6.4 and 6.5','Next: estimate one more digit']);} },
+    { key: 'meniscus', title: 'Read the bottom of the curve', set: { mode: 'read', inst: 'c10' }, fresh: true, pause: true,
+      run(sim){val(sim,6.43);},
+      see: 'Up close, the water’s surface is not flat. It curves up where it touches the glass. That curve is the <b>meniscus</b>.',
+      why: 'Water molecules are attracted to glass, so they climb a little way up the walls. The middle of the surface is the real level of the liquid. Always read the <b>bottom</b> of the curve, not the edges.',
+      overlay(sim,ctx,LH,k){tag(ctx,'Read here: the bottom',565,286,k,{s:13,hi:true});line(ctx,565,272,565,234,KR);tag(ctx,'Not the edges',470,160,k,{s:12});line(ctx,470,172,446,203);} },
+    { key: 'above', title: 'Eye too high reads too high', set: { mode: 'read', inst: 'c10', eye: 'above' }, fresh: true, speed: 1,
+      cause: { from: { eye: 'level' }, delay: 2.5, label: 'Your eye' },
+      run(sim){val(sim,6.43);sim.st.showTrue=true;},
+      see: 'Watch your eye move up above the water, the way it does when the cylinder sits on the bench and you look down at it.',
+      why: 'The scale is printed on the outside of the glass, but the bottom of the meniscus is in the middle of the water, behind it. Looking down at a slant, your line of sight crosses the scale <b>above</b> the real level, so the reading comes out too high. This error is called <b>parallax</b>.',
+      overlay(sim,ctx,LH,k){const up=sim.p.eye==='above';MC(ctx,k,[up?['From above: about 6.58 mL',700,13,KR]:['Eye level: 6.43 mL',700,13],'Real level: 6.43 mL',up?'Too high by 0.15 mL':'Watch the eye…']);} },
+    { key: 'below', title: 'Eye too low reads too low', set: { mode: 'read', inst: 'c10', eye: 'below' }, fresh: true, speed: 1,
+      cause: { from: { eye: 'level' }, delay: 2.5, label: 'Your eye' },
+      run(sim){val(sim,6.43);sim.st.showTrue=true;},
+      see: 'Now watch your eye drop below the water, like crouching too far to look up at a cylinder on a shelf.',
+      why: 'Now the line of sight slants up and crosses the scale <b>below</b> the real level, so the reading is too low. The fix for both: bring your eye down (or the cylinder up) until the bottom of the meniscus is straight across from your eye.',
+      so: 'Set the cylinder on the bench and bend down to it. Don’t lift it to your face, where it tilts.',
+      overlay(sim,ctx,LH,k){const dn=sim.p.eye==='below';MC(ctx,k,[dn?['From below: about 6.28 mL',700,13,KR]:['Eye level: 6.43 mL',700,13],'Real level: 6.43 mL',dn?'Too low by 0.15 mL':'Watch the eye…']);} },
+    { key: 'estimate', title: 'Level eye, then one estimated digit', set: { mode: 'read', inst: 'c10', eye: 'level' }, fresh: true, speed: 1,
+      run(sim){mAtR();val(sim,6.43);},
+      see: 'Eye level with the bottom of the meniscus. It sits a little less than halfway from 6.4 to 6.5. Watch the reading appear.',
+      why: 'Write every digit you are sure of, then <b>one</b> estimated digit between the marks: <b>6.43 mL</b>. The 3 is your best guess, so a classmate might say 6.42 or 6.44, and that’s fine. The estimated digit still counts as a significant figure.',
+      so: 'Write 6.43 mL, not 6.4 mL (that throws away what you saw) and not 6.430 mL (that claims a precision the marks don’t give you).',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,2,'r',()=>{sim.st.reveal=true;});MC(ctx,k,[['6.4 sure + 3 estimated',700,13],sim.st.reveal?['= 6.43 mL',700,14,KR]:'= ?','3 significant figures']);} },
+    { key: 'size', title: 'A smaller cylinder gives more digits', set: { mode: 'read', inst: 'c10' }, fresh: true, speed: 1,
+      run(sim){mAtR();val(sim,8.52);sim.st.reveal=true;sim._sz=['10 mL cylinder: 8.52 mL'];},
+      see: 'About 8.5 mL of water in the 10 mL cylinder. Watch the same water get poured into a 100 mL cylinder.',
+      why: 'The 100 mL cylinder is marked only every 1 mL, so you can be sure of 8 mL and estimate tenths: <b>8.5 mL</b>, 2 significant figures. The 10 mL cylinder is marked every 0.1 mL, so it gives 8.52 mL, 3 significant figures. Use the smallest cylinder that holds your volume.',
+      so: 'That is why 15.0 mL and 15 mL are different measurements. 15.0 mL says it was read to the tenth; 15 mL says you only know it to the nearest mL.',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,3,'p',()=>{rd(sim,8.5,'c100');sim.st.reveal=true;sim._sz.push('100 mL cylinder: 8.5 mL');});
+        MC(ctx,k,[['Same water, two cylinders',700,13]].concat(sim._sz.map((s,i)=>i===sim._sz.length-1?[s,700,12.5,KR]:s)),196,230);} },
+    { key: 'ruler', title: 'Same rule on a ruler', set: { mode: 'read', inst: 'ruler' }, fresh: true, speed: 1,
+      run(sim){mAtR();val(sim,4.35);},
+      see: 'A centimeter ruler, marked every 0.1 cm (1 mm). The bar ends halfway between 4.3 and 4.4 cm.',
+      why: 'Same rule as the cylinder: you are sure of 4.3 cm, and you estimate the hundredths. Record <b>4.35 cm</b>, not 4.3 cm and not 4.350 cm.',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,2.2,'r',()=>{sim.st.reveal=true;});MC(ctx,k,[['Marks every 0.1 cm',700,13],'Sure of: 4.3 cm',sim.st.reveal?['Record: 4.35 cm',700,13,KR]:'Record: ?'],196,322,178);} },
+    { key: 'digital', title: 'Digital readouts: copy every digit', set: { mode: 'read', inst: 'balance' }, fresh: true, pause: true,
+      run(sim){val(sim,36.40);sim.st.reveal=true;},
+      see: 'An electronic balance reads 36.40 g.',
+      why: 'A digital readout does the estimating for you: its last digit is the estimated one. Write every digit shown, including the zero at the end: <b>36.40 g</b>, 4 significant figures. Writing 36.4 g throws away a digit the balance measured.',
+      overlay(sim,ctx,LH,k){MC(ctx,k,[['Write: 36.40 g',700,13.5,KR],'Not: 36.4 g','The last 0 was measured'],320,72,178);} },
+    { key: 'unc', lvl: 'honors', title: 'Uncertainty: plus or minus half a mark', set: { mode: 'read', inst: 'c10' }, fresh: true, speed: 1,
+      run(sim){mAtR();sim._u=0;},
+      see: 'Watch the tools change: 10 mL cylinder, 50 mL cylinder, ruler, balance. The Uncertainty tile changes with each one.',
+      why: 'Every reading could be off a little. For a scale with marks, the uncertainty is usually <b>± half the smallest mark</b>. For a digital readout it is ± 1 in the last digit. Bigger marks mean a bigger ±, which is why the 50 mL cylinder is less precise than the 10 mL one.',
+      overlay(sim,ctx,LH,k,tau){[[2.5,'c50'],[5,'ruler'],[7.5,'balance']].forEach(([t,i],j)=>at(sim,tau,t,'u'+j,()=>{BioLab.setValues(sim,{inst:i});sim._u=j+1;}));
+        const L=['10 mL cyl: 0.1 mL → ±0.05 mL','50 mL cyl: 1 mL → ±0.5 mL','Ruler: 0.1 cm → ±0.05 cm','Balance: ±0.01 g'];
+        MC(ctx,k,[['Smallest mark → ±',700,13]].concat(L.map((s,i)=>i===sim._u?[s,700,12,KR]:[s,400,12])),sim.p.inst==='ruler'?196:sim.p.inst==='balance'?320:196,sim.p.inst==='ruler'?318:sim.p.inst==='balance'?72:64,sim.p.inst==='balance'?200:178);} },
+    { key: 'count', title: 'Which digits count', set: { mode: 'sig', num: '0.00450' }, fresh: true, speed: 1,
+      run(sim){mAtR();},
+      see: 'The number 0.00450, digit by digit. Solid boxes are significant; dashed boxes are not. Watch it change to 1200, then to 1200. with a decimal point.',
+      why: 'Nonzero digits always count. Zeros between them count. Leading zeros never count; they only place the decimal point. Trailing zeros count only when there is a decimal point. So 0.00450 has 3, 1200 has 2, and 1200. has 4.',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,3,'a',()=>BioLab.setValues(sim,{num:'1200'}));at(sim,tau,6,'b',()=>BioLab.setValues(sim,{num:'1200.'}));} },
+    { key: 'round', lvl: 'honors', title: 'Rounding to sig figs', set: { mode: 'sig', num: '0.00450', round: 3 }, fresh: true, speed: 1,
+      cause: { from: { round: 5 }, delay: 2, dur: 3, label: 'Round to', at: [610,250] },
+      run(sim){sim.st.custom='12.478';},
+      see: '12.478 from a calculator. Watch it get rounded from 5 down to 3 significant figures.',
+      why: 'Keep the number of digits you need, then look at the next digit. If it is 5 or more, round up; if it is less than 5, leave the digit alone. 12.478 to 3 sig figs: the next digit is 7, so 12.4 becomes <b>12.5</b>.',
+      overlay(sim,ctx,LH,k){MC(ctx,k,[['12.478 → '+mM(sim,'rounded'),700,14,KR],'Round to '+sim.p.round+' sig figs','Next digit ≥ 5? Round up'],574,300,206);} },
+    { key: 'muldiv', lvl: 'honors', title: 'Multiply and divide: fewest sig figs', set: { mode: 'math', op: 'div' }, fresh: true, speed: 1,
+      run(sim){mAtR();prob(sim,'div',['45.26','36.4']);},
+      see: 'A liquid’s density: 45.26 g ÷ 36.4 mL. Watch the calculator answer get rounded.',
+      why: '45.26 g has 4 significant figures and 36.4 mL has 3. When you multiply or divide, the answer keeps the <b>fewest</b>: 3. The calculator says 1.24340…, so report <b>1.24 g/mL</b>. Your answer can’t be more precise than your least precise measurement.',
+      so: 'Keep every digit in your calculator until the last step, then round once. Rounding along the way can change the last digit.',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,2.5,'s',()=>{sim.st.showAns=true;});} },
+    { key: 'addsub', lvl: 'honors', title: 'Add and subtract: fewest decimal places', set: { mode: 'math', op: 'sub' }, fresh: true, speed: 1,
+      run(sim){mAtR();prob(sim,'sub',['138.3','122.54']);},
+      see: 'An empty beaker weighs 122.54 g. With liquid in it, it weighs 138.3 g. Watch the mass of the liquid get worked out.',
+      why: 'For adding and subtracting, count <b>decimal places</b>, not sig figs. 138.3 is only known to the tenths place, so the answer is too: 138.3 − 122.54 = 15.76 → <b>15.8 g</b>.',
+      so: 'Water displacement works the same way: final level minus starting level, for example 43.5 mL − 30.0 mL = 13.5 mL.',
+      overlay(sim,ctx,LH,k,tau){at(sim,tau,2.5,'s',()=>{sim.st.showAns=true;});} },
+    { key: 'acc', title: 'Accuracy, precision and percent error', set: { mode: 'acc', bias: 0.6, spread: 0.06 }, fresh: true, speed: 1,
+      cause: { from: { bias: 0 }, delay: 2.5, dur: 3, label: 'Balance zero (bias)', at: [600,48] },
+      see: 'Ten weighings of a 25.00 g standard mass on a well-zeroed balance: a tight cluster on the bull’s-eye. Watch what happens when the balance is not zeroed.',
+      why: '<b>Precision</b> is how close readings are to each other. <b>Accuracy</b> is how close they are to the true value. An unzeroed balance shifts every reading the same way: still precise, no longer accurate. <b>Percent error</b> measures accuracy: |experimental − accepted| ÷ accepted × 100. The bars make it positive, always.',
+      overlay(sim,ctx,LH,k){const m=+mM(sim,'mean'),p=+mM(sim,'pct');MC(ctx,k,[['Mean: '+n2(m)+' g',700,13],'Accepted: 25.00 g',['% error = |'+n2(m)+' − 25.00|',400,12],['   ÷ 25.00 × 100',400,12],['= '+n2(p)+'%',700,13.5,KR]],414,150,172);} },
+    { key: 'hook', title: 'Your question: is the balance accurate?', set: { mode: 'acc', bias: 0.6, spread: 0.05 }, fresh: true, speed: 1,
+      run(sim){sim.st.darts=[];},
+      see: 'The balance from the question, weighing the 25.00 g standard. Watch the readings pile up.',
+      why: 'The readings land close together, so the balance is <b>precise</b>. Their average is about 25.6 g, roughly 0.6 g too high, so it is <b>not accurate</b>. Taking more readings only repeats the same bias. Re-zero (tare) or recalibrate the balance, then check the standard again.',
+      overlay(sim,ctx,LH,k,tau){const n=sim.st.darts.length,want=Math.min(10,Math.floor(tau/0.45));if(n<want){const a=sim.def.actions.find(x=>x.id==='one');a.run(sim);sim.infoDirty=true;}
+        MC(ctx,k,[[n+' readings',700,13],'Mean: '+n2(mM(sim,'mean'))+' g',[String(mM(sim,'verdict')),700,13,KR]],414,150,172);} },
+    { key: 'prop', lvl: 'ap', title: 'Uncertainty carries through', set: { mode: 'math', op: 'mul' }, fresh: true, pause: true,
+      run(sim){prob(sim,'mul',['10.0','5.0']);sim.st.showAns=true;},
+      see: 'Area of a rectangle: 10.0 cm × 5.0 cm = 50. cm². The uncertainty tile shows how the ± of each side carries into the answer.',
+      why: 'Each measurement is ± 1 in its last digit: 10.0 ± 0.1 is 1% uncertain and 5.0 ± 0.1 is 2%. For × and ÷ the percent uncertainties add, so the area is about ± 3%, ± 1.5 cm². That is the reason behind the sig fig rule: the 2-sig-fig side limits the answer.' }
+  ],
+  useIt: [
+    { do: 'Measure liquid medicine with the cup or syringe that comes with it, at eye level.',
+      why: 'Kitchen spoons vary in size, and reading a dosing cup from above shows more than is really in it, so you would give too little. The FDA advises using the device packaged with the medicine.' },
+    { do: 'Zero (tare) a scale with the empty container on it before you weigh.',
+      why: 'An unzeroed scale adds the same error to every reading. Weighing again won’t catch it; zeroing removes it. That is the balance from this lesson.' },
+    { do: 'Check a new kitchen or bathroom scale with something whose mass you know.', lvl: 'honors',
+      why: 'An unopened 1 lb (454 g) package is a free standard. A big percent error means a systematic error that repeated readings never reveal.' }
+  ],
+  tryIt: [
+    { title: 'the parallax test (2 minutes)',
+      steps: ['Fill a clear measuring cup with water to one of its lines and set it on the counter.', 'Look at the water from well above, then crouch so your eye is level with it, then look from below.', 'Each time, note which line the water seems to reach.'],
+      look: 'From above the water seems to reach a higher line than from level, and from below a lower one. Only the level view is right, which is why you bend down to the cylinder in lab.' }
+  ]
+}
+};
+})());
+
 })();
