@@ -437,8 +437,8 @@ titration:{
   ap:[{title:'All released AP Chemistry exam questions',url:'https://apcentral.collegeboard.org/courses/ap-chemistry/exam/past-exam-questions',note:'Look for titration curves, equivalence points and indicators.'}],
   questions:[
   {id:'equiv',kind:'test',lvl:'bio',q:'What is true at the equivalence point of an acid–base titration?',
-    choices:['The pH is always exactly 7, for any acid','Moles of base added equal moles of acid','The indicator has just been added','Half of the acid has reacted'],correct:1,
-    steps:['Equivalence means you have added exactly enough titrant to react with all of the sample.','For HCl + NaOH, that is equal moles.','The pH there is 7 only for a strong acid with a strong base.'],lab:{set:{type:'ss'},look:'Watch the pH curve jump at the equivalence point.'}},
+    choices:['The pH is always exactly 7, for any acid','Moles of acid and base fit the balanced equation','The indicator has just been added to the flask','Half of the acid has reacted with the base'],correct:1,
+    steps:['Equivalence means you have added exactly enough titrant to react with all of the sample, in the ratio the balanced equation gives.','HCl + NaOH react 1 : 1, so there it is equal moles. H₂SO₄ + 2 NaOH react 1 : 2, so it takes twice as many moles of base as acid.','The pH there is 7 only for a strong acid with a strong base.'],lab:{set:{type:'ss'},look:'Watch the pH curve jump at the equivalence point.'}},
   {id:'molar',kind:'test',lvl:'honors',q:'25.0 mL of HCl takes 18.6 mL of 0.100 M NaOH to reach the endpoint. What is the molarity of the HCl?',
     num:{ans:0.0744,tol:0.0005,unit:'M'},
     steps:['Moles of NaOH = 0.100 mol/L × 0.0186 L = 0.00186 mol.','HCl reacts 1 : 1, so 0.00186 mol HCl.','Molarity = 0.00186 mol ÷ 0.0250 L = 0.0744 M.'],lab:{set:{type:'ss'},look:'Run the titration and calculate the unknown.'}},

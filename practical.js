@@ -986,13 +986,13 @@ ph: {
 },
 titration: {
   hook: 'You titrate 25.00 mL of an unknown HCl with 0.100 M NaOH, and the pink color stays for good at 22.50 mL. What is the acid’s concentration? And why do you slow down to single drops near the end?',
-  answer: 'Moles of base = moles of acid, so M(acid) = 0.100 × 22.50 ÷ 25.00 = 0.0900 M. Near the end the pH jumps: one drop (0.05 mL) before equivalence the flask is near pH 4, and one drop after it is near pH 10. A fast stream would overshoot and make your answer too high.',
+  answer: 'HCl and NaOH react 1 : 1, so moles of base = moles of acid and M(acid) = 0.100 × 22.50 ÷ 25.00 = 0.0900 M. Near the end the pH jumps: one drop (0.05 mL) before equivalence the flask is near pH 4, and one drop after it is near pH 10. A fast stream would overshoot and make your answer too high.',
   uses: [
     'Pool and aquarium test kits: you count drops of reagent until the sample changes color. That drop count is a small titration for alkalinity or hardness.',
     'Juice and wine labs: technicians titrate a sample with NaOH to measure its total acidity, which sets how sour it tastes.',
     'Homemade biodiesel: makers titrate used cooking oil first to find out how much extra lye it needs, because old oil contains more acid.'
   ],
-  takeaway: 'At the endpoint, moles of base added equal moles of acid in the flask, so M(acid) = M(base) × V(base) ÷ V(acid). Go slowly at the end, because a single drop can swing the pH by several units.',
+  takeaway: 'At equivalence, acid and base have reacted in the mole ratio of the balanced equation. For a 1 : 1 acid like HCl, M(acid) = M(base) × V(base) ÷ V(acid); H₂SO₄ needs 2 NaOH, so its moles are half the moles of base. Go slowly at the end, because a single drop can swing the pH by several units.',
   tour: [
     'The burette, the tall tube with a valve at the bottom, holds the titrant: a solution whose concentration you know, 0.100 M NaOH. You read the volume at the bottom of the curved surface, the meniscus. It starts at 0.00 mL.',
     'The Erlenmeyer flask holds exactly 25.00 mL of HCl from a pipet, plus a few drops of phenolphthalein, a dye that is colorless in acid and turns pink above pH 8.2. The pH meter reads the pH as you go.',
