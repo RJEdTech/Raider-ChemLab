@@ -64,7 +64,7 @@ function drawZoom(ctx,s,cx,cy,R,t,k){ctx.save();ctx.fillStyle=PAL['card'];ctx.be
   ctx.restore();}
 
 const SIM={
-  id:'mole',hash:'mole',apUnit:8,order:1,tab:'The mole',kind:'Learning tool',prereq:['units','ptable'],next:['percentcomp','stoich','avgmass'],
+  id:'mole',hash:'mole',apUnit:8,order:1,tab:'The mole',kind:'Learning tool',prereq:['molesteps','units','ptable'],next:['percentcomp','stoich','avgmass'],
   card:'Convert grams, moles, particles and liters on a live mole road map, weigh one mole of five substances, and see how big a mole really is.',
   title:'The mole: counting particles by weighing them',
   lede:{bio:'Atoms are far too small to count one by one, so chemists count them by weighing. A mole is 6.022 × 10²³ particles, and its mass in grams equals the formula mass.',

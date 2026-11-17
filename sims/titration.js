@@ -25,9 +25,38 @@ const TYPES={
   ss:{n:'Strong acid + strong base',flask:'HCl',flaskN:'HCl (unknown)',tit:'NaOH',titN:'NaOH',eq:'H₃O⁺ + OH⁻ → 2 H₂O',full:'HCl + NaOH → NaCl + H₂O'},
   ws:{n:'Weak acid + strong base',flask:'HA',tit:'NaOH',titN:'NaOH'},
   wb:{n:'Weak base + strong acid',flask:'NH₃',flaskN:'NH₃ (unknown)',tit:'HCl',titN:'HCl',eq:'NH₃ + H₃O⁺ → NH₄⁺ + H₂O',full:'NH₃ + HCl → NH₄Cl'},
-  redox:{n:'Redox: KMnO₄ + H₂O₂',flask:'H₂O₂',flaskN:'H₂O₂ (unknown, in H₂SO₄)',tit:'KMnO₄',titN:'KMnO₄',eq:'2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺',eq2:'→ 2 Mn²⁺ + 5 O₂ + 8 H₂O'}};
+  redox:{n:'Redox: KMnO₄ + H₂O₂',flask:'H₂O₂',flaskN:'H₂O₂ (unknown, in H₂SO₄)',tit:'KMnO₄',titN:'KMnO₄',eq:'2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺',eq2:'→ 2 Mn²⁺ + 5 O₂ + 8 H₂O'},
+  sa:{n:'Diprotic strong acid + strong base',flask:'H₂SO₄',flaskN:'H₂SO₄ (unknown)',tit:'NaOH',titN:'NaOH',eq:'H₃O⁺ + OH⁻ → 2 H₂O'},
+  pa:{n:'Triprotic weak acid + strong base',flask:'H₃PO₄',flaskN:'H₃PO₄ (unknown)',tit:'NaOH',titN:'NaOH',eq:'H₃PO₄ + OH⁻ → H₂PO₄⁻ + H₂O'},
+  sb:{n:'Strong base + strong acid',flask:'NaOH',flaskN:'NaOH (unknown)',tit:'HCl',titN:'HCl',eq:'OH⁻ + H₃O⁺ → 2 H₂O'},
+  co3:{n:'Carbonate + strong acid',flask:'Na₂CO₃',flaskN:'Na₂CO₃ (unknown)',tit:'HCl',titN:'HCl',eq:'CO₃²⁻ + H₃O⁺ → HCO₃⁻ + H₂O'}};
+/* Analyte (in the flask) and titrant (in the burette). r = H⁺ (or OH⁻) each analyte unit gives up to the main equivalence point;
+   q = H⁺ (or OH⁻) each titrant formula unit brings. So mol titrant at equivalence = mol analyte × r ÷ q: the balanced-equation ratio.
+   eqs lists every jump a student can see (H₃PO₄ and CO₃²⁻ show two). Ka values at 25 °C: HSO₄⁻ 1.0 × 10⁻²;
+   H₃PO₄ 7.5 × 10⁻³, 6.2 × 10⁻⁸, 4.8 × 10⁻¹³; H₂CO₃ 4.3 × 10⁻⁷ (ChemLab table), 5.6 × 10⁻¹¹. */
+const KA_HSO4=1.0e-2,KA_PO4=[7.5e-3,6.2e-8,4.8e-13],KA_CO3=[kaOf('H2CO3'),5.6e-11];
+const AN={ss:{fam:'acid',r:1},ws:{fam:'acid',r:1},sa:{fam:'acid',r:2},pa:{fam:'acid',r:2,eqs:[1,2]},
+  sb:{fam:'base',r:1},wb:{fam:'base',r:1},co3:{fam:'base',r:2,eqs:[1,2]},redox:{fam:'redox',r:1}};
+const TN={NaOH:{fam:'base',f:'NaOH',q:1,ion:'Na',ionF:'Na⁺'},BaOH2:{fam:'base',f:'Ba(OH)₂',q:2,ion:'Ba',ionF:'Ba²⁺',no:['sa','pa']},
+  HCl:{fam:'acid',f:'HCl',q:1,ion:'Cl',ionF:'Cl⁻'},H2SO4:{fam:'acid',f:'H₂SO₄',q:2,ion:'SO4',ionF:'SO₄²⁻'},KMnO4:{fam:'redox',f:'KMnO₄',q:1}};
+const WANT={acid:'base',base:'acid',redox:'redox'},STD={acid:'NaOH',base:'HCl',redox:'KMnO4'};
+const tnOk=(type,k)=>{const A=AN[type]||AN.ss,T=TN[k];return !!T&&T.fam===WANT[A.fam]&&!(T.no||[]).includes(type);};
+function tnOf(p){return tnOk(p.type,p.tn)?p.tn:STD[(AN[p.type]||AN.ss).fam];}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+/* the balanced molecular equation for this pair (to the main equivalence point) and its mole ratio */
+function pairEq(type,tk,acid){const an=(acid.an||'').replace('⁻',''),par=/[A-Z].*[A-Z]|[₀-₉]/.test(an)?'('+an+')₂':an+'₂';
+  const E={ss:{NaOH:'HCl + NaOH → NaCl + H₂O',BaOH2:'2 HCl + Ba(OH)₂ → BaCl₂ + 2 H₂O'},
+    ws:{NaOH:acid.f+' + NaOH → Na'+an+' + H₂O',BaOH2:'2 '+acid.f+' + Ba(OH)₂ → Ba'+par+' + 2 H₂O'},
+    sa:{NaOH:'H₂SO₄ + 2 NaOH → Na₂SO₄ + 2 H₂O'},pa:{NaOH:'H₃PO₄ + 2 NaOH → Na₂HPO₄ + 2 H₂O'},
+    sb:{HCl:'NaOH + HCl → NaCl + H₂O',H2SO4:'2 NaOH + H₂SO₄ → Na₂SO₄ + 2 H₂O'},
+    wb:{HCl:'NH₃ + HCl → NH₄Cl',H2SO4:'2 NH₃ + H₂SO₄ → (NH₄)₂SO₄'},
+    co3:{HCl:'Na₂CO₃ + 2 HCl → 2 NaCl + H₂CO₃',H2SO4:'Na₂CO₃ + H₂SO₄ → Na₂SO₄ + H₂CO₃'},
+    redox:{KMnO4:'2 KMnO₄ + 5 H₂O₂ + 3 H₂SO₄ → 2 MnSO₄ + K₂SO₄ + 5 O₂ + 8 H₂O'}};
+  return (E[type]||E.ss)[tk]||'';}
+function ratio(type,tk){if(type==='redox')return [5,2];const r=(AN[type]||AN.ss).r,q=TN[tk].q,g=gcd(q,r);return [q/g,r/g];} // [mol analyte, mol titrant]
 /* The unknown concentration of each kind of sample. It stays put through resets; "New unknown" draws a fresh one. */
-const UNK={ss:0.0862,ws:0.1040,wb:0.0915,redox:0.0476};
+const UNK={ss:0.0862,ws:0.1040,wb:0.0915,redox:0.0476,sa:0.0455,pa:0.0420,sb:0.0880,co3:0.0450};
+const UNKR={redox:[0.030,0.065],sa:[0.030,0.070],pa:[0.030,0.070],co3:[0.030,0.070]};  // other kinds: 0.060 to 0.140 M
 const MARKS=[];                    // endpoints the student has marked: {type,unk,va,cb,V}
 const IND={
   phenol:{n:'Phenolphthalein',range:'8.2–10.0',st:[[8.2,'#e0218a',0],[10,'#e0218a',1]],names:['colorless','pink']},
@@ -43,20 +72,28 @@ function indAt(ind,pH){const I=IND[ind];if(!I||!I.st||!Number.isFinite(pH))retur
   for(let i=1;i<s.length;i++)if(pH<=s[i][0]){const t=(pH-s[i-1][0])/(s[i][0]-s[i-1][0]);const a=lerp(s[i-1][2],s[i][2],t);return [mix(s[i-1][1],s[i][1],t),ind==='phenol'?Math.max(0.12,a):a,ind==='phenol'?'faint pink':ind==='btb'?'green':'orange'];}
   return [hi[1],hi[2],I.names[1]];}
 
-function cfg(p){const t=TYPES[p.type]||TYPES.ss,C=p.gC>0?+p.gC:UNK[p.type],va=+p.va,ct=p.type==='redox'?(+p.cb)/5:+p.cb;
+function cfg(p){const tk=tnOf(p),T=TN[tk],A=AN[p.type]||AN.ss,t=Object.assign({},TYPES[p.type]||TYPES.ss,{tit:T.f,titN:T.f}),C=p.gC>0?+p.gC:UNK[p.type],va=+p.va,ct=p.type==='redox'?(+p.cb)/5:+p.cb;
   const nA=C*va;                                   // mmol of analyte
-  const nE=p.type==='redox'?nA*2/5:nA;              // mmol of titrant needed
-  const acid=ACIDS[p.acid]||ACIDS.HC2H3O2;return {t,C,va,ct,nA,nE,Ve:nE/ct,acid};}
-function pHat(p,V,c){c=c||cfg(p);if(p.type==='redox')return NaN;const Vt=c.va+V,nT=c.ct*V;
-  if(p.type==='ss')return solvePH([],nT/Vt,c.nA/Vt);
-  if(p.type==='ws')return solvePH([{C:c.nA/Vt,ka:[c.acid.Ka],z0:0}],nT/Vt,0);
-  return solvePH([{C:c.nA/Vt,ka:[KA_NH4],z0:1}],0,nT/Vt);}
+  const aPerT=p.type==='redox'?2.5:T.q/A.r;         // mol analyte per mol titrant, from the balanced equation
+  const nE=nA/aPerT;                                // mmol of titrant needed
+  const acid=ACIDS[p.acid]||ACIDS.HC2H3O2,VeList=(A.eqs||[A.r]).map(e=>nA*e/T.q/ct);
+  return {t,C,va,ct,nA,nE,Ve:nE/ct,acid,A,T,tk,aPerT,VeList,rt:ratio(p.type,tk),full:pairEq(p.type,tk,acid),anF:p.type==='ws'?acid.f:t.flask};}
+function pHat(p,V,c){c=c||cfg(p);if(p.type==='redox')return NaN;const Vt=c.va+V,a=c.nA/Vt,b=c.ct*V/Vt,sys=[];let na=0,cl=0;
+  switch(p.type){case 'ss':cl+=a;break;case 'ws':sys.push({C:a,ka:[c.acid.Ka],z0:0});break;case 'sa':sys.push({C:a,ka:[KA_HSO4],z0:-1});break;
+    case 'pa':sys.push({C:a,ka:KA_PO4,z0:0});break;case 'sb':na+=a;break;case 'wb':sys.push({C:a,ka:[KA_NH4],z0:1});break;case 'co3':sys.push({C:a,ka:KA_CO3,z0:0});na+=2*a;break;}
+  switch(c.tk){case 'NaOH':na+=b;break;case 'BaOH2':na+=2*b;break;case 'HCl':cl+=b;break;case 'H2SO4':sys.push({C:b,ka:[KA_HSO4],z0:-1});break;}
+  return solvePH(sys,na,cl);}
+/* "1 mol H₂SO₄ : 2 mol NaOH" */
+const ratioTxt=c=>c.rt[0]+' mol '+c.anF+' : '+c.rt[1]+' mol '+c.T.f;
 /* excess permanganate in the flask (M) */
 function mnO4(p,V,c){c=c||cfg(p);const x=c.ct*V-c.nE;return x>0?x/(c.va+V):0;}
 function flaskColor(p,V,c){c=c||cfg(p);const base=PAL['cv-water'];
   if(p.type==='redox'){const m=mnO4(p,V,c);if(m<=0)return [base,'colorless'];const a=clamp(0.22+0.55*Math.log10(1+m/2e-5)/1.3,0.22,0.92);return [mix(base,'#8e2a9e',a),a<0.4?'faint pink-purple':'purple'];}
   const [col,a,name]=indAt(p.ind,pHat(p,V,c));return col?[mix(base,col,a*0.85),name]:[base,'colorless'];}
-function region(p,V,c){c=c||cfg(p);const f=V/c.Ve;if(V<=0)return 'start';if(Math.abs(V-c.Ve)<=0.03)return 'eq';if(f<0.9)return 'before';if(f<1)return 'near';return 'after';}
+function region(p,V,c){c=c||cfg(p);const f=V/c.Ve;if(V<=0)return 'start';if(Math.abs(V-c.Ve)<=0.03)return 'eq';
+  if(c.VeList.length>1){const e1=c.VeList[0];if(Math.abs(V-e1)<=0.03)return 'eq1';if(V<e1)return V/e1<0.9?'before':'near1';}
+  if(f<0.9)return 'before';if(f<1)return 'near';return 'after';}
+const twoJ=(p,c)=>c.VeList.length>1;
 
 /* ---------- mode-aware UI ---------- */
 function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;
@@ -66,6 +103,8 @@ function syncMode(sim){if(!sim.ui||!sim.ui.sec)return;
   const mode=sim.p.type,d=sim.def;if(sim.mode==='vlab'&&sim.vlab){sim.infoDirty=true;return;}   // the virtual lab shows only its own bench controls
   d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(mode);});
   d.metrics.forEach(m=>{if(!m.modes)return;const t=sim.ui.tiles[m.id];if(!t)return;const w=t.num.closest('.tile');if(w)w.hidden=!atLeast(m.lvl)||!m.modes.includes(mode);});
+  const ts=document.getElementById(d.id+'-tn');if(ts){[...ts.options].forEach(o=>{const ok=tnOk(mode,o.value);o.hidden=!ok;o.disabled=!ok;});const k=tnOf(sim.p);if(sim.p.tn!==k){sim.p.tn=k;}ts.value=k;
+    const w=ts.closest('.ctl');if(w)w.hidden=mode==='redox';}
   sim.infoDirty=true;}
 function setV(sim,V){const st=sim.st,p=sim.p,c=cfg(p);st.V=clamp(V,0,VMAX);st.pts=[];
   for(let v=0;v<st.V;v+=0.25)st.pts.push([v,p.type==='redox'?1000*mnO4(p,v,c):pHat(p,v,c)]);st.pts.push([st.V,p.type==='redox'?1000*mnO4(p,st.V,c):pHat(p,st.V,c)]);st.lastV=st.V;}
@@ -77,7 +116,7 @@ function addVol(sim,dv){const st=sim.st;const before=st.V;st.V=Math.min(VMAX,st.
 /* ---------- particles (visual, rebuilt from the model state) ---------- */
 const TIT_T={ss:'OH',ws:'OH',wb:'H3O',redox:'MnO4'};
 const SPEC_T={ss:'Na',ws:'Na',wb:'Cl',redox:'K'};
-function unitsAt(p,V,c){return (p.type==='redox'?8:N0)*c.ct*V/c.nE;}
+function unitsAt(p,V,c){return p.type==='redox'?8*c.ct*V/c.nE:(N0/c.T.q)*V/c.Ve;}
 function rp(r){const a=r()*6.283,d=Math.sqrt(r())*(ZR-14);return [Math.cos(a)*d,Math.sin(a)*d];}
 function P(t,x,y){return {t,x,y,vx:randn()*12,vy:randn()*12,a:Math.random()*6.28,life:0,need:0};}
 function rebuild(sim){const p=sim.p,v=sim.vis,c=cfg(p),r=rng(5),S=Math.min(64,Math.floor(unitsAt(p,sim.st.V,c)+1e-9)),L=[];
@@ -85,22 +124,34 @@ function rebuild(sim){const p=sim.p,v=sim.vis,c=cfg(p),r=rng(5),S=Math.min(64,Ma
   if(p.type==='redox'){const used=Math.min(N0,Math.floor(2.5*S+1e-9)),reacted=Math.min(S,8);add('H2O2',N0-used);add('Mn',reacted);add('MnO4',S-reacted);add('K',S);
     const left=S<8?S:0;// a partly used permanganate keeps its remaining "need"
     v.mnIndex=S;}
-  else{const rx=Math.min(S,N0);
-    if(p.type==='ss'){add('H3O',N0-rx);add('Cl',N0);add('OH',S-rx);add('Na',S);}
-    else if(p.type==='ws'){add('HA',N0-rx);add('A',rx);add('OH',S-rx);add('Na',S);}
-    else{add('B',N0-rx);add('BH',rx);add('H3O',S-rx);add('Cl',S);}}
-  v.P=L;v.S=S;v.key=p.type+'|'+p.va+'|'+p.cb+'|'+c.C;v.Vb=sim.st.V;}
-function spawn(sim,c){const p=sim.p,v=sim.vis,x=randn()*12,y=-ZR+12;const T=P(TIT_T[p.type],x,y);T.vy=55;T.fresh=1;
-  if(p.type==='redox'){const k=v.S;T.need=Math.floor(2.5*(k+1)+1e-9)-Math.floor(2.5*k+1e-9);}
-  v.P.push(T);const s=P(SPEC_T[p.type],x+10,y+4);s.vy=40;v.P.push(s);v.S++;}
-const PARTNER={OH:['H3O','HA'],H3O:['B'],MnO4:['H2O2']};
-function stepParticles(sim,dt){const v=sim.vis,p=sim.p,R=ZR-10;if(!v.P||dt<=0)return;const out=[];
+  else{const R=S*c.T.q,rx=Math.min(R,N0),h=N0/2,tSeek=c.T.fam==='base'?'OH':'H3O';
+    if(p.type==='ss'){add('H3O',N0-rx);add('Cl',N0);}
+    else if(p.type==='sa'){add('H3O',N0-rx);add('SO4',h);}
+    else if(p.type==='ws'){add('HA',N0-rx);add('A',rx);}
+    else if(p.type==='pa'){add('P3',Math.max(0,h-rx));add('P2',rx<=h?rx:N0-rx);add('P1',Math.max(0,rx-h));}
+    else if(p.type==='sb'){add('OH',N0-rx);add('Na',N0);}
+    else if(p.type==='co3'){add('C2',Math.max(0,h-rx));add('C1',rx<=h?rx:N0-rx);add('C0',Math.max(0,rx-h));add('Na',N0);}
+    else{add('B',N0-rx);add('BH',rx);}
+    add(tSeek,R-rx);add(c.T.ion,S);}
+  v.P=L;v.S=S;v.key=p.type+'|'+c.tk+'|'+p.va+'|'+p.cb+'|'+c.C;v.Vb=sim.st.V;}
+function spawn(sim,c){const p=sim.p,v=sim.vis,x=randn()*12,y=-ZR+12;
+  if(p.type==='redox'){const T=P('MnO4',x,y);T.vy=55;T.fresh=1;const k=v.S;T.need=Math.floor(2.5*(k+1)+1e-9)-Math.floor(2.5*k+1e-9);v.P.push(T);const s=P('K',x+10,y+4);s.vy=40;v.P.push(s);v.S++;return;}
+  const seek=c.T.fam==='base'?'OH':'H3O';for(let i=0;i<c.T.q;i++){const T=P(seek,x+i*9,y);T.vy=55;T.fresh=1;T.tit=1;v.P.push(T);}
+  const s=P(c.T.ion,x+10,y+4);s.vy=40;v.P.push(s);v.S++;}
+/* who each titrant particle goes after; the first H⁺ (or the first H⁺ taken) always goes before the second */
+function partners(sim,q,fam){const t=sim.p.type,has=k=>sim.vis.P.some(o=>!o.dead&&o.t===k);
+  if(q.t==='MnO4')return q.need>0?['H2O2']:null;
+  if(q.t==='OH'&&fam==='base')return t==='pa'?(has('P3')?['P3']:['P2']):['H3O','HA'];
+  if(q.t==='H3O'&&fam==='acid')return t==='co3'?(has('C2')?['C2']:['C1']):t==='sb'?['OH']:['B'];
+  return null;}
+function stepParticles(sim,dt){const v=sim.vis,p=sim.p,R=ZR-10;if(!v.P||dt<=0)return;const out=[],fam=cfg(p).T.fam;
   for(const q of v.P){
     if(q.t==='W'){q.life-=dt;q.y-=6*dt;if(q.life>0)out.push(q);continue;}
     if(q.t==='O2'){q.y-=50*dt;q.x+=Math.sin(q.y*0.1)*0.6;if(q.y>-ZR-12)out.push(q);continue;}
     let steer=false;
-    if(PARTNER[q.t]&&(q.t!=='MnO4'||q.need>0)&&!(q.t==='H3O'&&p.type!=='wb')){let best=null,bd=1e9;
-      for(const o of v.P){if(o.dead||!PARTNER[q.t].includes(o.t))continue;const d=Math.hypot(o.x-q.x,o.y-q.y);if(d<bd){bd=d;best=o;}}
+    const PT=partners(sim,q,fam);
+    if(PT){let best=null,bd=1e9;
+      for(const o of v.P){if(o.dead||o===q||!PT.includes(o.t))continue;const d=Math.hypot(o.x-q.x,o.y-q.y);if(d<bd){bd=d;best=o;}}
       if(best){steer=true;const dx=best.x-q.x,dy=best.y-q.y,d=Math.max(1,bd);q.vx+=dx/d*160*dt;q.vy+=dy/d*160*dt;
         if(bd<13){react(sim,q,best);}}}
     if(q.dead)continue;
@@ -110,7 +161,9 @@ function stepParticles(sim,dt){const v=sim.vis,p=sim.p,R=ZR-10;if(!v.P||dt<=0)re
   v.P=out.filter(q=>!q.dead).concat(v.newP||[]);v.newP=[];}
 function react(sim,q,o){const v=sim.vis;v.newP=v.newP||[];const mk=(t,x,y,life)=>{const w=P(t,x,y);w.life=life||1.6;v.newP.push(w);};
   const mx=(q.x+o.x)/2,my=(q.y+o.y)/2;v.flashP={x:mx,y:my,t:0.5};
-  if(q.t==='OH'&&o.t==='H3O'){q.dead=true;o.dead=true;mk('W',mx-6,my,1.8);mk('W',mx+6,my,1.8);}
+  if(q.t==='OH'&&o.t==='H3O'||q.t==='H3O'&&o.t==='OH'){q.dead=true;o.dead=true;mk('W',mx-6,my,1.8);mk('W',mx+6,my,1.8);}
+  else if(q.t==='OH'&&(o.t==='P3'||o.t==='P2')){q.dead=true;o.t=o.t==='P3'?'P2':'P1';mk('W',mx,my,1.8);}
+  else if(q.t==='H3O'&&(o.t==='C2'||o.t==='C1')){q.dead=true;o.t=o.t==='C2'?'C1':'C0';mk('W',mx,my,1.8);}
   else if(q.t==='OH'&&o.t==='HA'){q.dead=true;o.t='A';mk('W',mx,my,1.8);}
   else if(q.t==='H3O'&&o.t==='B'){q.dead=true;o.t='BH';mk('W',mx,my,1.8);}
   else if(q.t==='MnO4'&&o.t==='H2O2'){o.t='O2';q.need--;if(q.need<=0)q.t='Mn';}}
@@ -118,7 +171,11 @@ function react(sim,q,o){const v=sim.vis;v.newP=v.newP||[];const mk=(t,x,y,life)=
 /* ---------- drawing helpers ---------- */
 function ball(ctx,x,y,r,c,a){if(a!==undefined)ctx.globalAlpha=a;const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.15,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.3,c);g.addColorStop(1,CL.shade(c,-0.35));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.29);ctx.fill();ctx.strokeStyle=CL.shade(c,-0.5);ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;}
 function sign(ctx,x,y,s,a){ctx.globalAlpha=a===undefined?1:a;ctx.font='800 11px '+FONT;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s,x,y+0.5);ctx.globalAlpha=1;}
-const COL={O:'#d8443a',H:'#f4f4f4',H3O:'#d22d68',A:'#d9822b',N:'#3a62e0',Cl:'#3fa65a',Na:'#8a5ad6',K:'#8a5ad6',Mn:'#e7a6c8',MnO4:'#7b2a90'};
+const COL={O:'#d8443a',H:'#f4f4f4',H3O:'#d22d68',A:'#d9822b',N:'#3a62e0',Cl:'#3fa65a',Na:'#8a5ad6',K:'#8a5ad6',Mn:'#e7a6c8',MnO4:'#7b2a90',Ba:'#2e9b8f',SO4:'#c9a514',P:'#e07b1f',C:'#4a4a4a'};
+/* a central atom with n hydrogens and a charge label: phosphate and carbonate species */
+function hBall(ctx,x,y,q,core,n,ch,nO,al){nO=nO||(core===COL.C?3:4);const A=al===undefined?1:al;
+  for(let i=0;i<nO;i++){const a=q.a+i*6.283/nO,ox=x+Math.cos(a)*8,oy=y+Math.sin(a)*8;if(i<n)ball(ctx,x+Math.cos(a)*13,y+Math.sin(a)*13,2.8,COL.H,A);ball(ctx,ox,oy,4.6,COL.O,A);}
+  ball(ctx,x,y,5.4,core,A);if(ch){ctx.globalAlpha=A;ctx.font='800 10px '+FONT;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle=PAL['cv-ink'];ctx.fillText(ch,x+11,y-11);ctx.globalAlpha=1;}}
 function drawP(ctx,q,x,y,typ){switch(q.t){
   case 'H3O':ball(ctx,x,y,6.5,COL.H3O);sign(ctx,x,y,'+');break;
   case 'OH':{const hx=x+Math.cos(q.a)*7,hy=y+Math.sin(q.a)*7;ball(ctx,hx,hy,3.6,COL.H);ball(ctx,x,y,6.5,COL.O);sign(ctx,x,y,'−');break;}
@@ -129,14 +186,22 @@ function drawP(ctx,q,x,y,typ){switch(q.t){
   case 'BH':{for(let i=0;i<4;i++){const a=q.a+i*1.57;ball(ctx,x+Math.cos(a)*7.5,y+Math.sin(a)*7.5,3,COL.H);}ball(ctx,x,y,7,COL.N);sign(ctx,x,y,'+');break;}
   case 'Cl':ball(ctx,x,y,6,COL.Cl,0.5);sign(ctx,x,y,'−',0.7);break;
   case 'Na':case 'K':ball(ctx,x,y,5,COL.Na,0.5);sign(ctx,x,y,'+',0.7);break;
+  case 'Ba':ball(ctx,x,y,6.5,COL.Ba,0.55);sign(ctx,x,y,'2+',0.8);break;
+  case 'SO4':hBall(ctx,x,y,q,COL.SO4,0,'2−',4,0.6);break;
+  case 'P3':hBall(ctx,x,y,q,COL.P,3,'');break;case 'P2':hBall(ctx,x,y,q,COL.P,2,'−');break;case 'P1':hBall(ctx,x,y,q,COL.P,1,'2−');break;
+  case 'C2':hBall(ctx,x,y,q,COL.C,0,'2−');break;case 'C1':hBall(ctx,x,y,q,COL.C,1,'−');break;case 'C0':hBall(ctx,x,y,q,COL.C,2,'');break;
   case 'H2O2':{const c=Math.cos(q.a),s=Math.sin(q.a);ball(ctx,x+c*9+s*4,y+s*9-c*4,3,COL.H);ball(ctx,x-c*9-s*4,y-s*9+c*4,3,COL.H);ball(ctx,x+c*4,y+s*4,5,COL.O);ball(ctx,x-c*4,y-s*4,5,COL.O);break;}
   case 'MnO4':ball(ctx,x,y,8,COL.MnO4);sign(ctx,x,y,'−');break;
   case 'Mn':ball(ctx,x,y,6.5,COL.Mn);sign(ctx,x,y,'+');break;
   case 'O2':ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,9,0,6.29);ctx.stroke();ball(ctx,x-3.5,y,4,COL.O);ball(ctx,x+3.5,y,4,COL.O);break;}}
-function legendItems(p,acid,big){const t=p.type,sp=big?'':', spectator';
-  if(t==='ss')return [['H3O','H₃O⁺'],['OH','OH⁻'],['W','H₂O formed'],['Cl','Cl⁻'+sp],['Na','Na⁺'+sp]];
-  if(t==='ws')return [['HA',acid.f],['A',acid.an],['OH','OH⁻'],['W','H₂O formed'],['Na','Na⁺'+sp]];
-  if(t==='wb')return [['B','NH₃'],['BH','NH₄⁺'],['H3O','H₃O⁺'],['W','H₂O formed'],['Cl','Cl⁻'+sp]];
+function legendItems(p,acid,big){const t=p.type,sp=big?'':', spectator',T=TN[tnOf(p)],ti=[T.ion,T.ionF+sp];
+  if(t==='ss')return [['H3O','H₃O⁺'],['OH','OH⁻'],['W','H₂O formed'],['Cl','Cl⁻'+sp],ti];
+  if(t==='sa')return [['H3O','H₃O⁺'],['OH','OH⁻'],['W','H₂O formed'],['SO4','SO₄²⁻'+sp],ti];
+  if(t==='ws')return [['HA',acid.f],['A',acid.an],['OH','OH⁻'],['W','H₂O formed'],ti];
+  if(t==='pa')return [['P3','H₃PO₄'],['P2','H₂PO₄⁻'],['P1','HPO₄²⁻'],['OH','OH⁻'],['W','H₂O formed']];
+  if(t==='sb')return [['OH','OH⁻'],['H3O','H₃O⁺'],['W','H₂O formed'],ti,['Na','Na⁺'+sp]];
+  if(t==='co3')return [['C2','CO₃²⁻'],['C1','HCO₃⁻'],['C0','H₂CO₃'],['H3O','H₃O⁺'],['Na','Na⁺'+sp]];
+  if(t==='wb')return [['B','NH₃'],['BH','NH₄⁺'],['H3O','H₃O⁺'],['W','H₂O formed'],ti];
   return [['H2O2','H₂O₂'],['MnO4','MnO₄⁻'],['Mn','Mn²⁺'],['O2','O₂ gas'],['K','K⁺'+sp]];}
 
 /* ---------- Challenge game: "Hit the endpoint" ----------
@@ -555,20 +620,21 @@ const TIT={
   prereq:['molarity','ph'],next:['buffers','stoich'],
   card:'Run a real titration: open the stopcock, watch the indicator and the pH curve, and calculate the molarity of an unknown.',
   title:'Titration lab: find the concentration of an unknown',
-  lede:{bio:'Add a base of known concentration to an acid of unknown concentration until the indicator changes color. That volume tells you how much acid was in the flask.',
+  lede:{bio:'Pick what is in the flask and what is in the burette, then add titrant until the indicator changes color. That volume and the mole ratio in the balanced equation tell you how much was in the flask.',
         honors:'Find the equivalence point from the color change and the pH curve, compare strong and weak acids, and choose an indicator that changes at the right pH.',
         ap:'Read pKa from the half-equivalence point, use the derivative to locate equivalence, and run a redox titration where permanganate is its own indicator.'},
   scale:{bio:'Bench scale: a 50 mL burette over a 125 mL Erlenmeyer flask. One drop is about 0.05 mL. The zoom shows 20 acid particles standing in for about 10²¹.',
          ap:'Bench scale: 50 mL burette (read to ±0.01 mL), 25.00 mL sample from a volumetric pipet. The zoom’s 20 analyte particles stand in for about 10²¹; water is not drawn.'},
   timeScale:1,dtMax:0.05,prewarm:0,sampleDt:0.25,window:60,unit:'s',chChange:1,chReveal:30,
   controls:[
-    {id:'type',label:'Titration',type:'select',def:'ss',lvl:'bio',options:[{v:'ss',l:'HCl (unknown) with NaOH'},{v:'ws',l:'Weak acid (unknown) with NaOH',lvl:'honors'},{v:'wb',l:'NH₃ (unknown) with HCl',lvl:'honors'},{v:'redox',l:'H₂O₂ (unknown) with KMnO₄',lvl:'ap'}],onChange(sim){BioLab.reset(sim);syncMode(sim);}},
+    {id:'type',label:'In the flask (the unknown)',type:'select',def:'ss',lvl:'bio',options:[{v:'ss',l:'HCl, a strong acid'},{v:'sa',l:'H₂SO₄, a strong acid with 2 H⁺'},{v:'sb',l:'NaOH, a strong base'},{v:'ws',l:'A weak acid (acetic acid and others)',lvl:'honors'},{v:'wb',l:'NH₃, a weak base',lvl:'honors'},{v:'redox',l:'H₂O₂, for a redox titration',lvl:'honors'},{v:'co3',l:'Na₂CO₃, a base that takes 2 H⁺',lvl:'ap'},{v:'pa',l:'H₃PO₄, a weak acid with 3 H⁺',lvl:'ap'}],onChange(sim){sim.p.tn=STD[(AN[sim.p.type]||AN.ss).fam];if(sim.ui&&sim.ui.ctl&&sim.ui.ctl.tn)sim.ui.ctl.tn.set(sim.p.tn);BioLab.reset(sim);syncMode(sim);}},
+    {id:'tn',label:'In the burette (the titrant)',type:'select',def:'NaOH',lvl:'bio',options:[{v:'NaOH',l:'NaOH, 1 OH⁻ each'},{v:'BaOH2',l:'Ba(OH)₂, 2 OH⁻ each'},{v:'HCl',l:'HCl, 1 H⁺ each'},{v:'H2SO4',l:'H₂SO₄, 2 H⁺ each'},{v:'KMnO4',l:'KMnO₄'}],help:'The list shows titrants that react with what is in the flask.',onChange(sim){BioLab.reset(sim);syncMode(sim);}},
     {id:'rate',label:'Stopcock',type:'seg',def:'closed',lvl:'bio',noTrial:true,options:[{v:'closed',l:'Closed'},{v:'drip',l:'Drip'},{v:'open',l:'Open'}],help:'Drip is 2 drops per second. Open runs about 1 mL per second.',onChange(sim){if(sim.p.rate!=='closed')gAct(sim);}},
-    {id:'ind',label:'Indicator',type:'select',def:'phenol',lvl:'bio',modes:['ss','ws','wb'],options:[{v:'phenol',l:'Phenolphthalein (8.2–10.0)'},{v:'btb',l:'Bromothymol blue (6.0–7.6)'},{v:'mred',l:'Methyl red (4.4–6.2)',lvl:'honors'},{v:'morange',l:'Methyl orange (3.1–4.4)',lvl:'honors'},{v:'none',l:'None (pH meter only)',lvl:'honors'}]},
+    {id:'ind',label:'Indicator',type:'select',def:'phenol',lvl:'bio',modes:['ss','ws','wb','sa','pa','sb','co3'],options:[{v:'phenol',l:'Phenolphthalein (8.2–10.0)'},{v:'btb',l:'Bromothymol blue (6.0–7.6)'},{v:'mred',l:'Methyl red (4.4–6.2)',lvl:'honors'},{v:'morange',l:'Methyl orange (3.1–4.4)',lvl:'honors'},{v:'none',l:'None (pH meter only)',lvl:'honors'}]},
     {id:'va',label:'Sample volume (pipet)',type:'seg',def:25,lvl:'bio',options:[{v:10,l:'10.00 mL'},{v:25,l:'25.00 mL'}],onChange(sim){BioLab.reset(sim);}},
     {id:'acid',label:'Weak acid',type:'select',def:'HC2H3O2',lvl:'ap',modes:['ws'],options:Object.keys(ACIDS).map(k=>({v:k,l:ACIDS[k].n[0].toUpperCase()+ACIDS[k].n.slice(1)+', Ka = '+ACIDS[k].Ka.toExponential(1).replace('e-',' × 10⁻').replace(/⁻(\d+)/,(m,d)=>'⁻'+d.split('').map(x=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[x]).join(''))})),onChange(sim){BioLab.reset(sim);}},
     {id:'cb',label:'Titrant concentration',type:'seg',def:0.1,lvl:'honors',options:[{v:0.1,l:'0.100 M'},{v:0.2,l:'0.200 M'}],help:'For KMnO₄ these are 0.0200 M and 0.0400 M.',onChange(sim){BioLab.reset(sim);}},
-    {id:'meter',label:'pH meter in the flask',type:'toggle',def:true,lvl:'bio',modes:['ss','ws','wb'],noTrial:true},
+    {id:'meter',label:'pH meter in the flask',type:'toggle',def:true,lvl:'bio',modes:['ss','ws','wb','sa','pa','sb','co3'],noTrial:true},
     // virtual lab bench only (hidden in the other views)
     {id:'rxCock',label:'Stopcock',type:'seg',def:'closed',vlab:true,noTrial:true,options:[{v:'closed',l:'Closed'},{v:'drops',l:'Drop by drop'},{v:'stream',l:'Fast stream'}],help:'A fast stream runs about 0.9 mL per second. Drop by drop is about 0.05 mL a drop, nearly 2 drops a second.'},
     {id:'rxSwirl',label:'Swirl the flask as you add',type:'toggle',def:true,vlab:true,noTrial:true,help:'Swirling mixes each drop through the whole flask.'},
@@ -576,9 +642,9 @@ const TIT={
   ],
   actions:[
     {id:'drop',label:'Add one drop',lvl:'bio',primary:true,run(sim){gAct(sim);addVol(sim,DROP);sim.vis.drops=(sim.vis.drops||[]);sim.vis.drops.push({y:330});}},
-    {id:'mark',label:'Mark endpoint',lvl:'bio',run(sim){const p=sim.p;if(sim.st.V<=0)return;sim.st.mark=sim.st.V;MARKS.push({type:p.type,unk:UNK[p.type],va:+p.va,cb:+p.cb,V:+sim.st.V.toFixed(2),acid:p.acid});while(MARKS.length>12)MARKS.shift();sim.infoDirty=true;}},
+    {id:'mark',label:'Mark endpoint',lvl:'bio',run(sim){const p=sim.p;if(sim.st.V<=0)return;sim.st.mark=sim.st.V;MARKS.push({type:p.type,tn:tnOf(p),unk:UNK[p.type],va:+p.va,cb:+p.cb,V:+sim.st.V.toFixed(2),acid:p.acid});while(MARKS.length>12)MARKS.shift();sim.infoDirty=true;}},
     {id:'refill',label:'Rinse and refill',lvl:'bio',run(sim){BioLab.setValues(sim,{rate:'closed'});BioLab.reset(sim);}},
-    {id:'unknown',label:'New unknown',lvl:'bio',run(sim){const p=sim.p,r=Math.random();UNK[p.type]=p.type==='redox'?+(0.030+0.035*r).toFixed(4):+(0.060+0.080*r).toFixed(4);BioLab.setValues(sim,{rate:'closed'});BioLab.reset(sim);}}
+    {id:'unknown',label:'New unknown',lvl:'bio',run(sim){const p=sim.p,r=Math.random(),R=UNKR[p.type]||[0.060,0.140];UNK[p.type]=+(R[0]+(R[1]-R[0])*r).toFixed(4);BioLab.setValues(sim,{rate:'closed'});BioLab.reset(sim);}}
   ].concat(RX_ACTIONS),
   labs:[LAB_RX],
   /* what the bench instruments show right now (used by the virtual-lab tests) */
@@ -591,7 +657,7 @@ const TIT={
     intro:{bio:'Six titrations. Use the stopcock to add base: Open to go fast, then Drip or Add one drop near the end. Press Mark endpoint when you think you are there. Within 0.10 mL (two drops) of the endpoint scores, and a first-try hit scores 3 points.',
            honors:'Six titrations: a strong acid, a weak acid and a weak base. Find the endpoint by color, or calculate it and deliver exactly that volume. Within 0.10 mL (two drops) scores; a first-try hit scores 3.',
            ap:'Six titrations: weak acids with a pH meter, permanganate with its 2 : 5 mole ratio, and the buffer region. Stop within 0.10 mL (two drops) of the target, then press Mark endpoint. A first-try hit scores 3.'},
-    start(sim){const p=sim.p;if(!sim._gBak)sim._gBak={type:p.type,va:p.va,cb:p.cb,acid:p.acid,ind:p.ind,meter:p.meter};},
+    start(sim){const p=sim.p;if(!sim._gBak)sim._gBak={type:p.type,tn:p.tn,va:p.va,cb:p.cb,acid:p.acid,ind:p.ind,meter:p.meter};},
     newRound(sim,i){const s=gMake(BioLab.level,i);
       BioLab.setValues(sim,Object.assign({gC:s.p.gC},s.p,{rate:'closed'}));BioLab.reset(sim);sim.vis.key='';
       const r=Object.assign(s,{controls:['rate'],pre:{ind:s.p.ind,meter:s.p.meter}});
@@ -609,7 +675,7 @@ const TIT={
     else if(p.rate==='open'){addVol(sim,1.0*dt);st.drip=0;}else st.drip=0;},
   metrics:[
     {id:'vol',label:'Titrant added (burette reading)',unit:'mL',lvl:'bio',min:0,max:50,d:2,get:s=>s.st.V},
-    {id:'pH',label:'pH',unit:'',lvl:'bio',min:0,max:14,d:2,fixed:true,modes:['ss','ws','wb'],get:s=>pHat(s.p,s.st.V)},
+    {id:'pH',label:'pH',unit:'',lvl:'bio',min:0,max:14,d:2,fixed:true,modes:['ss','ws','wb','sa','pa','sb','co3'],get:s=>pHat(s.p,s.st.V)},
     {id:'color',label:'Flask color',unit:'',lvl:'bio',text:true,get:s=>{const c=flaskColor(s.p,s.st.V)[1];return c[0].toUpperCase()+c.slice(1);}},
     {id:'mmol',label:'Titrant added',unit:'mmol',lvl:'honors',min:0,max:null,d:3,get:s=>cfg(s.p).ct*s.st.V},
     {id:'mno4',label:'Excess MnO₄⁻',unit:'mM',lvl:'ap',min:0,max:null,d:3,modes:['redox'],get:s=>1000*mnO4(s.p,s.st.V)},
@@ -634,33 +700,42 @@ const TIT={
     ctx.save();ctx.beginPath();ctx.rect(box.L,box.T,box.W,box.H);ctx.clip();ctx.strokeStyle=serColor(4);ctx.lineWidth=2.5;ctx.beginPath();d.forEach((q,i)=>i?ctx.lineTo(ax.X(q[0]),ax.Y(q[1])):ctx.moveTo(ax.X(q[0]),ax.Y(q[1])));ctx.stroke();ctx.restore();
     if(d.length){const pk=d.reduce((a,b)=>b[1]>a[1]?b:a);txt(ctx,'steepest at '+pk[0].toFixed(2)+' mL',ax.X(pk[0])+8,box.T+16,{s:13,c:PAL['muted']});}},
   infoPanel(sim){const p=sim.p,st=sim.st,c=cfg(p),hon=atLeast('honors'),ap=atLeast('ap');
-    const mine=MARKS.filter(m=>m.type===p.type&&m.unk===c.C&&m.va===c.va&&m.cb===+p.cb);
-    const tn=c.t.titN,an=p.type==='ws'?c.acid.f:c.t.flask,ratio=p.type==='redox'?'5 mol H₂O₂ : 2 mol MnO₄⁻':'1 : 1';
+    const mine=MARKS.filter(m=>m.type===p.type&&m.tn===c.tk&&m.unk===c.C&&m.va===c.va&&m.cb===+p.cb);
+    const tn=c.t.titN,an=c.anF,ratio=ratioTxt(c),fac=`(${c.rt[0]} mol ${an} / ${c.rt[1]} mol ${tn})`;
     let h=`<h3>Your results</h3>`;
-    if(!mine.length)return h+`<p>Add ${tn} until the flask ${p.type==='redox'?'keeps a faint purple color':'just changes color and stays changed'}, then press <b>Mark endpoint</b>. Go fast at first, then switch to <b>Drip</b> or single drops as the color starts to flash.</p><p class="help">Sample: ${c.va.toFixed(2)} mL of ${an}. Titrant: ${c.ct.toFixed(p.type==='redox'?4:3)} M ${tn}. Mole ratio ${ratio}.</p>`;
-    const rows=mine.slice(-3).map((m,i)=>{const nT=c.ct*m.V/1000,nA=p.type==='redox'?nT*5/2:nT,M=nA/(c.va/1000);return {V:m.V,nT,nA,M};});
+    if(!mine.length)return h+`<p>Add ${tn} until the flask ${p.type==='redox'?'keeps a faint purple color':'just changes color and stays changed'}, then press <b>Mark endpoint</b>. Go fast at first, then switch to <b>Drip</b> or single drops as the color starts to flash.</p><p class="help">Sample: ${c.va.toFixed(2)} mL of ${an}. Titrant: ${c.ct.toFixed(p.type==='redox'?4:3)} M ${tn}.</p><p><b>Balanced equation:</b> ${c.full}</p><p><b>Mole ratio:</b> ${ratio}.${c.rt[0]===c.rt[1]?' Here it is 1 : 1, so moles of acid and base are equal at equivalence.':' The moles are not equal at equivalence.'}</p>`;
+    const rows=mine.slice(-3).map((m,i)=>{const nT=c.ct*m.V/1000,nA=nT*c.aPerT,M=nA/(c.va/1000);return {V:m.V,nT,nA,M};});
     h+=`<div class="tbl-wrap"><table><thead><tr><th>Trial</th><th>Initial (mL)</th><th>Final (mL)</th><th>${tn} used (mL)</th>${hon?'<th>mol '+tn+'</th>':''}<th>[${an}] (M)</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>0.00</td><td>${r.V.toFixed(2)}</td><td>${r.V.toFixed(2)}</td>${hon?'<td>'+r.nT.toExponential(3)+'</td>':''}<td>${r.M.toFixed(4)}</td></tr>`).join('')}</tbody></table></div>`;
     const last=rows[rows.length-1],avg=rows.reduce((a,r)=>a+r.M,0)/rows.length;
-    h+=`<p><b>Calculation:</b> ${c.ct.toFixed(p.type==='redox'?4:3)} mol/L × ${(last.V/1000).toFixed(5)} L = ${last.nT.toExponential(3)} mol ${tn}${p.type==='redox'?' × 5/2 = '+last.nA.toExponential(3)+' mol H₂O₂':' = mol '+an}. ÷ ${(c.va/1000).toFixed(5)} L = <b>${last.M.toFixed(4)} M</b>.</p>`;
+    h+=`<p><b>Calculation:</b> ${c.ct.toFixed(p.type==='redox'?4:3)} mol ${tn}/L × ${(last.V/1000).toFixed(5)} L × ${fac} = ${last.nA.toExponential(3)} mol ${an}. Then ÷ ${(c.va/1000).toFixed(5)} L = <b>${last.M.toFixed(4)} M</b>.</p>`;
     const err=100*(avg-c.C)/c.C;
     h+=`<p>Average of ${rows.length} trial${rows.length>1?'s':''}: ${avg.toFixed(4)} M. True value: <b>${c.C.toFixed(4)} M</b>. Percent error: ${err>=0?'+':''}${err.toFixed(1)}%.</p>`;
     if(hon&&p.type!=='redox'){const half=last.V/2,ph=pHat(p,half,c);h+=`<p class="help">${Math.abs(err)>2?'A large error usually means the indicator changed away from the equivalence point, or you overshot. ':''}At half your endpoint volume (${half.toFixed(2)} mL) the pH is ${ph.toFixed(2)}.${p.type==='ws'?' For a weak acid that is the pKa: Ka ≈ '+Math.pow(10,-ph).toExponential(1)+' (true '+c.acid.Ka.toExponential(1)+').':''}</p>`;}
-    if(ap)h+=`<p class="help">Equivalence point from the model: ${c.Ve.toFixed(2)} mL${p.type!=='redox'?', pH '+pHat(p,c.Ve,c).toFixed(2):''}.</p>`;
+    if(ap)h+=`<p class="help">Equivalence point${twoJ(p,c)?'s':''} from the model: ${c.VeList.map(v=>v.toFixed(2)+' mL'+(p.type!=='redox'?' (pH '+pHat(p,v,c).toFixed(2)+')':'')).join(' and ')}.</p>`;
     return h;},
   narrate(sim){if(sim.st.R&&sim.vlab)return rxNarr(sim);const p=sim.p,st=sim.st,c=cfg(p),V=st.V,rg=region(p,V,c),hon=atLeast('honors'),pH=pHat(p,V,c),fc=flaskColor(p,V,c)[1];
-    const an=p.type==='ws'?c.acid.f:c.t.flask;
+    const an=c.anF,tn=c.t.titN,two=twoJ(p,c),e1=c.VeList[0];
     if(V>=VMAX)return 'The burette is empty. Press <b>Rinse and refill</b> to start a new trial.';
     if(p.type==='redox'){
       if(rg==='start')return 'The flask holds colorless H₂O₂ in sulfuric acid. Open the stopcock: each purple MnO₄⁻ that drips in oxidizes H₂O₂ to O₂ gas and turns into nearly colorless Mn²⁺.';
       if(rg==='after'||rg==='eq')return '<b>A purple color stays.</b> Every H₂O₂ is used up, so the next MnO₄⁻ has nothing to react with and its color remains. That first lasting pink-purple is the endpoint: permanganate is its own indicator.';
       return 'The purple MnO₄⁻ <b>loses its color as soon as it mixes in</b>, because H₂O₂ is still there to reduce it to Mn²⁺. '+(hon?Math.round(100*V/c.Ve)+'% of the H₂O₂ has reacted. ':'')+'Watch for O₂ bubbles.';}
-    const s=(rg==='start'?'The flask holds '+c.va.toFixed(2)+' mL of '+an+' (pH '+pH.toFixed(2)+'). Open the stopcock to add '+c.t.titN+'.':
-      rg==='before'?(p.type==='ss'?'Each OH⁻ that drips in meets an H₃O⁺ and they make water. <b>Plenty of acid is left</b>, so the pH has only crept up to '+pH.toFixed(2)+'.':
-                     p.type==='ws'?'Each OH⁻ pulls H⁺ off an '+c.acid.f+' molecule, making '+c.acid.an+'. Now both '+c.acid.f+' and '+c.acid.an+' are in the flask: a <b>buffer</b>, so the pH rises slowly ('+pH.toFixed(2)+').':
-                     'Each H₃O⁺ from the HCl gives its H⁺ to an NH₃, making NH₄⁺. NH₃ and NH₄⁺ together are a <b>buffer</b>, so the pH falls slowly ('+pH.toFixed(2)+').'):
+    const BEFORE={ss:'Each OH⁻ that drips in meets an H₃O⁺ and they make water. <b>Plenty of acid is left</b>, so the pH has only crept up to '+pH.toFixed(2)+'.',
+      sa:'Each OH⁻ that drips in meets an H₃O⁺ and they make water. Every H₂SO₄ gave <b>two</b> H⁺, so it takes 2 OH⁻ to use up one H₂SO₄. The pH has only crept up to '+pH.toFixed(2)+'.',
+      ws:'Each OH⁻ pulls H⁺ off an '+c.acid.f+' molecule, making '+c.acid.an+'. Now both '+c.acid.f+' and '+c.acid.an+' are in the flask: a <b>buffer</b>, so the pH rises slowly ('+pH.toFixed(2)+').',
+      pa:V<e1?'Each OH⁻ takes the <b>first</b> H⁺ off an H₃PO₄, making H₂PO₄⁻. The two together are a buffer, so the pH rises slowly ('+pH.toFixed(2)+').':'The first H⁺ of every H₃PO₄ is gone. Now each OH⁻ takes a <b>second</b> H⁺, turning H₂PO₄⁻ into HPO₄²⁻ (pH '+pH.toFixed(2)+').',
+      sb:'Each H₃O⁺ that drips in meets an OH⁻ and they make water. <b>Plenty of base is left</b>, so the pH has only dropped to '+pH.toFixed(2)+'.',
+      wb:'Each H₃O⁺ from the '+tn+' gives its H⁺ to an NH₃, making NH₄⁺. NH₃ and NH₄⁺ together are a <b>buffer</b>, so the pH falls slowly ('+pH.toFixed(2)+').',
+      co3:V<e1?'Each H₃O⁺ gives its H⁺ to a CO₃²⁻, making HCO₃⁻. The pH falls slowly ('+pH.toFixed(2)+').':'Every CO₃²⁻ is now HCO₃⁻. Each H₃O⁺ adds a <b>second</b> H⁺, making H₂CO₃, which breaks down into water and CO₂ gas (pH '+pH.toFixed(2)+').'};
+    const EQW={ss:', neutral, because '+c.T.ionF+' and Cl⁻ do not react with water.',sa:', about neutral: Na⁺ and SO₄²⁻ barely react with water.',sb:', neutral, because Na⁺ and '+c.T.ionF+' do not react with water.',
+      ws:', above 7, because '+c.acid.an+' is a weak base.',pa:', above 7, because HPO₄²⁻ is a weak base.',wb:', below 7, because NH₄⁺ is a weak acid.',co3:', below 7, because H₂CO₃ (carbonic acid) is a weak acid.'};
+    const s=(rg==='start'?'The flask holds '+c.va.toFixed(2)+' mL of '+an+' (pH '+pH.toFixed(2)+'). Open the stopcock to add '+tn+'.':
+      rg==='before'?BEFORE[p.type]||BEFORE.ss:
+      rg==='near1'?'<b>Slow down:</b> a first jump is close. Almost every '+(p.type==='pa'?'H₃PO₄ has lost one H⁺':'CO₃²⁻ has gained one H⁺')+' (pH '+pH.toFixed(2)+').':
+      rg==='eq1'?'<b>First equivalence point</b> (pH '+pH.toFixed(2)+'): '+(p.type==='pa'?'every H₃PO₄ has given up one H⁺. That took 1 mol of '+tn+' per mol of H₃PO₄':'every CO₃²⁻ has taken one H⁺. That took 1 mol of '+tn+' per mol of Na₂CO₃')+'. A second jump comes at twice this volume.':
       rg==='near'?'<b>Slow down.</b> Almost all the '+an+' is used up, so each drop now changes the pH a lot (pH '+pH.toFixed(2)+'). Switch to Drip or single drops.':
-      rg==='eq'?'<b>Equivalence point:</b> the moles of '+c.t.titN+' added equal the moles of '+an+' you started with. pH = '+pH.toFixed(2)+(p.type==='ss'?', neutral, because Na⁺ and Cl⁻ do not react with water.':p.type==='ws'?', above 7, because '+c.acid.an+' is a weak base.':', below 7, because NH₄⁺ is a weak acid.'):
-      'You are past the equivalence point. Extra '+c.t.titN+' has nothing left to react with, so the pH is now set by the excess: '+pH.toFixed(2)+'.');
+      rg==='eq'?'<b>Equivalence point:</b> the '+tn+' added has reacted with all the '+an+' in the ratio of the balanced equation, '+ratioTxt(c)+(c.rt[0]===c.rt[1]?' (equal moles here)':'')+'. pH = '+pH.toFixed(2)+(EQW[p.type]||''):
+      'You are past the equivalence point. Extra '+tn+' has nothing left to react with, so the pH is now set by the excess: '+pH.toFixed(2)+'.');
     return s+(p.ind!=='none'?' The flask is '+fc+'.':'');},
   tour:[
     {title:'The burette',text:{bio:'The burette holds the titrant, a solution whose concentration you know: 0.100 M NaOH. You read the volume at the bottom of the meniscus. It starts at 0.00 mL.',ap:'The burette is read to two decimal places (±0.01 mL): the last digit is estimated between the 0.1 mL lines. Reading = final − initial.'},focus:[20,14,190,312],pause:true,setup(sim){BioLab.setValues(sim,{type:'ss',va:25,ind:'phenol',rate:'closed'});BioLab.reset(sim);}},
@@ -677,7 +752,7 @@ const TIT={
   challenges(sim){
     const P0={type:'ss',va:25,cb:0.1,ind:'phenol',acid:'HC2H3O2',meter:true,rate:'closed'};
     const C=(o)=>cfg(Object.assign({},P0,o));
-    const ss=C({}),ws=C({type:'ws'}),wb=C({type:'wb'}),rx=C({type:'redox'});
+    const ss=C({}),ws=C({type:'ws'}),wb=C({type:'wb'}),rx=C({type:'redox'}),sa=C({type:'sa'}),pa=C({type:'pa'});
     const ph=(o,V)=>pHat(Object.assign({},P0,o),V);
     const wsEq=ph({type:'ws'},ws.Ve),wbEq=ph({type:'wb'},wb.Ve),half=ph({type:'ws'},ws.Ve/2);
     // where methyl orange finishes changing (pH 4.4) for acetic acid
@@ -688,6 +763,8 @@ const TIT={
      explain:{bio:'The pH stayed below 3 for most of the titration, then shot from about 4 to 10 within a fraction of a mL near '+ss.Ve.toFixed(1)+' mL, then leveled off. While acid is in excess, each OH⁻ is used up at once, so [H₃O⁺] falls only slowly. Near the end, one drop removes the last acid.',honors:'pH is a log scale. Going from pH 1 to pH 2 needs 90% of the acid neutralized; pH 2 to 3 needs 99%. The last 1% of the acid disappears in a single drop, which is the jump.'}},
     {lvl:'bio',instant:true,set:{type:'ss',va:25},vol:c=>c.Ve,q:'At the equivalence point of HCl with NaOH, what is the pH?',choices:['7.00, neutral','Above 7','Below 7'],correct:0,
      explain:{bio:'The model is now at the equivalence point and the meter reads '+ph({},ss.Ve).toFixed(2)+'. HCl + NaOH → NaCl + H₂O. Na⁺ and Cl⁻ do not react with water, so the solution is neutral. Only strong acid with strong base gives exactly 7.'}},
+    {lvl:'bio',instant:true,set:{type:'sa',va:25},vol:c=>c.Ve,q:'Now the flask holds sulfuric acid, H₂SO₄, and the burette holds NaOH. At the equivalence point, how do the moles compare?',choices:['2 mol NaOH for every 1 mol H₂SO₄','1 mol NaOH for every 1 mol H₂SO₄','1 mol NaOH for every 2 mol H₂SO₄'],correct:0,
+     explain:{bio:'The model is at the equivalence point: '+(sa.nE).toFixed(3)+' mmol NaOH reacted with '+(sa.nA).toFixed(3)+' mmol H₂SO₄, twice as many. H₂SO₄ + 2 NaOH → Na₂SO₄ + 2 H₂O. Each H₂SO₄ gives two H⁺, so equivalence means the ratio in the balanced equation, not equal moles.'}},
     {lvl:'bio',instant:true,set:{type:'ss',va:10},vol:c=>c.Ve,q:'You needed about '+ss.Ve.toFixed(1)+' mL of NaOH for a 25.00 mL sample. How much would a 10.00 mL sample of the same HCl need?',choices:['The same, since the concentration is the same','About '+(ss.Ve*0.4).toFixed(1)+' mL: fewer moles of acid','More, since a small sample is more concentrated'],correct:1,
      explain:{bio:'The model now holds a 10.00 mL sample at its equivalence point: '+(ss.Ve*0.4).toFixed(2)+' mL. The base reacts with moles of acid, not concentration. 10/25 of the volume holds 10/25 of the moles, so it needs 10/25 of the base. The calculated molarity comes out the same.'}},
     {lvl:'honors',instant:true,set:{type:'ws',va:25,acid:'HC2H3O2'},vol:c=>c.Ve,q:'You titrate acetic acid (a weak acid) with NaOH. What is the pH at the equivalence point?',choices:['7.00, like HCl with NaOH','Above 7, about '+wsEq.toFixed(1),'Below 7, since the acid is weak'],correct:1,
@@ -699,6 +776,8 @@ const TIT={
      explain:{honors:'The model is at the equivalence point: pH '+wbEq.toFixed(2)+'. All the NH₃ has become NH₄⁺, a weak acid: NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺. Methyl red (4.4–6.2) suits this titration; phenolphthalein would change far too early.'}},
     {lvl:'ap',instant:true,set:{type:'ws',va:25,acid:'HC2H3O2'},vol:c=>c.Ve/2,q:'At the half-equivalence point of the acetic acid titration, what is the pH?',choices:['pKa, about 4.74','7.00','Half of the starting pH'],correct:0,
      explain:{ap:'The model is at half-equivalence: pH '+half.toFixed(2)+'. Half the HA has become A⁻, so [HA] = [A⁻] and Henderson–Hasselbalch gives pH = pKa + log(1) = pKa = '+(-Math.log10(ACIDS.HC2H3O2.Ka)).toFixed(2)+'. This is how the RJ weak-acid lab finds Ka.'}},
+    {lvl:'ap',instant:true,set:{type:'pa',va:25,ind:'none'},vol:c=>c.VeList[1]+4,q:'You titrate phosphoric acid, H₃PO₄, with NaOH and run well past the second jump. How many steep jumps does the curve show?',choices:['Two jumps, at V and at 2V','Three jumps, one for each H⁺','One jump, like HCl'],correct:0,
+     explain:{ap:'The curve jumps at '+pa.VeList[0].toFixed(2)+' mL and again at '+pa.VeList[1].toFixed(2)+' mL, twice the first volume: each H⁺ takes the same moles of OH⁻. The third H⁺ (Ka₃ = 4.8 × 10⁻¹³) is so weak that water’s own OH⁻ hides its jump.'}},
     {lvl:'ap',instant:true,set:{type:'ws',va:25,acid:'HClO'},vol:c=>c.Ve,q:'You swap acetic acid for the same concentration of HClO, a much weaker acid (Ka = 3.0 × 10⁻⁸). How does the equivalence volume change?',choices:['It is larger','It is the same','It is smaller'],correct:1,
      explain:{ap:'The model now titrates HClO at the same concentration: equivalence is still '+ws.Ve.toFixed(2)+' mL. OH⁻ reacts completely with any weak acid, so the volume depends only on moles. What changes is the curve: it starts higher (pH '+ph({type:'ws',acid:'HClO'},0).toFixed(1)+'), the jump is much smaller, and the equivalence pH is '+ph({type:'ws',acid:'HClO'},ws.Ve).toFixed(1)+'.'}},
     {lvl:'ap',q:'In the KMnO₄ + H₂O₂ titration, how do you know when to stop?',choices:['A pH meter reads exactly 7','The first purple that stays','The solution turns clear'],correct:1,
@@ -708,17 +787,17 @@ const TIT={
   lab:{bio:'<p><b>Question:</b> What is the molarity of the unknown HCl?</p><ol><li>Open the stopcock and watch the flask. When pink starts to flash, close it and add single drops.</li><li>Stop at the first pink that stays for 30 seconds and press <b>Mark endpoint</b>.</li><li>Press <b>Rinse and refill</b> and repeat for 3 trials. Your results appear next to the graph.</li></ol><p>Calculate M(acid) = M(base) × V(base) ÷ V(acid) for each trial and average them. Safety in the real lab: goggles on, and acids and bases are corrosive.</p>',
        honors:'<p><b>Question:</b> How do the curves for strong and weak acids differ, and which indicator should you use?</p><ol><li>Titrate the HCl and the weak acid to well past the equivalence point. Use Record trial at 0, 5, 10, … mL and near the jump.</li><li>Repeat the weak acid titration with methyl orange, methyl red and phenolphthalein, and mark the endpoint each time.</li><li>Compare each endpoint with the equivalence volume.</li></ol><p>Sketch both curves. Explain why the weak acid’s equivalence pH is above 7 and which indicator gives the smallest error.</p>',
        ap:'<p><b>Question:</b> What are the concentration and the Ka of the unknown weak acid?</p><ol><li>Titrate with the pH meter, adding single drops near the jump.</li><li>Use the ΔpH/ΔV graph to find the equivalence volume.</li><li>Read the pH at half that volume and calculate Ka. Repeat for another weak acid.</li><li>Run the KMnO₄ titration of H₂O₂ and find [H₂O₂].</li></ol><p><b>Claim–evidence–reasoning:</b> Justify pH = pKa at half-equivalence with Henderson–Hasselbalch, and explain why the equivalence volume does not depend on Ka.</p>'},
-  terms:[{t:'Titration',d:'Adding a solution of known concentration to a sample until the reaction is complete, to find the sample’s concentration.'},{t:'Titrant',d:'The solution in the burette, with a known concentration.'},{t:'Analyte',d:'The solution in the flask whose concentration you want to find.'},{t:'Burette',d:'A long graduated tube with a stopcock that delivers measured volumes, read to ±0.01 mL.'},{t:'Indicator',d:'A dye that changes color at a certain pH.'},{t:'Endpoint',d:'The point where the indicator changes color and you stop.'},{t:'Equivalence point',d:'The point where moles of titrant exactly match moles of analyte (by the mole ratio).'},
+  terms:[{t:'Titration',d:'Adding a solution of known concentration to a sample until the reaction is complete, to find the sample’s concentration.'},{t:'Titrant',d:'The solution in the burette, with a known concentration.'},{t:'Analyte',d:'The solution in the flask whose concentration you want to find.'},{t:'Burette',d:'A long graduated tube with a stopcock that delivers measured volumes, read to ±0.01 mL.'},{t:'Indicator',d:'A dye that changes color at a certain pH.'},{t:'Endpoint',d:'The point where the indicator changes color and you stop.'},{t:'Equivalence point',d:'The point where the titrant has reacted with all of the analyte in the ratio of the balanced equation. For HCl + NaOH that is 1 : 1; for H₂SO₄ + 2 NaOH it is 1 : 2.'},{t:'Mole ratio',d:'The coefficients of the balanced equation, which tell you how many moles of titrant react with each mole of analyte.'},
     {lvl:'honors',t:'Neutralization',d:'Acid + base → salt + water. The net ionic equation for strong acid + strong base is H₃O⁺ + OH⁻ → 2 H₂O.'},{lvl:'honors',t:'Spectator ion',d:'An ion present in the solution that does not take part in the reaction, such as Na⁺ and Cl⁻.'},{lvl:'honors',t:'Buffer region',d:'The flat part of a weak acid’s curve, where both HA and A⁻ are present.'},
-    {lvl:'ap',t:'Half-equivalence point',d:'Halfway to equivalence, [HA] = [A⁻] and pH = pKa.'},{lvl:'ap',t:'Self-indicating titration',d:'A titration where the titrant’s own color shows the endpoint, like purple MnO₄⁻ becoming colorless Mn²⁺.'}],
-  about:'<p>Every pH point is solved exactly from the charge balance of the mixture (H₃O⁺, OH⁻, Na⁺ or Cl⁻, and the weak acid or base species), using Kw = 1.0 × 10⁻¹⁴ and Ka values at 25 °C from the ChemLab data table (acetic acid 1.8 × 10⁻⁵, formic 1.8 × 10⁻⁴, benzoic 6.3 × 10⁻⁵, HClO 3.0 × 10⁻⁸, NH₄⁺ 5.6 × 10⁻¹⁰). Volumes add, concentrations stand in for activities, and the indicator’s own tiny acid content is ignored. The curve is drawn from those calculated readings as you add titrant, never from a stored shape.</p><p>Indicator color ranges are standard values. The pink “flash” near the endpoint models the local excess of base where a drop lands before it mixes. The redox titration uses 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O in excess sulfuric acid; its pH is not modeled.</p><p>The zoom shows 20 analyte particles; titrant particles are added in proportion to the moles delivered, and every one that reacts is accounted for (water molecules fade out to keep the view clear). Unknown concentrations are drawn between 0.060 and 0.140 M (H₂O₂: 0.030 to 0.065 M).</p>',
+    {lvl:'ap',t:'Polyprotic acid',d:'An acid with more than one H⁺ to give, like H₃PO₄. A weak one shows a separate jump for each H⁺ that is strong enough to see.'},{lvl:'ap',t:'Half-equivalence point',d:'Halfway to equivalence, [HA] = [A⁻] and pH = pKa.'},{lvl:'ap',t:'Self-indicating titration',d:'A titration where the titrant’s own color shows the endpoint, like purple MnO₄⁻ becoming colorless Mn²⁺.'}],
+  about:'<p>Every pH point is solved exactly from the charge balance of the mixture (H₃O⁺, OH⁻, Na⁺ or Cl⁻, and the weak acid or base species), using Kw = 1.0 × 10⁻¹⁴ and Ka values at 25 °C from the ChemLab data table (acetic acid 1.8 × 10⁻⁵, formic 1.8 × 10⁻⁴, benzoic 6.3 × 10⁻⁵, HClO 3.0 × 10⁻⁸, NH₄⁺ 5.6 × 10⁻¹⁰, H₂CO₃ 4.3 × 10⁻⁷), plus HSO₄⁻ 1.0 × 10⁻², H₃PO₄ 7.5 × 10⁻³, 6.2 × 10⁻⁸ and 4.8 × 10⁻¹³, and HCO₃⁻ 5.6 × 10⁻¹¹. H₂SO₄ gives its first H⁺ completely and its second through HSO₄⁻ ⇌ H⁺ + SO₄²⁻. Ba(OH)₂ is treated as fully dissolved (it is at 0.100 M); it is not offered with H₂SO₄ or H₃PO₄, which would form a precipitate. In the carbonate titration all the H₂CO₃ stays in solution; in a real flask some leaves as CO₂, which sharpens the second jump. The mole ratio at equivalence always comes from the balanced equation for the pair you pick. Volumes add, concentrations stand in for activities, and the indicator’s own tiny acid content is ignored. The curve is drawn from those calculated readings as you add titrant, never from a stored shape.</p><p>Indicator color ranges are standard values. The pink “flash” near the endpoint models the local excess of base where a drop lands before it mixes. The redox titration uses 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O in excess sulfuric acid; its pH is not modeled.</p><p>The zoom shows 20 analyte particles; titrant particles are added in proportion to the moles delivered, and every one that reacts is accounted for (water molecules fade out to keep the view clear). Unknown concentrations are drawn between 0.060 and 0.140 M (H₂SO₄, H₃PO₄ and Na₂CO₃: 0.030 to 0.070 M; H₂O₂: 0.030 to 0.065 M). Analytes that give or take two H⁺ show 10 formula units, so the zoom still holds 20 H⁺ (or 20 places for one) to react.</p>',
   initVis(sim){sim.vis.P=null;sim.vis.drops=[];sim.vis.flash=0;sim.vis.key='';},
   draw(sim,ctx,vdt,k,t){if(sim.st.R&&sim.vlab){rxDraw(sim,ctx,vdt,k,t);return;}const p=sim.p,st=sim.st,v=sim.vis,c=cfg(p),hon=atLeast('honors'),ap=atLeast('ap'),red=p.type==='redox';
     // in the game, hide what a real student could not see until the endpoint is marked
     const G=sim.game,gr=G&&sim.gameRound,gShow=!gr||st.gShow||G.state==='over',cover=!!(gr&&gr.cover&&!gShow);
     ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);
     // keep particles in step with the model
-    const key=p.type+'|'+p.va+'|'+p.cb+'|'+c.C;if(!v.P||v.key!==key||st.V<v.Vb-1e-9)rebuild(sim);
+    const key=p.type+'|'+c.tk+'|'+p.va+'|'+p.cb+'|'+c.C;if(!v.P||v.key!==key||st.V<v.Vb-1e-9)rebuild(sim);
     const target=Math.min(64,Math.floor(unitsAt(p,st.V,c)+1e-9));let guard=0;while(v.S<target&&guard++<6)spawn(sim,c);v.Vb=st.V;
     if(!RM)stepParticles(sim,vdt);
     // labels
@@ -761,14 +840,14 @@ const TIT={
     // zoom
     ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(BX+20,lv+8);ctx.lineTo(ZX-ZR*0.95,ZY+ZR*0.3);ctx.moveTo(BX+10,FY+6);ctx.lineTo(ZX-ZR*0.7,ZY-ZR*0.7);ctx.stroke();ctx.setLineDash([]);
     ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=gShow?mix(PAL['cv-water'],fcol,0.22):PAL['card'];ctx.fill();ctx.clip();
-    const order=['Cl','Na','K','W','O2','H2O2','HA','A','B','BH','Mn','H3O','OH','MnO4'];
+    const order=['Cl','Na','K','Ba','SO4','W','O2','H2O2','HA','A','B','BH','P3','P2','P1','C2','C1','C0','Mn','H3O','OH','MnO4'];
     if(gShow)order.forEach(ty=>v.P.forEach(q=>{if(q.t===ty)drawP(ctx,q,ZX+q.x,ZY+q.y);}));
     else (k>1.3?['Particle view','after you mark']:['Particle view','opens when you','mark the endpoint']).forEach((s,i,A)=>txt(ctx,s,ZX,ZY+(i-(A.length-1)/2)*20*k,{s:(i?13:14)*k,w:i?400:700,c:i?PAL['cv-soft']:PAL['cv-ink'],a:'center',b:'middle'}));
     if(gShow&&v.flashP&&v.flashP.t>0){v.flashP.t-=vdt;ctx.strokeStyle=PAL['s4'];ctx.lineWidth=2;ctx.globalAlpha=clamp(v.flashP.t*2,0,1);ctx.beginPath();ctx.arc(ZX+v.flashP.x,ZY+v.flashP.y,10+(0.5-v.flashP.t)*30,0,6.29);ctx.stroke();ctx.globalAlpha=1;}
     ctx.restore();ctx.strokeStyle=PAL['cv-glass'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.stroke();
     // legend under the zoom
     const big=k>1.3,it=legendItems(p,c.acid,big).slice(0,big?4:5),rowH=Math.max(22,20*k),colW=108;
-    it.forEach((e,i)=>{const col=big?0:i%2,row=big?i:Math.floor(i/2),x=250+col*colW,y=ZY+ZR+(big?20:24)+row*(big?34:rowH);drawP(ctx,{t:e[0],a:0.6,life:1.8},x+8,y);txt(ctx,e[1],x+22,y+1,{s:12*k,c:PAL['cv-soft'],b:'middle'});});
+    it.forEach((e,i)=>{const col=big?0:i%2,row=big?i:Math.floor(i/2),x=250+col*colW,y=ZY+ZR+(big?20:24)+row*(big?34:rowH);ctx.save();ctx.translate(x+8,y);ctx.scale(0.72,0.72);drawP(ctx,{t:e[0],a:0.6,life:1.8},0,0);ctx.restore();txt(ctx,e[1],x+22,y+1,{s:12*k,c:PAL['cv-soft'],b:'middle'});});
     // live curve (in the game, only when a pH meter is in the flask)
     if(gr&&!(p.meter&&!red)){ctx.fillStyle=PAL['card'];ctx.fillRect(CV.L,CV.T,CV.W,CV.H);ctx.strokeStyle=PAL['line'];ctx.lineWidth=1;ctx.strokeRect(CV.L,CV.T,CV.W,CV.H);
       (gr.cover?(k>1.3?['Flask covered:','calculate it']:['The flask is covered:','trust your calculation']):red?(k>1.3?['No pH curve:','watch for purple']:['No pH curve here:','watch the flask','for purple that stays']):(k>1.3?['No pH meter','this round']:['No pH meter','in the flask this round'])).forEach((s,i,A)=>txt(ctx,s,CV.L+CV.W/2,CV.T+CV.H/2+(i-(A.length-1)/2)*20*k,{s:(i?13:14)*k,w:i?400:700,c:i?PAL['cv-soft']:PAL['cv-ink'],a:'center',b:'middle'}));}
@@ -784,9 +863,11 @@ const TIT={
     const L=st.pts[st.pts.length-1];if(L){ctx.fillStyle=PAL['s2'];ctx.beginPath();ctx.arc(X(L[0]),Y(L[1]),5,0,6.29);ctx.fill();}ctx.restore();}
     // equation and status
     const ex=490,ey=CV.T+CV.H+(k>1.3?92:66);
-    const eq=red?[c.t.eq,c.t.eq2]:p.type==='ws'?(k>1.3?[c.acid.f+' + OH⁻','→ '+c.acid.an+' + H₂O']:[c.acid.f+' + OH⁻ → '+c.acid.an+' + H₂O']):[c.t.eq];
+    const sec=twoJ(p,c)&&st.V>c.VeList[0]+0.03,eq=red?[c.t.eq,c.t.eq2]:p.type==='ws'?(k>1.3?[c.acid.f+' + OH⁻','→ '+c.acid.an+' + H₂O']:[c.acid.f+' + OH⁻ → '+c.acid.an+' + H₂O']):
+      p.type==='pa'&&sec?['H₂PO₄⁻ + OH⁻ → HPO₄²⁻ + H₂O']:p.type==='co3'&&sec?['HCO₃⁻ + H₃O⁺ → H₂CO₃ + H₂O']:p.type==='wb'?['NH₃ + H₃O⁺ → NH₄⁺ + H₂O']:[c.t.eq];
+    if(!gr&&k<1.3&&!red)eq.push('Mole ratio '+c.rt[0]+' : '+c.rt[1]+' ('+c.full.split(' → ')[0]+')');
     eq.forEach((e,i)=>txt(ctx,e,ex,ey+i*18*k,{s:13*k,w:700}));
-    const rg=region(p,st.V,c),line2=rg==='start'?'Nothing added yet':rg==='after'?(k>1.3?'Past equivalence':'Past equivalence: '+c.t.titN+' in excess'):rg==='eq'?'Equivalence point':rg==='near'?'Almost there: go drop by drop':(red?'H₂O₂ in excess':(p.type==='wb'?'NH₃':'Acid')+' in excess');
+    const rg=region(p,st.V,c),line2=rg==='start'?'Nothing added yet':rg==='after'?(k>1.3?'Past equivalence':'Past equivalence: '+c.t.titN+' in excess'):rg==='eq'?'Equivalence point':rg==='eq1'?'First equivalence point':rg==='near'||rg==='near1'?'Almost there: go drop by drop':(red?'H₂O₂ in excess':(p.type==='ss'?'Acid':c.anF)+' in excess');
     if(!gr)txt(ctx,line2,ex,ey+eq.length*18*k+4,{s:12.5*k,c:PAL['cv-soft']});
     if(!gr&&hon&&k<1.3)txt(ctx,(cfg(p).ct*st.V).toFixed(3)+' mmol '+c.t.titN+' added',ex,ey+eq.length*18*k+22,{s:12.5*k,c:PAL['cv-soft']});
   },
@@ -794,9 +875,13 @@ const TIT={
 };
 function species(p,V){const c=cfg(p),rg=region(p,V,c);
   if(p.type==='redox')return rg==='after'||rg==='eq'?'Mn²⁺, excess MnO₄⁻':'H₂O₂, Mn²⁺';
-  if(p.type==='ss')return rg==='after'?'Na⁺, Cl⁻, OH⁻':rg==='eq'?'Na⁺, Cl⁻ (neutral)':'H₃O⁺, Cl⁻, Na⁺';
-  if(p.type==='ws')return rg==='start'?c.acid.f+' (mostly intact)':rg==='after'?c.acid.an+', OH⁻, Na⁺':rg==='eq'?c.acid.an+', Na⁺':c.acid.f+' + '+c.acid.an+' (buffer)';
-  return rg==='start'?'NH₃ (mostly intact)':rg==='after'?'NH₄⁺, H₃O⁺, Cl⁻':rg==='eq'?'NH₄⁺, Cl⁻':'NH₃ + NH₄⁺ (buffer)';}
+  if(p.type==='ss')return rg==='after'?c.T.ionF+', Cl⁻, OH⁻':rg==='eq'?c.T.ionF+', Cl⁻ (neutral)':'H₃O⁺, Cl⁻, '+c.T.ionF;
+  if(p.type==='ws')return rg==='start'?c.acid.f+' (mostly intact)':rg==='after'?c.acid.an+', OH⁻, '+c.T.ionF:rg==='eq'?c.acid.an+', '+c.T.ionF:c.acid.f+' + '+c.acid.an+' (buffer)';
+  if(p.type==='sa')return rg==='after'?'Na⁺, SO₄²⁻, OH⁻':rg==='eq'?'Na⁺, SO₄²⁻':'H₃O⁺, HSO₄⁻, SO₄²⁻, Na⁺';
+  if(p.type==='sb')return rg==='after'?'Na⁺, '+c.T.ionF+', H₃O⁺':rg==='eq'?'Na⁺, '+c.T.ionF+' (neutral)':'OH⁻, Na⁺, '+c.T.ionF;
+  if(p.type==='pa'){const e1=c.VeList[0];return V<e1-0.03?'H₃PO₄ + H₂PO₄⁻ (buffer)':rg==='eq1'?'H₂PO₄⁻, Na⁺':rg==='eq'?'HPO₄²⁻, Na⁺':rg==='after'?'HPO₄²⁻, PO₄³⁻, OH⁻':'H₂PO₄⁻ + HPO₄²⁻ (buffer)';}
+  if(p.type==='co3'){const e1=c.VeList[0];return V<e1-0.03?'CO₃²⁻ + HCO₃⁻ (buffer)':rg==='eq1'?'HCO₃⁻, Na⁺':rg==='eq'?'H₂CO₃, Na⁺':rg==='after'?'H₂CO₃, H₃O⁺':'HCO₃⁻ + H₂CO₃ (buffer)';}
+  return rg==='start'?'NH₃ (mostly intact)':rg==='after'?'NH₄⁺, H₃O⁺, '+c.T.ionF:rg==='eq'?'NH₄⁺, '+c.T.ionF:'NH₃ + NH₄⁺ (buffer)';}
 TIT.onLevel=syncMode;
 delete TIT.game; /* the Hit the endpoint game is held back until it is approved for students */
 BioLab.register(TIT);

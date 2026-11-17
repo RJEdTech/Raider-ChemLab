@@ -1666,8 +1666,8 @@ balance: {
 },
 ionic: {
   goals: {
-    bio: ['How a metal and a nonmetal trade electrons to make ions', 'Why opposite charges hold an ionic compound together', 'How to write a formula so the charges add to zero'],
-    honors: ['Using the crisscross method and reducing subscripts', 'Naming ionic compounds, including transition metals and polyatomic ions', 'Why ionic compounds form crystals, not molecules'],
+    bio: ['How a metal and a nonmetal trade electrons to make ions', 'Why opposite charges hold an ionic compound together', 'How to calculate a formula: electrons lost = electrons gained'],
+    honors: ['Calculating subscripts from the charges, and checking the crisscross shortcut', 'Naming ionic compounds, including transition metals and polyatomic ions', 'Why ionic compounds form crystals, not molecules'],
     ap: ['Coulomb’s law and lattice energy', 'Why bigger charges and smaller ions mean higher melting points', 'Comparing NaCl, MgO and other lattices']
   },
   matters: 'Table salt, the calcium compounds in your bones, the road salt spread before snowstorms and the electrolytes in a sports drink are all ionic compounds. Their charges decide their formulas and how they behave.',
@@ -1688,12 +1688,12 @@ ionic: {
       see: 'Magnesium again. Watch chlorine get swapped for oxygen.',
       why: 'Oxygen has 6 outer electrons and needs 2 more, exactly what magnesium gives up. Mg²⁺ and O²⁻ balance one to one: MgO. The charges, not the atom counts, set the formula.',
       overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.anion==='O'?' (was MgCl₂)':''),700,13.5,KR],sim.p.anion==='O'?'+2 and −2: one of each':'+2 and −1: two Cl⁻']);} },
-    { key: 'al', lvl: 'honors', title: 'Crisscross: Al₂O₃', set: { view: 'transfer', metal: 'Al', anion: 'O' }, fresh: true, speed: 0.6,
+    { key: 'al', title: 'Electron math: Al₂O₃', set: { view: 'transfer', metal: 'Al', anion: 'O', fm: 'math' }, fresh: true, speed: 0.6,
       cause: { from: { metal: 'Mg' }, delay: 2, at: [400,330], label: 'Metal' },
       see: 'Oxygen stays. Watch magnesium get swapped for aluminum, which forms Al³⁺.',
-      why: 'Crisscross the charge numbers: Al³⁺ and O²⁻ give Al₂O₃. Check it: 2(+3) + 3(−2) = 0. The smallest whole-number ratio that cancels the charges is 2 : 3.',
+      why: 'Each Al loses 3 electrons and each O gains 2. Electrons lost must equal electrons gained, so find the smallest number both 3 and 2 go into: 6. That takes 6 ÷ 3 = 2 Al and 6 ÷ 2 = 3 O, so Al₂O₃. Check: 2(+3) + 3(−2) = 0. The crisscross shortcut gives the same 2 and 3; the math shows why.',
       so: 'Al₂O₃ is the thin, tough coating that keeps aluminum cans and foil from rusting away. As rubies and sapphires, it is also the second-hardest natural mineral.',
-      overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.metal==='Al'?' (was MgO)':''),700,13.5,KR],'Ions: '+String(chMet(sim,'ratio'))+'  (cations : anions)']);} },
+      overlay(sim,ctx,LH,k){IOC(ctx,k,[['Formula: '+ioF(sim)+(sim.p.metal==='Al'?' (was MgO)':''),700,13.5,KR],sim.p.metal==='Al'?'Al loses 3, O gains 2: 6 e⁻ move':'Ions: '+String(chMet(sim,'ratio'))+'  (cations : anions)']);} },
     { key: 'lattice', title: 'A crystal, not a molecule', set: { view: 'lattice', metal: 'Na', anion: 'Cl' }, fresh: true, speed: 0.5,
       see: 'A real grain of salt: ions packed in a repeating 3D pattern.',
       why: 'Each Na⁺ is surrounded by six Cl⁻ and each Cl⁻ by six Na⁺. There is no separate NaCl molecule; the formula only gives the 1 : 1 ratio. Because every ion is held in every direction, salt is hard, brittle and melts at 801 °C.' },

@@ -21,6 +21,20 @@ const LAT={LiF:[1036,845],LiCl:[853,605],LiBr:[807,552],LiI:[757,469],NaF:[923,9
   RbCl:[689,718],MgF2:[2957,1263],MgCl2:[2526,714],MgO:[3850,2852],MgS:[3406,2000],CaF2:[2630,1418],CaCl2:[2258,772],CaO:[3414,2613],CaS:[3119,2525],SrO:[3217,2531],BaO:[3054,1923],
   BaCl2:[2056,962],Li2O:[2799,1438],Na2O:[2481,1132],K2O:[2238,740],Na2S:[2203,1176],Al2O3:[15916,2072],AgCl:[916,455],ZnO:[4142,1975]};
 const gcd=(a,b)=>b?gcd(b,a%b):a;
+const lcm=(a,b)=>a*b/gcd(a,b);
+/* how each ion got its charge, in words a student can check */
+function chargeWhy(c,side){const m=c.m,a=c.a;
+  if(side==='c'){if(m.poly)return 'Ammonium, NH₄⁺, is a polyatomic ion with a charge of +1: look it up in your ion table.';if(m.roman)return 'The Roman numeral ('+m.roman+') in the name tells you the charge: iron('+m.roman+') lost '+m.q+'.';if(m.tm)return CL.el(m.f).name+' always forms '+fmtIon(m.f,m.q)+', so it loses '+m.q+'.';
+    const g=CL.el(m.f).group;return CL.el(m.f).name+' is in group '+g+', so it has '+m.q+' valence electron'+(m.q>1?'s':'')+' to give away.';}
+  if(a.poly)return a.name[0].toUpperCase()+a.name.slice(1)+', '+fmtIon(a.f,a.q)+', is a polyatomic ion: look up its charge in your ion table.';
+  return CL.el(a.f).name+' has '+(8-Math.abs(a.q))+' valence electrons and needs '+Math.abs(a.q)+' more to make 8.';}
+function gradeWork(c,w){const q=c.m.q,qa=Math.abs(c.a.q),L=lcm(q,qa),out={},int=v=>{const n=parseInt(String(v).trim().replace(/^[+−-]/,''),10);return Number.isFinite(n)?n:null;};
+  const lo=int(w.lost),ga=int(w.gain),Lw=int(w.L),nc=int(w.nC),na=int(w.nA);
+  out.lost=lo===q?null:chargeWhy(c,'c');out.gain=ga===qa?null:chargeWhy(c,'a');
+  out.L=Lw===L?null:Lw===q*qa&&q*qa!==L?'That works, but it is not the smallest. '+(q*qa)+' gives '+(q*qa/q)+' and '+(q*qa/qa)+', which reduce. Find the smallest number that both '+q+' and '+qa+' go into evenly.':
+    'Count up by '+q+' ('+[1,2,3,4].map(i=>i*q).join(', ')+', …) and by '+qa+' ('+[1,2,3,4].map(i=>i*qa).join(', ')+', …). The first number in both lists is the one you want.';
+  out.n=nc===c.nC&&na===c.nA?null:nc===qa&&na===q&&(qa!==c.nC)?'Those are the crisscross numbers before reducing. Divide '+L+' by '+q+' and by '+qa+' instead.':'Divide the electrons that move ('+L+') by the electrons each atom loses ('+q+') and by the electrons each atom gains ('+qa+').';
+  out.ok=!out.lost&&!out.gain&&!out.L&&!out.n;return out;}
 function cmpd(p){const m=M(p.metal),a=A(p.anion);const qa=Math.abs(a.q),d=gcd(m.q,qa);const nC=qa/d,nA=m.q/d;const f=CL.ionicFormula({f:m.f,q:m.q},{f:a.f,q:a.q});
   const rc=RION[m.v],ra=RION[a.v];const catName=m.poly?m.name:CL.el(m.f).name.toLowerCase()+(m.roman?'('+m.roman+')':'');const anName=a.poly?a.name:CL.anionName[a.f];
   return {m,a,nC,nA,f,rc,ra,d:rc+ra,qq:m.q*qa,cf:m.q*qa/((rc+ra)/100),name:catName+' '+anName,lat:LAT[f]||null,crossC:qa,crossA:m.q};}
@@ -46,14 +60,14 @@ const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
 function syncView(sim){if(!sim.ui||!sim.ui.sec)return;const d=sim.def,v=sim.p.view;
   d.controls.forEach(c=>{if(!c.views)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');if(!e)return;const w=e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.views.includes(v);});
   const btns=[...sim.ui.sec.querySelectorAll('.actions button')];d.actions.forEach((a,i)=>{if(btns[i])btns[i].hidden=!atLeast(a.lvl)||!a.views.includes(v);});}
-const replay=sim=>{if(sim.p.metal==='NH4'&&['O','N','P'].includes(sim.p.anion)){sim.p.anion='Cl';if(sim.ui&&sim.ui.ctl&&sim.ui.ctl.anion)sim.ui.ctl.anion.set('Cl');}if(sim.st)sim.st.at=0;};
+const replay=sim=>{if(sim.p.metal==='NH4'&&['O','N','P'].includes(sim.p.anion)){sim.p.anion='Cl';if(sim.ui&&sim.ui.ctl&&sim.ui.ctl.anion)sim.ui.ctl.anion.set('Cl');}if(sim.st){sim.st.at=0;sim.st.wk={};}sim.infoDirty=true;};
 
 const SIM={
   id:'ionic',hash:'ionic',apUnit:5,order:1,tab:'Ionic bonding',kind:'Simulation',
   card:'Watch a metal hand its electrons to a nonmetal, balance the charges into a formula, and build the crystal lattice.',
   title:'Ionic bonding: electron transfer to formula',
   lede:{bio:'Metals give away their valence electrons and nonmetals take them. The ions that form have opposite charges, so they stick together in a ratio that makes the total charge zero.',
-        honors:'Add transition metals and polyatomic ions. Use the crisscross method, reduce the subscripts, and see how the ions pack into a crystal.',
+        honors:'Add transition metals and polyatomic ions. Work out each formula from the charges (total + equals total −), check the crisscross shortcut against it, and see how the ions pack into a crystal.',
         ap:'Compare lattice energies with Coulomb’s law: bigger charges and smaller ions hold the crystal together more strongly, which raises the melting point.'},
   scale:{bio:'Particle level: single atoms and ions, drawn to scale. A sodium atom is 0.33 nm across.',ap:'Particle level, to scale: radii are covalent radii for atoms and Shannon ionic radii for ions.'},
   timeless:true,animated:true,chChange:1,chReveal:8.2,
@@ -62,10 +76,30 @@ const SIM={
     {id:'view',label:'View',type:'seg',def:'transfer',lvl:'bio',noTrial:true,options:[{v:'transfer',l:'Electron transfer'},{v:'lattice',l:'Crystal lattice'},{v:'energy',l:'Lattice energy',lvl:'ap'}],onChange:sim=>{syncView(sim);replay(sim);}},
     {id:'metal',label:'Metal (positive ion)',type:'select',def:'Na',lvl:'bio',options:METALS.map(m=>({v:m.v,l:(m.poly?'NH₄⁺ ammonium':m.f+' · '+CL.el(m.f).name+(m.roman?' ('+m.roman+')':''))+' → '+fmtIon(m.f,m.q),lvl:m.lvl})),onChange:replay},
     {id:'anion',label:'Nonmetal (negative ion)',type:'select',def:'Cl',lvl:'bio',options:ANIONS.map(a=>({v:a.v,l:(a.poly?a.name:a.f+' · '+CL.el(a.f).name)+' → '+fmtIon(a.f,a.q),lvl:a.lvl})),onChange:replay},
-    {id:'d3',label:'3D view',type:'toggle',def:false,lvl:'honors',noTrial:true,views:['lattice'],help:'Rock-salt crystals (1 : 1 compounds) only'}
+    {id:'d3',label:'3D view',type:'toggle',def:false,lvl:'honors',noTrial:true,views:['lattice'],help:'Rock-salt crystals (1 : 1 compounds) only'},
+    {id:'fm',label:'Formula method',type:'seg',def:'math',lvl:'bio',noTrial:true,views:['transfer'],options:[{v:'math',l:'Electrons lost = gained'},{v:'cross',l:'Crisscross shortcut'}],help:'Both give the same formula. The electron math shows why.'}
   ],
-  actions:[{id:'replay',label:'Replay the transfer',primary:true,views:['transfer'],run:replay}],
-  init(){return {at:0,rot:0};},
+  actions:[{id:'replay',label:'Replay the transfer',primary:true,views:['transfer'],run:replay},
+    {id:'pair',label:'Try another pair',views:['transfer'],run(sim){const ms=METALS.filter(m=>atLeast(m.lvl)),as=ANIONS.filter(a=>atLeast(a.lvl));let m,a,g=0;
+      do{m=ms[Math.floor(Math.random()*ms.length)];a=as[Math.floor(Math.random()*as.length)];g++;}while(g<50&&(m.v===sim.p.metal&&a.v===sim.p.anion||m.v==='NH4'&&['O','N','P'].includes(a.v)||m.q===Math.abs(a.q)&&Math.random()<0.6));
+      BioLab.setValues(sim,{metal:m.v,anion:a.v});replay(sim);}}],
+  init(){return {at:0,rot:0,wk:{}};},
+  infoPanel(sim){if(sim.p.view!=='transfer')return '';const c=cmpd(sim.p),w=sim.st.wk||{},m=c.m,a=c.a,mt=m.poly?CL.html(m.f,m.q):m.f,at=a.poly?CL.html(a.f,a.q):a.f,poly=m.poly||a.poly;
+    const r=w.res,mark=k=>r?(r[k]?`<span style="color:var(--bad)">${r[k]}</span>`:'<span class="verdict ok" style="margin:0">✓</span>'):'';
+    const inp=(id,v,wd)=>`<input id="io-${id}" data-k="${id}" class="sel" inputmode="numeric" autocomplete="off" style="width:${wd||64}px;font-size:17px;padding:4px 8px" value="${String(v||'').replace(/"/g,'')}">`;
+    let h=`<h3>Work it out: ${m.poly?'ammonium':CL.el(m.f).name.toLowerCase()+(m.roman?'('+m.roman+')':'')} + ${a.poly?a.name:CL.el(a.f).name.toLowerCase()}</h3><p class="help">Find the formula with math, then check it against the stage.</p>`;
+    h+=`<div style="display:grid;grid-template-columns:auto auto;gap:8px 10px;align-items:center">`;
+    h+=`<label for="io-lost">1. ${poly&&m.poly?'Charge on each '+mt+' (+)':'Electrons each '+mt+' loses'}</label>${inp('lost',w.lost)}<div style="grid-column:1/3">${mark('lost')}</div>`;
+    h+=`<label for="io-gain">2. ${a.poly?'Charge on each '+at+' (−)':'Electrons each '+at+' gains'}</label>${inp('gain',w.gain)}<div style="grid-column:1/3">${mark('gain')}</div>`;
+    h+=`<label for="io-L">3. ${poly?'Total charge that must cancel (smallest number both go into)':'Electrons that move in all (smallest number both go into)'}</label>${inp('L',w.L)}<div style="grid-column:1/3">${mark('L')}</div>`;
+    h+=`<span>4. Ions in the formula: number of ${mt}, number of ${at}</span><span style="white-space:nowrap">${inp('nC',w.nC,52)} ${inp('nA',w.nA,52)}</span><div style="grid-column:1/3">${mark('n')}</div></div>`;
+    h+=`<p style="margin-top:10px"><button type="button" class="btn primary" id="io-check">Check my math</button> <button type="button" class="btn" id="io-show">Show the math</button></p>`;
+    if(r&&r.ok)h+=`<p class="verdict ok">Correct: ${CL.html(c.f)}.</p><p>Check: ${c.nC} × (+${m.q}) + ${c.nA} × (−${Math.abs(a.q)}) = 0.${poly?'':' '+lcm(m.q,Math.abs(a.q))+' electrons lost, '+lcm(m.q,Math.abs(a.q))+' electrons gained.'} Press <b>Try another pair</b> for a new one.</p>`;
+    return h;},
+  bindInfo(sim,el){const w=sim.st.wk=sim.st.wk||{};el.querySelectorAll('input[data-k]').forEach(i=>{i.addEventListener('input',()=>{w[i.dataset.k]=i.value;});i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});});
+    const go=()=>{el.querySelectorAll('input[data-k]').forEach(i=>w[i.dataset.k]=i.value);w.res=gradeWork(cmpd(sim.p),w);sim.infoDirty=true;BioLab.refresh(sim);};
+    const b=el.querySelector('#io-check');if(b)b.addEventListener('click',go);
+    const sh=el.querySelector('#io-show');if(sh)sh.addEventListener('click',()=>{const c=cmpd(sim.p);Object.assign(w,{lost:c.m.q,gain:Math.abs(c.a.q),L:lcm(c.m.q,Math.abs(c.a.q)),nC:c.nC,nA:c.nA});w.res=gradeWork(c,w);BioLab.setValues(sim,{fm:'math'});sim.infoDirty=true;BioLab.refresh(sim);});},
   step(sim,dt){sim.st.at=Math.min(T_END+0.5,sim.st.at+dt);sim.st.rot+=dt*(RM?0:0.35);},
   initVis(sim){syncView(sim);},onLevel(sim){syncView(sim);},
   metrics:[
@@ -100,6 +134,8 @@ const SIM={
        explain:'Sodium keeps its 11 protons but now has only 10 electrons, so it has one more + than −: <b>Na⁺</b>. Losing a negative electron leaves a positive ion. Chlorine gains it and becomes Cl⁻.'},
       {lvl:'bio',instant:true,q:'What is the formula of the compound aluminum and oxygen form?',choices:alC.map(x=>CL.fmt(x)),correct:alC.indexOf(alo.f),set:{view:'transfer',metal:'Al',anion:'O'},
        explain:'Al³⁺ and O²⁻: the smallest number of each that cancels is 2 Al³⁺ (+6) and 3 O²⁻ (−6), so <b>Al₂O₃</b>. Six electrons move from two aluminum atoms to three oxygen atoms.'},
+      {lvl:'bio',instant:true,q:'Each aluminum atom loses 3 electrons and each oxygen atom gains 2. How many electrons move in one formula unit of aluminum oxide?',choices:['6: lost must equal gained at 6','5: add the 3 and the 2 together','3: what one aluminum atom loses'],correct:0,set:{view:'transfer',metal:'Al',anion:'O',fm:'math'},
+       explain:'Electrons lost must equal electrons gained. 6 is the smallest number that both 3 and 2 go into, so 6 ÷ 3 = 2 Al atoms lose them and 6 ÷ 2 = 3 O atoms take them: <b>Al₂O₃</b>.'},
       {lvl:'honors',instant:true,q:'Crisscrossing Ca²⁺ and O²⁻ gives Ca₂O₂. What is the correct formula?',choices:caC.map(x=>CL.fmt(x)),correct:caC.indexOf(cao.f),set:{view:'transfer',metal:'Ca',anion:'O'},
        explain:'Ionic formulas show the <b>smallest whole-number ratio</b>, so Ca₂O₂ reduces to <b>CaO</b>. One Ca²⁺ already cancels one O²⁻.'},
       {lvl:'honors',instant:true,q:'Calcium ions combine with hydroxide ions (OH⁻). What is the formula?',choices:ohC.map(x=>CL.fmt(x)),correct:ohC.indexOf(caoh.f),set:{view:'transfer',metal:'Ca',anion:'OH'},
@@ -129,7 +165,9 @@ const SIM={
     {title:'Ions form',text:'Sodium now has 11 protons and 10 electrons: Na⁺. Chlorine has 17 protons and 18 electrons: Cl⁻ with a full octet. Notice the sizes: the cation shrinks and the anion grows.',focus:[100,60,600,280],pause:true,setup(sim){sim.st.at=T_JOIN-0.05;}},
     {title:'Opposite charges attract',text:'The + and − ions pull together. That electrostatic attraction is the ionic bond.',focus:[100,60,600,280],speed:0.5,setup(sim){sim.st.at=T_JOIN;}},
     {title:'Balancing the charges',text:'Magnesium gives away 2 electrons but each chlorine takes only 1, so one Mg needs two Cl: MgCl₂.',focus:[60,30,680,330],speed:0.6,setup(sim){BioLab.setValues(sim,{metal:'Mg',anion:'Cl'});sim.st.at=0.5;}},
-    {title:'The crisscross shortcut',text:'Write each ion’s charge number as the other ion’s subscript, then reduce. Mg²⁺ and Cl⁻ give Mg₁Cl₂ → MgCl₂. Ca²⁺ and O²⁻ give Ca₂O₂, which reduces to CaO.',focus:[8,366,784,80],pause:true,setup(sim){sim.st.at=T_END;}},
+    {title:'Do the electron math',text:'Each Mg loses 2 electrons and each Cl gains 1. Electrons lost must equal electrons gained, so 2 electrons move: 2 ÷ 2 = 1 Mg and 2 ÷ 1 = 2 Cl. MgCl₂. The box at the bottom does this math for every pair.',focus:[8,366,784,80],pause:true,setup(sim){BioLab.setValues(sim,{fm:'math'});sim.st.at=T_END;}},
+    {title:'Al₂O₃ with electron math',text:'Each Al loses 3 and each O gains 2. The smallest number both 3 and 2 go into is 6, so 6 electrons move: 6 ÷ 3 = 2 Al and 6 ÷ 2 = 3 O. Al₂O₃.',focus:[[60,30,680,330],[8,366,784,80]],speed:0.6,setup(sim){BioLab.setValues(sim,{metal:'Al',anion:'O',fm:'math'});sim.st.at=0.5;}},
+    {title:'The crisscross shortcut',text:'Crisscross puts each charge number on the other ion: Ca²⁺ and O²⁻ give Ca₂O₂. That must be reduced to CaO. The electron math gets CaO directly: each Ca loses 2, each O gains 2, so one of each.',focus:[8,366,784,80],pause:true,setup(sim){BioLab.setValues(sim,{metal:'Ca',anion:'O',fm:'cross'});sim.st.at=T_END;}},
     {title:'A crystal, not a molecule',text:'In a real sample, the ions pack into a lattice. Each Na⁺ is surrounded by Cl⁻ and each Cl⁻ by Na⁺. The formula is just the ratio.',focus:[0,0,800,450],pause:true,setup(sim){BioLab.setValues(sim,{view:'lattice',metal:'Na',anion:'Cl'});syncView(sim);}},
     {lvl:'ap',title:'Lattice energy',text:'Coulomb’s law sets how strongly the lattice holds together: larger charges and smaller ions mean a larger lattice energy and a higher melting point. MgO melts at 2852 °C; NaCl at 801 °C.',focus:[0,0,800,450],pause:true,setup(sim){BioLab.setValues(sim,{view:'energy',metal:'Mg',anion:'O'});syncView(sim);}}
   ],
@@ -139,7 +177,7 @@ const SIM={
        ap:'<p><b>Question:</b> How well does Coulomb’s law predict lattice energy?</p><ol><li>Switch to Lattice energy. Record trials for every 1 : 1 alkali halide (Li, Na, K with F, Cl, Br, I).</li><li>Record MgO, CaO, BaO, MgCl₂, CaCl₂ and Na₂O.</li><li>Plot the Coulomb factor (x) against lattice energy (y), then lattice energy (x) against melting point (y).</li></ol><p><b>Claim–evidence–reasoning:</b> Is lattice energy proportional to |q₊q₋|/d? Explain why the 1 : 1 salts fall on one line while compounds with other ratios do not (hint: the Madelung constant and ions per formula unit).</p>'},
   terms:[{t:'Ion',d:'An atom or group of atoms with a charge because it has lost or gained electrons.'},{t:'Cation',d:'A positive ion. Metals form cations by losing electrons.'},{t:'Anion',d:'A negative ion. Nonmetals form anions by gaining electrons.'},
     {t:'Ionic bond',d:'The electrostatic attraction between oppositely charged ions.'},{t:'Octet rule',d:'Atoms tend to gain, lose or share electrons until they have 8 valence electrons.'},{t:'Formula unit',d:'The smallest whole-number ratio of ions in an ionic compound, like NaCl or MgCl₂.'},
-    {lvl:'honors',t:'Crisscross method',d:'Use each ion’s charge number as the other ion’s subscript, then reduce to the smallest ratio.'},{lvl:'honors',t:'Polyatomic ion',d:'A group of covalently bonded atoms with an overall charge, like NO₃⁻ or SO₄²⁻.'},{lvl:'honors',t:'Crystal lattice',d:'The repeating 3D arrangement of ions in an ionic solid.'},
+    {t:'Electrons lost = electrons gained',d:'In an ionic compound, every electron the metal atoms give up is taken by the nonmetal atoms, so the total positive charge equals the total negative charge.'},{lvl:'honors',t:'Crisscross method',d:'A shortcut: use each ion’s charge number as the other ion’s subscript, then reduce. It gives the same answer as the electron math.'},{lvl:'honors',t:'Polyatomic ion',d:'A group of covalently bonded atoms with an overall charge, like NO₃⁻ or SO₄²⁻.'},{lvl:'honors',t:'Crystal lattice',d:'The repeating 3D arrangement of ions in an ionic solid.'},
     {lvl:'ap',t:'Lattice energy',d:'The energy released when gaseous ions form one mole of the solid (or needed to separate it). It grows with ion charge and shrinks with ion size.'},{lvl:'ap',t:'Coulomb’s law',d:'F ∝ q₁q₂/r². For ions in contact, the potential energy ∝ q₊q₋/(r₊ + r₋).'}],
   about:'<p>Atoms are drawn with ChemLab covalent radii and ions with Shannon six-coordinate ionic radii, on the same scale, so the size changes are real. Polyatomic ions use approximate thermochemical radii (Jenkins and Thakur). Formulas come from ChemLab’s charge-balancing function. Lattice energies are Born–Haber values and melting points come from the CRC Handbook.</p><p>Simplifications: the animation shows electrons moving straight from metal atoms to nonmetal atoms. In a real reaction the elements start as a metal solid and diatomic gases (Cl₂, O₂), and forming the ions from the elements takes several energy steps (the Born–Haber cycle). Transition metals are shown without Lewis dots because their valence electrons include d electrons. Polyatomic ions are shown already formed. The 2D lattice is a flat sketch that keeps the right ratio and the right ion sizes; the 3D view shows the real rock-salt structure for 1 : 1 compounds. The Coulomb factor ignores the Madelung constant, so compounds with different structures do not fall on one line.</p>',
   draw(sim,ctx,vdt,k,t){ctx.fillStyle=PAL['cv-bg'];ctx.fillRect(0,0,800,450);const v=sim.p.view;
@@ -174,8 +212,18 @@ function drawTransfer(sim,ctx,k,t){const P=PAL,c=cmpd(sim.p),at=sim.st.at,pos=la
       dot(ctx,x,y,P['s1'],true,6);if(k<1.4)txt(ctx,'e⁻',x+9,y-8,{s:12*k,w:700,c:P['s1']});});
     ctx.restore();}
   if(phase===3){const s=c.nC+' × (+'+c.m.q+') + '+c.nA+' × (−'+Math.abs(c.a.q)+') = 0';txt(ctx,s,400,300,{s:fitT(ctx,s,760,14*k,12*k,700),w:700,a:'center',c:P['s3']});}
-  drawCross(ctx,c,k);}
+  if(sim.p.fm==='cross')drawCross(ctx,c,k);else drawMath(ctx,c,k);}
 function dot(ctx,x,y,col,ring,r){ctx.beginPath();ctx.arc(x,y,r||4.2,0,6.29);ctx.fillStyle=col;ctx.fill();if(ring){ctx.strokeStyle=PAL['cv-bg'];ctx.lineWidth=1.2;ctx.stroke();}}
+/* the electron math: each metal atom loses q, each nonmetal atom gains |q|; lost = gained at their least common multiple */
+function drawMath(ctx,c,k){const P=PAL,y0=372,m=c.m,a=c.a,q=m.q,qa=Math.abs(a.q),L=lcm(q,qa),poly=m.poly||a.poly;rr(ctx,8,y0-6,784,82,10);ctx.fillStyle=P['card'];ctx.fill();ctx.strokeStyle=P['line'];ctx.lineWidth=1;ctx.stroke();
+  const mt=m.poly?CL.fmt(m.f,m.q):m.f,at=a.poly?CL.fmt(a.f,a.q):a.f;
+  const l1=poly?'Each '+mt+' is +'+q+'        Each '+at+' is −'+qa:'Each '+m.f+' loses '+q+' e⁻        Each '+a.f+' gains '+qa+' e⁻';
+  const l2=q===qa?(poly?'+'+q+' and −'+qa+' already cancel, so one of each':'Lost = gained already ('+q+' = '+qa+'), so one of each'):(poly?'Total + = total −. Smallest number both '+q+' and '+qa+' go into: '+L:'Lost must equal gained. Smallest number both '+q+' and '+qa+' go into: '+L+' e⁻');
+  const l3=L+' ÷ '+q+' = '+c.nC+' '+(m.poly?'NH₄⁺':m.f)+'     '+L+' ÷ '+qa+' = '+c.nA+' '+(a.poly?CL.fmt(a.f):a.f)+'     →  ';
+  const two=k>1.4,ys=two?[y0+16,null,y0+50]:[y0+12,y0+35,y0+59],cap=two?24:99;
+  txt(ctx,l1,24,ys[0],{s:fitT(ctx,l1,750,Math.min(cap,14*k),11,700),w:700,b:'middle',c:P['cv-ink']});
+  if(!two)txt(ctx,l2,24,ys[1],{s:fitT(ctx,l2,750,13.5*k,11,600),w:600,b:'middle',c:P['cv-soft']});
+  const z=fitT(ctx,l3+CL.fmt(c.f),720,Math.min(cap,15*k),11,700);txt(ctx,l3,24,ys[2],{s:z,w:700,b:'middle'});ctx.font='700 '+z+'px '+FONT;txt(ctx,CL.fmt(c.f),24+ctx.measureText(l3).width,ys[2],{s:z*1.15,w:800,b:'middle',c:P['s3']});}
 function drawCross(ctx,c,k){const P=PAL,y0=372;rr(ctx,8,y0-6,784,82,10);ctx.fillStyle=P['card'];ctx.fill();ctx.strokeStyle=P['line'];ctx.lineWidth=1;ctx.stroke();
   const big=18*Math.min(k,1.5),cy=y0+34;const m=c.m,a=c.a;
   // ions with their charge numbers
@@ -189,7 +237,7 @@ function drawCross(ctx,c,k){const P=PAL,y0=372;rr(ctx,8,y0-6,784,82,10);ctx.fill
   const z=Math.min(big,fitT(ctx,'→ '+rawT+' → '+CL.fmt(c.f),790-x,big,12*k,800));const red=c.crossC!==c.nC;
   txt(ctx,'→ '+rawT,x,cy,{s:z,w:700,c:P['cv-soft'],b:'middle'});ctx.font='700 '+z+'px '+FONT;x+=ctx.measureText('→ '+rawT).width+14;
   txt(ctx,'→ '+CL.fmt(c.f),x,cy,{s:z,w:800,c:P['s3'],b:'middle'});
-  const note=red?'Crisscross, then reduce '+c.crossC+':'+c.crossA+' to '+c.nC+':'+c.nA:'Crisscross the charge numbers; a subscript of 1 is not written';if(k<1.5)txt(ctx,note,400,y0+66,{s:12*k,c:P['cv-soft'],a:'center'});}
+  const note=red?'Crisscross, then reduce '+c.crossC+':'+c.crossA+' to '+c.nC+':'+c.nA+'. Check: total + = total −.':'Shortcut: crisscross the charge numbers. Check: total + = total −.';if(k<1.5)txt(ctx,note,400,y0+66,{s:12*k,c:P['cv-soft'],a:'center'});}
 function drawLattice(sim,ctx,k){const P=PAL,c=cmpd(sim.p);const s=0.2;const rc=c.rc*s,ra=c.ra*s;const one=c.nC===c.nA;
   if(sim.p.d3&&atLeast('honors')){if(one){draw3D(sim,ctx,k,c);return;}txt(ctx,'The 3D view shows rock-salt (1 : 1) crystals. Showing the 2D sketch.',400,438,{s:12*k,c:P['s4'],a:'center'});}
   const T=50,B=360,L=20,R=780;const ions=[];
