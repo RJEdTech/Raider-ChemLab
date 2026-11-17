@@ -2109,4 +2109,95 @@ measure: {
 };
 })());
 
+/* ---------- buildmol (replaces PhET Build a Molecule for Mr. Jackson's Honors and AP Chemistry; Chemistry Unit 3) ---------- */
+BioLab.addLearn((function(){
+let bAt={};const bR=sim=>{bAt={};const a=sim.def.actions.find(x=>x.id==='clear');if(a)a.run(sim);sim.st.coll=[];};
+function at(sim,tau,t,key,fn){if(tau>=t&&!bAt[key]){bAt[key]=1;fn();sim.infoDirty=true;}}
+const act=(sim,id)=>{const a=sim.def.actions.find(x=>x.id===id);if(a)a.run(sim);};
+const M=(sim,id)=>{const m=sim.def.metrics.find(x=>x.id===id);return m?m.get(sim):null;};
+/* play a build: items are element symbols, 'dbl', 'collect', or a number (select that atom) */
+function play(sim,tau,t0,dt,seq,key){let t=t0;seq.forEach((it,i)=>{const go=typeof it==='number'?()=>{sim.st.act=it;}:it==='dbl'?()=>act(sim,'dbl'):it==='collect'?()=>act(sim,'collect'):it==='clear'?()=>act(sim,'clear'):()=>act(sim,'add'+it);
+  at(sim,tau,t,key+i,go);if(typeof it!=='number')t+=dt;});return t;}
+const card=(ctx,k,L)=>ckCard(ctx,k,L,552,50,242,1.45);
+return {
+buildmol: {
+  goals: {
+    bio: ['How many bonds hydrogen, oxygen, nitrogen and carbon each make', 'Why a molecule’s formula comes out the way it does', 'The difference between a coefficient and a subscript'],
+    honors: ['When atoms share two or three pairs: double and triple bonds', 'Why the same atoms can make two different molecules (isomers)'],
+    ap: ['Counting shared and lone pairs to check a structure against its valence electrons']
+  },
+  matters: 'Every formula on a cleaning label, a medicine bottle or a gas pump comes from one rule: each kind of atom makes a set number of bonds.',
+  question: 'Water is H₂O and methane, the gas in a stove, is CH₄. Why does oxygen hold 2 hydrogens but carbon holds 4?',
+  startKey: 'water', startRun: true,
+  steps: [
+    { key: 'water', title: 'Oxygen makes 2 bonds', set: { mode: 'build', tgt: 'h2o' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'An oxygen atom with two gray stubs: the two bonds it needs. Watch two hydrogens snap on.',
+      why: 'Oxygen has 6 outer electrons and needs 2 more, so it shares 2 bonds. Hydrogen needs 1. Two hydrogens fill both of oxygen’s stubs, and every atom is satisfied: H₂O.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.6,1.4,['O','H','H'],'w');card(ctx,k,[['Bonds needed',700,13.5],'Oxygen: 2   Hydrogen: 1',['Open bonds left: '+M(sim,'open'),700,13,KR],M(sim,'open')===0&&sim.st.atoms.length?['Finished: H₂O',700,13.5,KG]:'Watch the stubs fill…']);} },
+    { key: 'pattern', title: 'More bonds, more hydrogens', set: { mode: 'build', tgt: 'free' }, fresh: true, speed: 1,
+      run(sim){bR(sim);sim._bmL=[];},
+      see: 'Watch nitrogen fill up with hydrogens, then carbon.',
+      why: 'Nitrogen needs 3 bonds, so it holds 3 hydrogens: NH₃, ammonia. Carbon needs 4, so it holds 4: CH₄, methane. The formula is set by how many bonds the center atom makes.',
+      overlay(sim,ctx,LH,k,tau){const e=play(sim,tau,0.6,0.9,['N','H','H','H'],'n');at(sim,tau,e+1.2,'cl',()=>{sim._bmL.push('N makes 3 → NH₃');act(sim,'clear');});play(sim,tau,e+1.8,0.9,['C','H','H','H','H'],'c');at(sim,tau,e+6.3,'cd',()=>sim._bmL.push('C makes 4 → CH₄'));
+        card(ctx,k,[['One rule, many formulas',700,13.5],'O makes 2 → H₂O'].concat(sim._bmL.map(l=>[l,700,13,KR])));} },
+    { key: 'double', title: 'Not enough? Share another pair', set: { mode: 'build', tgt: 'co2' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'Carbon with two oxygens on single bonds. Count the gray stubs left over, then watch them turn into extra bonds.',
+      why: 'With single bonds, carbon has used only 2 of its 4 bonds and each oxygen 1 of its 2. There are no more atoms to add, so each oxygen shares a second bond with carbon. Two double bonds fill everyone: O=C=O.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.5,0.9,['C','O','O'],'s');at(sim,tau,4,'d1',()=>{sim.st.act=0;act(sim,'dbl');});at(sim,tau,5.6,'d2',()=>{sim.st.act=0;act(sim,'dbl');});
+        const n=M(sim,'open');card(ctx,k,[['Carbon dioxide',700,13.5],['Open bonds left: '+n,700,13,KR],n===0&&sim.st.atoms.length===3?['O=C=O: every atom full',700,13,KG]:tau>3?'Leftover stubs → double bonds':'Single bonds first…']);} },
+    { key: 'shape', title: 'Real molecules are 3D', set: { mode: 'build', tgt: 'h2o' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'Water, built flat so its bonds are easy to count. Watch it turn into its real 3D shape.',
+      why: 'Oxygen also has two lone pairs: electron pairs it keeps to itself (the purple clouds). They push the two bonds down and together, so water is bent at about 104.5°, not straight. Methane’s four bonds point to the corners of a pyramid, 109.5° apart.',
+      so: 'That bend is why water is polar, why it sticks to itself, and why ice floats.',
+      overlay(sim,ctx,LH,k,tau){const e=play(sim,tau,0.4,0.6,['O','H','H'],'h');at(sim,tau,e+1.2,'3',()=>act(sim,'v3d'));
+        card(ctx,k,sim.st.v3d?[['Real water: bent',700,13.5,KR],'H–O–H about 104.5°','2 lone pairs push the bonds together']:[['Flat drawing',700,13.5],'Looks straight…']);} },
+    { key: 'coef', title: 'Big numbers count molecules', set: { mode: 'kit', kit: 'water' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'A kit with 4 H and 2 O. Watch one water get built and collected, then a second.',
+      why: 'Each water molecule is H₂O, so the kit makes exactly two of them. Chemists write that as 2H₂O. The big 2 in front (the coefficient) counts molecules; the small 2 (the subscript) counts hydrogens inside each one.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.5,0.8,['O','H','H','collect','O','H','H','collect'],'k');} },
+    { key: 'subscript', title: 'Change a subscript, change the substance', set: { mode: 'build', tgt: 'h2o2' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'Two oxygens and two hydrogens. Watch what they build.',
+      why: 'H₂O₂ is hydrogen peroxide, the bottle in a first-aid kit, not water. It looks like “water with an extra O,” but it is a different substance with different properties. That is why you balance equations with coefficients and never touch subscripts.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.6,1.1,['O','O','H','H'],'p');card(ctx,k,[['H₂O: water',700,13.5],'you drink it',['H₂O₂: hydrogen peroxide',700,13.5,KR],'it bleaches hair and kills germs','One extra O = new substance']);} },
+    { key: 'triple', lvl: 'honors', title: 'Nitrogen gas: a triple bond', set: { mode: 'build', tgt: 'n2' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'Two nitrogen atoms with one bond between them. Each still has 2 stubs. Watch them share more.',
+      why: 'Each nitrogen needs 3 bonds and its only partner is the other nitrogen, so they share three pairs: N≡N. The triple bond is so strong that the nitrogen in the air you breathe passes through your body unchanged.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.5,0.9,['N','N'],'t');at(sim,tau,2.8,'u1',()=>act(sim,'dbl'));at(sim,tau,4.2,'u2',()=>act(sim,'dbl'));
+        card(ctx,k,[['Bonds between the N atoms: '+(M(sim,'pairs')||0),700,13.5,KR],'1 single · 2 double · 3 triple','More pairs: shorter, stronger']);} },
+    { key: 'isomers', lvl: 'honors', title: 'Same atoms, different molecule', set: { mode: 'build', tgt: 'etoh' }, fresh: true, speed: 1,
+      run(sim){bR(sim);sim._bmI='';},
+      see: 'Two carbons, six hydrogens and one oxygen get built twice. Watch where the oxygen ends up each time.',
+      why: 'Both are C₂H₆O. In ethanol the oxygen is on the end with an H on it (C–C–O–H), so it mixes with water and boils at 78 °C. In dimethyl ether the oxygen sits between the carbons (C–O–C), and it boils at −24 °C, so it is a gas. Molecules with the same formula but different connections are isomers.',
+      overlay(sim,ctx,LH,k,tau){const e=play(sim,tau,0.4,0.45,['C','H','H','H','C','H','H','O','H'],'e');at(sim,tau,e+1.6,'sw',()=>{sim._bmI='Ethanol: liquid, boils at 78 °C';act(sim,'clear');BioLab.setValues(sim,{tgt:'dme'});});
+        play(sim,tau,e+2.2,0.45,['C','H','H','H','O','C','H','H','H'],'m');
+        card(ctx,k,[['Both are C₂H₆O',700,13.5]].concat(sim._bmI?[[sim._bmI,600,12.5],['Dimethyl ether: gas, boils at −24 °C',700,12.5,KR]]:[['Ethanol: C–C–O–H',700,12.5,KR]]));} },
+    { key: 'pairs', lvl: 'ap', title: 'Check it with electron pairs', set: { mode: 'build', tgt: 'co2' }, fresh: true, speed: 1,
+      run(sim){bR(sim);},
+      see: 'Carbon dioxide again. Compare the electron count with the bonds.',
+      why: 'C brings 4 valence electrons and each O brings 6: 16 in all. Two double bonds share 4 pairs (8 electrons), which leaves 8 electrons as 4 lone pairs, two on each oxygen. Every bond in a model you build is one shared pair in the Lewis structure.',
+      overlay(sim,ctx,LH,k,tau){play(sim,tau,0.3,0.4,['C','O','O',0,'dbl',0,'dbl'],'a');card(ctx,k,[['Valence electrons: '+M(sim,'velec'),700,13.5],'Shared pairs: '+M(sim,'pairs')+' ('+2*M(sim,'pairs')+' e⁻)',['Lone pairs: '+M(sim,'lone')+' ('+2*M(sim,'lone')+' e⁻)',700,13,KR],'Shared + lone = all the electrons']);} }
+  ],
+  useIt: [
+    { do: 'Never mix bleach with ammonia cleaners.',
+      why: 'Bleach and ammonia (NH₃) react to make chloramine gases that burn your lungs. Knowing a cleaner contains NH₃ from its label tells you it must not meet bleach.' },
+    { do: 'Read “CO” and “CO₂” as two different gases.',
+      why: 'CO₂ is what you breathe out. CO, carbon monoxide, has one fewer oxygen and is poisonous because it grips your blood’s hemoglobin. That is why homes need a CO detector, especially with a gas furnace or attached garage.' },
+    { do: 'Balance equations by changing only the big numbers in front.', lvl: 'honors',
+      why: 'Changing a subscript turns one substance into another, like H₂O into H₂O₂. Coefficients just change how many molecules, which is what balancing needs.' }
+  ],
+  tryIt: [
+    { title: 'the gumdrop molecule (5 minutes)',
+      steps: ['Get toothpicks and two colors of small candy or balls of clay: one color for carbon, one for hydrogen.', 'Give each “carbon” 4 toothpicks and each “hydrogen” 1.', 'Build CH₄, then try to build a molecule with 2 carbons using every toothpick.'],
+      look: 'With 2 carbons, filling every toothpick takes exactly 6 hydrogens: C₂H₆, ethane. The bond counts decide the formula for you.' }
+  ]
+}
+};
+})());
+
 })();

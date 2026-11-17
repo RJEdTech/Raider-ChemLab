@@ -1073,3 +1073,23 @@ orbitals: {
   ]
 }
 });
+
+BioLab.addPractical({
+buildmol: {
+  hookSet: { mode: 'build', tgt: 'h2o2' },
+  hook: 'The water in your glass is H₂O. The hydrogen peroxide in a first-aid kit is H₂O₂: the same two elements, one more oxygen. Why can you drink one and not the other?',
+  answer: 'One extra oxygen changes how the atoms connect. In water, one oxygen holds both hydrogens. In hydrogen peroxide the two oxygens bond to each other, H–O–O–H, and that weak O–O bond breaks easily, releasing reactive oxygen that kills germs and bleaches hair. A different structure is a different substance.',
+  uses: [
+    'Product labels: “sodium hypochlorite” (bleach) and “ammonia” must never be mixed, because together they make toxic chloramine gases. The formula tells you what you are holding.',
+    'Carbon monoxide detectors: CO and CO₂ differ by one oxygen. You breathe out CO₂ all day, but CO from a furnace or car is poisonous.',
+    'Fuel: methane (CH₄) in a gas stove and propane (C₃H₈) in a grill tank follow the same rule: every carbon makes 4 bonds and every hydrogen 1.'
+  ],
+  takeaway: 'Each atom makes a set number of bonds: H 1, O 2, N 3, C 4. Those numbers decide which molecules can exist, and changing even one atom makes a new substance with new properties.',
+  tour: [
+    'Hydrogen and chlorine make 1 bond, oxygen 2, nitrogen 3, carbon 4. The gray stubs on an atom are bonds it still needs; when none are left, the molecule is finished.',
+    'Oxygen needs 2 bonds, so it holds 2 hydrogens: H₂O. Every stub is filled.',
+    'With single bonds, CO₂ still has open stubs. Carbon shares a second bond with each oxygen, O=C=O, and every atom is full.',
+    'A kit of 4 H and 2 O makes exactly two waters: 2H₂O. The big number counts molecules; the small number counts atoms inside one.'
+  ]
+}
+});

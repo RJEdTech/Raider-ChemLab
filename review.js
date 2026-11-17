@@ -502,3 +502,24 @@ ratelaw:{
     steps:['A reaction can go no faster than its slowest step.','So the rate law comes from the slow step’s reactants.','The overall balanced equation can’t be used to write a rate law directly.'],lab:{set:{mode:'mech'},look:'Compare the mechanisms and their rate laws.'}}
   ]}
 });
+
+BioLab.addReview({
+buildmol:{questions:[
+  {id:'bm1',kind:'test',lvl:'bio',q:'Nitrogen makes 3 bonds and hydrogen makes 1. What molecule forms when one nitrogen bonds only to hydrogens?',choices:['NH₃','NH₂','NH₄','N₃H'],correct:0,
+    steps:['Nitrogen needs 3 bonds.','Each hydrogen supplies exactly 1.','So nitrogen holds 3 hydrogens: NH₃, ammonia.'],lab:{set:{mode:'build',tgt:'nh3'},look:'Build ammonia and count the stubs as they fill.'}},
+  {id:'bm2',kind:'test',lvl:'bio',q:'How many hydrogen atoms are in 4 CH₄?',num:{ans:16,tol:0,unit:'H atoms'},
+    steps:['The coefficient 4 counts molecules.','Each CH₄ has 4 hydrogens.','4 × 4 = 16 hydrogen atoms (and 4 carbon atoms).'],lab:{set:{mode:'build',tgt:'ch4'},look:'Build one methane and count its hydrogens.'}},
+  {id:'bm3',kind:'test',lvl:'bio',q:'A student balancing an equation changes H₂O to H₂O₂. What went wrong?',choices:['Changing the subscript made a different substance, hydrogen peroxide','Nothing; that balances the oxygen','They should have changed the H instead','Subscripts can change but coefficients cannot'],correct:0,
+    steps:['Subscripts are part of the molecule’s identity.','H₂O₂ is hydrogen peroxide, not water.','Balance with coefficients only, like 2H₂O.'],lab:{set:{mode:'build',tgt:'h2o2'},look:'Build hydrogen peroxide and compare it with water.'}},
+  {id:'bm4',kind:'test',lvl:'bio',q:'Why does carbon dioxide have double bonds?',choices:['With single bonds, carbon and both oxygens would still have open bonds','Oxygen always makes double bonds','Double bonds make it a gas','Carbon only makes double bonds'],correct:0,
+    steps:['Single bonds use only 2 of carbon’s 4 bonds and 1 of each oxygen’s 2.','No atoms are left to add.','Sharing a second bond with each oxygen fills every atom: O=C=O.'],lab:{set:{mode:'build',tgt:'co2'},look:'Build C, O, O, then press Double bond until every stub is gone.'}},
+  {id:'bm5',kind:'test',lvl:'bio',q:'A kit has 6 H and 2 N. How many NH₃ molecules can you build from it?',num:{ans:2,tol:0,unit:'molecules'},
+    steps:['Each NH₃ uses 1 N and 3 H.','2 N allow 2 molecules; 6 H ÷ 3 = 2 molecules.','So 2NH₃, with nothing left over.'],lab:{set:{mode:'kit',kit:'ammonia'},look:'Fill the ammonia order from the kit.'}},
+  {id:'bm6',kind:'test',lvl:'honors',q:'Ethylene is C₂H₄. What bond joins the two carbons?',choices:['A double bond','A single bond','A triple bond','There is no C–C bond'],correct:0,
+    steps:['Each carbon needs 4 bonds.','With 2 hydrogens each, a carbon has 2 bonds used and 2 open.','The carbons share two pairs with each other: H₂C=CH₂.'],lab:{set:{mode:'build',tgt:'c2h4'},look:'Add C and C, press Double bond, then add 4 H.'}},
+  {id:'bm7',kind:'test',lvl:'honors',q:'Ethanol and dimethyl ether are both C₂H₆O. What are they called?',choices:['Isomers','Isotopes','Ions','The same molecule'],correct:0,
+    steps:['Same formula: the same atoms in the same numbers.','Different connections: the O is on the end in ethanol and between the carbons in the ether.','Same formula, different structure = isomers.'],lab:{set:{mode:'kit',kit:'iso'},look:'Build both C₂H₆O molecules from the isomer kit.'}},
+  {id:'bm8',kind:'test',lvl:'ap',q:'NH₃ has 8 valence electrons. How many lone pairs does it have?',num:{ans:1,tol:0,unit:'lone pairs'},
+    steps:['N brings 5 and each H brings 1: 8 electrons.','3 N–H bonds share 3 pairs, 6 electrons.','8 − 6 = 2 electrons: 1 lone pair, on nitrogen.'],lab:{set:{mode:'build',tgt:'nh3'},look:'Build ammonia and read the Lone pairs tile.'}}
+]}
+});
