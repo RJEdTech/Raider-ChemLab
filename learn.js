@@ -2037,6 +2037,15 @@ measure: {
       see: 'An electronic balance reads 36.40 g.',
       why: 'A digital readout does the estimating for you: its last digit is the estimated one. Write every digit shown, including the zero at the end: <b>36.40 g</b>, 4 significant figures. Writing 36.4 g throws away a digit the balance measured.',
       overlay(sim,ctx,LH,k){MC(ctx,k,[['Write: 36.40 g',700,13.5,KR],'Not: 36.4 g','The last 0 was measured'],320,72,178);} },
+    { key: 'triple', title: 'A triple-beam balance: balance it, then add', set: { mode: 'read', inst: 'tbb', tbmode: 'read' }, fresh: true, speed: 1,
+      run(sim){val(sim,246.37);sim.st.tbPos={a:0,b:0,c:0};},
+      see: 'A brass cylinder on a triple-beam balance, all riders at zero. Watch the riders move the way you would move them at the bench, and watch the pointer on the right.',
+      why: 'With the riders at zero the pan side is heavier, so the pointer sits high. Move the <b>100 g rider</b> out one notch at a time until the pointer drops, then back one notch: 200 g. Do the same with the <b>10 g rider</b>: 40 g. Then slide the <b>front rider</b> until the pointer rests on zero: 6.37 g. Add them: <b>246.37 g</b>.',
+      so: 'The notch riders are exact; the front beam is marked every 0.1 g, so its hundredths digit is your estimate. Check the pointer is on zero with the pan empty before you start.',
+      overlay(sim,ctx,LH,k,tau){const T=[[1,1,0],[1.8,2,0],[2.6,3,0],[3.6,2,0],[4.4,2,1],[4.85,2,2],[5.3,2,3],[5.75,2,4],[6.2,2,5],[7,2,4]];let a=0,b=0;T.forEach(([t,x,y])=>{if(tau>=t){a=x;b=y;}});
+        const c=tau<7.6?0:tau>=10.6?6.37:+(6.37*(1-Math.pow(1-(tau-7.6)/3,2))).toFixed(2);sim.st.tbPos={a,b,c};if(tau>=11)sim.st.reveal=true;
+        const sum=100*a+10*b+c,dd=sum-246.37,ptr=Math.abs(dd)<=0.05?['Pointer: on zero',700,12.5,KG]:dd<0?['Pointer: high (pan heavier)',700,12,KR]:['Pointer: low (riders too heavy)',700,12,KR];
+        MC(ctx,k,[['100 g rider: '+100*a+' g',tau<4.4?700:400,12.5],['10 g rider: '+10*b+' g',tau>=4.4&&tau<7.6?700:400,12.5],['Front beam: '+c.toFixed(2)+' g',tau>=7.6?700:400,12.5],ptr,sim.st.reveal?['Total: 246.37 g',700,14,KR]:''].filter(Boolean),146,62,206);} },
     { key: 'unc', lvl: 'honors', title: 'Uncertainty: plus or minus half a mark', set: { mode: 'read', inst: 'c10' }, fresh: true, speed: 1,
       run(sim){mAtR();sim._u=0;},
       see: 'Watch the tools change: 10 mL cylinder, 50 mL cylinder, ruler, balance. The Uncertainty tile changes with each one.',

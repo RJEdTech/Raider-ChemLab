@@ -19,19 +19,28 @@ const INST={
   buret:{n:'50 mL buret',kind:'buret',olab:5,lo:0,hi:50,div:0.1,lab:1,mid:0.5,dp:2,unit:'mL',win:1.1,vlo:1.2,vhi:47,gran:0.01},
   ruler:{n:'Centimeter ruler',kind:'ruler',lo:0,hi:15,div:0.1,lab:1,mid:0.5,dp:2,unit:'cm',win:1.3,vlo:3,vhi:13,gran:0.01},
   thermo:{n:'Thermometer',kind:'thermo',olab:10,lo:-10,hi:110,div:1,lab:10,mid:5,dp:1,unit:'°C',win:9,vlo:14,vhi:88,gran:0.1},
-  balance:{n:'Electronic balance',kind:'balance',lo:0,hi:200,div:0.01,dp:2,unit:'g',vlo:5,vhi:160,gran:0.01}
+  balance:{n:'Electronic balance',kind:'balance',lo:0,hi:200,div:0.01,dp:2,unit:'g',vlo:5,vhi:160,gran:0.01},
+  tbb:{n:'Triple-beam balance',kind:'tbb',lo:0,hi:610,div:0.1,dp:2,unit:'g',vlo:14,vhi:488,gran:0.01}
 };
+/* triple-beam balance: 100 g notches (0–500), 10 g notches (0–100), front beam 0–10 g marked every 0.1 g */
+function tbSplit(v){const a=Math.floor(v/100+1e-9),b=Math.floor((v-100*a)/10+1e-9),c=+(v-100*a-10*b).toFixed(2);return {a,b,c};}
+function tbPos(sim){const st=sim.st;if(st.tbPos)return st.tbPos;if(sim.p.tbmode==='balance')return {a:Math.round(sim.p.r100/100),b:Math.round(sim.p.r10/10),c:sim.p.r1};return tbSplit(st.val);}
+const tbSum=q=>100*q.a+10*q.b+q.c;
 /* parallax: with the eye above or below the meniscus, the line of sight meets the scale 1.5 marks off */
 const EYEK=1.5;
 function eyeOff(sim){const I=INST[sim.p.inst];if(!(I.kind==='cyl'||I.kind==='buret'))return 0;const e=sim.p.eye;if(!e||e==='level')return 0;return (e==='above'?1:-1)*(I.kind==='buret'?-1:1)*EYEK*I.div;}
 const dpOf=s=>{const m=String(s).trim().match(/\.(\d*)$/)||String(s).trim().match(/\.(\d+)/);return m?m[1].length:0;};
 function fixd(v,d){return d>=0?v.toFixed(d):String(Math.round(v));}
-function newSample(sim){const st=sim.st,I=INST[sim.p.inst];const r=rng(st.seed=(st.seed*16807+11)%2147483647);let v=I.vlo+r()*(I.vhi-I.vlo);v=Math.round(v/I.gran)*I.gran;st.val=+v.toFixed(3);st.ans='';st.res=null;st.reveal=false;st.showTrue=false;}
+function newSample(sim){const st=sim.st,I=INST[sim.p.inst];const r=rng(st.seed=(st.seed*16807+11)%2147483647);let v=I.vlo+r()*(I.vhi-I.vlo);v=Math.round(v/I.gran)*I.gran;st.val=+v.toFixed(3);st.ans='';st.res=null;st.reveal=false;st.showTrue=false;st.tbPos=null;if(I.kind==='tbb'&&sim.p.tbmode==='balance'&&sim.ui)BioLab.setValues(sim,{r100:0,r10:0,r1:0});}
 function gradeRead(sim){const st=sim.st,I=INST[sim.p.inst],s=String(st.ans||'').trim().replace(',','.');const v=parseFloat(s);
   if(!s||!Number.isFinite(v)||!/^[+-]?\d*\.?\d+$|^[+-]?\d+\.$/.test(s)){st.res={k:'bad',m:'Type a number, such as '+fixd(I.vlo+1.5,I.dp)+'.'};return;}
   const d=dpOf(s),tol=I.kind==='balance'?0.0005:I.div*0.2+1e-9,diff=Math.abs(v-st.val);const acc=fixd(st.val,I.dp);
   const off=eyeOff(sim);if(off&&Math.abs(v-(st.val+off))<=tol&&diff>tol){st.res={k:'par',m:'That is the mark that lines up from '+(sim.p.eye==='above'?'above':'below')+' the liquid, not the real level. Looking at a slant (parallax) shifts the reading. Set <b>Your eye</b> to <b>Level</b> and read the bottom of the meniscus again.'};return;}
-  if(d===I.dp&&diff<=tol){st.res={k:'ok',m:'Right: '+s+' '+I.unit+'. '+(I.kind==='balance'?'A digital readout already includes its estimated digit, so you record every digit shown.':'The digits up to the '+placeName(I.dp-1)+' are certain (you can see the marks), and the '+placeName(I.dp)+' digit is your estimate.')};st.solved=(st.solved||0)+1;return;}
+  if(I.kind==='tbb'&&diff>tol){const q=tbSplit(st.val),pq=tbPos(sim),ps=tbSum(pq);
+    if(sim.p.tbmode==='balance'&&Math.abs(ps-st.val)>0.06&&Math.abs(v-ps)<=0.02){st.res={k:'tbun',m:'That is what the riders add up to, but the pointer is not at zero yet, so the riders don’t match the mass. '+(ps<st.val?'The pan side is still heavier (pointer high): move a rider further out.':'The riders are too heavy (pointer low): move a rider back.')};return;}
+    const tries=[[q.c,'You read only the front beam. Add the 100 g and 10 g riders too.'],[10*q.b+q.c,'You left out the 100 g rider on the middle beam.'],[100*q.a+q.c,'You left out the 10 g rider on the back beam.'],[100*q.a+10*q.b,'You added the two big riders but left out the front beam.']];
+    for(const [x,m] of tries)if(Math.abs(v-x)<=0.03){st.res={k:'tbpart',m};return;}}
+  if(d===I.dp&&diff<=tol){st.res={k:'ok',m:'Right: '+s+' '+I.unit+'. '+(I.kind==='balance'?'A digital readout already includes its estimated digit, so you record every digit shown.':I.kind==='tbb'?'The riders give the hundreds and tens exactly; the front beam is certain to the tenths place and the hundredths is your estimate.':'The digits up to the '+placeName(I.dp-1)+' are certain (you can see the marks), and the '+placeName(I.dp)+' digit is your estimate.')};st.solved=(st.solved||0)+1;return;}
   if(d<I.dp&&Math.abs(v-st.val)<=I.div*1.2)st.res={k:'few',m:'Too few digits. The marks are every '+I.div+' '+I.unit+', so you can be certain to the '+placeName(I.dp-1)+' and must estimate one more digit, to the '+placeName(I.dp)+'.'};
   else if(d>I.dp)st.res={k:'many',m:'Too many digits. This instrument can only be estimated to the '+placeName(I.dp)+' ('+(1/Math.pow(10,I.dp))+' '+I.unit+'). Extra digits claim precision you don’t have.'};
   else if(diff<=I.div*1.5)st.res={k:'close',m:'The right number of digits, but the value is a little off. '+(I.kind==='cyl'||I.kind==='buret'?'Read the bottom of the meniscus, at eye level.':'Look again at where the reading falls between the marks.')};
@@ -91,7 +100,7 @@ function gradeMath(sim){const st=sim.st,S=solve(st.prob),P0=parseNum(st.ans||'')
 
 /* ---------- mode visibility ---------- */
 function syncModes(sim){if(!atLeast('honors')&&sim.p.mode==='math')BioLab.setValues(sim,{mode:'read'});if(!sim.ui||!sim.ui.sec)return;const d=sim.def,m=sim.p.mode;
-  const vk=INST[sim.p.inst].kind,glass=vk==='cyl'||vk==='buret';d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');const w=e&&e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(m)||(c.id==='eye'&&!glass);});
+  const vk=INST[sim.p.inst].kind,glass=vk==='cyl'||vk==='buret';d.controls.forEach(c=>{if(!c.modes)return;const cid=d.id+'-'+c.id,e=document.getElementById(cid)||document.getElementById(cid+'-l');const w=e&&e.closest('.ctl');if(w)w.hidden=!atLeast(c.lvl)||!c.modes.includes(m)||(c.id==='eye'&&!glass)||(c.id==='tbmode'&&vk!=='tbb')||(/^r(100|10|1)$/.test(c.id)&&!(vk==='tbb'&&sim.p.tbmode==='balance'));});
   d.metrics.forEach(mm=>{if(!mm.modes)return;const t=sim.ui.tiles[mm.id];const w=t&&t.num.closest('.tile');if(w)w.hidden=!atLeast(mm.lvl)||!mm.modes.includes(m);});
   const btns=[...sim.ui.sec.querySelectorAll('.controls .actions button')];d.actions.forEach((a,i)=>{const b=btns[i];if(b)b.hidden=!atLeast(a.lvl)||!a.modes.includes(m);});}
 
@@ -132,7 +141,11 @@ const SIM={
   timeless:true,animated:true,graph:false,
   controls:[
     {id:'mode',label:'Activity',type:'seg',def:'read',lvl:'bio',noTrial:true,options:[{v:'read',l:'Read an instrument'},{v:'acc',l:'Accuracy and precision'},{v:'sig',l:'Sig fig counter'},{v:'math',l:'Sig fig math',lvl:'honors'}],onChange(sim){sim.st.res=null;sim.st.ans='';syncModes(sim);}},
-    {id:'inst',label:'Instrument',type:'select',def:'c10',lvl:'bio',modes:['read'],options:[{v:'c10',l:'10 mL graduated cylinder'},{v:'c50',l:'50 mL graduated cylinder'},{v:'c100',l:'100 mL graduated cylinder'},{v:'buret',l:'50 mL buret',lvl:'honors'},{v:'ruler',l:'Centimeter ruler'},{v:'thermo',l:'Thermometer'},{v:'balance',l:'Electronic balance'}],onChange(sim){newSample(sim);syncModes(sim);}},
+    {id:'inst',label:'Instrument',type:'select',def:'c10',lvl:'bio',modes:['read'],options:[{v:'c10',l:'10 mL graduated cylinder'},{v:'c50',l:'50 mL graduated cylinder'},{v:'c100',l:'100 mL graduated cylinder'},{v:'buret',l:'50 mL buret',lvl:'honors'},{v:'ruler',l:'Centimeter ruler'},{v:'thermo',l:'Thermometer'},{v:'balance',l:'Electronic balance'},{v:'tbb',l:'Triple-beam balance'}],onChange(sim){newSample(sim);syncModes(sim);}},
+    {id:'tbmode',label:'Triple-beam',type:'seg',def:'read',lvl:'bio',noTrial:true,modes:['read'],options:[{v:'read',l:'Already balanced'},{v:'balance',l:'Balance it yourself'}],help:'Balance it yourself: slide the riders until the pointer sits on zero, then read the total.',onChange(sim){sim.st.res=null;sim.st.tbPos=null;if(sim.p.tbmode==='balance')BioLab.setValues(sim,{r100:0,r10:0,r1:0});syncModes(sim);}},
+    {id:'r100',label:'100 g rider',type:'range',min:0,max:500,step:100,def:0,unit:' g',lvl:'bio',noTrial:true,modes:['read'],help:'Sits in a notch: 0 to 500 g.',onChange(sim){sim.st.res=null;}},
+    {id:'r10',label:'10 g rider',type:'range',min:0,max:100,step:10,def:0,unit:' g',lvl:'bio',noTrial:true,modes:['read'],help:'Sits in a notch: 0 to 100 g.',onChange(sim){sim.st.res=null;}},
+    {id:'r1',label:'Front beam rider',type:'range',min:0,max:10,step:0.01,def:0,unit:' g',lvl:'bio',noTrial:true,modes:['read'],help:'Slides smoothly from 0 to 10 g.',onChange(sim){sim.st.res=null;}},
     {id:'eye',label:'Your eye',type:'seg',def:'level',lvl:'bio',noTrial:true,modes:['read'],options:[{v:'above',l:'Above'},{v:'level',l:'Level'},{v:'below',l:'Below'}],help:'Move your eye up or down to see parallax: the reading shifts when you don’t look straight across.',onChange(sim){sim.st.res=null;}},
     {id:'bias',label:'Systematic error (bias)',type:'range',min:-1.5,max:1.5,step:0.05,def:0,unit:' g',lvl:'bio',modes:['acc'],help:'Shifts every measurement the same way, like a balance that was not zeroed.',onChange(sim){sim.st.darts=[];shoot(sim,10);}},
     {id:'spread',label:'Random error (spread)',type:'range',min:0.02,max:0.8,step:0.02,def:0.06,unit:' g',lvl:'bio',modes:['acc'],help:'Scatters measurements, like drafts or a shaky hand.',onChange(sim){sim.st.darts=[];shoot(sim,10);}},
@@ -150,9 +163,10 @@ const SIM={
   init(sim){const st={seed:20261024,val:0,ans:'',res:null,reveal:false,darts:[],custom:'',prob:null,showAns:false,solved:0};sim.st=st;newSample(sim);shoot(sim,10);newProb(sim,sim.p.op);return st;},
   step(){},
   metrics:[
-    {id:'marks',label:'Smallest marks',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];return I.kind==='balance'?'Digital, 0.01 g':'every '+I.div+' '+I.unit;}},
+    {id:'marks',label:'Smallest marks',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];return I.kind==='balance'?'Digital, 0.01 g':I.kind==='tbb'?'front beam every 0.1 g':'every '+I.div+' '+I.unit;}},
     {id:'recto',label:'Record to the nearest',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];return (1/Math.pow(10,I.dp)).toFixed(I.dp)+' '+I.unit;}},
-    {id:'pm',label:'Uncertainty',unit:'',lvl:'honors',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];return I.kind==='balance'?'±0.01 g (the last digit)':'±'+fixd(I.div/2,I.dp)+' '+I.unit+' (half a mark)';}},
+    {id:'pm',label:'Uncertainty',unit:'',lvl:'honors',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];return I.kind==='balance'?'±0.01 g (the last digit)':I.kind==='tbb'?'±0.05 g (half a front-beam mark)':'±'+fixd(I.div/2,I.dp)+' '+I.unit+' (half a mark)';}},
+    {id:'pointer',label:'Pointer',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>{const I=INST[s.p.inst];if(I.kind!=='tbb')return '—';const d=tbSum(tbPos(s))-s.st.val;return Math.abs(d)<=0.05?'at zero: balanced':d<0?'high: pan side heavier':'low: riders too heavy';}},
     {id:'yours',label:'Your reading',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>s.st.ans?s.st.ans+' '+INST[s.p.inst].unit:'Type it in the box'},
     {id:'acc',label:'Accepted reading',unit:'',lvl:'bio',text:true,modes:['read'],get:s=>(s.st.reveal||(s.st.res&&s.st.res.k==='ok'))?fixd(s.st.val,INST[s.p.inst].dp)+' '+INST[s.p.inst].unit:'Hidden until you check'},
     {id:'n',label:'Measurements',unit:'',lvl:'bio',min:0,max:30,d:0,modes:['acc'],get:s=>s.st.darts.length},
@@ -171,7 +185,7 @@ const SIM={
   infoPanel(sim){const p=sim.p,st=sim.st,hon=atLeast('honors'),ap=atLeast('ap');
     const box=(lab,ph,btn)=>'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px"><label for="measure-ans" style="font-weight:600">'+lab+'</label><input id="measure-ans" class="sel" inputmode="decimal" autocomplete="off" style="flex:1 1 120px;min-width:0;max-width:220px;font-size:17px;padding:6px 10px" placeholder="'+ph+'" value="'+String(st.ans||st.custom||'').replace(/"/g,'')+'"><button type="button" class="btn primary" id="measure-check">'+btn+'</button></div>';
     const fb=()=>st.res?'<p class="verdict '+(st.res.k==='ok'?'ok':'no')+'">'+(st.res.k==='ok'?'Correct.':st.res.k==='bad'?'Not a number.':'Not yet.')+'</p><p>'+st.res.m+'</p>':'';
-    if(p.mode==='read'){const I=INST[p.inst];let h='<div class="p-head"><h3>Record your reading</h3></div><p>'+(I.kind==='balance'?'Write down the balance reading.':'Look at the zoom circle. Write every digit you are sure of, then estimate one more.')+'</p>'+box('Reading ('+I.unit+')',fixd(0,I.dp).replace(/0/g,'#'),'Check')+fb();
+    if(p.mode==='read'){const I=INST[p.inst];let h='<div class="p-head"><h3>Record your reading</h3></div><p>'+(I.kind==='balance'?'Write down the balance reading.':I.kind==='tbb'?(p.tbmode==='balance'?'Slide the riders until the pointer sits on zero. Then add the three beams: 100 g rider + 10 g rider + front beam.':'Add the three beams: 100 g rider + 10 g rider + front beam. The zoom circle shows the front beam.'):'Look at the zoom circle. Write every digit you are sure of, then estimate one more.')+'</p>'+box('Reading ('+I.unit+')',fixd(0,I.dp).replace(/0/g,'#'),'Check')+fb();
       if(hon&&I.kind!=='balance')h+='<p><b>Certain digits</b> come from the marks you can see. The <b>estimated digit</b> is your best guess between two marks, so it can differ by ±'+(I.div/5)+' '+I.unit+' from someone else’s.</p>';
       return h;}
     if(p.mode==='sig'){let h='<div class="p-head"><h3>Try any number</h3></div>'+box('Number','e.g. 0.0250 or 3.0e8','Count');const c=st.custom?classify(st.custom):null;
@@ -189,6 +203,7 @@ const SIM={
     if(sim.vis.refocus){sim.vis.refocus=false;inp.focus();}},
   narrate(sim){const p=sim.p,st=sim.st;
     if(p.mode==='read'){const I=INST[p.inst];if(eyeOff(sim)&&!st.res)return 'Your eye is <b>'+p.eye+'</b> the meniscus, so your line of sight crosses the scale at the wrong mark (parallax). Set <b>Your eye</b> to <b>Level</b> before you read.';if(st.res)return '<b>'+(st.res.k==='ok'?'Correct.':'Not yet.')+'</b> '+st.res.m;if(st.reveal)return 'The accepted reading is <b>'+fixd(st.val,I.dp)+' '+I.unit+'</b>. Press New sample to try another.';
+      if(I.kind==='tbb')return p.tbmode==='balance'?'Balance it the way you would at the bench: move the <b>100 g rider</b> out until the pointer drops, then back one notch; do the same with the <b>10 g rider</b>; then slide the <b>front rider</b> until the pointer rests on zero.':'Add the beams: the <b>100 g</b> and <b>10 g</b> riders sit in notches, so they are exact. The front beam is marked every <b>0.1 g</b>, so estimate the <b>hundredths</b>. Check the pointer is on zero first.';
       if(I.kind==='balance')return 'A digital balance does the estimating for you: its last digit is the estimated one. <b>Record every digit shown</b>, including trailing zeros.';
       return 'This '+I.n.charAt(0).toLowerCase()+I.n.slice(1)+' is marked every <b>'+I.div+' '+I.unit+'</b>, so you can be certain to the '+placeName(I.dp-1)+' and estimate the <b>'+placeName(I.dp)+'</b>. '+(I.kind==='cyl'||I.kind==='buret'?'Read the bottom of the meniscus at eye level.':'')+(I.kind==='buret'?' A buret reads from the top down.':'');}
     if(p.mode==='acc'){const S=stats(st),v=verdict(st);if(S.n<2)return 'Press <b>Take 10 measurements</b> to weigh the 25.00 g standard mass ten times.';
@@ -215,7 +230,7 @@ const SIM={
   lab:{bio:'<p><b>Question:</b> How precisely can you read each instrument?</p><ol><li>In <b>Read an instrument</b>, read three samples on each instrument. Type your reading and press Check.</li><li>Press <b>Record trial</b> after each one so your reading and the accepted reading go in the table.</li><li>In <b>Accuracy and precision</b>, make one set that is precise but not accurate, and one that is accurate but not precise. Record both.</li></ol><p>Which instrument gave you the most digits? Explain why a 10 mL cylinder is more precise than a 100 mL cylinder.</p>',
        honors:'<p><b>Question:</b> How do significant figures carry through a calculation?</p><ol><li>In <b>Sig fig math</b>, solve two problems for each operation. Type your answer before you look.</li><li>Write which measurement limited each answer.</li><li>Use the <b>Sig fig counter</b> to check five numbers from your notes.</li></ol><p>Explain why the rules for + and − are different from the rules for × and ÷.</p>',
        ap:'<p><b>Question:</b> How do random and systematic error affect a result?</p><ol><li>Set bias 0 and spread 0.30 g. Take 10 measurements three times and record the mean, s and % error each time.</li><li>Repeat with bias +0.50 g and spread 0.05 g.</li><li>In <b>Sig fig math</b>, compare the propagated uncertainty for × and + problems.</li></ol><p><b>Claim–evidence–reasoning:</b> Which kind of error does repeating trials reduce, and which does it not? Use your s and % error values.</p>'},
-  terms:[{t:'Estimated digit',d:'The last digit of a reading, estimated between the smallest marks.'},{t:'Meniscus',d:'The curved surface of a liquid in a narrow tube. Read the bottom of it at eye level.'},{t:'Parallax',d:'A reading error from looking at a scale at a slant. With your eye above a cylinder’s meniscus you read too high; below it, too low.'},{t:'Uncertainty',d:'How far a reading could be off, written with ±. For a scale it is usually half the smallest mark; for a digital readout, 1 in the last digit.'},{t:'Accuracy',d:'How close a measurement is to the accepted (true) value.'},{t:'Precision',d:'How close repeated measurements are to each other.'},{t:'Significant figures',d:'All the certain digits in a measurement plus the one estimated digit.'},{t:'Percent error',d:'|measured − accepted| ÷ accepted × 100.'},
+  terms:[{t:'Estimated digit',d:'The last digit of a reading, estimated between the smallest marks.'},{t:'Meniscus',d:'The curved surface of a liquid in a narrow tube. Read the bottom of it at eye level.'},{t:'Parallax',d:'A reading error from looking at a scale at a slant. With your eye above a cylinder’s meniscus you read too high; below it, too low.'},{t:'Uncertainty',d:'How far a reading could be off, written with ±. For a scale it is usually half the smallest mark; for a digital readout, 1 in the last digit.'},{t:'Triple-beam balance',d:'A balance with three beams: riders in notches give the hundreds and tens of grams, and a sliding front rider gives grams to 0.1, so you estimate the hundredths. The pointer must rest on zero before you read it.'},{t:'Accuracy',d:'How close a measurement is to the accepted (true) value.'},{t:'Precision',d:'How close repeated measurements are to each other.'},{t:'Significant figures',d:'All the certain digits in a measurement plus the one estimated digit.'},{t:'Percent error',d:'|measured − accepted| ÷ accepted × 100.'},
     {lvl:'honors',t:'Systematic error',d:'An error that shifts every measurement the same way, such as an unzeroed balance. It hurts accuracy.'},{lvl:'honors',t:'Random error',d:'Unpredictable scatter from reading to reading. It hurts precision and averages out over many trials.'},{lvl:'honors',t:'Scientific notation',d:'A number written as a coefficient between 1 and 10 times a power of ten, such as 4.50 × 10⁻³.'},
     {lvl:'ap',t:'Standard deviation',d:'s = √(Σ(x − x̄)² ÷ (n − 1)), a measure of the spread of repeated measurements.'},{lvl:'ap',t:'Propagation of uncertainty',d:'How the uncertainties of measurements combine in a calculated result.'}],
   about:'<p>Instrument scales follow common lab equipment: 10 mL cylinders marked every 0.1 mL, 50 and 100 mL cylinders every 1 mL, a 50 mL buret every 0.1 mL (reading downward), a ruler in millimeters, and a thermometer every 1 °C. A reading is graded correct when it has exactly one estimated digit and is within ±0.2 of the smallest division of the true level, because estimates legitimately differ that much between careful people.</p><p>Accuracy and precision: each “measurement” of the 25.00 g standard is the true mass plus the bias plus normally distributed random error with the chosen spread, rounded to 0.01 g. Verdicts use ±0.15 g for both the mean and s.</p><p>Parallax: the scale is printed on the outside of the glass, but the bottom of the meniscus is in the middle of the liquid, behind it. Looking from above, your line of sight crosses the scale above the true level, so a cylinder reads high (a buret, numbered downward, reads low). The tool shifts the apparent level by 1.5 of the smallest marks, about what you get with your eye a few centimeters off level at arm’s length. The uncertainty shown is half the smallest mark, the rule many lab handouts use; the 1 in the last digit rule gives a similar size.</p><p>Significant figure rules are the standard textbook rules; a number like 1200 is treated as having 2 significant figures. Uncertainty propagation uses the simple worst-case rule (add absolute uncertainties for + and −, add relative uncertainties for × and ÷); a statistics course would add them in quadrature, which gives slightly smaller values.</p>',
@@ -228,7 +243,7 @@ const SIM={
 /* ---------- read-an-instrument drawing ---------- */
 const ZX=565,ZY=230,ZR=188;
 function drawRead(sim,ctx,k,t){const p=sim.p,st=sim.st,I=INST[p.inst],v=st.val;
-  const lines=[I.n,I.kind==='balance'?'Digital readout, 0.01 g':'Marks every '+I.div+' '+I.unit];txt(ctx,lines[0],24,30,{s:15*k,w:700});txt(ctx,lines[1],24,30+20*k,{s:13*k,c:PAL['cv-soft']});
+  const lines=[I.n,I.kind==='balance'?'Digital readout, 0.01 g':I.kind==='tbb'?'Riders: 100 g and 10 g notches; front beam every 0.1 g':'Marks every '+I.div+' '+I.unit];txt(ctx,lines[0],24,30,{s:15*k,w:700});txt(ctx,lines[1],24,30+20*k,{s:13*k,c:PAL['cv-soft']});
   let zoomRect=null;
   if(I.kind==='cyl'||I.kind==='buret'||I.kind==='thermo'){const x=I.kind==='cyl'?150:150,top=50+30*k,bot=420;const w=I.kind==='cyl'?(p.inst==='c10'?26:p.inst==='c50'?40:52):I.kind==='buret'?16:12;
     const y0=top+16,y1=bot-14;const frac=(I.kind==='buret')?(v-I.lo)/(I.hi-I.lo):(v-I.lo)/(I.hi-I.lo);const Y=u=>I.kind==='buret'?y0+(u-I.lo)/(I.hi-I.lo)*(y1-y0):y1-(u-I.lo)/(I.hi-I.lo)*(y1-y0);
@@ -248,12 +263,13 @@ function drawRead(sim,ctx,k,t){const p=sim.p,st=sim.st,I=INST[p.inst],v=st.val;
     for(let c=0;c<=15;c+=k<1.3?1:3)txt(ctx,String(c),x0+c*pxcm,ry+27,{s:12*k,c:PAL['cv-soft'],a:'center'});
     const g=ctx.createLinearGradient(0,ry-30,0,ry);g.addColorStop(0,'#c9ced5');g.addColorStop(1,'#7d848d');ctx.fillStyle=g;ctx.fillRect(x0,ry-28,v*pxcm,26);
     zoomRect=[x0+(v-I.win/2)*pxcm,ry-34,I.win*pxcm,72];}
+  else if(I.kind==='tbb'){const q=tbPos(sim);zoomRect=drawTBB(ctx,v,q,k,st);}
   else{drawBalance(ctx,40,170,250,180,fixd(v,2),k);zoomRect=[70,268,190,52];}
   // zoom connector
   if(zoomRect){ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1.5;rr(ctx,zoomRect[0],zoomRect[1],zoomRect[2],zoomRect[3],4);ctx.stroke();ctx.beginPath();ctx.moveTo(zoomRect[0]+zoomRect[2],zoomRect[1]);ctx.lineTo(ZX-ZR*0.5,ZY-ZR*0.866);
     ctx.moveTo(zoomRect[0]+zoomRect[2],zoomRect[1]+zoomRect[3]);ctx.lineTo(ZX-ZR*0.5,ZY+ZR*0.866);ctx.stroke();}
   ctx.save();ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.fillStyle=PAL['card'];ctx.fill();ctx.clip();
-  if(I.kind==='balance'){drawBalanceZoom(ctx,v,k);}else if(I.kind==='ruler')zoomRuler(ctx,I,v,k);else zoomVertical(ctx,I,v,k,t,st,eyeOff(sim));
+  if(I.kind==='balance'){drawBalanceZoom(ctx,v,k);}else if(I.kind==='tbb')zoomTBB(ctx,tbPos(sim),k);else if(I.kind==='ruler')zoomRuler(ctx,I,v,k);else zoomVertical(ctx,I,v,k,t,st,eyeOff(sim));
   ctx.restore();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=3;ctx.beginPath();ctx.arc(ZX,ZY,ZR,0,6.29);ctx.stroke();
   pill(ctx,I.kind==='cyl'||I.kind==='buret'?(eyeOff(sim)?'Zoom: what you see from '+p.eye+' (parallax)':'Zoom: dashed line = your eye level'):'Zoom: what you see up close',ZX,ZY+ZR+2,PAL['card2'],PAL['cv-ink'],12*k);
   if(st.reveal||(st.res&&st.res.k==='ok'))pill(ctx,'Reading: '+fixd(v,I.dp)+' '+I.unit,ZX,ZY-ZR+4,PAL['s3'],'#fff',14*k);}
@@ -283,6 +299,48 @@ function zoomRuler(ctx,I,v,k){const ppu=ZR*1.7/I.win,X=u=>ZX+(u-v)*ppu,ry=ZY+6;
   for(let i=n0;i<=n1;i++){const u=+(i*I.div).toFixed(3);if(u<0)continue;const x=X(u),isLab=Math.abs(u-Math.round(u))<1e-6,isMid=Math.abs(u*2-Math.round(u*2))<1e-6;ctx.lineWidth=isLab?2.5:1.5;ctx.beginPath();ctx.moveTo(x,ry);ctx.lineTo(x,ry+(isLab?52:isMid?36:22));ctx.stroke();
     if(isLab)txt(ctx,String(Math.round(u)),x,ry+76,{s:18*k,w:700,a:'center'});}
   txt(ctx,'cm',ZX+ZR*0.55,ry+100,{s:13*k,c:PAL['cv-soft'],a:'center'});}
+/* triple-beam balance, front view. Beams pivot at PX; riders' total vs the mass tilts the beam, moving the pointer */
+const TB={PX:132,PY:236,X0:150,X1:318,Y:[188,236,284]};
+function tbX(beam,u){const L=TB.X1-TB.X0;return TB.X0+(beam===0?u/500:beam===1?u/100:u/10)*L;}
+function drawTBB(ctx,v,q,k,st){const d=tbSum(q)-v,ang=Math.atan(22*Math.tanh(d/2.5)/(TB.X1+22-TB.PX));
+  ctx.save();
+  // base and pillar
+  ctx.fillStyle='#59616b';rr(ctx,36,370,316,30,10);ctx.fill();ctx.fillStyle='#6d7680';ctx.fillRect(TB.PX-10,TB.PY,20,134);
+  // zero-mark post on the right
+  const ZXp=TB.X1+40;ctx.fillStyle='#6d7680';ctx.fillRect(ZXp-4,TB.PY-40,8,174);ctx.fillStyle=PAL['card'];rr(ctx,ZXp-14,TB.PY-34,28,68,4);ctx.fill();ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=1;rr(ctx,ZXp-14,TB.PY-34,28,68,4);ctx.stroke();
+  ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ZXp-14,TB.PY);ctx.lineTo(ZXp+14,TB.PY);ctx.stroke();txt(ctx,'0',ZXp+20,TB.PY,{s:12*k,w:700,b:'middle'});
+  for(const dy of [-20,-10,10,20]){ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ZXp-14,TB.PY+dy);ctx.lineTo(ZXp-6,TB.PY+dy);ctx.stroke();}
+  // pan on the left (moves opposite the pointer)
+  const panDy=-Math.sin(ang)*(TB.PX-70);
+  ctx.strokeStyle='#59616b';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(70,TB.PY+panDy);ctx.lineTo(70,150+panDy);ctx.stroke();
+  ctx.fillStyle='#b8bec6';ctx.beginPath();ctx.ellipse(70,148+panDy,52,9,0,0,6.29);ctx.fill();ctx.strokeStyle='#8a929c';ctx.lineWidth=1.5;ctx.stroke();
+  // the object: a brass cylinder on the pan
+  const g=ctx.createLinearGradient(52,0,88,0);g.addColorStop(0,'#a8782c');g.addColorStop(0.5,'#e6bd62');g.addColorStop(1,'#9c6d22');ctx.fillStyle=g;ctx.fillRect(52,104+panDy,36,42);ctx.fillStyle='#f0cf7c';ctx.beginPath();ctx.ellipse(70,104+panDy,18,5,0,0,6.29);ctx.fill();
+  // beams (rotate about the pivot)
+  ctx.save();ctx.translate(TB.PX,TB.PY);ctx.rotate(ang);ctx.translate(-TB.PX,-TB.PY);
+  ctx.fillStyle='#8a929c';ctx.fillRect(TB.PX-4,TB.Y[0]-6,8,TB.Y[2]-TB.Y[0]+12);ctx.fillRect(TB.PX-62,TB.PY-4,62,8);
+  const names=['100 g','10 g','Front'];
+  for(let b=0;b<3;b++){const y=TB.Y[b];ctx.fillStyle='#d4d9df';rr(ctx,TB.X0-12,y-7,TB.X1-TB.X0+24,14,3);ctx.fill();ctx.strokeStyle='#8a929c';ctx.lineWidth=1;rr(ctx,TB.X0-12,y-7,TB.X1-TB.X0+24,14,3);ctx.stroke();
+    ctx.strokeStyle=PAL['cv-ink'];
+    if(b<2){const n=b===0?5:10;for(let i=0;i<=n;i++){const x=TB.X0+i*(TB.X1-TB.X0)/n;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x,y-1);ctx.stroke();
+        if(b===0||i%2===0||k>=1.3)txt(ctx,String(i*(b===0?100:10)),x,y+17,{s:(b===0?11:10)*Math.min(k,1.2),a:'center',c:PAL['cv-soft']});}}
+    else{for(let i=0;i<=100;i++){const x=TB.X0+i*(TB.X1-TB.X0)/100;ctx.lineWidth=i%10===0?1.5:0.8;ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x,y-(i%10===0?0:i%5===0?2:4));ctx.stroke();if(i%10===0&&(i%20===0||k>=1.3))txt(ctx,String(i/10),x,y+18,{s:10*Math.min(k,1.2),a:'center',c:PAL['cv-soft']});}}
+    txt(ctx,names[b]+' beam',TB.X1+12,y-15,{s:10.5*Math.min(k,1.2),w:700,a:'right',c:PAL['cv-soft']});}
+  // riders
+  const notch=(x,y)=>{ctx.fillStyle='#3d444c';ctx.beginPath();ctx.moveTo(x-8,y-17);ctx.lineTo(x+8,y-17);ctx.lineTo(x+5,y-7);ctx.lineTo(x,y-1);ctx.lineTo(x-5,y-7);ctx.closePath();ctx.fill();};
+  notch(tbX(0,100*q.a),TB.Y[0]);notch(tbX(1,10*q.b),TB.Y[1]);
+  const fx=tbX(2,q.c);ctx.fillStyle='rgba(61,68,76,0.85)';rr(ctx,fx-7,TB.Y[2]-11,14,22,3);ctx.fill();ctx.strokeStyle='#e8442e';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(fx,TB.Y[2]-11);ctx.lineTo(fx,TB.Y[2]+11);ctx.stroke();
+  // pointer
+  ctx.strokeStyle='#3d444c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(TB.X1+12,TB.PY);ctx.lineTo(ZXp-2,TB.PY);ctx.stroke();ctx.fillStyle='#e8442e';ctx.beginPath();ctx.moveTo(ZXp-2,TB.PY-4);ctx.lineTo(ZXp+6,TB.PY);ctx.lineTo(ZXp-2,TB.PY+4);ctx.fill();
+  ctx.restore();ctx.restore();
+  const rx=TB.PX+(fx-TB.PX)*Math.cos(ang)-(TB.Y[2]-TB.PY)*Math.sin(ang),ry=TB.PY+(fx-TB.PX)*Math.sin(ang)+(TB.Y[2]-TB.PY)*Math.cos(ang);
+  return [rx-26,ry-14,52,30];}
+function zoomTBB(ctx,q,k){const W=1.6,ppu=ZR*1.7/W,X=u=>ZX+(u-q.c)*ppu,by=ZY-30;
+  ctx.fillStyle='#d4d9df';ctx.fillRect(ZX-ZR,by,2*ZR,64);ctx.strokeStyle='#8a929c';ctx.lineWidth=2;ctx.strokeRect(ZX-ZR-2,by,2*ZR+4,64);ctx.strokeStyle=PAL['cv-ink'];
+  const n0=Math.floor((q.c-W)*10),n1=Math.ceil((q.c+W)*10);
+  for(let i=n0;i<=n1;i++){if(i<0||i>100)continue;const u=i/10,x=X(u),lab=i%10===0,mid=i%5===0;ctx.lineWidth=lab?3:1.6;ctx.beginPath();ctx.moveTo(x,by);ctx.lineTo(x,by+(lab?40:mid?28:18));ctx.stroke();if(lab)txt(ctx,String(i/10),x,by+60,{s:18*k,w:700,a:'center'});}
+  const x=X(q.c);ctx.strokeStyle='rgba(61,68,76,0.75)';ctx.lineWidth=4;rr(ctx,x-46,by-46,92,150,10);ctx.stroke();ctx.strokeStyle='#e8442e';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,by-46);ctx.lineTo(x,by+104);ctx.stroke();
+  txt(ctx,'front beam, grams',ZX,by+118,{s:13*k,c:PAL['cv-soft'],a:'center'});txt(ctx,'rider’s line',x,by-56,{s:12*k,w:700,c:'#e8442e',a:'center'});}
 function drawBalance(ctx,x,y,w,h,read,k){ctx.fillStyle='#59616b';rr(ctx,x,y+h*0.3,w,h*0.7,12);ctx.fill();ctx.fillStyle='#b8bec6';ctx.beginPath();ctx.ellipse(x+w/2,y+h*0.26,w*0.4,12,0,0,6.29);ctx.fill();
   ctx.fillStyle='#d6a24a';ctx.beginPath();ctx.ellipse(x+w/2,y+h*0.2,w*0.16,14,0,0,6.29);ctx.fill();
   ctx.fillStyle='#1d2b24';rr(ctx,x+30,y+h*0.55,w-60,h*0.3,5);ctx.fill();txt(ctx,read+' g',x+w/2,y+h*0.7,{s:22*k,w:700,c:'#8ff0a4',a:'center',b:'middle'});}
