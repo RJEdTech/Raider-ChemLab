@@ -191,7 +191,7 @@ const SIM={
   onTourExit(sim){BioLab.setValues(sim,{ll:L(520e-9),target:'none',ph:false,bright:60,pre:'custom'});},
   onChallenge(sim,ch,phase){if(ch&&ch.instant&&ch.set&&phase==='done'){BioLab.setValues(sim,ch.set);sim.infoDirty=true;}},
   challenges:[
-    {lvl:'bio',q:'You switch the light from red (700 nm) to blue (450 nm). How does the speed of the wave change?',choices:['Blue light travels faster','Red light travels faster','Both travel at the same speed'],correct:2,
+    {lvl:'bio',q:'You switch the light from red (700 nm) to blue (450 nm). How does the speed of the wave change?',choices:['Blue light travels faster','Red light travels faster','They travel at the same speed'],correct:2,
      baseline:{ll:L(700e-9),target:'none',ph:false},change:{ll:L(450e-9)},changeText:'Wavelength changed from 700 nm to 450 nm',watch:'fwl',
      explain:{bio:'The crests cross the screen at the same rate before and after. All light travels at 3.00 × 10⁸ m/s. Blue light has shorter waves, so more of them pass each second: its frequency is higher.',honors:'c is the same for every color. c = λν, so ν rose from '+sci(C/700e-9,'Hz')+' to '+sci(C/450e-9,'Hz')+'.'}},
     {lvl:'bio',q:'Red light (700 nm) cannot break the bonds in Cl₂. What happens if you make the red light five times brighter?',choices:['The bonds start breaking','Still no bonds break','A few bonds break slowly'],correct:1,
@@ -207,12 +207,12 @@ const SIM={
     {lvl:'honors',q:'You double the wavelength from 300 nm to 600 nm. The energy of each photon…',choices:['doubles','halves','stays the same','drops to one quarter'],correct:1,
      baseline:{ll:L(300e-9),target:'none'},change:{ll:L(600e-9)},changeText:'Wavelength doubled to 600 nm',watch:'ewl',
      explain:{honors:'E = hc/λ, so energy is inversely proportional to wavelength. It fell from '+CL.toSig(ex.E300,3)+' to '+CL.toSig(ex.E600,3)+' kJ/mol, exactly half.'}},
-    {lvl:'ap',q:'Blue light (450 nm) frees electrons from sodium. What happens to the fastest electrons’ kinetic energy if you dim the light from 100% to 20%?',choices:['It drops to 20% of its value','It stays the same; fewer electrons come out','No electrons come out at all'],correct:1,
+    {lvl:'ap',q:'Blue light (450 nm) frees electrons from sodium. What happens to the fastest electrons’ kinetic energy if you dim the light from 100% to 20%?',choices:['It drops to 20% of its value','It stays the same; fewer come out','No electrons come out at all'],correct:1,
      baseline:{target:'metal',metal:'na',ll:L(450e-9),bright:100},change:{bright:20},changeText:'Brightness lowered to 20%',watch:'pe',
      explain:{ap:'KEmax = hν − φ = '+ex.eV450.toFixed(2)+' − 2.36 = '+ex.KE450.toFixed(2)+' eV before and after. Dimmer light means fewer photons per second, so the electron count grows more slowly, but each photon still delivers the same energy.'}},
     {lvl:'ap',instant:true,set:{target:'metal',metal:'na',ll:L(300e-9)},q:'Light of 300 nm hits sodium (φ = 2.36 eV). What is the maximum kinetic energy of the ejected electrons?',choices:['1.77 eV','4.13 eV','2.36 eV','6.49 eV'],correct:0,
      explain:{ap:'E = hc/λ = 1240 eV·nm ÷ 300 nm = '+ex.eV300.toFixed(2)+' eV. KEmax = E − φ = '+ex.eV300.toFixed(2)+' − 2.36 = '+ex.KE300.toFixed(2)+' eV. The model is set to this case; check the kinetic energy tile.'}},
-    {lvl:'ap',instant:true,set:{target:'metal',metal:'na',ll:L(300e-9)},q:'Those 1.77 eV electrons also behave like waves. What is their de Broglie wavelength?',choices:['About 0.92 nm','About 300 nm, the same as the light','About 9.2 µm','About 0.0092 nm'],correct:0,
+    {lvl:'ap',instant:true,set:{target:'metal',metal:'na',ll:L(300e-9)},q:'Those 1.77 eV electrons also behave like waves. What is their de Broglie wavelength?',choices:['About 0.92 nm','About 300 nm','About 9.2 µm','About 0.0092 nm'],correct:0,
      explain:{ap:'KE = 1.77 eV = 2.84 × 10⁻¹⁹ J. p = √(2mKE) = 7.19 × 10⁻²⁵ kg·m/s, and λ = h/p = '+fmtLen(ex.dB300)+', about the size of a few atoms. That is why electron beams can image atoms.'}}
   ],
   lab:{bio:'<p><b>Question:</b> How does the color of light relate to the energy of its photons?</p><ol><li>Set the wavelength to 700, 650, 600, 550, 500, 450 and 400 nm (use the slider or the real sources).</li><li>Record a trial at each one.</li><li>On the Trials graph, plot Wavelength (x) against Energy (y).</li></ol><p>Which color carries the most energy per photon? Which carries the least? Use your graph to explain why ultraviolet light can damage skin when red light cannot.</p>',

@@ -155,7 +155,7 @@ const SIM={
   onTourExit(sim){BioLab.setValues(sim,{Z:8,charge:0,view:'boxes'});clearAll(sim);},
   onChallenge(sim,ch,phase){if(ch&&ch.set&&phase==='done'){BioLab.setValues(sim,ch.set);fillNow(sim);sim.infoDirty=true;}},
   challenges:[
-    {lvl:'bio',instant:true,set:{Z:3,charge:0},q:'Lithium has 3 electrons. Where does the third one go?',choices:['Into 1s, next to the first two','Into 2s','Into 2p'],correct:1,
+    {lvl:'bio',instant:true,set:{Z:3,charge:0},q:'Lithium has 3 electrons. Where does the third one go?',choices:['Into 1s','Into 2s','Into 2p'],correct:1,
      explain:{bio:'1s already holds two electrons, and no orbital can hold three (Pauli). The next lowest energy orbital is 2s, so lithium is 1s² 2s¹. The model now shows lithium.'}},
     {lvl:'bio',instant:true,set:{Z:6,charge:0},q:'Carbon has 2 electrons in its 2p sublevel. How do they sit?',choices:['Paired in one 2p orbital, opposite spins','In two separate 2p orbitals, same spin','In two separate 2p orbitals, opposite spins'],correct:1,
      explain:{bio:'Hund’s rule: electrons spread out into empty orbitals before pairing, and unpaired electrons in a sublevel spin the same way. The model now shows carbon: 1s² 2s² 2p², with two up arrows in 2p.'}},
@@ -163,7 +163,7 @@ const SIM={
      explain:{bio:'4s is lower in energy than 3d for potassium, so it fills first: [Ar] 4s¹. That is why potassium starts row 4 of the periodic table in the s block. The model now shows potassium.'}},
     {lvl:'honors',instant:true,set:{Z:26,charge:2},q:'Iron is [Ar] 4s² 3d⁶. When it forms Fe²⁺, which electrons does it lose?',choices:['Two 3d electrons','Two 4s electrons','One 4s and one 3d'],correct:1,
      explain:{honors:'Electrons leave from the highest n first. 4s (n = 4) is outside 3d (n = 3), so Fe²⁺ is [Ar] 3d⁶, not [Ar] 4s² 3d⁴. The model shows Fe²⁺; the rules check confirms the ground state.'}},
-    {lvl:'honors',instant:true,set:{Z:35,charge:0},q:'What is the noble-gas configuration of bromine (Z = 35)?',choices:['[Ar] 4s² 3d¹⁰ 4p⁵','[Kr] 4p⁵','[Ar] 4s² 4p⁵','[Ne] 3s² 3p⁵'],correct:0,
+    {lvl:'honors',instant:true,set:{Z:35,charge:0},q:'What is the noble-gas configuration of bromine (Z = 35)?',choices:['[Ar] 4s² 3d¹⁰ 4p⁵','[Kr] 4s² 4p⁵','[Ar] 4s² 4p⁵','[Ne] 3s² 3p⁵'],correct:0,
      explain:{honors:'Argon accounts for 18 electrons. The other 17 fill 4s (2), 3d (10) and 4p (5). Do not skip the 3d sublevel: bromine sits after the d block in row 4.'}},
     {lvl:'honors',instant:true,set:{Z:16,charge:0},q:'How many valence electrons does sulfur (1s² 2s² 2p⁶ 3s² 3p⁴) have?',choices:['2','4','6','16'],correct:2,
      explain:{honors:'Valence electrons are in the outermost shell, n = 3: 3s² 3p⁴ makes 6. That matches sulfur’s place in group 16 and its usual 2− charge (it gains 2 to reach 8).'}},

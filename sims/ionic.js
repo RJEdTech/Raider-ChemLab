@@ -96,7 +96,7 @@ const SIM={
       {lvl:'bio',q:'Sodium needs one chlorine. Swap sodium for magnesium. How many chlorine atoms does one magnesium atom need?',choices:['1','2','3'],correct:mgcl.nA-1,
        baseline:{view:'transfer',metal:'Na',anion:'Cl'},change:{metal:'Mg'},changeText:'Metal changed to magnesium',
        explain:{bio:'Magnesium has 2 valence electrons to give, and each chlorine only takes 1, so it takes <b>2 chlorines</b>: MgCl₂. The total charge is (+2) + 2(−1) = 0.'}},
-      {lvl:'bio',instant:true,q:'When a sodium atom gives its electron to chlorine, sodium becomes…',choices:['Na⁺, positive','Na⁻, negative','neutral, because it is still sodium'],correct:0,set:{view:'transfer',metal:'Na',anion:'Cl'},
+      {lvl:'bio',instant:true,q:'When a sodium atom gives its electron to chlorine, sodium becomes…',choices:['Na⁺, positive','Na⁻, negative','neutral'],correct:0,set:{view:'transfer',metal:'Na',anion:'Cl'},
        explain:'Sodium keeps its 11 protons but now has only 10 electrons, so it has one more + than −: <b>Na⁺</b>. Losing a negative electron leaves a positive ion. Chlorine gains it and becomes Cl⁻.'},
       {lvl:'bio',instant:true,q:'What is the formula of the compound aluminum and oxygen form?',choices:alC.map(x=>CL.fmt(x)),correct:alC.indexOf(alo.f),set:{view:'transfer',metal:'Al',anion:'O'},
        explain:'Al³⁺ and O²⁻: the smallest number of each that cancels is 2 Al³⁺ (+6) and 3 O²⁻ (−6), so <b>Al₂O₃</b>. Six electrons move from two aluminum atoms to three oxygen atoms.'},

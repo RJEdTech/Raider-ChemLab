@@ -111,7 +111,7 @@ const SIM={
   onTourExit(sim){BioLab.setValues(sim,{mode:'bag'});BioLab.reset(sim);},
   onLevel(sim){modeUI(sim);},
   challenges:[
-    {lvl:'bio',q:'2.60 g of baking soda and 37 mL of vinegar fill the quart bag. You double the baking soda to 5.20 g but keep 37 mL of vinegar. The bag will…',choices:['inflate twice as much and burst','fill the same; the extra baking soda is left over','fill halfway'],correct:1,
+    {lvl:'bio',q:'2.60 g of baking soda and 37 mL of vinegar fill the quart bag. You double the baking soda to 5.20 g but keep 37 mL of vinegar. The bag will…',choices:['inflate twice as much and burst','fill the same; extra soda is left','fill only about halfway'],correct:1,
      baseline:{soda:2.6,vin:37},change:{soda:5.2},changeAction:'mix',changeText:'Baking soda doubled, bag sealed and mixed',watch:'vol',
      explain:{bio:'The vinegar has only 0.031 mol of acetic acid, and each mole of acid makes one mole of CO₂. Once the acid is used up, the extra baking soda has nothing to react with. Vinegar is the limiting reactant.'}},
     {lvl:'bio',instant:true,q:'The sealed bag and everything in it has a mass of 50.00 g before mixing. After the reaction, with the bag still sealed, its mass is…',choices:['less, because gas weighs nothing','still 50.00 g','more, because a new substance formed'],correct:1,
@@ -121,7 +121,7 @@ const SIM={
     {lvl:'honors',q:'You use 2.60 g of baking soda and 37 mL of vinegar, first at sea level (1.00 atm) and then at RJ (0.83 atm). Compared with sea level, the bag at RJ will be…',choices:['less full, because thin air holds less gas','fuller, because gas expands at lower pressure','the same, because the moles are the same'],correct:1,
      baseline:{place:'sea'},change:{place:'rj'},changeAction:'mix',changeText:'Moved to RJ (0.83 atm), sealed and mixed',watch:'vol',
      explain:{honors:'The moles of CO₂ are the same, but V = nRT/P. At 0.83 atm the same gas takes up 1.00 ÷ 0.83 = 1.2 times the volume. This mix fills the quart bag only about 83% at sea level but about 99% at RJ.'}},
-    {lvl:'honors',q:'Same amounts, but the room is 5 °C instead of 22 °C. The gas volume will be…',choices:['about 6% smaller','about 77% smaller, since 5 is much less than 22','the same'],correct:0,
+    {lvl:'honors',q:'Same amounts, but the room is 5 °C instead of 22 °C. The gas volume will be…',choices:['about 6% smaller','about 77% smaller','the same'],correct:0,
      baseline:{temp:22},change:{temp:5},changeAction:'mix',changeText:'Room cooled to 5 °C, sealed and mixed',
      explain:{honors:'Volume is proportional to absolute temperature. 278 K ÷ 295 K = 0.94, so the gas is about 6% smaller. Celsius numbers can’t be used as ratios because 0 °C is not zero energy.'}},
     {lvl:'honors',instant:true,q:'Your bag needs 0.0400 mol of CO₂. How many grams of NaHCO₃ should you use?',choices:['3.36 g','0.000476 g','84.0 g','2.40 g'],correct:0,

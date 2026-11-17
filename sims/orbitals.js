@@ -139,9 +139,9 @@ const SIM={
   challenges:[
     {lvl:'bio',instant:true,set:{orb:'1s',Z:1},q:'What do the dots in an orbital picture show?',choices:['The path the electron travels around the nucleus','Places where the electron is likely to be found','Many different electrons at once'],correct:1,
      explain:{bio:'An orbital is a probability cloud for one electron. Dense regions are where it is most likely to be found. Electrons do not follow planet-like orbits.'}},
-    {lvl:'bio',instant:true,set:{orb:'2s',Z:1,fix:true},q:'Which orbital is bigger, 1s or 2s?',choices:['1s','2s','They are the same size'],correct:1,
+    {lvl:'bio',instant:true,set:{orb:'2s',Z:1,fix:true},q:'Which orbital is bigger, 1s or 2s?',choices:['1s','2s','The same size'],correct:1,
      explain:{bio:'Higher n means a bigger orbital. The most probable distance is '+Math.round(X1.rmp*A0)+' pm for 1s and '+Math.round(X2.rmp*A0)+' pm for 2s. The zoom is now locked so you can compare.'}},
-    {lvl:'bio',instant:true,set:{orb:'2pz',Z:1,fix:false},q:'Where is an electron in a 2pz orbital never found?',choices:['In the flat plane through the nucleus between the two lobes','At the far ends of the lobes','Anywhere along the z axis'],correct:0,
+    {lvl:'bio',instant:true,set:{orb:'2pz',Z:1,fix:false},q:'Where is an electron in a 2pz orbital never found?',choices:['In the flat plane through the nucleus, between lobes','At the far ends of the two lobes','Anywhere along the z axis through the lobes'],correct:0,
      explain:{bio:'The two lobes meet only at the nucleus. The flat xy-plane between them is a node, where the probability is exactly zero. Look at the dark band in the slice.'}},
     {lvl:'honors',instant:true,set:{orb:'3s',Z:1,nodes:true},q:'How many radial (spherical) nodes does a 3s orbital have?',choices:['0','1','2','3'],correct:2,
      explain:{honors:'Radial nodes = n − ℓ − 1 = 3 − 0 − 1 = 2. They show up as two dashed circles in the cloud and two dark rings in the slice.'}},
@@ -153,7 +153,7 @@ const SIM={
      explain:{ap:'d means ℓ = 2, and ℓ must be less than n, so n = 3 works. mℓ can run from −ℓ to +ℓ, so −1 is allowed. ℓ = 3 needs n ≥ 4, and |mℓ| can never exceed ℓ.'}},
     {lvl:'ap',instant:true,set:{orb:'1s',Z:2,fix:true},q:'He⁺ has one electron in a 1s orbital, like hydrogen, but Z = 2. How does its most probable distance compare?',choices:['Half as far: about 26 pm','Twice as far: about 106 pm','The same: 53 pm'],correct:0,
      explain:{ap:'Every distance in the hydrogen-like wavefunction scales as a₀/Z. The model gives '+Math.round(XHe.rmp*A0)+' pm for He⁺ against '+Math.round(X1.rmp*A0)+' pm for H. The energy grows as Z², four times as negative.'}},
-    {lvl:'ap',instant:true,set:{orb:'2s',Z:1},q:'In hydrogen, ⟨r⟩ is 6 a₀ for 2s and 5 a₀ for 2p. Yet in many-electron atoms, 2s electrons are held more tightly than 2p. Why?',choices:['A small inner lobe of 2s penetrates close to the nucleus, inside the 1s shielding','2s has more nodes, and nodes pull electrons inward','2s electrons spin faster than 2p electrons'],correct:0,
+    {lvl:'ap',instant:true,set:{orb:'2s',Z:1},q:'In hydrogen, ⟨r⟩ is 6 a₀ for 2s and 5 a₀ for 2p. Yet in many-electron atoms, 2s electrons are held more tightly than 2p. Why?',choices:['A small inner lobe of 2s gets inside the 1s shielding','2s has more nodes, and nodes pull electrons inward','2s electrons spin faster than 2p electrons do'],correct:0,
      explain:{ap:'Look at the Radial probability graph for 2s: a small hump sits close to the nucleus. That inner lobe slips inside the 1s electrons, so a 2s electron feels a larger effective nuclear charge. PES shows it: carbon’s 2s peak is at 1.72 MJ/mol, its 2p at 1.09.'}}
   ],
   lab:{bio:'<p><b>Question:</b> How do orbitals change as n gets bigger?</p><ol><li>Look at 1s, 2s, 3s and 4s. Record a trial for each.</li><li>Record the most probable distance from the nucleus.</li><li>On the Trials graph, plot n (x) against Most probable distance (y).</li></ol><p>Describe the pattern. Why do electrons in higher levels have more energy and sit farther from the nucleus?</p>',

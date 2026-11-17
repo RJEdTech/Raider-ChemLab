@@ -154,7 +154,7 @@ const SC={
   ],
   onTourExit(sim){const base={};SC.controls.forEach(c=>base[c.id]=c.def);BioLab.setValues(sim,base);BioLab.reset(sim);},
   challenges:[
-    {lvl:'bio',q:'80 g of KNO₃ is fully dissolved in 100 g of water at 70 °C. You cool it to 30 °C. How much KNO₃ comes out as crystals?',choices:['None: once dissolved, it stays dissolved','About 34 g','About 46 g','All 80 g'],correct:1,
+    {lvl:'bio',q:'80 g of KNO₃ is fully dissolved in 100 g of water at 70 °C. You cool it to 30 °C. How much KNO₃ comes out as crystals?',choices:['None of it','About 34 g','About 46 g','All 80 g'],correct:1,
      baseline:{view:'solid',solute:'KNO3',mass:80,T:70},change:{T:30},changeText:'Cooled from 70 °C to 30 °C',watch:'path',reveal:12,
      explain:{bio:'At 30 °C the curve says 100 g of water holds only 45.8 g of KNO₃. The rest has to leave the solution: 80 − 45.8 = 34.2 g of crystals.',ap:'Crystals = mass present − solubility at the new temperature = 80 − 45.8 = 34.2 g. This works whenever crystals can form (here they do).'}},
     {lvl:'bio',q:'40 g of NaCl in 100 g of water leaves crystals on the bottom at 20 °C. You heat it to 90 °C. What happens to the crystals?',choices:['They all dissolve: hot water dissolves more','About 1 g of crystals is still there','About half of the salt is still solid'],correct:1,
@@ -163,7 +163,7 @@ const SC={
     {lvl:'bio',q:'Lake water warms from 10 °C to 30 °C on a hot summer week. What happens to the dissolved oxygen?',choices:['It goes up','It goes down','It stays the same'],correct:1,
      baseline:{view:'gas',T:10},change:{T:30},changeText:'Water warmed from 10 °C to 30 °C',watch:'gas',reveal:9,
      explain:{bio:'Dissolved O₂ falls from 11.3 mg/L to 7.6 mg/L. Gases are less soluble in warm water, which is why fish crowd into cool, deep water in summer.'}},
-    {lvl:'honors',q:'60 g of KNO₃ was dissolved hot and cooled undisturbed to 30 °C (supersaturated). You drop in one tiny seed crystal. What happens?',choices:['The seed crystal dissolves','Nothing: the solution is stable','About 14 g of crystals forms quickly'],correct:2,
+    {lvl:'honors',q:'60 g of KNO₃ was dissolved hot and cooled undisturbed to 30 °C (supersaturated). You drop in one tiny seed crystal. What happens?',choices:['The seed crystal dissolves','Nothing: the solution is stable','About 14 g of crystals forms'],correct:2,
      baseline:{view:'solid',solute:'KNO3',mass:60,T:30,undist:true},baselineAction:'super',changeAction:'seed',changeText:'Seed crystal dropped in',watch:'path',reveal:7,
      explain:{honors:'A supersaturated solution holds more than its solubility only because the extra has nowhere to start a crystal. The seed gives it one, and the excess (60 − 45.8 = 14.2 g) crystallizes until the solution is just saturated.'}},
     {lvl:'honors',q:'Cerium(III) sulfate is saturated at 20 °C with about 2 g of crystals on the bottom. You heat it to 60 °C. What happens?',choices:['The crystals dissolve','More crystals form','Nothing changes'],correct:1,
@@ -172,7 +172,7 @@ const SC={
     {lvl:'ap',q:'100 g of KNO₃ and 10 g of NaCl are dissolved in 100 g of water at 80 °C. You cool to 0 °C and filter. What is on the filter paper?',choices:['86.7 g of nearly pure KNO₃','96.7 g: KNO₃ plus most of the NaCl','About 100 g of KNO₃'],correct:0,
      baseline:{view:'solid',solute:'KNO3',mass:100,T:80,imp:true},change:{T:0},changeText:'Cooled from 80 °C to 0 °C',watch:'path',reveal:20,
      explain:{ap:'KNO₃ crystals: 100 − 13.3 = 86.7 g (86.7% recovery). NaCl’s solubility at 0 °C is 35.7 g, far above 10 g, so it stays in the filtrate. The curves’ different shapes are what make recrystallization a purification.'}},
-    {lvl:'ap',q:'A trout hatchery moves from sea level to Denver (air pressure 0.83 atm). At the same 20 °C, the dissolved O₂ in its tanks will be…',choices:['the same: only temperature matters','about 17% lower','about 17% higher'],correct:1,
+    {lvl:'ap',q:'A trout hatchery moves from sea level to Denver (air pressure 0.83 atm). At the same 20 °C, the dissolved O₂ in its tanks will be…',choices:['the same','about 17% lower','about 17% higher'],correct:1,
      baseline:{view:'gas',T:20,P:'sea'},change:{P:'denver'},changeText:'Moved to Denver air (0.83 atm)',watch:'gas',reveal:5,
      explain:{ap:'Henry’s law: C = kH·P(O₂). Lower air pressure means lower O₂ partial pressure, so 9.1 mg/L becomes 0.83 × 9.1 = 7.6 mg/L. Colorado hatcheries aerate their water for this reason.'}}
   ],

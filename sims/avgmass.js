@@ -145,14 +145,14 @@ const AVG={
   onChallenge(sim,ch,phase){if(!ch||!ch.instant||phase!=='done')return;if(ch.set)BioLab.setValues(sim,ch.set);
     if(ch.bag){newBag(sim,ch.bag);sim.st.bag.phase=2;sim.st.bag.anim=0.8;}if(ch.fire)fireIons(sim,ch.fire);BioLab.refresh(sim);},
   challenges:[
-    {lvl:'bio',instant:true,set:{mode:'pennium',size:100},bag:[0.25,0.75],q:'A bag is 25% pre-1982 pennies (3.11 g) and 75% newer pennies (2.50 g). What is the average mass of one penny?',choices:['2.81 g, halfway between','2.65 g','2.96 g'],correct:1,
+    {lvl:'bio',instant:true,set:{mode:'pennium',size:100},bag:[0.25,0.75],q:'A bag is 25% pre-1982 pennies (3.11 g) and 75% newer pennies (2.50 g). What is the average mass of one penny?',choices:['2.81 g','2.65 g','2.96 g'],correct:1,
      explain:{bio:'0.25 × 3.11 + 0.75 × 2.50 = 0.78 + 1.88 = 2.65 g. The average sits closer to 2.50 g because most of the pennies are the lighter kind. The model now shows that bag, sorted and weighed.'}},
-    {lvl:'bio',instant:true,set:{mode:'spec',el:'Cl',dia:false},fire:10000,q:'Chlorine’s average atomic mass is 35.45 amu. How many chlorine atoms have a mass of 35.45 amu?',choices:['Most of them','None: each atom is ³⁵Cl (34.97 amu) or ³⁷Cl (36.97 amu)','About half of them'],correct:1,
+    {lvl:'bio',instant:true,set:{mode:'spec',el:'Cl',dia:false},fire:10000,q:'Chlorine’s average atomic mass is 35.45 amu. How many chlorine atoms have a mass of 35.45 amu?',choices:['Most of them, since it’s the average','None: each is ³⁵Cl or ³⁷Cl','About half of them'],correct:1,
      explain:{bio:'The spectrum has two peaks and nothing at 35.45. The average describes a large group of atoms, just as no family has the average 2.5 children. 75.8% are ³⁵Cl and 24.2% are ³⁷Cl.'}},
-    {lvl:'bio',q:'Bromine has two isotopes, ⁷⁹Br and ⁸¹Br. Fire 10,000 atoms. Where does the average land?',choices:['Almost halfway, near 79.9','Close to 79','Close to 81'],correct:0,
+    {lvl:'bio',q:'Bromine has two isotopes, ⁷⁹Br and ⁸¹Br. Fire 10,000 atoms. Where does the average land?',choices:['About halfway, near 79.9','Close to 79, the lighter one','Close to 81, the heavier one'],correct:0,
      baseline:{mode:'spec',el:'Br'},changeAction:'f10k',changeText:'10,000 bromine atoms fired',watch:'bars',
      explain:{bio:'The two peaks are almost the same height (50.7% and 49.3%), so the weighted average, 79.90 amu, is almost exactly halfway. A weighted average only equals the simple average when the isotopes are equally common.'}},
-    {lvl:'honors',instant:true,set:{mode:'spec',el:'Cl',B:0.40},q:'In the magnetic field, which ion bends into the tighter curve: ³⁵Cl⁺ or ³⁷Cl⁺?',choices:['³⁵Cl⁺, the lighter ion','³⁷Cl⁺, the heavier ion','They bend the same: both have a 1+ charge'],correct:0,
+    {lvl:'honors',instant:true,set:{mode:'spec',el:'Cl',B:0.40},q:'In the magnetic field, which ion bends into the tighter curve: ³⁵Cl⁺ or ³⁷Cl⁺?',choices:['³⁵Cl⁺, the lighter ion','³⁷Cl⁺, the heavier ion','They bend the same'],correct:0,
      explain:{honors:'Both ions get the same charge and kinetic energy, but the lighter ion has less momentum, so the magnetic force turns it more sharply (r ∝ √m). Watch the stage: blue ³⁵Cl⁺ lands closer to the entrance.'}},
     {lvl:'honors',q:'Raise the magnetic field from 0.40 T to 0.52 T. What happens to the ion paths?',choices:['Every path curves more tightly','Every path curves less','Nothing: only the mass matters'],correct:0,
      baseline:{mode:'spec',el:'Cl',B:0.40},change:{B:0.52},changeText:'Magnetic field raised to 0.52 T',

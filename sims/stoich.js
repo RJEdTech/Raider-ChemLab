@@ -218,7 +218,7 @@ const SIM={
      explain:{bio:'2 N₂ can make 2 batches; 9 H₂ could make 3. N₂ runs out after 2 batches, and each batch makes 2 NH₃, so 4 NH₃ form and 3 H₂ are left.'}},
     {lvl:'bio',instant:true,q:'A s’more takes 2 graham crackers, 1 marshmallow and 3 chocolate pieces. You have 8 graham crackers, 6 marshmallows and 9 chocolate pieces. How many s’mores can you make?',choices:['6','4','3','8'],correct:2,
      explain:{bio:'Crackers: 8 ÷ 2 = 4 s’mores. Marshmallows: 6 ÷ 1 = 6. Chocolate: 9 ÷ 3 = 3. The chocolate runs out first, so you make 3 s’mores. Chocolate is the limiting reactant. Set the S’mores reaction to 8, 6 and 9 to see it.'}},
-    {lvl:'honors',q:'You react 4.0 g of H₂ with 16.0 g of O₂. Which is the limiting reactant?',choices:['H₂, because it has the smaller mass','O₂','Neither'],correct:1,
+    {lvl:'honors',q:'You react 4.0 g of H₂ with 16.0 g of O₂. Which is the limiting reactant?',choices:['H₂','O₂','Neither'],correct:1,
      baseline:{rx:'water',units:'g',aG:4,bG:16},changeText:'Reactants mixed',watch:'lines',
      explain:{honors:'4.0 g ÷ 2.016 g/mol = 1.98 mol H₂, which needs 0.99 mol O₂. You only have 16.0 g ÷ 32.00 g/mol = 0.500 mol O₂. O₂ runs out first even though it has four times the mass. Always compare moles, using the ratio.'}},
     {lvl:'honors',q:'2 mol of H₂ (4.03 g) react completely with 1 mol of O₂ (32.00 g). What mass of water forms?',choices:['18.0 g','36.0 g','54.0 g','4.0 g'],correct:1,

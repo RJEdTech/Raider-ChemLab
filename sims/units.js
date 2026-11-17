@@ -103,7 +103,7 @@ function newProblem(sim){const st=sim.st;st.chain=[];st.res=null;st.ans='';if(si
 const CH=[
   {lvl:'bio',q:'To convert 2.50 km to meters, which conversion factor do you multiply by?',choices:['1 km / 1000 m','1000 m / 1 km','1 m / 1000 km'],correct:1,instant:true,show:{mode:'chain',prob:'km'},solve:true,
    explain:'Put the unit you want to get rid of (km) on the bottom so it cancels: 2.50 km × 1000 m / 1 km = 2500 m, written 2.50 × 10³ m to keep 3 significant figures. The chain is now built on the stage.'},
-  {lvl:'bio',q:'You convert 5.0 m to centimeters. Is the number of centimeters bigger or smaller than 5.0?',choices:['Smaller, because centimeters are small','Bigger: it takes many small units to cover the same length','The same number'],correct:1,instant:true,show:{mode:'ladder',val:'5.0',from:'',to:'c',base:'m'},hop:true,
+  {lvl:'bio',q:'You convert 5.0 m to centimeters. Is the number of centimeters bigger or smaller than 5.0?',choices:['Smaller, because centimeters are small','Bigger: it takes many small units','The same number'],correct:1,instant:true,show:{mode:'ladder',val:'5.0',from:'',to:'c',base:'m'},hop:true,
    explain:'Centimeters are smaller units, so you need more of them: 5.0 m = 500 cm. On the ladder, stepping down to a smaller unit moves the decimal point to the right, making the number bigger.'},
   {lvl:'bio',q:'Going from milliliters to liters, the decimal point moves…',choices:['3 places to the left','3 places to the right','1 place to the left'],correct:0,instant:true,show:{mode:'ladder',val:'455',from:'m',to:'',base:'L'},hop:true,
    explain:'Liters are 1000 times bigger than milliliters, so you need fewer of them. Climbing three steps up the ladder (milli → centi → deci → base) moves the decimal 3 places left: 455 mL = 0.455 L.'},
@@ -111,7 +111,7 @@ const CH=[
    explain:'Defined relationships (1 km = 1000 m, 1 in = 2.54 cm, 1 h = 60 min) are exact, with unlimited significant figures. Only measured values limit the answer: 2.50 km has 3, so the answer is 2.50 × 10³ m.'},
   {lvl:'honors',q:'What is the mass of 25.0 mL of ethanol? Its density is 0.789 g/mL.',choices:['31.7 g','19.7 g','0.0316 g'],correct:1,instant:true,show:{mode:'chain',prob:'eth'},solve:true,
    explain:'Density works as a conversion factor between mL and g: 25.0 mL × 0.789 g / 1 mL = 19.7 g. Dividing (25.0 ÷ 0.789 = 31.7) leaves mL²/g, which tells you the factor is upside down.'},
-  {lvl:'ap',q:'How many cubic centimeters are in 1 m³?',choices:['100 cm³','1000 cm³','1,000,000 cm³'],correct:2,instant:true,show:{mode:'chain',prob:'m3cm3'},solve:true,
+  {lvl:'ap',q:'How many cubic centimeters are in 1 m³?',choices:['100 cm³','1,000 cm³','1,000,000 cm³'],correct:2,instant:true,show:{mode:'chain',prob:'m3cm3'},solve:true,
    explain:'1 m = 100 cm, so 1 m³ = (100 cm)³ = 10⁶ cm³. Every length unit in a cubed unit gets converted, so the factor is cubed too. 0.0450 m³ = 4.50 × 10⁴ cm³.'},
   {lvl:'ap',q:'A car moves at 65 mi/h. About how fast is that in m/s?',choices:['29 m/s','105 m/s','1.8 m/s'],correct:0,instant:true,show:{mode:'chain',prob:'mph'},solve:true,
    explain:'65 mi/h × 1.609 km/1 mi × 1000 m/1 km × 1 h/3600 s = 29 m/s (2 significant figures, from 65). Hours are on the bottom of mi/h, so the time factor needs h on top.'}

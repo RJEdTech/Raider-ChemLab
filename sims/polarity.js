@@ -143,10 +143,10 @@ const POL={
   onTourExit(sim){BioLab.setValues(sim,{mode:'bond',a:'H',b:'Cl',field:false});},
   onChallenge(sim,ch,phase){if(ch&&ch.instant&&ch.set&&phase==='ask'){BioLab.setValues(sim,ch.set);BioLab.refresh(sim);}},
   challenges:[
-    {lvl:'bio',q:'CO₂ has two polar C=O bonds. If you switch on the electric field, what will the molecule do?',choices:['Turn and line up with the field','Keep tumbling: its bond dipoles cancel, so it is nonpolar'],correct:1,
+    {lvl:'bio',q:'CO₂ has two polar C=O bonds. If you switch on the electric field, what will the molecule do?',choices:['Turn and line up with the field','Keep tumbling: its dipoles cancel'],correct:1,
      baseline:{mode:'mol',mol:'CO2',field:false},change:{field:true},changeText:'Electric field switched on',
      explain:{bio:'The two C=O dipoles point in opposite directions and cancel. With no net dipole, the field has nothing to grab, so CO₂ keeps tumbling. Polar bonds do not always make a polar molecule.'}},
-    {lvl:'bio',q:'Water is in the field. Which end of the molecule turns toward the positive (+) plate?',choices:['The oxygen end','The hydrogen end','Neither: water does not line up'],correct:0,
+    {lvl:'bio',q:'Water is in the field. Which end of the molecule turns toward the positive (+) plate?',choices:['The oxygen end','The hydrogen end','Neither end'],correct:0,
      baseline:{mode:'mol',mol:'H2O',field:false},change:{field:true},changeText:'Electric field switched on',
      explain:{bio:'Oxygen is more electronegative, so it carries the δ− charge. Opposite charges attract: the oxygen end swings toward the + plate.'}},
     {lvl:'bio',q:'The water stream bends toward the negative rod. If you make the rod positive, the stream…',choices:['bends away from the rod','still bends toward the rod','stops bending'],correct:1,
@@ -162,7 +162,7 @@ const POL={
      explain:{honors:'ΔEN: C–H 0.35, N–H 0.84, O–H 1.24. The model is now showing O–H. The biggest difference in electronegativity gives the most polar bond.'}},
     {lvl:'ap',instant:true,set:{mode:'mol',mol:'SF4'},q:'Is SF₄ polar?',choices:['No: all four S–F bonds are identical, so they cancel','Yes: the seesaw shape leaves a net dipole'],correct:1,
      explain:{ap:'The lone pair makes SF₄ a seesaw. The axial dipoles nearly cancel (173°), but the two equatorial dipoles at 101.6° add up. The measured dipole moment is 0.63 D.'}},
-    {lvl:'ap',instant:true,set:{mode:'mol',mol:'CH2Cl2'},q:'Which has the larger dipole moment, CH₂Cl₂ or CCl₄?',choices:['CCl₄, because it has more polar C–Cl bonds','CH₂Cl₂','They are equal'],correct:1,
+    {lvl:'ap',instant:true,set:{mode:'mol',mol:'CH2Cl2'},q:'Which has the larger dipole moment, CH₂Cl₂ or CCl₄?',choices:['CCl₄','CH₂Cl₂','They are equal'],correct:1,
      explain:{ap:'More polar bonds do not mean a bigger dipole. CCl₄’s four dipoles cancel exactly (0 D). In CH₂Cl₂ the two C–Cl dipoles point to the same side, giving 1.60 D.'}},
     {lvl:'ap',instant:true,set:{mode:'bond',a:'H',b:'F'},q:'Use Pauling’s estimate, ionic character = 1 − e^(−ΔEN²/4). About how ionic is the H–F bond?',choices:['about 18%','about 55%','100%'],correct:1,
      explain:{ap:'ΔEN = 3.98 − 2.20 = 1.78, so 1 − e^(−0.79) ≈ 0.55. The Ionic character tile shows 55%. Even the most polar covalent bonds are only partly ionic.'}}

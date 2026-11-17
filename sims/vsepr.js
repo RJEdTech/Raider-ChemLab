@@ -187,7 +187,7 @@ const VS={
     {lvl:'bio',q:'Two bonded atoms and no lone pairs make a straight line (like CO₂). Add two lone pairs to the central atom (like H₂O). The shape becomes…',choices:['still linear','bent','tetrahedral'],correct:1,
      baseline:{mode:'model',nb:2,nl:0},change:{nl:2},changeText:'Two lone pairs added',
      explain:{bio:'Four domains now spread out in 3D. You only see the two atoms and the central atom, so the molecule is bent (104.5°), not straight. That is why water is bent.'}},
-    {lvl:'bio',q:'BF₃ and NH₃ both have three atoms bonded to the central atom. Do they have the same shape?',choices:['Yes, both are flat triangles','No: NH₃ has a lone pair, so it is a pyramid'],correct:1,
+    {lvl:'bio',q:'BF₃ and NH₃ both have three atoms bonded to the central atom. Do they have the same shape?',choices:['Yes, both are flat triangles','No: NH₃’s lone pair makes a pyramid'],correct:1,
      baseline:{mode:'real',mol:'BF3'},change:{mol:'NH3'},changeText:'Switched from BF₃ to NH₃',
      explain:{bio:'BF₃ has 3 domains (trigonal planar, 120°). NH₃ has 3 bonds plus a lone pair, 4 domains, so the atoms form a trigonal pyramid at 106.7°.'}},
     {lvl:'honors',instant:true,set:{mode:'real',mol:'H2O'},q:'What is the electron-domain geometry of water?',choices:['Bent','Tetrahedral','Linear'],correct:1,

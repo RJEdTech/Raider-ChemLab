@@ -170,7 +170,7 @@ const BUF={
     const b0=bufferPH(Q({}),0,0),b1=bufferPH(Q({}),1,0),bB=bufferPH(Q({}),0,1),w1=waterPH(1,0),wB=waterPH(0,1),b5=bufferPH(Q({}),5,0),w5=waterPH(5,0);
     const d0=bufferPH(Q({conc:0.02}),0,0),r10=bufferPH(Q({ratio:10}),0,0),bl0=bufferPH(Q({sys:'blood'}),0,0),bl1=bufferPH(Q({sys:'blood'}),0.2,0);
     return [
-    {lvl:'bio',q:'You add 1 mL of 1.0 M HCl to both beakers. Which pH changes more?',choices:['The water','The buffer','They change the same amount, because they got the same acid'],correct:0,
+    {lvl:'bio',q:'You add 1 mL of 1.0 M HCl to both beakers. Which pH changes more?',choices:['The water','The buffer','They change the same amount'],correct:0,
      baseline:{},changeAction:'acid',changeText:'1 mL of 1.0 M HCl added to each beaker',watch:'curve',
      explain:{bio:'Water fell from 7.00 to '+w1.toFixed(2)+', a drop of '+(7-w1).toFixed(1)+' pH units. The buffer only went from '+b0.toFixed(2)+' to '+b1.toFixed(2)+'. In the zoom, acetate ions caught the H₃O⁺ and turned into acetic acid, so the H₃O⁺ did not pile up.'}},
     {lvl:'bio',q:'Now add 1 mL of 1.0 M NaOH to both beakers. What happens to the buffer’s pH?',choices:['It rises a little','It rises a lot, to about 12','It falls'],correct:0,
@@ -186,7 +186,7 @@ const BUF={
      explain:{ap:'pH = pKa + log([A⁻]/[HA]) = 4.74 + log 10 = 5.74. The model is now set to a 10 : 1 ratio; the exact equilibrium gives '+r10.toFixed(2)+'. Every 10× change in the ratio moves the pH by 1.'}},
     {lvl:'ap',instant:true,set:{sys:'phos',conc:0.1,ratio:1},q:'You need a buffer that holds pH 7.2. Which system should you choose?',choices:['Acetic acid / acetate (pKa 4.74)','Phosphate, H₂PO₄⁻ / HPO₄²⁻ (pKa 7.21)','Ammonium / ammonia (pKa 9.25)'],correct:1,
      explain:{ap:'Pick the pair whose pKa is closest to the target, so you can use a ratio near 1 : 1, where the buffer resists acid and base equally well. The model is now set to the phosphate buffer at 1 : 1: pH '+bufferPH(Q({sys:'phos'}),0,0).toFixed(2)+'. This is why phosphate buffers are used in biology labs.'}},
-    {lvl:'ap',q:'Blood’s buffer is H₂CO₃ / HCO₃⁻ at about 1 : 20 (pH 7.40). In a closed beaker of blood buffer, you add 4 drops of 1.0 M acid. What happens?',choices:['The pH barely changes, because blood is a strong buffer','The pH falls noticeably, because H₂CO₃ is the small part and builds up fast','The pH rises'],correct:1,
+    {lvl:'ap',q:'Blood’s buffer is H₂CO₃ / HCO₃⁻ at about 1 : 20 (pH 7.40). In a closed beaker of blood buffer, you add 4 drops of 1.0 M acid. What happens?',choices:['It barely changes, since blood is a strong buffer','It falls noticeably, since H₂CO₃ is the small part','It rises as the bicarbonate takes up the acid'],correct:1,
      baseline:{sys:'blood',dose:0.2},changeAction:'acid',changeText:'4 drops of 1.0 M HCl added',watch:'curve',
      explain:{ap:'The pH fell from '+bl0.toFixed(2)+' to '+bl1.toFixed(2)+'. Only 0.12 mmol of H₂CO₃ was there, and 0.20 mmol more formed, so the ratio fell from 20 : 1 to about 6 : 1. In the body this does not happen, because the lungs remove the extra H₂CO₃ as CO₂ (an open system), and blood proteins add more buffering.'}}
   ];},

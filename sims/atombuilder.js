@@ -184,7 +184,7 @@ const AB={
   onTourExit(sim){BioLab.setValues(sim,{p:6,neu:6,e:6,scale:false,mode:'build'});},
   onChallenge(sim,ch,phase){if(ch&&ch.instant&&ch.set&&phase==='done')BioLab.setValues(sim,ch.set);},
   challenges:[
-    {lvl:'bio',q:'You have carbon-12 (6 protons, 6 neutrons, 6 electrons). Add one neutron. What do you have now?',choices:['Nitrogen','Still carbon: the isotope carbon-13','A carbon ion with a 1− charge'],correct:1,
+    {lvl:'bio',q:'You have carbon-12 (6 protons, 6 neutrons, 6 electrons). Add one neutron. What do you have now?',choices:['Nitrogen, since a particle was added','Still carbon: the isotope carbon-13','A carbon ion with a 1− charge'],correct:1,
      baseline:{p:6,neu:6,e:6},change:{neu:7},changeText:'One neutron added',
      explain:{bio:'The element stays carbon because the protons did not change. Neutrons have no charge, so the atom is still neutral. Only the mass number went up, from 12 to 13: a different isotope.'}},
     {lvl:'bio',q:'Start with a neutral sodium atom. Remove one electron. What happens?',choices:['It becomes neon, which has one fewer electron','It becomes Na⁺, still sodium, with a 1+ charge','Its mass number drops by 1'],correct:1,
@@ -195,7 +195,7 @@ const AB={
      explain:{bio:'7 protons means nitrogen. With only 6 electrons for 7 protons, it has a 1+ charge. Adding a proton changes the element itself.'}},
     {lvl:'honors',instant:true,set:{p:17,neu:20,e:18},q:'How many neutrons are in ³⁷Cl⁻?',choices:['17','18','20','37'],correct:2,
      explain:{honors:'Neutrons = mass number − atomic number = 37 − 17 = 20. The 1− charge changes the electron count (18), not the neutrons. The model now shows ³⁷Cl⁻.'}},
-    {lvl:'honors',q:'Change carbon-12 into carbon-14 by adding two neutrons. What happens to the atom’s charge?',choices:['It becomes 2−','It stays 0: neutrons carry no charge','It becomes 2+'],correct:1,
+    {lvl:'honors',q:'Change carbon-12 into carbon-14 by adding two neutrons. What happens to the atom’s charge?',choices:['It becomes 2−','It stays 0','It becomes 2+'],correct:1,
      baseline:{p:6,neu:6,e:6},change:{neu:8},changeText:'Two neutrons added',
      explain:{honors:'Neutrons are neutral, so isotopes of an element have the same charge and the same electrons, and nearly the same chemistry. Carbon-14 is radioactive, though: 8 neutrons is too many for 6 protons.'}},
     {lvl:'honors',q:'Oxygen-16 is stable. Add four neutrons to make oxygen-20. What happens to the nucleus?',choices:['More neutrons make it even more stable','It becomes radioactive','Nothing: neutrons do not affect stability'],correct:1,
