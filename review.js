@@ -86,8 +86,12 @@ balance:{questions:[
   {id:'charge',kind:'test',lvl:'ap',
     q:'Cu + Ag⁺ → Cu²⁺ + Ag has one of each atom on both sides. Why is the balanced equation Cu + 2Ag⁺ → Cu²⁺ + 2Ag?',
     choices:['Charge must balance too: Cu gives 2 e⁻, each Ag⁺ takes 1','Silver atoms always come in pairs in solution','Copper is twice as heavy as silver, so you need two','The 2 is optional; both versions are balanced'],correct:0,
-    steps:['Left side charge with one Ag⁺: +1. Right side: +2. Charge is not conserved, so the equation is wrong.','Electrons lost must equal electrons gained: Cu → Cu²⁺ + 2e⁻, and Ag⁺ + e⁻ → Ag.','Doubling the silver half-reaction gives Cu + 2Ag⁺ → Cu²⁺ + 2Ag: +2 on both sides.']}
-]},
+    steps:['Left side charge with one Ag⁺: +1. Right side: +2. Charge is not conserved, so the equation is wrong.','Electrons lost must equal electrons gained: Cu → Cu²⁺ + 2e⁻, and Ag⁺ + e⁻ → Ag.','Doubling the silver half-reaction gives Cu + 2Ag⁺ → Cu²⁺ + 2Ag: +2 on both sides.']},
+  {id:'practice',kind:'test',lvl:'bio',fixed:true,
+    q:'<p>Which coefficients balance __Fe + __O₂ → __Fe₂O₃?</p>',
+    choices:['2, 3, 1','2, 1, 1','4, 3, 2','4, 6, 2'],correct:2,
+    steps:['Fe₂O₃ has 3 O; O₂ has 2. The smallest match is 6 O: 3 O₂ and 2 Fe₂O₃.','2 Fe₂O₃ has 4 Fe, so 4 Fe.','4Fe + 3O₂ → 2Fe₂O₃: 4 Fe and 6 O on each side.']}
+  ]},
 rxntypes:{questions:[
   {id:'decomp',kind:'test',lvl:'bio',
     q:'Why is 2H₂O₂ → 2H₂O + O₂ called a decomposition reaction?',
@@ -120,8 +124,16 @@ rxntypes:{questions:[
   {id:'redox',kind:'test',lvl:'ap',
     q:'Why is every single-replacement reaction a redox reaction, while a precipitation (double-replacement) reaction is not?',
     choices:['Single replacement always uses oxygen as a reactant','In single replacement a free element becomes an ion, so electrons move','Double replacement happens in water, which blocks electron transfer','They are both redox, since ions change partners in both'],correct:1,
-    steps:['Zn + Cu²⁺ → Zn²⁺ + Cu: zinc goes from 0 to +2 (oxidized) and copper from +2 to 0 (reduced).','In AgNO₃ + NaCl → AgCl + NaNO₃, every ion has the same charge before and after.','No change in oxidation numbers means no electron transfer, so it is not redox.']}
-]},
+    steps:['Zn + Cu²⁺ → Zn²⁺ + Cu: zinc goes from 0 to +2 (oxidized) and copper from +2 to 0 (reduced).','In AgNO₃ + NaCl → AgCl + NaNO₃, every ion has the same charge before and after.','No change in oxidation numbers means no electron transfer, so it is not redox.']},
+  {id:'classify',kind:'test',lvl:'bio',
+    q:'<p>What type of reaction is 2KClO₃ → 2KCl + 3O₂?</p>',
+    choices:['Decomposition','Synthesis','Single replacement','Combustion'],correct:0,
+    steps:['One reactant breaks into two simpler products.','That pattern, AB → A + B, is decomposition.','Synthesis is the reverse: two things joining into one.']},
+  {id:'combprod',kind:'test',lvl:'bio',
+    q:'<p>Propane, C₃H₈, burns completely in air. What are the products?</p>',
+    choices:['CO₂ and H₂O','C and H₂','CO₂ and H₂','H₂O and O₂'],correct:0,
+    steps:['Combustion of a hydrocarbon uses O₂.','Its carbon becomes CO₂ and its hydrogen becomes H₂O.','C₃H₈ + 5O₂ → 3CO₂ + 4H₂O.']}
+  ]},
 activity:{questions:[
   {id:'whowins',kind:'test',lvl:'bio',
     q:'Copper wire in silver nitrate grows silver crystals. Silver wire in copper nitrate does nothing. Why?',
@@ -150,8 +162,16 @@ activity:{questions:[
   {id:'gap',kind:'test',lvl:'ap',
     q:'Why does a Zn/Cu cell give a higher voltage than a Fe/Cu cell?',
     choices:['Zinc is farther below copper in E° than iron is','Zinc is heavier than iron, so it pushes harder','Iron cells always run at exactly 1.5 V','Copper changes in each cell, lowering iron’s'],correct:0,
-    steps:['E°(Cu²⁺/Cu) = +0.34 V, E°(Fe²⁺/Fe) = −0.44 V, E°(Zn²⁺/Zn) = −0.76 V.','Zn/Cu: 0.34 − (−0.76) = 1.10 V. Fe/Cu: 0.34 − (−0.44) = 0.78 V.','A bigger gap in the series means a bigger voltage.']}
-]},
+    steps:['E°(Cu²⁺/Cu) = +0.34 V, E°(Fe²⁺/Fe) = −0.44 V, E°(Zn²⁺/Zn) = −0.76 V.','Zn/Cu: 0.34 − (−0.76) = 1.10 V. Fe/Cu: 0.34 − (−0.44) = 0.78 V.','A bigger gap in the series means a bigger voltage.']},
+  {id:'predict',kind:'test',lvl:'bio',
+    q:'<p>Using Mg > Zn > Fe > Pb > (H) > Cu > Ag, which mix will react?</p>',
+    choices:['Iron in copper(II) sulfate','Copper in zinc nitrate','Silver in hydrochloric acid','Lead in magnesium chloride'],correct:0,
+    steps:['A metal replaces the ions of any metal below it in the series.','Iron is above copper, so iron replaces Cu²⁺ and copper metal forms.','The other three metals sit below the metal (or H⁺) in solution, so nothing happens.']},
+  {id:'oxid',kind:'test',lvl:'honors',
+    q:'<p>In Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s), what is oxidized?</p>',
+    choices:['Zinc metal','Copper(II) ions','Copper metal','Zinc ions'],correct:0,
+    steps:['Oxidation is loss of electrons.','Zn atoms lose 2 electrons each to become Zn²⁺.','Cu²⁺ gains those electrons, so it is reduced.']}
+  ]},
 precip:{questions:[
   {id:'cloudy',kind:'test',lvl:'bio',
     q:'Clear silver nitrate and clear sodium chloride turn cloudy white when mixed. Why?',
@@ -180,8 +200,16 @@ precip:{questions:[
   {id:'limiting',kind:'test',lvl:'ap',
     q:'25.0 mL of 0.100 M AgNO₃ is mixed with 15.0 mL of 0.100 M NaCl. How many moles of AgCl form, and why?',
     choices:['2.50 × 10⁻³ mol, because Ag⁺ is in excess','4.00 × 10⁻³ mol, adding both','1.50 × 10⁻³ mol, because Cl⁻ runs out first','1.00 × 10⁻³ mol, the difference'],correct:2,
-    steps:['Moles of Ag⁺ = 0.0250 L × 0.100 M = 2.50 × 10⁻³ mol. Moles of Cl⁻ = 0.0150 L × 0.100 M = 1.50 × 10⁻³ mol.','Ag⁺ + Cl⁻ → AgCl is 1:1, so Cl⁻ is limiting.','1.50 × 10⁻³ mol AgCl forms (about 0.215 g), and 1.00 × 10⁻³ mol Ag⁺ stays in solution.']}
-]}
+    steps:['Moles of Ag⁺ = 0.0250 L × 0.100 M = 2.50 × 10⁻³ mol. Moles of Cl⁻ = 0.0150 L × 0.100 M = 1.50 × 10⁻³ mol.','Ag⁺ + Cl⁻ → AgCl is 1:1, so Cl⁻ is limiting.','1.50 × 10⁻³ mol AgCl forms (about 0.215 g), and 1.00 × 10⁻³ mol Ag⁺ stays in solution.']},
+  {id:'solrule',kind:'test',lvl:'bio',
+    q:'<p>Which mix of solutions makes a precipitate?</p>',
+    choices:['Barium chloride + sodium sulfate','Sodium chloride + potassium nitrate','Potassium chloride + sodium nitrate','Ammonium nitrate + sodium chloride'],correct:0,
+    steps:['Swap partners and check if any new pair is insoluble.','Ba²⁺ and SO₄²⁻ form BaSO₄, which is insoluble.','Every other pair has sodium, potassium, ammonium or nitrate, so all stay dissolved.']},
+  {id:'netionic',kind:'test',lvl:'honors',
+    q:'<p>What is the net ionic equation when lead(II) nitrate and potassium iodide make a yellow solid?</p>',
+    choices:['Pb²⁺(aq) + 2I⁻(aq) → PbI₂(s)','K⁺(aq) + NO₃⁻(aq) → KNO₃(s)','Pb²⁺(aq) + I⁻(aq) → PbI(s)','2K⁺(aq) + 2I⁻(aq) → 2KI(s)'],correct:0,
+    steps:['The yellow solid is lead(II) iodide, PbI₂.','Each Pb²⁺ needs two I⁻ to balance charge.','K⁺ and NO₃⁻ are spectators, so they are left out.']}
+  ]}
 });
 /* Fall final review: why-questions for Units 0-4 tools (Nov 2026) */
 BioLab.addReview({
@@ -300,8 +328,16 @@ nuclear:{questions:[
     steps:['Beta-minus raises the atomic number by 1: 6 → 7, which is nitrogen.','The mass number stays 14.','¹⁴₆C → ¹⁴₇N + ⁰₋₁e.'],lab:{set:{mode:'decay',nuc:'C14'},look:'Read the balanced equation.'}},
   {id:'smoke',kind:'real',lvl:'bio',q:'Many smoke detectors contain a tiny amount of americium-241, an alpha emitter. Why is it safe on your ceiling?',
     choices:['It isn’t radioactive until smoke reaches it','Its radiation is gamma, which is harmless','The amount grows over time, so it starts small','Alpha can’t get through the case or much air'],correct:3,
-    steps:['Alpha particles are stopped by paper, skin or a few centimeters of air.','Inside the detector, they ionize air to make a small current; smoke interrupts it.','The danger would be breathing or swallowing the source, so never take a detector apart.']}
-]},
+    steps:['Alpha particles are stopped by paper, skin or a few centimeters of air.','Inside the detector, they ionize air to make a small current; smoke interrupts it.','The danger would be breathing or swallowing the source, so never take a detector apart.']},
+  {id:'alphaeq',kind:'test',lvl:'honors',
+    q:'<p>Polonium-210 (Z = 84) emits an alpha particle. What is the product?</p>',
+    choices:['Lead-206','Lead-210','Polonium-206','Bismuth-210'],correct:0,
+    steps:['An alpha particle is ⁴₂He: A drops by 4 and Z by 2.','210 − 4 = 206 and 84 − 2 = 82.','Element 82 is lead, so the product is lead-206.']},
+  {id:'penetrate',kind:'test',lvl:'bio',
+    q:'<p>Which list puts the radiation types from <b>least</b> to <b>most</b> penetrating?</p>',
+    choices:['Alpha, beta, gamma','Gamma, beta, alpha','Beta, alpha, gamma','Alpha, gamma, beta'],correct:0,
+    steps:['Paper stops alpha particles.','Beta particles get through paper but aluminum stops them.','Gamma rays need thick lead, so they are the most penetrating.']}
+  ]},
 halflife:{questions:[
   {id:'grams',kind:'test',lvl:'bio',q:'A sample has 80 g of an isotope with a half-life of 5 days. How much is left after 15 days?',
     num:{ans:10,tol:0,unit:'g'},
@@ -320,8 +356,16 @@ halflife:{questions:[
     steps:['Half-life is a property of the isotope, not of the amount.','Twice as many atoms means twice as many decays per second.','But it still takes the same time for half of them to decay.']},
   {id:'dino',kind:'real',lvl:'honors',q:'Why can’t carbon-14 be used to date a 66-million-year-old dinosaur bone?',
     choices:['Dinosaurs didn’t contain any carbon','After so many half-lives, almost no C-14 is left','Carbon-14 decays faster inside old bones','The bone is too big to fit in the machine'],correct:1,
-    steps:['66 million years is over 11,000 half-lives of carbon-14.','After about 50,000 years, too little is left to measure.','Geologists date dinosaurs with longer-lived isotopes, like potassium-40 and uranium, in nearby volcanic rock.']}
-]},
+    steps:['66 million years is over 11,000 half-lives of carbon-14.','After about 50,000 years, too little is left to measure.','Geologists date dinosaurs with longer-lived isotopes, like potassium-40 and uranium, in nearby volcanic rock.']},
+  {id:'hlgraph',kind:'test',lvl:'bio',
+    q:'<p>The graph shows a radioactive sample decaying. What is its half-life?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Mass of a radioactive isotope against time: 80 g at day 0, 40 g at day 10, 20 g at day 20, 10 g at day 30, 5 g at day 40."><path d="M58 16V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M58.0 180v4" stroke="currentColor"/><text x="58.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">0</text><path d="M143.5 180v4" stroke="currentColor"/><text x="143.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">10</text><path d="M229.0 180v4" stroke="currentColor"/><text x="229.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">20</text><path d="M314.5 180v4" stroke="currentColor"/><text x="314.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">30</text><path d="M400.0 180v4" stroke="currentColor"/><text x="400.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">40</text><path d="M54 180.0h4" stroke="currentColor"/><text x="51" y="184.0" font-size="12" text-anchor="end" fill="currentColor">0</text><path d="M54 140.5h4" stroke="currentColor"/><text x="51" y="144.5" font-size="12" text-anchor="end" fill="currentColor">20</text><path d="M54 101.0h4" stroke="currentColor"/><text x="51" y="105.0" font-size="12" text-anchor="end" fill="currentColor">40</text><path d="M54 61.5h4" stroke="currentColor"/><text x="51" y="65.5" font-size="12" text-anchor="end" fill="currentColor">60</text><path d="M54 22.0h4" stroke="currentColor"/><text x="51" y="26.0" font-size="12" text-anchor="end" fill="currentColor">80</text><text x="229.0" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Time (days)</text><text transform="translate(16 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Mass left (g)</text><path d="M58.0 22.0L59.7 24.2L61.4 26.3L63.1 28.4L64.8 30.5L66.5 32.6L68.3 34.6L70.0 36.6L71.7 38.6L73.4 40.5L75.1 42.5L76.8 44.3L78.5 46.2L80.2 48.1L81.9 49.9L83.7 51.7L85.4 53.4L87.1 55.2L88.8 56.9L90.5 58.6L92.2 60.3L93.9 61.9L95.6 63.5L97.3 65.1L99.0 66.7L100.8 68.3L102.5 69.8L104.2 71.3L105.9 72.8L107.6 74.3L109.3 75.8L111.0 77.2L112.7 78.6L114.4 80.0L116.1 81.4L117.8 82.7L119.6 84.1L121.3 85.4L123.0 86.7L124.7 88.0L126.4 89.3L128.1 90.5L129.8 91.7L131.5 92.9L133.2 94.1L134.9 95.3L136.7 96.5L138.4 97.6L140.1 98.8L141.8 99.9L143.5 101.0L145.2 102.1L146.9 103.2L148.6 104.2L150.3 105.3L152.1 106.3L153.8 107.3L155.5 108.3L157.2 109.3L158.9 110.3L160.6 111.2L162.3 112.2L164.0 113.1L165.7 114.0L167.4 114.9L169.2 115.8L170.9 116.7L172.6 117.6L174.3 118.4L176.0 119.3L177.7 120.1L179.4 121.0L181.1 121.8L182.8 122.6L184.5 123.4L186.2 124.1L188.0 124.9L189.7 125.7L191.4 126.4L193.1 127.2L194.8 127.9L196.5 128.6L198.2 129.3L199.9 130.0L201.6 130.7L203.3 131.4L205.1 132.0L206.8 132.7L208.5 133.4L210.2 134.0L211.9 134.6L213.6 135.3L215.3 135.9L217.0 136.5L218.7 137.1L220.4 137.7L222.2 138.2L223.9 138.8L225.6 139.4L227.3 139.9L229.0 140.5L230.7 141.0L232.4 141.6L234.1 142.1L235.8 142.6L237.6 143.1L239.3 143.7L241.0 144.2L242.7 144.6L244.4 145.1L246.1 145.6L247.8 146.1L249.5 146.6L251.2 147.0L252.9 147.5L254.6 147.9L256.4 148.4L258.1 148.8L259.8 149.2L261.5 149.6L263.2 150.1L264.9 150.5L266.6 150.9L268.3 151.3L270.0 151.7L271.8 152.1L273.5 152.5L275.2 152.8L276.9 153.2L278.6 153.6L280.3 153.9L282.0 154.3L283.7 154.7L285.4 155.0L287.1 155.3L288.9 155.7L290.6 156.0L292.3 156.3L294.0 156.7L295.7 157.0L297.4 157.3L299.1 157.6L300.8 157.9L302.5 158.2L304.2 158.5L305.9 158.8L307.7 159.1L309.4 159.4L311.1 159.7L312.8 160.0L314.5 160.2L316.2 160.5L317.9 160.8L319.6 161.1L321.3 161.3L323.1 161.6L324.8 161.8L326.5 162.1L328.2 162.3L329.9 162.6L331.6 162.8L333.3 163.0L335.0 163.3L336.7 163.5L338.4 163.7L340.1 164.0L341.9 164.2L343.6 164.4L345.3 164.6L347.0 164.8L348.7 165.0L350.4 165.2L352.1 165.4L353.8 165.6L355.5 165.8L357.2 166.0L359.0 166.2L360.7 166.4L362.4 166.6L364.1 166.8L365.8 167.0L367.5 167.1L369.2 167.3L370.9 167.5L372.6 167.7L374.4 167.8L376.1 168.0L377.8 168.2L379.5 168.3L381.2 168.5L382.9 168.7L384.6 168.8L386.3 169.0L388.0 169.1L389.7 169.3L391.4 169.4L393.2 169.6L394.9 169.7L396.6 169.8L398.3 170.0L400.0 170.1" fill="none" stroke="#c8102e" stroke-width="3"/><circle cx="58.0" cy="22.0" r="4" fill="#c8102e"/><circle cx="143.5" cy="101.0" r="4" fill="#c8102e"/><circle cx="229.0" cy="140.5" r="4" fill="#c8102e"/><circle cx="314.5" cy="160.2" r="4" fill="#c8102e"/><circle cx="400.0" cy="170.1" r="4" fill="#c8102e"/></svg>',
+    choices:['10 days','20 days','40 days','5 days'],correct:0,
+    steps:['Start at 80 g and find where half, 40 g, is left.','The curve reaches 40 g at day 10.','It halves again every 10 days: 20 g at day 20, 10 g at day 30.']},
+  {id:'after3',kind:'test',lvl:'bio',
+    q:'<p>A 64 g sample has a half-life of 2 hours. How much is left after 6 hours?</p>',
+    choices:['8 g','16 g','21 g','32 g'],correct:0,
+    steps:['6 hours is 3 half-lives.','64 → 32 → 16 → 8 g.','It is not 64 ÷ 3: each half-life halves what is left.']}
+  ]},
 ptable:{questions:[
   {id:'group',kind:'test',lvl:'bio',q:'Why do elements in the same group (column) behave alike?',
     choices:['They have the same atomic mass','They have the same number of valence electrons','They were discovered around the same time','They are all metals with similar properties'],correct:1,
@@ -340,8 +384,12 @@ ptable:{questions:[
     steps:['Metalloids sit along the staircase line between metals and nonmetals.','Silicon is one, with properties of both.','That middle behavior is why it is used in computer chips.'],lab:{set:{mode:'explore'},look:'Color the table by metal type.'}},
   {id:'cl',kind:'test',lvl:'honors',q:'What ion does chlorine form?',
     choices:['Cl⁻','Cl⁺','Cl²⁻','Cl⁷⁺'],correct:0,
-    steps:['Chlorine has 7 valence electrons.','Gaining 1 electron fills its outer shell.','One extra electron gives a 1− charge: chloride, Cl⁻.']}
-]},
+    steps:['Chlorine has 7 valence electrons.','Gaining 1 electron fills its outer shell.','One extra electron gives a 1− charge: chloride, Cl⁻.']},
+  {id:'locate',kind:'test',lvl:'bio',
+    q:'<p>An element is in period 3, group 17. What is it, and what ion does it form?</p>',
+    choices:['Chlorine, Cl⁻','Sulfur, S²⁻','Argon, no ion','Fluorine, F⁻'],correct:0,
+    steps:['Period 3, group 17 is chlorine.','Group 17 has 7 valence electrons.','It gains 1 to reach 8, forming Cl⁻.']}
+  ]},
 measure:{questions:[
   {id:'sf1',kind:'test',lvl:'bio',q:'How many significant figures are in 0.00450?',
     num:{ans:3,tol:0,unit:''},
@@ -387,8 +435,16 @@ measure:{questions:[
     steps:['Mass of water = 77.3 − 52.418 = 24.882 g.','For subtraction, keep the fewest decimal places, not the fewest sig figs.','77.3 has one decimal place, so report 24.9 g.'],lab:{set:{mode:'math',op:'sub'},look:'Try it in sig fig math.'}},
   {id:'pcterr',kind:'test',lvl:'bio',q:'The accepted density of copper is 8.96 g/cm³. A student measures 8.70 g/cm³. What is the percent error?',
     num:{ans:2.9,tol:0.05,unit:'%'},
-    steps:['Percent error = |experimental − accepted| ÷ accepted × 100.','|8.70 − 8.96| = 0.26; 0.26 ÷ 8.96 = 0.0290.','× 100 = 2.9%. The absolute value makes it positive.'],lab:{set:{mode:'acc'},look:'Change the bias and watch the percent error.'}}
-]},
+    steps:['Percent error = |experimental − accepted| ÷ accepted × 100.','|8.70 − 8.96| = 0.26; 0.26 ÷ 8.96 = 0.0290.','× 100 = 2.9%. The absolute value makes it positive.'],lab:{set:{mode:'acc'},look:'Change the bias and watch the percent error.'}},
+  {id:'sfprod',kind:'test',lvl:'honors',
+    q:'<p>A student measures 2.5 cm and 12.30 cm and multiplies them. How should the area be reported?</p>',
+    choices:['31 cm²','30.75 cm²','30.8 cm²','31.0 cm²'],correct:0,
+    steps:['2.5 has 2 sig figs; 12.30 has 4.','For multiplying, keep the fewest sig figs: 2.','30.75 rounds to 31 cm².']},
+  {id:'precacc',kind:'test',lvl:'bio',
+    q:'<p>Three readings of a 50.00 g mass are 48.71, 48.70 and 48.72 g. How would you describe them?</p>',
+    choices:['Precise but not accurate','Accurate but not precise','Both accurate and precise','Neither accurate nor precise'],correct:0,
+    steps:['The readings agree within 0.02 g, so they are precise.','They are all about 1.3 g below 50.00 g, so they are not accurate.','A balance that isn’t zeroed causes exactly this pattern.']}
+  ]},
 units:{questions:[
   {id:'km',kind:'test',lvl:'bio',q:'Convert 4.75 km to meters.',
     num:{ans:4750,tol:0,unit:'m'},
@@ -427,8 +483,16 @@ density:{questions:[
     steps:['Rearrange: volume = mass ÷ density.','100 g ÷ 19.3 g/cm³.','≈ 5.18 cm³, about the size of a large sugar cube.']},
   {id:'ice',kind:'real',lvl:'bio',q:'Why does ice float on a lake, so lakes freeze from the top down?',
     choices:['Ice is warmer than water, so it rises','Air bubbles are always trapped in ice','Ice is heavier than water, but spreads out','Solid water is less dense than liquid water'],correct:3,
-    steps:['Most solids are denser than their liquids, but water is unusual.','As it freezes, its molecules lock into an open pattern, so ice takes up more space.','Less dense ice floats, insulating the water below so fish survive the winter.']}
-]}
+    steps:['Most solids are denser than their liquids, but water is unusual.','As it freezes, its molecules lock into an open pattern, so ice takes up more space.','Less dense ice floats, insulating the water below so fish survive the winter.']},
+  {id:'mvgraph',kind:'test',lvl:'bio',
+    q:'<p>The graph shows mass vs volume for two metals. Which is denser, and how can you tell?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Mass against volume for two metals, X and Y. Both are straight lines from zero. Line X is steeper: about 157 g at 20 cm³. Line Y reaches about 54 g at 20 cm³."><path d="M62 16V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M62.0 180v4" stroke="currentColor"/><text x="62.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">0</text><path d="M174.7 180v4" stroke="currentColor"/><text x="174.7" y="196" font-size="12" text-anchor="middle" fill="currentColor">10</text><path d="M287.3 180v4" stroke="currentColor"/><text x="287.3" y="196" font-size="12" text-anchor="middle" fill="currentColor">20</text><path d="M400.0 180v4" stroke="currentColor"/><text x="400.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">30</text><path d="M58 180.0h4" stroke="currentColor"/><text x="55" y="184.0" font-size="12" text-anchor="end" fill="currentColor">0</text><path d="M58 127.3h4" stroke="currentColor"/><text x="55" y="131.3" font-size="12" text-anchor="end" fill="currentColor">100</text><path d="M58 74.7h4" stroke="currentColor"/><text x="55" y="78.7" font-size="12" text-anchor="end" fill="currentColor">200</text><path d="M58 22.0h4" stroke="currentColor"/><text x="55" y="26.0" font-size="12" text-anchor="end" fill="currentColor">300</text><text x="231.0" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Volume (cm³)</text><text transform="translate(16 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Mass (g)</text><path d="M62.0 180.0L63.7 179.4L65.4 178.8L67.1 178.1L68.8 177.5L70.5 176.9L72.1 176.3L73.8 175.6L75.5 175.0L77.2 174.4L78.9 173.8L80.6 173.2L82.3 172.5L84.0 171.9L85.7 171.3L87.3 170.7L89.0 170.1L90.7 169.4L92.4 168.8L94.1 168.2L95.8 167.6L97.5 166.9L99.2 166.3L100.9 165.7L102.6 165.1L104.2 164.5L105.9 163.8L107.6 163.2L109.3 162.6L111.0 162.0L112.7 161.3L114.4 160.7L116.1 160.1L117.8 159.5L119.5 158.9L121.2 158.2L122.8 157.6L124.5 157.0L126.2 156.4L127.9 155.8L129.6 155.1L131.3 154.5L133.0 153.9L134.7 153.3L136.4 152.6L138.1 152.0L139.7 151.4L141.4 150.8L143.1 150.2L144.8 149.5L146.5 148.9L148.2 148.3L149.9 147.7L151.6 147.0L153.3 146.4L154.9 145.8L156.6 145.2L158.3 144.6L160.0 143.9L161.7 143.3L163.4 142.7L165.1 142.1L166.8 141.5L168.5 140.8L170.2 140.2L171.9 139.6L173.5 139.0L175.2 138.3L176.9 137.7L178.6 137.1L180.3 136.5L182.0 135.9L183.7 135.2L185.4 134.6L187.1 134.0L188.8 133.4L190.4 132.7L192.1 132.1L193.8 131.5L195.5 130.9L197.2 130.3L198.9 129.6L200.6 129.0L202.3 128.4L204.0 127.8L205.7 127.2L207.3 126.5L209.0 125.9L210.7 125.3L212.4 124.7L214.1 124.0L215.8 123.4L217.5 122.8L219.2 122.2L220.9 121.6L222.5 120.9L224.2 120.3L225.9 119.7L227.6 119.1L229.3 118.4L231.0 117.8L232.7 117.2L234.4 116.6L236.1 116.0L237.8 115.3L239.5 114.7L241.1 114.1L242.8 113.5L244.5 112.9L246.2 112.2L247.9 111.6L249.6 111.0L251.3 110.4L253.0 109.7L254.7 109.1L256.4 108.5L258.0 107.9L259.7 107.3L261.4 106.6L263.1 106.0L264.8 105.4L266.5 104.8L268.2 104.1L269.9 103.5L271.6 102.9L273.2 102.3L274.9 101.7L276.6 101.0L278.3 100.4L280.0 99.8L281.7 99.2L283.4 98.6L285.1 97.9L286.8 97.3L288.5 96.7L290.1 96.1L291.8 95.4L293.5 94.8L295.2 94.2L296.9 93.6L298.6 93.0L300.3 92.3L302.0 91.7L303.7 91.1L305.4 90.5L307.0 89.8L308.7 89.2L310.4 88.6L312.1 88.0L313.8 87.4L315.5 86.7L317.2 86.1L318.9 85.5L320.6 84.9L322.3 84.3L323.9 83.6L325.6 83.0L327.3 82.4L329.0 81.8L330.7 81.1L332.4 80.5L334.1 79.9L335.8 79.3L337.5 78.7L339.2 78.0L340.8 77.4L342.5 76.8L344.2 76.2L345.9 75.5L347.6 74.9L349.3 74.3L351.0 73.7L352.7 73.1L354.4 72.4L356.1 71.8L357.8 71.2L359.4 70.6L361.1 70.0L362.8 69.3L364.5 68.7L366.2 68.1L367.9 67.5L369.6 66.8L371.3 66.2L373.0 65.6L374.7 65.0L376.3 64.4L378.0 63.7L379.7 63.1L381.4 62.5L383.1 61.9L384.8 61.2L386.5 60.6L388.2 60.0L389.9 59.4L391.6 58.8L393.2 58.1L394.9 57.5L396.6 56.9L398.3 56.3L400.0 55.7" fill="none" stroke="#62676f" stroke-width="3"/><text x="354.9" y="62.2" font-size="13" font-weight="700" text-anchor="end" fill="currentColor">X</text><path d="M62.0 180.0L63.7 179.8L65.4 179.6L67.1 179.4L68.8 179.1L70.5 178.9L72.1 178.7L73.8 178.5L75.5 178.3L77.2 178.1L78.9 177.9L80.6 177.7L82.3 177.4L84.0 177.2L85.7 177.0L87.3 176.8L89.0 176.6L90.7 176.4L92.4 176.2L94.1 175.9L95.8 175.7L97.5 175.5L99.2 175.3L100.9 175.1L102.6 174.9L104.2 174.7L105.9 174.5L107.6 174.2L109.3 174.0L111.0 173.8L112.7 173.6L114.4 173.4L116.1 173.2L117.8 173.0L119.5 172.7L121.2 172.5L122.8 172.3L124.5 172.1L126.2 171.9L127.9 171.7L129.6 171.5L131.3 171.3L133.0 171.0L134.7 170.8L136.4 170.6L138.1 170.4L139.7 170.2L141.4 170.0L143.1 169.8L144.8 169.5L146.5 169.3L148.2 169.1L149.9 168.9L151.6 168.7L153.3 168.5L154.9 168.3L156.6 168.1L158.3 167.8L160.0 167.6L161.7 167.4L163.4 167.2L165.1 167.0L166.8 166.8L168.5 166.6L170.2 166.3L171.9 166.1L173.5 165.9L175.2 165.7L176.9 165.5L178.6 165.3L180.3 165.1L182.0 164.9L183.7 164.6L185.4 164.4L187.1 164.2L188.8 164.0L190.4 163.8L192.1 163.6L193.8 163.4L195.5 163.1L197.2 162.9L198.9 162.7L200.6 162.5L202.3 162.3L204.0 162.1L205.7 161.9L207.3 161.7L209.0 161.4L210.7 161.2L212.4 161.0L214.1 160.8L215.8 160.6L217.5 160.4L219.2 160.2L220.9 159.9L222.5 159.7L224.2 159.5L225.9 159.3L227.6 159.1L229.3 158.9L231.0 158.7L232.7 158.5L234.4 158.2L236.1 158.0L237.8 157.8L239.5 157.6L241.1 157.4L242.8 157.2L244.5 157.0L246.2 156.8L247.9 156.5L249.6 156.3L251.3 156.1L253.0 155.9L254.7 155.7L256.4 155.5L258.0 155.3L259.7 155.0L261.4 154.8L263.1 154.6L264.8 154.4L266.5 154.2L268.2 154.0L269.9 153.8L271.6 153.6L273.2 153.3L274.9 153.1L276.6 152.9L278.3 152.7L280.0 152.5L281.7 152.3L283.4 152.1L285.1 151.8L286.8 151.6L288.5 151.4L290.1 151.2L291.8 151.0L293.5 150.8L295.2 150.6L296.9 150.4L298.6 150.1L300.3 149.9L302.0 149.7L303.7 149.5L305.4 149.3L307.0 149.1L308.7 148.9L310.4 148.6L312.1 148.4L313.8 148.2L315.5 148.0L317.2 147.8L318.9 147.6L320.6 147.4L322.3 147.2L323.9 146.9L325.6 146.7L327.3 146.5L329.0 146.3L330.7 146.1L332.4 145.9L334.1 145.7L335.8 145.4L337.5 145.2L339.2 145.0L340.8 144.8L342.5 144.6L344.2 144.4L345.9 144.2L347.6 144.0L349.3 143.7L351.0 143.5L352.7 143.3L354.4 143.1L356.1 142.9L357.8 142.7L359.4 142.5L361.1 142.2L362.8 142.0L364.5 141.8L366.2 141.6L367.9 141.4L369.6 141.2L371.3 141.0L373.0 140.8L374.7 140.5L376.3 140.3L378.0 140.1L379.7 139.9L381.4 139.7L383.1 139.5L384.8 139.3L386.5 139.0L388.2 138.8L389.9 138.6L391.6 138.4L393.2 138.2L394.9 138.0L396.6 137.8L398.3 137.6L400.0 137.3" fill="none" stroke="#2a6fdb" stroke-width="3"/><text x="388.7" y="128.8" font-size="13" font-weight="700" text-anchor="end" fill="currentColor">Y</text></svg>',
+    choices:['X, because its line is steeper','Y, because its line is longer','X, because it has more volume','They are equal: both start at zero'],correct:0,
+    steps:['Density = mass ÷ volume, which is the slope of a mass vs volume line.','At 20 cm³, X has about 157 g and Y about 54 g.','X’s steeper line means more mass in the same space: about 7.9 vs 2.7 g/cm³.']},
+  {id:'mystery',kind:'test',lvl:'bio',
+    q:'<p>A gray chunk weighs 71.3 g and pushes the water up from 50.0 mL to 59.0 mL. Which metal is it? (Al 2.70, Zn 7.13, Fe 7.87, Pb 11.34 g/cm³)</p>',
+    choices:['Iron','Zinc','Aluminum','Lead'],correct:0,
+    steps:['Volume = 59.0 − 50.0 = 9.0 mL = 9.0 cm³.','Density = 71.3 ÷ 9.0 = 7.92 g/cm³.','That is closest to iron, 7.87 g/cm³.']}
+  ]}
 });
 /* AP Chemistry fall final: titration, rates, rate laws (Nov 2026) */
 BioLab.addReview({
@@ -453,7 +517,11 @@ titration:{
     steps:['Halfway, half the acid has become its conjugate base, so [HA] = [A⁻].','Henderson–Hasselbalch: pH = pKa + log([A⁻]/[HA]).','log(1) = 0, so pH = pKa. This is how you find Ka from a titration curve.'],lab:{set:{type:'ws'},look:'Find the pH halfway to equivalence.'}},
   {id:'indicator',kind:'test',lvl:'ap',q:'You titrate ammonia (a weak base) with HCl. The equivalence point is near pH 5. Which indicator fits best?',
     choices:['Phenolphthalein (8.2–10.0)','Methyl red (4.4–6.2)','Bromothymol blue (6.0–7.6)','No indicator can work'],correct:1,
-    steps:['Choose an indicator that changes color right at the equivalence pH.','At equivalence, NH₄⁺ makes the solution acidic, about pH 5.','Methyl red changes between 4.4 and 6.2, so it fits.'],lab:{set:{type:'wb',ind:'mred'},look:'Compare where each indicator changes color.'}}
+    steps:['Choose an indicator that changes color right at the equivalence pH.','At equivalence, NH₄⁺ makes the solution acidic, about pH 5.','Methyl red changes between 4.4 and 6.2, so it fits.'],lab:{set:{type:'wb',ind:'mred'},look:'Compare where each indicator changes color.'}},
+  {id:'curve',kind:'test',lvl:'bio',
+    q:'<p>The graph shows 25.00 mL of HCl titrated with 0.100 M NaOH. What is the concentration of the HCl?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="pH against volume of NaOH added: the curve starts near pH 1, stays nearly flat, then jumps steeply from about pH 4 to 10 at 22.5 mL, and levels near pH 12."><path d="M62 16V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M62.0 180v4" stroke="currentColor"/><text x="62.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">0</text><path d="M146.5 180v4" stroke="currentColor"/><text x="146.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">10</text><path d="M252.1 180v4" stroke="currentColor"/><text x="252.1" y="196" font-size="12" text-anchor="middle" fill="currentColor">22.5</text><path d="M315.5 180v4" stroke="currentColor"/><text x="315.5" y="196" font-size="12" text-anchor="middle" fill="currentColor">30</text><path d="M400.0 180v4" stroke="currentColor"/><text x="400.0" y="196" font-size="12" text-anchor="middle" fill="currentColor">40</text><path d="M58 180.0h4" stroke="currentColor"/><text x="55" y="184.0" font-size="12" text-anchor="end" fill="currentColor">0</text><path d="M58 101.0h4" stroke="currentColor"/><text x="55" y="105.0" font-size="12" text-anchor="end" fill="currentColor">7</text><path d="M58 22.0h4" stroke="currentColor"/><text x="55" y="26.0" font-size="12" text-anchor="end" fill="currentColor">14</text><text x="231.0" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">NaOH added (mL)</text><text transform="translate(16 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">pH</text><path d="M62.0 168.2L63.7 168.1L65.4 168.0L67.1 167.9L68.8 167.9L70.5 167.8L72.1 167.7L73.8 167.6L75.5 167.5L77.2 167.4L78.9 167.4L80.6 167.3L82.3 167.2L84.0 167.1L85.7 167.0L87.3 166.9L89.0 166.9L90.7 166.8L92.4 166.7L94.1 166.6L95.8 166.5L97.5 166.4L99.2 166.3L100.9 166.2L102.6 166.2L104.2 166.1L105.9 166.0L107.6 165.9L109.3 165.8L111.0 165.7L112.7 165.6L114.4 165.5L116.1 165.4L117.8 165.3L119.5 165.3L121.2 165.2L122.8 165.1L124.5 165.0L126.2 164.9L127.9 164.8L129.6 164.7L131.3 164.6L133.0 164.5L134.7 164.4L136.4 164.3L138.1 164.2L139.7 164.1L141.4 164.0L143.1 163.9L144.8 163.8L146.5 163.7L148.2 163.6L149.9 163.5L151.6 163.3L153.3 163.2L154.9 163.1L156.6 163.0L158.3 162.9L160.0 162.8L161.7 162.7L163.4 162.5L165.1 162.4L166.8 162.3L168.5 162.2L170.2 162.0L171.9 161.9L173.5 161.8L175.2 161.7L176.9 161.5L178.6 161.4L180.3 161.2L182.0 161.1L183.7 161.0L185.4 160.8L187.1 160.7L188.8 160.5L190.4 160.4L192.1 160.2L193.8 160.0L195.5 159.9L197.2 159.7L198.9 159.5L200.6 159.3L202.3 159.1L204.0 158.9L205.7 158.8L207.3 158.5L209.0 158.3L210.7 158.1L212.4 157.9L214.1 157.7L215.8 157.4L217.5 157.1L219.2 156.9L220.9 156.6L222.5 156.3L224.2 156.0L225.9 155.7L227.6 155.3L229.3 154.9L231.0 154.5L232.7 154.1L234.4 153.6L236.1 153.1L237.8 152.6L239.5 151.9L241.1 151.2L242.8 150.4L244.5 149.4L246.2 148.1L247.9 146.4L249.6 143.9L251.3 138.5L253.0 63.5L254.7 58.1L256.4 55.7L258.0 54.0L259.7 52.8L261.4 51.9L263.1 51.1L264.8 50.4L266.5 49.8L268.2 49.3L269.9 48.8L271.6 48.4L273.2 48.0L274.9 47.6L276.6 47.3L278.3 47.0L280.0 46.7L281.7 46.4L283.4 46.2L285.1 45.9L286.8 45.7L288.5 45.5L290.1 45.3L291.8 45.1L293.5 44.9L295.2 44.7L296.9 44.6L298.6 44.4L300.3 44.2L302.0 44.1L303.7 43.9L305.4 43.8L307.0 43.7L308.7 43.5L310.4 43.4L312.1 43.3L313.8 43.2L315.5 43.1L317.2 42.9L318.9 42.8L320.6 42.7L322.3 42.6L323.9 42.5L325.6 42.4L327.3 42.3L329.0 42.2L330.7 42.2L332.4 42.1L334.1 42.0L335.8 41.9L337.5 41.8L339.2 41.7L340.8 41.7L342.5 41.6L344.2 41.5L345.9 41.4L347.6 41.4L349.3 41.3L351.0 41.2L352.7 41.2L354.4 41.1L356.1 41.0L357.8 41.0L359.4 40.9L361.1 40.9L362.8 40.8L364.5 40.7L366.2 40.7L367.9 40.6L369.6 40.6L371.3 40.5L373.0 40.5L374.7 40.4L376.3 40.4L378.0 40.3L379.7 40.3L381.4 40.2L383.1 40.2L384.8 40.1L386.5 40.1L388.2 40.0L389.9 40.0L391.6 39.9L393.2 39.9L394.9 39.8L396.6 39.8L398.3 39.8L400.0 39.7" fill="none" stroke="#1b7a3a" stroke-width="3"/></svg>',
+    choices:['0.0900 M','0.100 M','0.0450 M','0.225 M'],correct:0,
+    steps:['The steep jump marks equivalence at 22.50 mL.','Moles NaOH = 0.100 × 0.02250 = 0.00225 mol = moles HCl.','0.00225 ÷ 0.02500 L = 0.0900 M.']}
   ]},
 rates:{
   apNote:'Released questions from College Board. Ask your teacher which ones match what you have covered.',
@@ -476,7 +544,15 @@ rates:{
     steps:['Spoiling is chemical reactions, many run by bacteria’s enzymes.','At 4 °C, particles move slower and fewer collisions have enough energy.','So the reactions, and bacterial growth, slow down a lot.']},
   {id:'dh',kind:'test',lvl:'ap',q:'How does adding a catalyst change ΔH for a reaction?',
     choices:['It doesn’t: ΔH depends only on reactants and products','It makes ΔH more negative, so more heat comes out','It makes ΔH positive, by taking in the extra energy','It doubles ΔH, since the reaction runs twice as fast'],correct:0,
-    steps:['ΔH is the energy difference between reactants and products.','A catalyst changes the path, lowering the hill (Eₐ) between them.','It lowers Eₐ for the forward and reverse reactions equally, and leaves ΔH unchanged.'],lab:{set:{rxn:'gas',cat:true},look:'Compare the energy diagram with and without the catalyst.'}}
+    steps:['ΔH is the energy difference between reactants and products.','A catalyst changes the path, lowering the hill (Eₐ) between them.','It lowers Eₐ for the forward and reverse reactions equally, and leaves ΔH unchanged.'],lab:{set:{rxn:'gas',cat:true},look:'Compare the energy diagram with and without the catalyst.'}},
+  {id:'eadiag',kind:'test',lvl:'bio',fixed:true,
+    q:'<p>In this energy diagram, which arrow shows the activation energy?</p><svg viewBox="0 0 420 230" style="display:block;width:100%;max-width:440px;height:auto;margin:10px 0 4px;color:inherit" role="img" aria-label="Energy diagram: reactants A + B climb a hill and drop to lower-energy product AB. Arrow A runs from the reactants to the top of the hill. Arrow B is the drop from reactants to products. Arrow C runs from the products to the top of the hill."><path d="M58 8V180H406" fill="none" stroke="currentColor" stroke-width="1.6"/><text x="229.0" y="200.0" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Reaction progress →</text><text transform="translate(40 101.0) rotate(-90)" font-size="13" font-weight="700" text-anchor="middle" fill="currentColor">Energy →</text><path d="M71.7 120.0L73.3 120.0L74.8 120.0L76.4 120.0L78.0 120.0L79.5 120.0L81.1 120.0L82.7 120.0L84.3 120.0L85.8 120.0L87.4 120.0L89.0 120.0L90.6 120.0L92.1 120.0L93.7 120.0L95.3 120.0L96.9 120.0L98.4 120.0L100.0 120.0L101.6 120.0L103.1 120.0L104.7 120.0L106.3 120.0L107.9 120.0L109.4 120.0L111.0 120.0L112.6 120.0L114.2 120.0L115.7 120.0L117.3 120.0L118.9 120.0L120.4 120.0L122.0 120.0L123.6 120.0L125.2 120.0L126.7 119.9L128.3 119.9L129.9 119.9L131.5 119.9L133.0 119.9L134.6 119.8L136.2 119.8L137.8 119.8L139.3 119.7L140.9 119.6L142.5 119.6L144.0 119.5L145.6 119.4L147.2 119.2L148.8 119.1L150.3 118.9L151.9 118.7L153.5 118.5L155.1 118.2L156.6 117.9L158.2 117.5L159.8 117.1L161.4 116.7L162.9 116.1L164.5 115.6L166.1 115.0L167.6 114.4L169.2 113.7L170.8 112.9L172.4 112.0L173.9 111.1L175.5 110.1L177.1 108.9L178.7 107.7L180.2 106.4L181.8 105.0L183.4 103.4L185.0 101.8L186.5 100.0L188.1 98.1L189.7 96.2L191.2 94.1L192.8 91.9L194.4 89.7L196.0 87.3L197.5 84.9L199.1 82.5L200.7 80.1L202.3 77.6L203.8 75.1L205.4 72.7L207.0 70.3L208.5 68.0L210.1 65.9L211.7 63.8L213.3 61.9L214.8 60.1L216.4 58.5L218.0 57.2L219.6 56.1L221.1 55.2L222.7 54.6L224.3 54.3L225.9 54.2L227.4 54.5L229.0 55.0L230.6 55.8L232.1 57.0L233.7 58.4L235.3 60.1L236.9 62.1L238.4 64.3L240.0 66.8L241.6 69.5L243.2 72.3L244.7 75.4L246.3 78.6L247.9 82.0L249.5 85.5L251.0 89.0L252.6 92.6L254.2 96.2L255.7 99.9L257.3 103.5L258.9 107.1L260.5 110.6L262.0 114.1L263.6 117.4L265.2 120.7L266.8 123.8L268.3 126.9L269.9 129.7L271.5 132.5L273.0 135.1L274.6 137.5L276.2 139.8L277.8 141.9L279.3 143.9L280.9 145.7L282.5 147.4L284.1 149.0L285.6 150.4L287.2 151.6L288.8 152.7L290.4 153.7L291.9 154.6L293.5 155.4L295.1 156.1L296.6 156.6L298.2 157.1L299.8 157.5L301.4 157.9L302.9 158.2L304.5 158.5L306.1 158.7L307.7 158.9L309.2 159.1L310.8 159.2L312.4 159.4L314.0 159.5L315.5 159.6L317.1 159.6L318.7 159.7L320.2 159.8L321.8 159.8L323.4 159.8L325.0 159.9L326.5 159.9L328.1 159.9L329.7 159.9L331.3 159.9L332.8 160.0L334.4 160.0L336.0 160.0L337.6 160.0L339.1 160.0L340.7 160.0L342.3 160.0L343.8 160.0L345.4 160.0L347.0 160.0L348.6 160.0L350.1 160.0L351.7 160.0L353.3 160.0L354.9 160.0L356.4 160.0L358.0 160.0L359.6 160.0L361.1 160.0L362.7 160.0L364.3 160.0L365.9 160.0L367.4 160.0L369.0 160.0L370.6 160.0L372.2 160.0L373.7 160.0L375.3 160.0L376.9 160.0L378.5 160.0L380.0 160.0L381.6 160.0L383.2 160.0L384.7 160.0L386.3 160.0" fill="none" stroke="#1b7a3a" stroke-width="3"/><path d="M68 120H259.0" stroke="currentColor" stroke-dasharray="3 4" opacity=".6"/><path d="M229.0 120V62.0" stroke="#c8102e" stroke-width="2.2"/><path d="M229.0 55.0l-5 9h10z" fill="#c8102e"/><text x="221.0" y="92.5" font-size="15" font-weight="700" text-anchor="end" fill="currentColor">A</text><path d="M376.06 120V159" stroke="currentColor" stroke-width="2"/><path d="M350.06 120H382.06" stroke="currentColor" stroke-dasharray="3 3" opacity=".6"/><text x="370.1" y="145.0" font-size="15" font-weight="700" text-anchor="end" fill="currentColor">B</text><path d="M273.0 55.0V160" stroke="#2a6fdb" stroke-width="2"/><path d="M259.0 160H346.06" stroke="currentColor" stroke-dasharray="3 3" opacity=".6"/><text x="279.0" y="112.5" font-size="15" font-weight="700" text-anchor="start" fill="currentColor">C</text><text x="66.0" y="138.0" font-size="12" font-weight="400" text-anchor="start" fill="currentColor">A + B</text><text x="396.0" y="178.0" font-size="12" font-weight="400" text-anchor="end" fill="currentColor">AB</text></svg>',
+    choices:['Arrow A','Arrow B','Arrow C','A plus B'],correct:0,
+    steps:['Activation energy runs from the reactants up to the top of the hill.','Arrow A does exactly that.','Arrow B is ΔH (reactants to products); arrow C is the activation energy of the reverse reaction.']},
+  {id:'surface',kind:'test',lvl:'bio',
+    q:'<p>Why does a sugar cube dissolve more slowly than the same mass of granulated sugar?</p>',
+    choices:['Less surface touches the water at once','The cube has a higher activation energy','The cube contains a different kind of sugar','Water molecules move slower near a cube'],correct:0,
+    steps:['Only particles at the surface can react or dissolve.','Granulated sugar exposes far more surface for the same mass.','More surface, more collisions per second, faster rate.']}
   ]},
 ratelaw:{
   apNote:'Released questions from College Board. Ask your teacher which ones match what you have covered.',
@@ -499,7 +575,15 @@ ratelaw:{
     steps:['For first order, t½ = ln 2 ÷ k = 0.693 ÷ k.','0.693 ÷ 0.0231 min⁻¹.','= 30.0 min, the same no matter how much you start with.']},
   {id:'slow',kind:'test',lvl:'ap',q:'A mechanism has a slow first step followed by a fast step. Which step sets the overall rate law?',
     choices:['The slow step, the rate-determining one','The fast step, since it finishes first','Both steps equally, added together','Neither: the overall equation does'],correct:0,
-    steps:['A reaction can go no faster than its slowest step.','So the rate law comes from the slow step’s reactants.','The overall balanced equation can’t be used to write a rate law directly.'],lab:{set:{mode:'mech'},look:'Compare the mechanisms and their rate laws.'}}
+    steps:['A reaction can go no faster than its slowest step.','So the rate law comes from the slow step’s reactants.','The overall balanced equation can’t be used to write a rate law directly.'],lab:{set:{mode:'mech'},look:'Compare the mechanisms and their rate laws.'}},
+  {id:'doubleA',kind:'test',lvl:'honors',
+    q:'<p>For rate = k[A]²[B], what happens to the rate if [A] doubles and [B] stays the same?</p>',
+    choices:['It goes up 4 times','It doubles','It stays the same','It goes up 8 times'],correct:0,
+    steps:['[A] is squared in the rate law.','Doubling [A] multiplies the rate by 2² = 4.','[B] didn’t change, so the rate rises 4 times.']},
+  {id:'overall',kind:'test',lvl:'honors',
+    q:'<p>What is the overall order of rate = k[NO]²[O₂]?</p>',
+    choices:['Third order','Second order','First order','Zero order'],correct:0,
+    steps:['Add the exponents.','2 (for NO) + 1 (for O₂) = 3.','So the reaction is third order overall.']}
   ]}
 });
 
@@ -520,6 +604,14 @@ buildmol:{questions:[
   {id:'bm7',kind:'test',lvl:'honors',q:'Ethanol and dimethyl ether are both C₂H₆O. What are they called?',choices:['Isomers','Isotopes','Ions','The same molecule'],correct:0,
     steps:['Same formula: the same atoms in the same numbers.','Different connections: the O is on the end in ethanol and between the carbons in the ether.','Same formula, different structure = isomers.'],lab:{set:{mode:'kit',kit:'iso'},look:'Build both C₂H₆O molecules from the isomer kit.'}},
   {id:'bm8',kind:'test',lvl:'ap',q:'NH₃ has 8 valence electrons. How many lone pairs does it have?',num:{ans:1,tol:0,unit:'lone pairs'},
-    steps:['N brings 5 and each H brings 1: 8 electrons.','3 N–H bonds share 3 pairs, 6 electrons.','8 − 6 = 2 electrons: 1 lone pair, on nitrogen.'],lab:{set:{mode:'build',tgt:'nh3'},look:'Build ammonia and read the Lone pairs tile.'}}
-]}
+    steps:['N brings 5 and each H brings 1: 8 electrons.','3 N–H bonds share 3 pairs, 6 electrons.','8 − 6 = 2 electrons: 1 lone pair, on nitrogen.'],lab:{set:{mode:'build',tgt:'nh3'},look:'Build ammonia and read the Lone pairs tile.'}},
+  {id:'ccl4',kind:'test',lvl:'bio',
+    q:'<p>Carbon makes 4 bonds and chlorine makes 1. What formula does a molecule of carbon and chlorine have?</p>',
+    choices:['CCl₄','CCl₂','CCl','C₄Cl'],correct:0,
+    steps:['Carbon needs 4 bonds.','Each chlorine fills only 1.','So it takes 4 chlorines: CCl₄.']},
+  {id:'coefsub',kind:'test',lvl:'bio',
+    q:'<p>How many hydrogen atoms are in 3H₂O?</p>',
+    choices:['6','3','2','5'],correct:0,
+    steps:['Each H₂O has 2 hydrogen atoms (the subscript).','The coefficient 3 means three molecules.','3 × 2 = 6 hydrogen atoms.']}
+  ]}
 });
