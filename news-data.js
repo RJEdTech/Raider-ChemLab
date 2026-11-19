@@ -8,6 +8,64 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "battery-history",
+  "week": "2026-11-15",
+  "date": "2026-04-21",
+  "title": "Discovered in Texas, scaled in China: the story of the cheap EV battery",
+  "summary": "Lithium iron phosphate (LFP), the chemistry in most Chinese electric-car batteries, was discovered at the University of Texas at Austin in 1995. The first company to sell it was American, but Chinese battery makers turned it into a giant industry. In 2026 they showed LFP batteries that charge from about 10% to nearly full in under 10 minutes, and began mass-producing sodium-ion batteries made from one of the most common elements on Earth.",
+  "numbers": [
+   "LFP was discovered in 1995 by a team led by John Goodenough at UT Austin. Goodenough later shared the 2019 Nobel Prize in Chemistry for lithium-ion batteries (<a href=\"https://www.autoblog.com/2023/06/11/how-the-u-s-let-ev-battery-tech-born-here-wind-up-in-the-hands-of-china/\" target=\"_blank\" rel=\"noopener\">Bloomberg Businessweek via Autoblog, Jun 11, 2023</a>).",
+   "A123 Systems, a 2001 startup from MIT, was the first company to sell LFP batteries. In June 2009 it received a $249 million Department of Energy grant to build two factories in Michigan (<a href=\"https://www.autoblog.com/2023/06/11/how-the-u-s-let-ev-battery-tech-born-here-wind-up-in-the-hands-of-china/\" target=\"_blank\" rel=\"noopener\">Autoblog, Jun 11, 2023</a>).",
+   "A123 filed for bankruptcy on October 16, 2012 (<a href=\"https://www.scientificamerican.com/article/pioneering-battery-maker-files-for-bankruptcy/\" target=\"_blank\" rel=\"noopener\">Scientific American, Oct 2012</a>). In 2013 Wanxiang, then China's largest auto parts company, bought it, and most of its patents and technology went to China (<a href=\"https://www.autoblog.com/2023/06/11/how-the-u-s-let-ev-battery-tech-born-here-wind-up-in-the-hands-of-china/\" target=\"_blank\" rel=\"noopener\">Autoblog, Jun 11, 2023</a>).",
+   "Average battery pack price: about $1,474 per kWh in 2010, $108 per kWh in 2025, a 93% drop after inflation. LFP packs averaged $81 per kWh; packs in China averaged $84 (<a href=\"https://www.energy-storage.news/li-ion-battery-pack-prices-fell-8-since-last-year-despite-metals-prices-rising-bloombergnef-says/\" target=\"_blank\" rel=\"noopener\">BloombergNEF survey via Energy-Storage.news, Dec 10, 2025</a>).",
+   "BYD's second-generation Blade (LFP) battery: 10% to 97% charge in 9 minutes, company-reported, launched March 5, 2026 (<a href=\"https://news.metal.com/newscontent/103870069-catl-vs-byd-battery-tech-peak-clash-and-solid-state-progress\" target=\"_blank\" rel=\"noopener\">SMM, Apr 22, 2026</a>).",
+   "CATL's third-generation Shenxing (LFP) battery: 10% to 98% in under 6.5 minutes, company-reported, April 2026 (<a href=\"https://gulfnews.com/auto/news/next-generation-ev-batteries-whos-building-them-what-they-promise-when-they-hit-the-market-1.500628937\" target=\"_blank\" rel=\"noopener\">Gulf News, 2026</a>).",
+   "CATL's Naxtra sodium-ion cells store 175 Wh per kg, company-reported, close to LFP (<a href=\"https://www.aol.com/chinese-battery-maker-catl-launches-072613723.html\" target=\"_blank\" rel=\"noopener\">Reuters, Apr 2025</a>). CATL and Changan unveiled the first mass-produced passenger car with sodium-ion batteries in February 2026 (<a href=\"https://cnevpost.com/2026/02/05/catl-sodium-batteries-begin-deployment-in-production-passenger-vehicles/\" target=\"_blank\" rel=\"noopener\">CnEVPost, Feb 5, 2026</a>).",
+   "Natron Energy, a U.S. sodium-ion startup from Stanford with a factory in Holland, Michigan, received $19.8 million from the Department of Energy's ARPA-E program and closed on September 3, 2025, citing funding problems (<a href=\"https://spectrum.ieee.org/natron-sodium-ion-battery-failure\" target=\"_blank\" rel=\"noopener\">IEEE Spectrum, Sep 2025</a>)."
+  ],
+  "concept": {
+   "title": "Voltage times charge: why cheaper chemistry can still win",
+   "html": "A battery's energy is its voltage times the charge it moves: <b>watt-hours = volts &times; amp-hours</b>. One LFP cell gives about 3.2 V, a little less than the nickel-and-cobalt cells in many phones (about 3.7 V), because iron phosphate grabs electrons a bit less hard. Sodium sits just above lithium on the table of reduction potentials (Na<sup>+</sup>/Na &minus;2.71 V vs Li<sup>+</sup>/Li &minus;3.04 V), so a sodium-ion cell pushes about 3.0 V. Lower voltage means less energy per cell, so these batteries win another way: iron and sodium are cheap and plentiful, the cells are safer and last thousands of charges, and you can stack more cells in a row to reach the voltage a car needs."
+  },
+  "hook": {
+   "prompt": "Use the numbers above. Cells in a row (series) add their voltages.",
+   "parts": [
+    {
+     "label": "(a) An electric car pack needs about 400 V. How many 3.2 V LFP cells must be stacked in a row?",
+     "answer": 125,
+     "tol": 0.5,
+     "unit": "cells"
+    },
+    {
+     "label": "(b) By what percent did the average pack price fall from 2010 ($1,474 per kWh) to 2025 ($108 per kWh)?",
+     "answer": 92.7,
+     "tol": 0.3,
+     "unit": "%"
+    },
+    {
+     "label": "(c) A car needs a 60 kWh pack. How many dollars cheaper is it at the 2025 price than at the 2010 price?",
+     "answer": 81960,
+     "tol": 100,
+     "unit": "$"
+    }
+   ],
+   "worked": "(a) 400 V &divide; 3.2 V per cell = <b>125 cells</b>. (b) (1,474 &minus; 108) &divide; 1,474 = 1,366 &divide; 1,474 = 0.927, so <b>92.7%</b>. (c) 60 kWh &times; ($1,474 &minus; $108) = 60 &times; $1,366 = <b>$81,960</b>. The battery alone once cost more than most cars."
+  },
+  "hides": "A common version of this story says the U.S. would not fund the battery, so it moved to China. The record is more mixed. A123 did get federal money: a $249 million grant plus a $380 million stock offering in 2009. It failed mainly because it lacked customers: few people were buying electric cars, Chrysler closed its electric-car unit and GM chose LG for the Volt, and a 2012 recall hurt trust until financing dried up. Starting in 2013, China's government built demand: electric city buses, tax breaks for buyers and support for battery companies, while CATL (founded 2011) and BYD spent billions over a decade learning to build cells cheaply. Neither has been accused of copying A123's technology. Funding an invention and building the market and factories for it are different jobs. Also note: the charging times are company claims under ideal conditions with special chargers, and sodium-ion still stores less energy per kilogram than the best lithium cells. Some of the technology is also coming back: Ford's Michigan battery plant uses CATL's LFP technology under license.",
+  "evidence": "Strong for the history (bankruptcy records and long investigative reporting by Bloomberg Businessweek). Strong for prices (BloombergNEF's annual survey of 320 data points). Company-reported for the 2026 charging and energy figures, not yet independently tested.",
+  "investigate": "Pick one car your family owns or wants. Find out where its battery was made and whether it is LFP or a nickel-based (NMC) battery. Then write one reason a country might pay to create <i>demand</i> (buses, tax breaks) instead of only paying for research, and one reason against it.",
+  "related": [
+   {
+    "href": "index.html#galvanic",
+    "label": "Galvanic cells"
+   },
+   {
+    "href": "index.html#activity",
+    "label": "Activity series"
+   }
+  ]
+ },
+ {
   "id": "china-co2-q3-2026",
   "week": "2026-11-15",
   "date": "2026-11-06",
