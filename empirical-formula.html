@@ -248,6 +248,10 @@ details.keys table{font-size:.9rem}details.keys td{padding:5px 8px}details.keys 
 .labout{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:.95rem}
 .jobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
 .jobs>div{border-left:3px solid var(--accent);padding:6px 12px}
+.xbtn{font:inherit;font-size:.85rem;font-weight:700;padding:4px 10px;border-radius:999px;border:1.5px solid var(--unit);background:transparent;color:var(--unit);cursor:pointer;align-self:flex-start}
+.xbtn[aria-expanded="true"]{background:var(--unit);color:var(--surface)}
+.expl{border:1.5px solid var(--unit);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:76ch}
+.expl .k{font-family:var(--f-mono);font-size:.92rem;background:var(--bg);border-radius:6px;padding:4px 8px;align-self:flex-start}
 .uprob{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .uprob h4{margin:0;font-family:var(--f-display)}.upart{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .upart label{font-weight:700;min-width:min(100%,260px)}.upart input{font:inherit;font-family:var(--f-mono);width:9ch;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:right}
@@ -269,7 +273,7 @@ html.easy p{max-width:62ch}
     <div class="rhymebar" id="rhymebar" aria-label="The rhyme">
       <span>percent to grams</span><span>grams to moles</span><span>divide by smallest</span><span>make it whole</span>
     </div>
-    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button><span class="lvl" role="group" aria-label="Level"><button data-lvl="chem">Chemistry</button><button data-lvl="honors">Honors</button></span></div>
+    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button></div>
   </div>
 </header>
 <nav class="steps" aria-label="Lesson sections"><div class="wrap scroller"><ol id="stepnav"></ol></div></nav>
@@ -279,29 +283,16 @@ html.easy p{max-width:62ch}
 <!-- 1. DEFINITION -->
 <section class="sec" data-sec="learn">
   <div><div class="eyebrow">Part 1</div><h2>What is an empirical formula?</h2></div>
-  <div class="card stack gut" id="gutCard"></div>
-  <div class="card stack">
-    <div class="eyebrow">The big picture</div>
-    <h3>A formula is a recipe</h3>
-    <p>A pancake recipe calls for 1 cup of mix, 2 eggs and 1 cup of milk. Make a double or triple batch and the amounts grow, but the <b>ratio stays 1 : 2 : 1</b>.</p>
-    <div class="batch">
-      <div><b>Single batch</b><div class="e" aria-label="1 mix, 2 eggs, 1 milk">🥣 🥚🥚 🥛</div><span class="k">1 : 2 : 1</span></div>
-      <div><b>Double batch</b><div class="e" aria-label="2 mix, 4 eggs, 2 milk">🥣🥣 🥚🥚🥚🥚 🥛🥛</div><span class="k">2 : 4 : 2</span></div>
-      <div><b>Triple batch</b><div class="e" aria-label="3 mix, 6 eggs, 3 milk">🥣🥣🥣 🥚🥚🥚🥚🥚🥚 🥛🥛🥛</div><span class="k">3 : 6 : 3</span></div>
-    </div>
-    <p>Compounds work the same way. The <b>simplest ratio</b> is the <b>empirical formula</b> (CH₂O). How many batches are in one real molecule is <b><i>n</i></b>. Glucose is 6 batches: C₆H₁₂O₆ = 6 × CH₂O.</p>
-    <h3 style="margin-top:6px">How you find the ratio in four moves</h3>
-    <div class="bigpic">
-      <div class="bp"><span class="big" aria-hidden="true">⚖️</span><b>1. Percent → grams</b><span class="k">40.0% C → 40.0 g C</span><span class="muted">Pretend you have 100 g.</span></div>
-      <div class="bp"><span class="big" aria-hidden="true">🔢</span><b>2. Grams → moles</b><span class="k">40.0 g ÷ 12.01 = 3.33 mol</span><span class="muted">Count the atoms, don’t weigh them.</span></div>
-      <div class="bp"><span class="big" aria-hidden="true">➗</span><b>3. Divide by smallest</b><span class="k">3.33 : 6.66 : 3.33 → 1 : 2 : 1</span><span class="muted">The smallest becomes 1.</span></div>
-      <div class="bp"><span class="big" aria-hidden="true">✅</span><b>4. Make it whole</b><span class="k">1 : 2 : 1 → CH₂O</span><span class="muted">Whole numbers only.</span></div>
-    </div>
-  </div>
   <div class="defbox">
     <div class="eyebrow">Definition</div>
     <p>An <b>empirical formula</b> shows the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
     <p class="muted">A <b>molecular formula</b> shows the <b>actual number</b> of atoms of each element in one molecule. The molecular formula is always a whole-number multiple (<i>n</i>) of the empirical formula.</p>
+    <button class="xbtn" id="defX" aria-expanded="false" aria-controls="defXp">🤔 What does this mean?</button>
+    <div class="expl" id="defXp" hidden>
+      <p><b>Think of a recipe.</b> Pancakes take 1 cup of mix, 2 eggs and 1 cup of milk. A double batch is 2 : 4 : 2 and a triple batch is 3 : 6 : 3, but the ratio is always <b>1 : 2 : 1</b>.</p>
+      <p>The <b>empirical formula</b> is the recipe: the simplest ratio. The <b>molecular formula</b> is how big the batch really is. <i>n</i> is the number of batches.</p>
+      <span class="k">CH₂O × 6 = C₆H₁₂O₆ (glucose is 6 batches)</span>
+    </div>
   </div>
   <div class="grid2">
     <div class="card stack">
@@ -326,19 +317,6 @@ html.easy p{max-width:62ch}
         <tr><td>Water</td><td class="f">H<sub>2</sub>O</td><td class="f">1</td><td class="f">H<sub>2</sub>O (already simplest)</td></tr>
       </tbody>
     </table></div>
-  </div>
-  <div class="card stack">
-    <div class="eyebrow">Key terms</div>
-    <dl class="terms">
-      <div><dt>Percent composition</dt><dd>Each element’s share of a compound’s mass.</dd><dd class="eqs">% = (mass of element ÷ mass of compound) × 100</dd></div>
-      <div><dt>Molar mass</dt><dd>The mass of one mole of a substance, from the periodic table.</dd><dd class="eqs">C = 12.01 g/mol, H = 1.008 g/mol</dd></div>
-      <div><dt>Mole (mol)</dt><dd>A count of particles: 6.022 × 10²³ of them. Moles let you compare atoms by number, not by weight.</dd></div>
-      <div><dt>Mole ratio</dt><dd>How many moles of one element there are for each mole of another. It is the same as the atom ratio.</dd><dd class="eqs">mol ÷ smallest mol = ratio</dd></div>
-      <div><dt>Empirical formula</dt><dd>The simplest whole-number ratio of atoms.</dd><dd class="eqs">CH₂O</dd></div>
-      <div><dt>Molecular formula</dt><dd>The actual number of atoms in one molecule.</dd><dd class="eqs">C₆H₁₂O₆ = 6 × CH₂O</dd></div>
-      <div><dt>Empirical formula mass</dt><dd>The mass of one empirical unit: add the atomic masses in the empirical formula.</dd><dd class="eqs">CH₂O = 12.01 + 2(1.008) + 16.00 = 30.03 g/mol</dd></div>
-      <div><dt><i>n</i></dt><dd>How many empirical units are in one molecule. Always a whole number.</dd><dd class="eqs">n = molar mass ÷ empirical formula mass</dd></div>
-    </dl>
   </div>
   <div class="card stack">
     <div class="eyebrow">Check yourself</div>
@@ -370,16 +348,6 @@ html.easy p{max-width:62ch}
         <tr><td>.9 or .1 (like 1.98 or 3.03)</td><td>1 (just round)</td><td>1.98 → 2</td></tr>
       </tbody>
     </table></div>
-  </div>
-  <div class="card stack">
-    <div class="eyebrow">Watch out</div>
-    <h3>The four classic mistakes</h3>
-    <div class="wo">
-      <div><b>Rounding 1.5 to 2</b><span class="x">✗ Fe 1 : O 1.5 → FeO₂</span><span class="ok">✓ × 2 → Fe 2 : O 3 → Fe₂O₃</span></div>
-      <div><b>Comparing grams, not moles</b><span class="x">✗ 40.0 g C : 6.71 g H → C₆H</span><span class="ok">✓ 3.33 mol C : 6.66 mol H → CH₂</span></div>
-      <div><b>Dividing by the largest</b><span class="x">✗ 3.33 ÷ 6.66 = 0.5 → not whole</span><span class="ok">✓ divide by the smallest, 3.33 → 1 : 2</span></div>
-      <div><b>Flipping the conversion factor</b><span class="x">✗ 40.0 g × 12.01 g/mol = 480 g²/mol</span><span class="ok">✓ 40.0 g × (1 mol / 12.01 g) = 3.33 mol</span></div>
-    </div>
   </div>
   <div class="card stack">
     <div class="eyebrow">Check yourself</div>
@@ -433,14 +401,37 @@ html.easy p{max-width:62ch}
     <div><h3 style="margin-bottom:10px">Practice</h3><div class="ptabs" id="mtabs" role="tablist"></div></div>
     <div class="card" id="molHost"></div>
   </div>
-  <div class="footnav"><button class="btn ghost" data-go="practice">← Practice</button><button class="btn" data-go="use">Next: use it →</button></div>
+  <div class="footnav"><button class="btn ghost" data-go="practice">← Practice</button><button class="btn" data-go="summary">Next: summary &amp; submit →</button></div>
+</section>
+
+<!-- 6. SUMMARY -->
+<section class="sec" data-sec="summary" hidden>
+  <div><div class="eyebrow">Part 6</div><h2>Summarize and submit</h2>
+  <p class="lead">Explain the process in your own words. Your answers and every step you entered are collected into one work record below that you can copy or save for your teacher.</p></div>
+  <div class="card stack">
+    <div class="grid2">
+      <label class="f" for="stName">Name<input class="text" id="stName" data-st="name" autocomplete="name"></label>
+      <label class="f" for="stPeriod">Class period<input class="text" id="stPeriod" data-st="period"></label>
+    </div>
+    <label class="f" for="stTeacher">Teacher<input class="text" id="stTeacher" data-st="teacher"></label>
+  </div>
+  <div class="card stack" id="sumQs"></div>
+  <div class="grid2">
+    <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
+    <div class="card stack"><h3>Turn it in</h3>
+      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
+      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn" hidden>Save as .txt</button></div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="card stack"><h3>Work record preview</h3><pre class="report" id="report" tabindex="0"></pre></div>
+  <div class="footnav"><button class="btn ghost" data-go="molecular">← Molecular formula</button><button class="btn ghost" data-go="use">Optional extras: use it, test yourself →</button></div>
 </section>
 
 <!-- 6. USE IT (RJ Ed Tech) -->
 <section class="sec" data-sec="use" hidden>
-  <div><div class="eyebrow">Part 6</div><h2>Use it</h2>
-  <p class="lead">Percent composition and formulas show up on fertilizer bags, supplement bottles, and in your own lab. Solve real problems, then see what you can do with this.</p></div>
-  <div class="card stack" id="gutAns"></div>
+  <div><div class="eyebrow">Extra · after you submit</div><h2>Use it</h2>
+  <p class="lead">Optional. See where this shows up in real life: fertilizer bags, supplement labels, and your own MgO lab.</p></div>
   <div class="card stack" id="usesCard">
     <div class="eyebrow">How chemists use this</div>
     <h3>Real people do this math every day</h3>
@@ -450,16 +441,6 @@ html.easy p{max-width:62ch}
       <div class="use"><span class="ic" aria-hidden="true">⛏️</span><h4>Mining iron</h4><p>Magnetite (Fe₃O₄) is 72.4% iron and hematite (Fe₂O₃) is 69.9%. Percent iron helps decide which ore is worth digging up and shipping.</p><div class="m">1,000 kg × 0.724 = 724 kg Fe</div></div>
       <div class="use"><span class="ic" aria-hidden="true">🔎</span><h4>Forensics</h4><p>An unknown powder gets two tests. One gives the element ratio. A mass spectrometer gives the molar mass. Together they give the molecular formula: the same two steps you just did. <a href="https://rjedtech.github.io/Raider-ForensicsLab/" target="_blank" rel="noopener">Raider ForensicsLab</a></p><div class="m">n = molar mass ÷ EFM</div></div>
       <div class="use"><span class="ic" aria-hidden="true">🧪</span><h4>Your MgO lab</h4><p>Burning magnesium and weighing the ash is an empirical formula experiment. The extra mass is oxygen from the air. <a href="./#percentcomp" target="_blank" rel="noopener">Try it in Raider ChemLab</a></p><div class="m">mol O ÷ mol Mg = 1.00 → MgO</div></div>
-    </div>
-  </div>
-  <div class="card stack">
-    <div class="eyebrow">Who does this for a job</div>
-    <div class="jobs">
-      <div><b>Crop advisor</b><br>Reads soil tests and the N-P-K numbers to decide how many kilograms of fertilizer a field needs.</div>
-      <div><b>Pharmacist</b><br>Knows the element is only part of the compound: a 325 mg ferrous sulfate tablet lists 65 mg of elemental iron.</div>
-      <div><b>Quality-control chemist</b><br>Checks every batch of a medicine against its formula before it ships.</div>
-      <div><b>Forensic chemist</b><br>Names unknown powders from the element ratio and the molar mass.</div>
-      <div><b>Water-quality technician</b><br>Reports nitrate in drinking water “as N”: the EPA limit is 10 mg of nitrate-nitrogen per liter.</div>
     </div>
   </div>
   <div class="card stack">
@@ -488,39 +469,15 @@ html.easy p{max-width:62ch}
       <li><b>Do:</b> In lab, write every mass with its unit and heat to constant mass. <b>Why:</b> the formula comes from mass ratios. One misread mass can change MgO into a formula that doesn’t exist.</li>
     </ul>
   </div>
-  <div class="footnav"><button class="btn ghost" data-go="molecular">← Molecular formula</button><button class="btn" data-go="test">Next: test yourself →</button></div>
+  <div class="footnav"><button class="btn ghost" data-go="summary">← Summary</button><button class="btn" data-go="test">Next: test yourself →</button></div>
 </section>
 
 <!-- 7. TEST YOURSELF (RJ Ed Tech) -->
 <section class="sec" data-sec="test" hidden>
-  <div><div class="eyebrow">Part 7</div><h2>Test yourself</h2>
-  <p class="lead">Ten questions, like a quiz. Each set mixes the steps, the math and the reasons. Get a new set any time.</p></div>
+  <div><div class="eyebrow">Extra · after you submit</div><h2>Test yourself</h2>
+  <p class="lead">Optional. Ten quiz-style questions to study for the test. Get a new set any time.</p></div>
   <div class="card" id="testHost"></div>
-  <div class="footnav"><button class="btn ghost" data-go="use">← Use it</button><button class="btn" data-go="summary">Next: summary &amp; submit →</button></div>
-</section>
-
-<!-- 6. SUMMARY -->
-<section class="sec" data-sec="summary" hidden>
-  <div><div class="eyebrow">Part 8</div><h2>Summarize and submit</h2>
-  <p class="lead">Explain the process in your own words. Your answers and every step you entered are collected into one work record below that you can copy or save for your teacher.</p></div>
-  <div class="card stack">
-    <div class="grid2">
-      <label class="f" for="stName">Name<input class="text" id="stName" data-st="name" autocomplete="name"></label>
-      <label class="f" for="stPeriod">Class period<input class="text" id="stPeriod" data-st="period"></label>
-    </div>
-    <label class="f" for="stTeacher">Teacher<input class="text" id="stTeacher" data-st="teacher"></label>
-  </div>
-  <div class="card stack" id="sumQs"></div>
-  <div class="grid2">
-    <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
-    <div class="card stack"><h3>Turn it in</h3>
-      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
-      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn" hidden>Save as .txt</button></div>
-      <div class="toast" id="toast" aria-live="polite"></div>
-    </div>
-  </div>
-  <div class="card stack"><h3>Work record preview</h3><pre class="report" id="report" tabindex="0"></pre></div>
-  <div class="footnav"><button class="btn ghost" data-go="test">← Test yourself</button><span></span></div>
+  <div class="footnav"><button class="btn ghost" data-go="use">← Use it</button><span></span></div>
 </section>
 
 </div></main>
@@ -627,9 +584,9 @@ function empStage(i,p,w,key){
     }
   }
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  {const xid=key+'-'+i;b+=xBtn(xid);if(XOPEN.has(xid))b+=`<div class="expl">${empExpl(i,p,w)}</div>`}
   if(!done&&!w.demo){
     if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${CHINT[i]}</div>`;
-    b+=calcKeys(i,p);
     b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;
     if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
     if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${empHelp(i,p,w)}</div>`;
@@ -642,7 +599,6 @@ function empHTML(p,key,o){
   const prompt=p.prompt||`A compound is ${listPct(p)} by mass.${p.full?` Its molar mass is ${p.molar} g/mol. First find the empirical formula.`:' Find its empirical formula.'}`;
   let h=`<div class="solver"><div class="problem"><p class="prompt">${prompt}</p><div class="givens">${p.els.map(e=>`<span class="given">${tile(e.sym)}${e.pct}% · molar mass ${ms(e.m)} g/mol</span>`).join('')}</div></div>`;
   for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key)}
-  h+=massCount(p,w);
   if(w.stage>=4)h+=`<div class="result"><span>Empirical formula</span><span class="big">${fHTML(p.els,p.subs)}</span></div>`+(w.solved&&!p.full?reveal(p):'')+(w.solved&&p.full?`<p class="muted">Now use the molar mass below to find the molecular formula.</p>`:'');
   if(w.demo){h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`}
   else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
@@ -691,6 +647,7 @@ function molStage(i,p,w,key){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]}</span><span class="op">×</span><span>${shown(w.n)}</span><span class="op">=</span>${inp(key,'subs',j,w.subs[j],dis,'molecular subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`).join('');
   }
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  {const xid=key+'-m'+i;b+=xBtn(xid);if(XOPEN.has(xid))b+=`<div class="expl">${molExpl(i,p)}</div>`}
   if(!done&&!w.demo){if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${MHINT[i]}</div>`;b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
     if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${molHelp(i,p,w)}</div>`}
   return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${MST[i]}</h4><span class="tag">${['Σ g/mol','n = M ÷ EFM','subscripts × n'][i]}</span>${cfBtn(key+'/'+(i+1)+'-'+slug(MST[i]))}</div><div class="sb">${b}</div></div>`;
@@ -730,13 +687,28 @@ function massCount(p,w){if(!(w.stage>=1))return '';
 /* ---------- Chemistry / Honors level (RJ Ed Tech) ----------
    Chemistry: practice skips the four-element and ×4 compounds, each step shows a one-line hint, and Show me this step appears after one miss.
    Honors: Sandy's original setup. Default is Honors. */
-function lvl(){return S.level==='chem'?'chem':'honors'}
+function lvl(){return 'honors'}   /* Chemistry/Honors switch removed Nov 18 (Jason: keep Sandy's one-thing-at-a-time flow); code kept for later */
 const CHINT=['Copy each percent as grams. 40.0% → 40.0 g.','Divide each mass by the molar mass under it.','Find the smallest number of moles, then divide every element by it.','Close to whole? × 1. Ends in .5? × 2. Ends in .33 or .67? × 3.'];
 const MHINT=['Multiply each atomic mass by its subscript, then add.','Molar mass on top, empirical formula mass on the bottom.','Multiply every subscript by n.'];
 function calcKeys(i,p){const e=p.els,a=e[0],mol=e.map(x=>x.pct/x.m),mn=Math.min(...mol),si=mol.indexOf(mn),o=si===0?1:0;
   if(i===1)return `<details class="keys"><summary>Calculator keys</summary><table><tr><td>TI-84</td><td class="k">${a.pct} ÷ ${ms(a.m)} ENTER</td></tr><tr><td>TI-30XS</td><td class="k">${a.pct} ÷ ${ms(a.m)} enter</td></tr><tr><td>Phone or Desmos</td><td class="k">${a.pct} / ${ms(a.m)}</td></tr></table><p class="muted">Write down at least 4 digits. Rounding too early can change the ratio.</p></details>`;
   if(i===2)return `<details class="keys"><summary>Calculator keys: store the smallest once</summary><table><tr><td>TI-84</td><td class="k">${f(mn)} STO→ ALPHA A ENTER, then ${f(mol[o])} ÷ ALPHA A ENTER</td></tr><tr><td>TI-30XS</td><td class="k">${f(mn)} sto→, pick a with the x yzt abcd key, enter; then ${f(mol[o])} ÷ a enter</td></tr><tr><td>Phone or Desmos</td><td class="k">${f(mol[o])} / ${f(mn)}</td></tr></table></details>`;
   return ''}
+
+/* ---------- Explain it another way (RJ Ed Tech, Nov 18: Jason) ----------
+   Sandy's steps stay one thing at a time. Each step has a button that opens a different way of saying the same thing,
+   only when a student asks. Step 2 also shows the problem's mass-vs-count bars. Open panels are remembered while the page is open. */
+const XOPEN=new Set();
+function xBtn(id){const o=XOPEN.has(id);return `<button class="xbtn" data-act="expl" data-x="${esc(id)}" aria-expanded="${o}">🤔 ${o?'Hide the other explanation':'Explain it another way'}</button>`}
+function empExpl(i,p,w){const e=p.els[0];
+  if(i===0)return `<p><b>Picture a 100 g bag</b> of the compound. If the label says ${e.pct}% ${e.sym}, then ${e.pct} g of the bag is ${e.sym}. Any size bag gives the same ratio. 100 g just makes the numbers easy.</p><span class="k">${e.pct}% of 100 g = ${e.pct} g</span>`;
+  if(i===1)return `<p><b>Grams say how heavy, not how many.</b> A dozen bowling balls and a dozen ping-pong balls are both 12 balls, but they weigh very different amounts. A formula counts atoms, so we need a count. A mole is a count, like a dozen.</p>`+massCount(p,{stage:2});
+  if(i===2)return `<p><b>Like simplifying a recipe.</b> If a recipe says 3.33 cups of flour for 6.66 eggs, divide both by 3.33: 1 cup for every 2 eggs. Dividing by the smallest makes it 1, and the others tell you how many “for every one.”</p><span class="k">3.33 : 6.66 → ÷ 3.33 → 1 : 2</span>`;
+  return `<p><b>You can’t have half an atom.</b> If a recipe calls for 1 cup of milk and 1.5 eggs, double the whole recipe: 2 cups and 3 eggs. Same idea here: multiply <b>every</b> ratio by the same number until all are whole.</p><span class="k">1 : 1.5 → × 2 → 2 : 3 (never round 1.5 to 2)</span>`;}
+function molExpl(i,p){
+  if(i===0)return `<p><b>Weigh one copy of the recipe.</b> Add up the mass of every atom in ${fHTML(p.els,p.emp)}. That is the mass of one empirical unit.</p>`;
+  if(i===1)return `<p><b>How many copies fit?</b> If one unit weighs 30 and the whole molecule weighs 180, then 180 ÷ 30 = 6 units fit in one molecule. That number is <i>n</i>.</p><span class="k">n = molar mass ÷ empirical formula mass</span>`;
+  return `<p><b>Make n batches.</b> If the recipe is ${fHTML(p.els,p.emp)} and there are ${p.n} batches, multiply every subscript by ${p.n}.</p>`;}
 
 /* ---------- Show me this step + reveal (RJ Ed Tech) ----------
    After two wrong checks on a step, a button shows that step worked for ONE element (or the rule to use), so the student still does the rest.
@@ -771,6 +743,7 @@ function onClick(ev){
     else{const m=this.querySelector('.msg.bad');if(m)m.scrollIntoView({block:'nearest'})}
     if(w.solved&&c.o.onSolved)c.o.onSolved();refresh();return}
   if(a==='next'){w.stage++;save();draw(this);refresh();sayHost(this);return}
+  if(a==='expl'){const x=b.dataset.x;if(XOPEN.has(x))XOPEN.delete(x);else XOPEN.add(x);draw(this);if(XOPEN.has(x)){const btn=this.querySelector(`[data-x="${CSS.escape(x)}"]`);const pn=btn&&btn.nextElementSibling;if(pn&&pn.classList.contains('expl'))say(txt(pn))}return}
   if(a==='help'){w.shown=w.shown||{};w.shown[b.dataset.s]=true;w.helps=(w.helps||0)+1;save();draw(this);sayHost(this);return}
   if(a==='another'){another(c.p.id);if(c.p.id[0]==='p')showPractice();else showMol();refresh();return}
   if(a==='replay'){w.stage=0;save();draw(this);return}
@@ -844,7 +817,7 @@ function drawGut(){const el=document.getElementById('gutCard');const g=S.gut;
   an.innerHTML=`<div class="eyebrow">The opening question, answered</div><p>${GUT.q}</p>${g!=null?`<p>Your gut said: <b>${GUT.o[g]}</b>. ${g===0?'Your gut was right.':'Here is why the math says Bag A.'}</p>`:`<p class="muted">You didn’t answer it in Part 1, so here is the math.</p>`}
    <div class="labout"><span>Bag A: 20 kg × 0.46 = 9.2 kg N → $30 ÷ 9.2 kg = $3.26 per kg N</span><span>Bag B: 20 kg × 0.34 = 6.8 kg N → $25 ÷ 6.8 kg = $3.68 per kg N</span></div>
    <p><b>Bag A wins.</b> It costs more per bag but less per kilogram of nitrogen. <b>Keep this:</b> compare the price of the element you need, not the price of the bag.</p>`}
-document.getElementById('gutCard').addEventListener('click',e=>{const b=e.target.closest('[data-gut]');if(!b||S.gut!=null)return;S.gut=+b.dataset.gut;save();drawGut();refresh();say(txt(document.querySelector('#gutCard .msg')))});
+
 
 /* ---------- Your lab data: MgO (RJ Ed Tech) ---------- */
 function labCalc(){const L=S.lab||{},c=num(L.c),cm=num(L.cm),cp=num(L.cp);
@@ -930,7 +903,7 @@ function sayTest(){const h=document.getElementById('testHost');const p=h.querySe
 const testBest=()=>(S.test&&S.test.best)||0;
 
 /* ---------- progress + routing ---------- */
-const SECS=[['learn','Definition'],['rhyme','The rhyme'],['examples','Worked examples'],['practice','Practice'],['molecular','Molecular formula'],['use','Use it'],['test','Test yourself'],['summary','Summary']];
+const SECS=[['learn','Definition'],['rhyme','The rhyme'],['examples','Worked examples'],['practice','Practice'],['molecular','Molecular formula'],['summary','Summary'],['use','Extra: Use it'],['test','Extra: Test yourself']];
 const pracSolved=()=>PR.filter(p=>S.work[p.id]&&S.work[p.id].solved).length;
 const molCount=()=>MP.filter(molSolved).length;
 const SQ=[
@@ -964,7 +937,7 @@ function refresh(){
   if(cur==='summary')drawSummary();
   if(cur==='test'&&!document.querySelector('#testHost .tq'))drawTest();
   if(cur==='use'&&!document.querySelector('#useHost .uprob'))drawUse();
-  if(cur==='use'){drawGut();fillLab()}
+  if(cur==='use')fillLab();
 }
 function route(){
   const cur=current();
@@ -991,8 +964,7 @@ function drawSummary(){
     ['Worked examples A and B stepped through',['exA','exB'].every(k=>S.work[k]&&S.work[k].stage>=4)],
     ['Empirical practice: '+pracSolved()+'/3 solved',st.practice],
     ['Molecular practice: '+molCount()+'/3 solved',st.molecular],
-    ['Use it: '+useOK()+'/5 real problems solved',st.use],
-    ['Test yourself: best '+testBest()+'/'+TN+' (aim for 8+)',st.test],
+
     ['Name and all four summary answers written',st.summary]];
   document.getElementById('checklist').innerHTML=items.map(([t,ok])=>`<li><span class="bx${ok?' on':''}">${ok?'✓':''}</span>${t}</li>`).join('');
   document.getElementById('report').textContent=buildReport();
@@ -1034,7 +1006,6 @@ function buildReport(){
   L.push(`  Empirical practice solved: ${pracSolved()}/3`);
   L.push(`  Molecular practice solved: ${molCount()}/3`);
   L.push(`  Use it, real problems solved: ${useOK()}/5`);
-  L.push(`  Level: ${lvl()==='chem'?'Chemistry':'Honors'} · Gut answer (fertilizer): ${S.gut!=null?GUT.o[S.gut]:'not answered'}`);
   {const R=labCalc();if(!R.msg)L.push(`  My MgO lab: Mg ${R.mg.toFixed(3)} g, O ${R.o.toFixed(3)} g, ratio O/Mg ${R.r.toFixed(2)}, % Mg ${R.pMg.toFixed(1)}% (error ${R.err.toFixed(1)}%)`)}
   L.push(`  Test yourself: best ${testBest()}/${TN} · sets taken: ${(S.test&&S.test.sets)||0}`);
   L.push('');L.push('EMPIRICAL FORMULA PRACTICE');
@@ -1099,7 +1070,7 @@ const slug=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g,'').tr
 function cfBtn(where){return `<button class="cfb" data-cf="${esc(where)}" title="Tell us this part was confusing (counted anonymously)">😕 This confused me</button>`}
 const cfDone=new Set();
 const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
-const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading at the top.',see:'Thanks. Compare your numbers with the worked examples in Part 3, step by step.',words:'Thanks. The Key terms box in Part 1 has every definition.',fast:'Thanks. Take one step at a time. Miss a step twice and “Show me this step” appears.',question:'Thanks. Try the worked examples in Part 3, or ask your teacher.'};
+const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading at the top.',see:'Thanks. Compare your numbers with the worked examples in Part 3, step by step.',words:'Thanks. Part 1 has the definitions. Ask your teacher about any other word.',fast:'Thanks. Take one step at a time. Miss a step twice and “Show me this step” appears.',question:'Thanks. Try the worked examples in Part 3, or ask your teacher.'};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cf]');if(!b)return;e.preventDefault();e.stopPropagation();
   const path=['confused','ChemLab','empirical-formula',current(),b.dataset.cf].join('/');b.disabled=true;
   const box=document.createElement('div');box.className='cfwhy';box.setAttribute('role','group');box.setAttribute('aria-label','What confused you?');
@@ -1111,9 +1082,10 @@ window.addEventListener('hashchange',()=>{if(CAN)SS.cancel();setTimeout(()=>{say
 window.addEventListener('pagehide',()=>{if(CAN)SS.cancel()});
 document.getElementById('quiz').addEventListener('click',e=>{const q=e.target.closest('[data-q]');if(!q||!raOn)return;setTimeout(()=>{const m=document.querySelectorAll('#quiz .q')[+q.dataset.q];const r=m&&m.querySelector('.msg');if(r)say(txt(r))},30)});
 function syncLvl(){document.querySelectorAll('[data-lvl]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lvl===lvl())))}
-document.querySelectorAll('[data-lvl]').forEach(b=>b.addEventListener('click',()=>{if(lvl()===b.dataset.lvl)return;S.level=b.dataset.lvl;rebuild();syncLvl();showPractice();showMol();
+[].forEach(b=>b.addEventListener('click',()=>{if(lvl()===b.dataset.lvl)return;S.level=b.dataset.lvl;rebuild();syncLvl();showPractice();showMol();
   ['exA','exB'].forEach(k=>{const h=document.getElementById(k);if(h&&h._c)draw(h)});refresh()}));
-syncSup();syncLvl();drawGut();
+document.getElementById('defX').addEventListener('click',e=>{const b=e.currentTarget,pn=document.getElementById('defXp');pn.hidden=!pn.hidden;b.setAttribute('aria-expanded',String(!pn.hidden));b.textContent=pn.hidden?'🤔 What does this mean?':'🤔 Hide the other explanation';if(!pn.hidden)say(txt(pn))});
+syncSup();
 
 /* ---------- boot ---------- */
 drawQuiz();drawRhyme();
