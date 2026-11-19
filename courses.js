@@ -21,7 +21,7 @@ BioLab.COURSES = [
       { n: 'Unit 2', t: 'Chemical nomenclature', ids: ['ptable', 'ionic', 'naming'] },
       { n: 'Unit 3', t: 'Chemical reactions', ids: ['buildmol', 'balance', 'rxntypes', 'activity', 'precip'] },
       { n: 'Unit 4', t: 'Measurement', ids: ['measure', 'units', 'density'] },
-      { n: 'Unit 5', t: 'The mole', ids: ['molesteps', 'mole', 'percentcomp', 'hydrate'] },
+      { n: 'Unit 5', t: 'The mole', ids: ['molesteps', 'mole', 'percentcomp', 'hydrate'], links: [{ lesson: true, href: 'empirical-formula.html', title: 'Empirical Formula Lab', label: 'Dr. Robertson’s lesson', text: 'Percent to grams, grams to moles, divide by smallest, make it whole. Then molecular formulas, with new numbers every try.', kind: 'Lesson' }] },
       { n: 'Unit 5b', t: 'Stoichiometry', ids: ['stoich', 'airbag'] },
       { n: 'Unit 6', t: 'Solids, liquids and gases', ids: ['states', 'phasediagram', 'gaslaws', 'kmt'] },
       { n: 'Unit 7', t: 'Thermochemistry', ids: ['calorimetry', 'coldpack'] },
@@ -47,7 +47,7 @@ BioLab.COURSES = [
   { id: 'ap',finals:[{"t": "AP Chemistry fall final review", "units": [0, 1, 2, 3, 4], "note": "Covers AP Units 1 to 5, through kinetics. Your teacher decides what is on the final, so check the study guide."}], name: 'AP Chemistry',
     blurb: 'Tools grouped by the nine AP Chemistry units. Both sections teach Units 1–5 and the first half of Unit 7 in the fall, then thermochemistry, solubility equilibrium, acids and bases, and Unit 9 in the spring.',
     units: [
-      { n: 'Unit 1', t: 'Atomic structure and properties', ids: ['mole', 'avgmass', 'percentcomp', 'econfig', 'pes', 'trends'], links: [{ lesson: true, href: 'https://jackson-classroom.github.io/ap-chemistry/unit-1/', title: 'Electron configuration and PES (1.5–1.6)', label: 'Mr. Jackson’s lesson', text: 'Where the electrons actually are, and the experiment that proves it.', kind: 'Lesson' }] },
+      { n: 'Unit 1', t: 'Atomic structure and properties', ids: ['mole', 'avgmass', 'percentcomp', 'econfig', 'pes', 'trends'], links: [{ lesson: true, href: 'empirical-formula.html', title: 'Empirical Formula Lab', label: 'Dr. Robertson’s lesson', text: 'Percent to grams, grams to moles, divide by smallest, make it whole. Then molecular formulas, with new numbers every try.', kind: 'Lesson' }, { lesson: true, href: 'https://jackson-classroom.github.io/ap-chemistry/unit-1/', title: 'Electron configuration and PES (1.5–1.6)', label: 'Mr. Jackson’s lesson', text: 'Where the electrons actually are, and the experiment that proves it.', kind: 'Lesson' }] },
       { n: 'Unit 2', t: 'Compound structure and properties', ids: ['ionic', 'bondtypes', 'buildmol', 'lewis', 'vsepr', 'polarity'] },
       { n: 'Unit 3', t: 'Properties of substances and mixtures', ids: ['imf', 'phasediagram', 'gaslaws', 'kmt', 'dissolve', 'molarity', 'separation', 'beerslaw', 'light', 'spectra'] },
       { n: 'Unit 4', t: 'Chemical reactions', ids: ['balance', 'precip', 'stoich', 'activity', 'titration'] },
