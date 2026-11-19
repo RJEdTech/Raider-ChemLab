@@ -222,6 +222,11 @@ footer.credit a{color:var(--accent)}
 .lvl{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden}
 .lvl button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.85rem;padding:6px 12px;border:0;background:transparent;color:var(--accent);cursor:pointer}
 .lvl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.mcwrap{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.wc-h{font:700 17px var(--f-display);fill:var(--muted)}.wc-l{font:700 22px var(--f-mono);fill:var(--ink);text-anchor:middle}.wc-v{font:700 17px var(--f-mono);fill:var(--ink)}.wc-c{font:700 19px var(--f-mono);fill:var(--ink);text-anchor:middle}
+#wcScene .lk-stage svg{max-width:540px}
+.wc-bH{fill:#cfe3ff;stroke:#2f6fd6;stroke-width:2}.wc-bO{fill:#f2b8b1;stroke:#d9483b;stroke-width:2}
+#wcScene .lk-btn{font-family:var(--f-body)}
 .mc{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
 .mc h4{margin:0 0 6px;font-family:var(--f-display);font-size:.95rem}
 .mcrow{display:grid;grid-template-columns:2.3em minmax(60px,1fr) auto;gap:8px;align-items:center;margin:5px 0}.mcrow .lb{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
@@ -268,6 +273,7 @@ html.easy .eyebrow,html.easy th{text-transform:none;letter-spacing:.02em}
 html.easy i,html.easy em{font-style:normal;font-weight:700}
 html.easy p{max-width:62ch}
 </style>
+<link rel="stylesheet" href="kit/lesson-kit.css?v=1">
 </head>
 <body>
 
@@ -313,6 +319,13 @@ html.easy p{max-width:62ch}
       <h3>Why chemists need it</h3>
       <p>When a lab analyzes an unknown compound (for example by combustion analysis), it measures <b>mass percent</b> of each element. Mass data can only tell you the <i>ratio</i> of atoms. That ratio is the empirical formula. To get the real molecule, you also need the <b>molar mass</b>.</p>
     </div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">See it</div>
+    <h3>Weight isn’t the same as count</h3>
+    <p>A lab can only <b>weigh</b> each element. But a formula <b>counts</b> atoms. Watch what happens to water when you turn its weights into a count.</p>
+    <div id="wcScene"></div>
+    <div id="wcWhy"></div>
   </div>
   <div class="card">
     <div class="tablewrap"><table>
@@ -535,6 +548,7 @@ html.easy p{max-width:62ch}
   <span>RJ Ed Tech added the new-numbers practice, Show me this step, and Read aloud. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
 </div></footer>
 
+<script src="kit/lesson-kit.js?v=1"></script>
 <script>
 (function(){
 const KEY='ef-lab-v2';
@@ -650,7 +664,7 @@ function empHTML(p,key,o){
   const w=W(key,()=>o.demo?demoEmpW(p):newEmpW());
   const prompt=p.prompt||`A compound is ${listPct(p)} by mass.${p.full?` Its molar mass is ${p.molar} g/mol. First find the empirical formula.`:' Find its empirical formula.'}`;
   let h=`<div class="solver"><div class="problem"><p class="prompt">${prompt}</p><div class="givens">${p.els.map(e=>`<span class="given">${tile(e.sym)}${e.pct}% · molar mass ${ms(e.m)} g/mol</span>`).join('')}</div></div>`;
-  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key)}
+  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key);if(i===1&&w.stage>=2)h+=`<div class="mcwrap"><div class="eyebrow">Weight vs count for this compound</div>${massCount(p,w)}</div>`}
   if(w.stage>=4)h+=`<div class="result"><span>Empirical formula</span><span class="big">${fHTML(p.els,p.subs)}</span></div>`+(w.solved&&!p.full?reveal(p):'')+(w.solved&&p.full?`<p class="muted">Now use the molar mass below to find the molecular formula.</p>`:'');
   if(w.demo){h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`}
   else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
@@ -704,10 +718,18 @@ function molStage(i,p,w,key){
   {const cw=key+'/'+(i+1)+'-'+slug(MST[i]);if(CFOPEN.has(cw))b=cfPanel(cw,ASK_M[i],molExpl(i,p),MHINT[i],(!done&&!w.demo&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:'')+b}
   return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${MST[i]}</h4><span class="tag">${['Σ g/mol','n = M ÷ EFM','subscripts × n'][i]}</span>${cfBtn(key+'/'+(i+1)+'-'+slug(MST[i]))}</div><div class="sb">${b}</div></div>`;
 }
+/* Molecular formula as a picture: the whole molecule's weight is n copies of the empirical formula's weight. */
+const fTxt=(els,subs)=>els.map((e,i)=>e.sym+(+subs[i]>1?String(subs[i]).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]):'')).join('');
+function copyBars(p,w){if(!(w.stage>=1))return '';const efm=p.els.reduce((a,e,i)=>a+p.emp[i]*e.m,0),M=+p.molar,ef=fTxt(p.els,p.emp),n=Math.round(M/efm),got=w.stage>=2;
+  const seg=got?Array.from({length:n},()=>`<i style="flex:1;background:#d8c6f0;border-right:2px solid #fff">${ef}</i>`).join(''):`<i style="flex:1;background:#d8c6f0">${M} g/mol</i>`;
+  return `<div class="mcwrap"><div class="eyebrow">How many copies fit?</div><div class="lk-bars">
+   <div class="lk-brow"><span class="lk-bl">Molecule</span><div class="lk-btrack"><div class="lk-bfill" style="width:100%">${seg}</div></div></div>
+   <div class="lk-brow"><span class="lk-bl">One ${ef}</span><div class="lk-btrack"><div class="lk-bfill" style="width:${(efm/M*100).toFixed(1)}%"><i style="flex:1;background:#cfe3ff">${efm.toFixed(1)}</i></div></div></div>
+   <p class="lk-note">${got?`<b>${n} copies</b> of ${ef} (${efm.toFixed(1)} g/mol each) weigh ${(n*efm).toFixed(1)} g/mol, the molecule’s ${M} g/mol. So multiply every subscript by ${n}.`:`One ${ef} weighs ${efm.toFixed(1)} g/mol. The whole molecule weighs ${M} g/mol. How many copies fit?`}</p></div></div>`}
 function molHTML(p,key,o){
   const w=W(key,()=>o.demo?demoMolW(p):newMolW());
   let h=`<div class="solver"><div class="problem"><p class="prompt">${p.full?'Now use the molar mass. ':''}Empirical formula <b style="font-family:var(--f-mono)">${fHTML(p.els,p.emp)}</b>, molar mass <b style="font-family:var(--f-mono)">${p.molar} g/mol</b>. Find the molecular formula.</p></div>`;
-  for(let i=0;i<3;i++){if(w.demo?i<w.stage:i<=w.stage)h+=molStage(i,p,w,key)}
+  for(let i=0;i<3;i++){if(w.demo?i<w.stage:i<=w.stage)h+=molStage(i,p,w,key);if(i===0)h+=copyBars(p,w)}
   if(w.stage>=3)h+=`<div class="result"><span>Molecular formula</span><span class="big">${fHTML(p.els,p.emp.map(x=>x*p.n))}</span></div>`+(w.solved&&!w.demo?reveal(p):'');
   if(w.demo)h+=`<div class="row">${w.stage<3?`<button class="btn" data-act="next">Show step ${w.stage+1}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`;
   else if(!p.full)h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button></div>`;
@@ -1181,6 +1203,24 @@ mount(document.getElementById('exB'),'emp',EX.exB,'exB',{demo:true});
 mount(document.getElementById('m1'),'mol',M1,'m1',{demo:true});
 showPractice();showMol();mountFull(document.getElementById('caseHost'),CASE);
 route();
+})();
+</script>
+<script>
+/* Part 1 "See it" (Nov 19): water by weight vs by count, built with the Raider Labs Lesson Kit stepper.
+   100 g water = 11.2 g H + 88.8 g O. ÷ 1.008 and ÷ 16.00 → 11.1 mol H, 5.55 mol O. ÷ 5.55 → 2 : 1 → H₂O. */
+(function(){if(!window.LK||!document.getElementById('wcScene'))return;
+  const X=44,W=250,bar=(v,mx)=>v/mx*W;
+  const svg=`<svg viewBox="0 0 430 186" role="img" aria-label="Bar picture: water by weight is 11.2 grams hydrogen and 88.8 grams oxygen. Counted in moles it is 11.1 hydrogen and 5.55 oxygen, a 2 to 1 ratio: H2O.">
+    <text x="8" y="22" class="wc-h" id="wcHead">By weight (grams)</text>
+    <text x="20" y="62" class="wc-l">H</text><rect id="wcH" x="${X}" y="40" height="34" rx="5" class="wc-bH"/><text id="wcHt" y="63" class="wc-v"></text>
+    <text x="20" y="117" class="wc-l">O</text><rect id="wcO" x="${X}" y="95" height="34" rx="5" class="wc-bO"/><text id="wcOt" y="118" class="wc-v"></text>
+    <text x="215" y="172" class="wc-c" data-lk-caption></text></svg>`;
+  const st=(h,o,ht,ot,head)=>({wcH:{width:h},wcO:{width:o},wcHt:{x:X+h+8,text:ht},wcOt:{x:X+o+8,text:ot},wcHead:{text:head}});
+  LK.stepper('#wcScene',{svg,playLabel:'▶ Play',steps:[
+    {label:'100 g of water, weighed. 11.2 g is hydrogen and 88.8 g is oxygen. Oxygen looks like almost all of it.',caption:'By weight: 89% oxygen',tally:{'Heavier':'oxygen'},set:st(bar(11.2,88.8),W,'11.2 g H','88.8 g O','By weight (grams)')},
+    {label:'Turn weight into a count: divide by how much one mole of each atom weighs (H 1.008 g, O 16.00 g). Watch the bars swap.',caption:'By count: twice as many H atoms',tally:{'Heavier':'oxygen','More atoms':'hydrogen'},focus:['wcH','wcO'],set:st(W,bar(5.55,11.1),'11.1 mol H','5.55 mol O','By count (moles of atoms)')},
+    {label:'Divide both counts by the smaller one, 5.55. That gives 2 H for every 1 O.',caption:'2 : 1 → H₂O',tally:{'Heavier':'oxygen','More atoms':'hydrogen','Formula':'H₂O'},set:st(W*0.8,W*0.4,'2 H','1 O','For every 1 O atom')}]});
+  LK.whyCare('#wcWhy','A lab that has to identify an unknown powder, like a seized pill, a new medicine or a meteorite sample, can only weigh what’s in it. Turning those weights into a count is how it finds the formula. You’ll do exactly that in Part 4.');
 })();
 </script>
 <!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
