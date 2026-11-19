@@ -216,6 +216,38 @@ footer.credit a{color:var(--accent)}
 .dots{display:flex;gap:5px;flex-wrap:wrap}.dots i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--line);display:block}
 .dots i.r{background:var(--good);border-color:var(--good)}.dots i.w{background:var(--bad);border-color:var(--bad)}.dots i.c{border-color:var(--accent);border-width:2.5px}
 .score{font-family:var(--f-mono);font-size:2rem;font-weight:600}
+.lvl{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden}
+.lvl button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.85rem;padding:6px 12px;border:0;background:transparent;color:var(--accent);cursor:pointer}
+.lvl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.mc{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.mc h4{margin:0 0 6px;font-family:var(--f-display);font-size:.95rem}
+.mcrow{display:grid;grid-template-columns:2.3em minmax(60px,1fr) auto;gap:8px;align-items:center;margin:5px 0}.mcrow .lb{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
+.mcbar{height:20px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.mcbar i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.mcbar.m i{background:var(--muted)}.mcbar.c i{background:var(--accent)}
+
+.mc .ins{grid-column:1/-1;margin:0;font-weight:700}
+.bigpic{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:stretch}
+.bp{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);display:flex;flex-direction:column;gap:6px;text-align:center;align-items:center}
+.bp .big{font-size:1.8rem;line-height:1.1}.bp .k{font-family:var(--f-mono);font-size:.9rem}
+.bp b{font-family:var(--f-display)}
+.batch{display:flex;flex-wrap:wrap;gap:10px}.batch>div{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.batch .e{font-size:1.25rem;letter-spacing:.06em;word-break:break-all}
+.gut .opts{flex-direction:column;align-items:stretch}.gut .opt{text-align:left;font-family:var(--f-body)}
+.wo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.wo>div{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.wo .x,.wo .ok{font-family:var(--f-mono);font-size:.9rem;padding:5px 8px;border-radius:6px}
+.wo .x{background:var(--bad-soft);border:1px solid var(--bad)}.wo .ok{background:var(--good-soft);border:1px solid var(--good)}
+details.keys{border:1px dashed var(--line);border-radius:8px;padding:6px 12px;max-width:72ch}
+details.keys summary{cursor:pointer;font-weight:700;font-size:.92rem}
+details.keys table{font-size:.9rem}details.keys td{padding:5px 8px}details.keys td.k{font-family:var(--f-mono)}
+.chint{font-size:.95rem;border-left:3px solid var(--unit);padding:4px 10px;max-width:72ch}
+.lab{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.lab label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.95rem}
+.lab input{font:inherit;font-family:var(--f-mono);padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:10ch}
+.labout{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:.95rem}
+.jobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.jobs>div{border-left:3px solid var(--accent);padding:6px 12px}
 .uprob{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .uprob h4{margin:0;font-family:var(--f-display)}.upart{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .upart label{font-weight:700;min-width:min(100%,260px)}.upart input{font:inherit;font-family:var(--f-mono);width:9ch;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:right}
@@ -237,7 +269,7 @@ html.easy p{max-width:62ch}
     <div class="rhymebar" id="rhymebar" aria-label="The rhyme">
       <span>percent to grams</span><span>grams to moles</span><span>divide by smallest</span><span>make it whole</span>
     </div>
-    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button></div>
+    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button><span class="lvl" role="group" aria-label="Level"><button data-lvl="chem">Chemistry</button><button data-lvl="honors">Honors</button></span></div>
   </div>
 </header>
 <nav class="steps" aria-label="Lesson sections"><div class="wrap scroller"><ol id="stepnav"></ol></div></nav>
@@ -247,6 +279,25 @@ html.easy p{max-width:62ch}
 <!-- 1. DEFINITION -->
 <section class="sec" data-sec="learn">
   <div><div class="eyebrow">Part 1</div><h2>What is an empirical formula?</h2></div>
+  <div class="card stack gut" id="gutCard"></div>
+  <div class="card stack">
+    <div class="eyebrow">The big picture</div>
+    <h3>A formula is a recipe</h3>
+    <p>A pancake recipe calls for 1 cup of mix, 2 eggs and 1 cup of milk. Make a double or triple batch and the amounts grow, but the <b>ratio stays 1 : 2 : 1</b>.</p>
+    <div class="batch">
+      <div><b>Single batch</b><div class="e" aria-label="1 mix, 2 eggs, 1 milk">🥣 🥚🥚 🥛</div><span class="k">1 : 2 : 1</span></div>
+      <div><b>Double batch</b><div class="e" aria-label="2 mix, 4 eggs, 2 milk">🥣🥣 🥚🥚🥚🥚 🥛🥛</div><span class="k">2 : 4 : 2</span></div>
+      <div><b>Triple batch</b><div class="e" aria-label="3 mix, 6 eggs, 3 milk">🥣🥣🥣 🥚🥚🥚🥚🥚🥚 🥛🥛🥛</div><span class="k">3 : 6 : 3</span></div>
+    </div>
+    <p>Compounds work the same way. The <b>simplest ratio</b> is the <b>empirical formula</b> (CH₂O). How many batches are in one real molecule is <b><i>n</i></b>. Glucose is 6 batches: C₆H₁₂O₆ = 6 × CH₂O.</p>
+    <h3 style="margin-top:6px">How you find the ratio in four moves</h3>
+    <div class="bigpic">
+      <div class="bp"><span class="big" aria-hidden="true">⚖️</span><b>1. Percent → grams</b><span class="k">40.0% C → 40.0 g C</span><span class="muted">Pretend you have 100 g.</span></div>
+      <div class="bp"><span class="big" aria-hidden="true">🔢</span><b>2. Grams → moles</b><span class="k">40.0 g ÷ 12.01 = 3.33 mol</span><span class="muted">Count the atoms, don’t weigh them.</span></div>
+      <div class="bp"><span class="big" aria-hidden="true">➗</span><b>3. Divide by smallest</b><span class="k">3.33 : 6.66 : 3.33 → 1 : 2 : 1</span><span class="muted">The smallest becomes 1.</span></div>
+      <div class="bp"><span class="big" aria-hidden="true">✅</span><b>4. Make it whole</b><span class="k">1 : 2 : 1 → CH₂O</span><span class="muted">Whole numbers only.</span></div>
+    </div>
+  </div>
   <div class="defbox">
     <div class="eyebrow">Definition</div>
     <p>An <b>empirical formula</b> shows the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
@@ -321,6 +372,16 @@ html.easy p{max-width:62ch}
     </table></div>
   </div>
   <div class="card stack">
+    <div class="eyebrow">Watch out</div>
+    <h3>The four classic mistakes</h3>
+    <div class="wo">
+      <div><b>Rounding 1.5 to 2</b><span class="x">✗ Fe 1 : O 1.5 → FeO₂</span><span class="ok">✓ × 2 → Fe 2 : O 3 → Fe₂O₃</span></div>
+      <div><b>Comparing grams, not moles</b><span class="x">✗ 40.0 g C : 6.71 g H → C₆H</span><span class="ok">✓ 3.33 mol C : 6.66 mol H → CH₂</span></div>
+      <div><b>Dividing by the largest</b><span class="x">✗ 3.33 ÷ 6.66 = 0.5 → not whole</span><span class="ok">✓ divide by the smallest, 3.33 → 1 : 2</span></div>
+      <div><b>Flipping the conversion factor</b><span class="x">✗ 40.0 g × 12.01 g/mol = 480 g²/mol</span><span class="ok">✓ 40.0 g × (1 mol / 12.01 g) = 3.33 mol</span></div>
+    </div>
+  </div>
+  <div class="card stack">
     <div class="eyebrow">Check yourself</div>
     <div class="tqhead"><h3>Put the rhyme in order</h3><button class="cfb" data-cf="rhyme/order">😕 This confused me</button></div>
     <p class="muted">Tap the lines in the order you do them.</p>
@@ -379,6 +440,7 @@ html.easy p{max-width:62ch}
 <section class="sec" data-sec="use" hidden>
   <div><div class="eyebrow">Part 6</div><h2>Use it</h2>
   <p class="lead">Percent composition and formulas show up on fertilizer bags, supplement bottles, and in your own lab. Solve real problems, then see what you can do with this.</p></div>
+  <div class="card stack" id="gutAns"></div>
   <div class="card stack" id="usesCard">
     <div class="eyebrow">How chemists use this</div>
     <h3>Real people do this math every day</h3>
@@ -389,6 +451,27 @@ html.easy p{max-width:62ch}
       <div class="use"><span class="ic" aria-hidden="true">🔎</span><h4>Forensics</h4><p>An unknown powder gets two tests. One gives the element ratio. A mass spectrometer gives the molar mass. Together they give the molecular formula: the same two steps you just did. <a href="https://rjedtech.github.io/Raider-ForensicsLab/" target="_blank" rel="noopener">Raider ForensicsLab</a></p><div class="m">n = molar mass ÷ EFM</div></div>
       <div class="use"><span class="ic" aria-hidden="true">🧪</span><h4>Your MgO lab</h4><p>Burning magnesium and weighing the ash is an empirical formula experiment. The extra mass is oxygen from the air. <a href="./#percentcomp" target="_blank" rel="noopener">Try it in Raider ChemLab</a></p><div class="m">mol O ÷ mol Mg = 1.00 → MgO</div></div>
     </div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Who does this for a job</div>
+    <div class="jobs">
+      <div><b>Crop advisor</b><br>Reads soil tests and the N-P-K numbers to decide how many kilograms of fertilizer a field needs.</div>
+      <div><b>Pharmacist</b><br>Knows the element is only part of the compound: a 325 mg ferrous sulfate tablet lists 65 mg of elemental iron.</div>
+      <div><b>Quality-control chemist</b><br>Checks every batch of a medicine against its formula before it ships.</div>
+      <div><b>Forensic chemist</b><br>Names unknown powders from the element ratio and the molar mass.</div>
+      <div><b>Water-quality technician</b><br>Reports nitrate in drinking water “as N”: the EPA limit is 10 mg of nitrate-nitrogen per liter.</div>
+    </div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Your lab data</div>
+    <h3>Find your formula from your MgO lab</h3>
+    <p class="muted">Type the masses from your lab notebook. The page uses your numbers, step by step.</p>
+    <div class="lab">
+      <label>Crucible + lid, empty (g)<input id="labC" data-lab="c" inputmode="decimal" autocomplete="off"></label>
+      <label>Crucible + lid + Mg ribbon (g)<input id="labCM" data-lab="cm" inputmode="decimal" autocomplete="off"></label>
+      <label>Crucible + lid + product, after the last heating (g)<input id="labCP" data-lab="cp" inputmode="decimal" autocomplete="off"></label>
+    </div>
+    <div id="labOut" class="labout" aria-live="polite"></div>
   </div>
   <div class="card stack">
     <div class="eyebrow">Your turn</div>
@@ -479,14 +562,15 @@ const M1={id:'m1',els:[{sym:'C',m:12.01},{sym:'H',m:1.008},{sym:'O',m:16.00}],em
    Percents are 3 significant figures, computed from the same atomic masses the lesson uses; every entry was checked with this page's own grader.
    p1: three or more elements, whole numbers right away; p2: two elements, whole numbers right away; p3: needs "make it whole" (x2, x3 or x4).
    m2, m3: empirical formula and molar mass given; m4: percents and molar mass given. Sandy's original problems are the first entry of each bank. */
-const BANK={"p1":[{"els":[{"sym":"Ag","pct":"63.5","m":107.87},{"sym":"N","pct":"8.24","m":14.01},{"sym":"O","pct":"28.2","m":16}],"subs":[1,1,3],"mult":1,"name":"silver nitrate","use":"Chemistry labs use it to test water for chloride. It turns skin dark if it spills."},{"els":[{"sym":"K","pct":"24.7","m":39.1},{"sym":"Mn","pct":"34.8","m":54.94},{"sym":"O","pct":"40.5","m":16}],"subs":[1,1,4],"mult":1,"name":"potassium permanganate","use":"A deep purple solid used to treat well water and clean fish tanks."},{"els":[{"sym":"Na","pct":"32.4","m":22.99},{"sym":"S","pct":"22.6","m":32.07},{"sym":"O","pct":"45.1","m":16}],"subs":[2,1,4],"mult":1,"name":"sodium sulfate","use":"A filler in powdered laundry detergent."},{"els":[{"sym":"Ca","pct":"40.0","m":40.08},{"sym":"C","pct":"12.0","m":12.01},{"sym":"O","pct":"48.0","m":16}],"subs":[1,1,3],"mult":1,"name":"calcium carbonate","use":"Chalk, seashells, and antacid tablets like Tums."},{"els":[{"sym":"C","pct":"52.1","m":12.01},{"sym":"H","pct":"13.1","m":1.008},{"sym":"O","pct":"34.7","m":16}],"subs":[2,6,1],"mult":1,"name":"ethanol","use":"The alcohol in hand sanitizer."},{"els":[{"sym":"Cu","pct":"39.8","m":63.55},{"sym":"S","pct":"20.1","m":32.07},{"sym":"O","pct":"40.1","m":16}],"subs":[1,1,4],"mult":1,"name":"copper(II) sulfate","use":"The bright blue crystals used to kill algae in ponds."},{"els":[{"sym":"K","pct":"31.9","m":39.1},{"sym":"Cl","pct":"28.9","m":35.45},{"sym":"O","pct":"39.2","m":16}],"subs":[1,1,3],"mult":1,"name":"potassium chlorate","use":"It supplies the oxygen in match heads and fireworks."},{"els":[{"sym":"C","pct":"20.0","m":12.01},{"sym":"H","pct":"6.71","m":1.008},{"sym":"N","pct":"46.7","m":14.01},{"sym":"O","pct":"26.6","m":16}],"subs":[1,4,2,1],"mult":1,"name":"urea","use":"A lawn and farm fertilizer. Your body makes it too."},{"els":[{"sym":"C","pct":"49.5","m":12.01},{"sym":"H","pct":"5.19","m":1.008},{"sym":"N","pct":"28.9","m":14.01},{"sym":"O","pct":"16.5","m":16}],"subs":[4,5,2,1],"mult":1,"name":"the simplest ratio in caffeine","use":"Caffeine is C₈H₁₀N₄O₂, the stimulant in coffee and energy drinks. Its simplest ratio is C₄H₅N₂O."}],"p2":[{"els":[{"sym":"C","pct":"85.6","m":12.01},{"sym":"H","pct":"14.4","m":1.008}],"subs":[1,2],"mult":1,"name":"CH₂, the repeating unit of polyethylene","use":"Polyethylene is the plastic in grocery bags and milk jugs."},{"els":[{"sym":"Mg","pct":"60.3","m":24.31},{"sym":"O","pct":"39.7","m":16}],"subs":[1,1],"mult":1,"name":"magnesium oxide","use":"The white ash left when magnesium ribbon burns, like in the MgO lab."},{"els":[{"sym":"Ca","pct":"36.1","m":40.08},{"sym":"Cl","pct":"63.9","m":35.45}],"subs":[1,2],"mult":1,"name":"calcium chloride","use":"Ice melt for sidewalks and roads in a Colorado winter."},{"els":[{"sym":"S","pct":"40.1","m":32.07},{"sym":"O","pct":"59.9","m":16}],"subs":[1,3],"mult":1,"name":"sulfur trioxide","use":"It forms from burning coal and turns into acid rain."},{"els":[{"sym":"Cu","pct":"88.8","m":63.55},{"sym":"O","pct":"11.2","m":16}],"subs":[2,1],"mult":1,"name":"copper(I) oxide","use":"A red pigment in paint for boat bottoms."},{"els":[{"sym":"Fe","pct":"46.5","m":55.85},{"sym":"S","pct":"53.5","m":32.07}],"subs":[1,2],"mult":1,"name":"iron pyrite","use":"\"Fool’s gold.\""},{"els":[{"sym":"C","pct":"74.9","m":12.01},{"sym":"H","pct":"25.1","m":1.008}],"subs":[1,4],"mult":1,"name":"methane","use":"Natural gas, the fuel in a Bunsen burner."},{"els":[{"sym":"N","pct":"82.2","m":14.01},{"sym":"H","pct":"17.8","m":1.008}],"subs":[1,3],"mult":1,"name":"ammonia","use":"Used in many window cleaners and fertilizers."}],"p3":[{"els":[{"sym":"P","pct":"43.6","m":30.97},{"sym":"O","pct":"56.4","m":16}],"subs":[2,5],"mult":2,"name":"P₂O₅ (phosphorus pentoxide)","use":"It pulls water out of the air, so labs use it to keep things dry."},{"els":[{"sym":"Fe","pct":"69.9","m":55.85},{"sym":"O","pct":"30.1","m":16}],"subs":[2,3],"mult":2,"name":"iron(III) oxide","use":"Rust."},{"els":[{"sym":"Al","pct":"52.9","m":26.98},{"sym":"O","pct":"47.1","m":16}],"subs":[2,3],"mult":2,"name":"aluminum oxide","use":"Sandpaper grit, and the mineral in rubies and sapphires."},{"els":[{"sym":"Fe","pct":"72.4","m":55.85},{"sym":"O","pct":"27.6","m":16}],"subs":[3,4],"mult":3,"name":"magnetite","use":"A magnetic iron ore. Some early compasses used it."},{"els":[{"sym":"C","pct":"81.7","m":12.01},{"sym":"H","pct":"18.3","m":1.008}],"subs":[3,8],"mult":3,"name":"propane","use":"The fuel in a gas grill tank."},{"els":[{"sym":"C","pct":"82.7","m":12.01},{"sym":"H","pct":"17.3","m":1.008}],"subs":[2,5],"mult":2,"name":"C₂H₅, the empirical formula of butane","use":"Butane is C₄H₁₀, the fuel in a lighter."},{"els":[{"sym":"C","pct":"60.0","m":12.01},{"sym":"H","pct":"4.48","m":1.008},{"sym":"O","pct":"35.5","m":16}],"subs":[9,8,4],"mult":4,"name":"aspirin","use":"A pain reliever."},{"els":[{"sym":"C","pct":"40.9","m":12.01},{"sym":"H","pct":"4.58","m":1.008},{"sym":"O","pct":"54.5","m":16}],"subs":[3,4,3],"mult":3,"name":"C₃H₄O₃, the empirical formula of vitamin C","use":"Vitamin C is C₆H₈O₆, found in oranges and peppers."},{"els":[{"sym":"C","pct":"93.7","m":12.01},{"sym":"H","pct":"6.29","m":1.008}],"subs":[5,4],"mult":4,"name":"C₅H₄, the empirical formula of naphthalene","use":"Naphthalene is C₁₀H₈, the smell of mothballs."},{"els":[{"sym":"K","pct":"26.6","m":39.1},{"sym":"Cr","pct":"35.4","m":52},{"sym":"O","pct":"38.1","m":16}],"subs":[2,2,7],"mult":2,"name":"potassium dichromate","use":"An orange solid once used in breathalyzers."},{"els":[{"sym":"N","pct":"35.0","m":14.01},{"sym":"H","pct":"5.04","m":1.008},{"sym":"O","pct":"60.0","m":16}],"subs":[2,4,3],"mult":2,"name":"ammonium nitrate (NH₄NO₃)","use":"The chemical inside instant cold packs."},{"els":[{"sym":"Ca","pct":"38.8","m":40.08},{"sym":"P","pct":"20.0","m":30.97},{"sym":"O","pct":"41.3","m":16}],"subs":[3,2,8],"mult":2,"name":"calcium phosphate, Ca₃(PO₄)₂","use":"The mineral in bones and teeth."}],"m2":[{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,2],"molar":"70.13","n":5,"name":"cyclopentane","use":"A hydrocarbon used to blow the foam insulation in refrigerators."},{"els":[{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,1],"molar":"34.02","n":2,"name":"hydrogen peroxide","use":"The fizzy first-aid antiseptic in the brown bottle."},{"els":[{"sym":"N","m":14.01},{"sym":"O","m":16}],"emp":[1,2],"molar":"92.02","n":2,"name":"dinitrogen tetroxide","use":"A rocket fuel ingredient."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,1],"molar":"26.04","n":2,"name":"acetylene","use":"The fuel in a welding torch."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[2,5],"molar":"58.12","n":2,"name":"butane","use":"The fuel in a lighter."},{"els":[{"sym":"B","m":10.81},{"sym":"H","m":1.008}],"emp":[1,3],"molar":"27.67","n":2,"name":"diborane","use":"A gas used to make computer chips."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,1],"molar":"104.14","n":8,"name":"styrene","use":"The building block of Styrofoam cups."}],"m3":[{"els":[{"sym":"P","m":30.97},{"sym":"O","m":16}],"emp":[2,5],"molar":"283.89","n":2,"name":"phosphorus pentoxide (P₄O₁₀)","use":"It pulls water out of the air, so labs use it to keep things dry."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,2,1],"molar":"60.05","n":2,"name":"acetic acid","use":"The acid in vinegar."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,2,1],"molar":"90.08","n":3,"name":"lactic acid","use":"The sour taste in yogurt."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,3,1],"molar":"62.07","n":2,"name":"ethylene glycol","use":"Car antifreeze."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[3,4,3],"molar":"176.12","n":2,"name":"vitamin C","use":"Found in oranges and peppers."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"N","m":14.01},{"sym":"O","m":16}],"emp":[4,5,2,1],"molar":"194.20","n":2,"name":"caffeine","use":"The stimulant in coffee and energy drinks."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[5,4],"molar":"128.16","n":2,"name":"naphthalene","use":"The smell of mothballs."}],"m4":[{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.7","m":1.008}],"emp":[1,1],"molar":"78.11","n":6,"name":"benzene","use":"A starting material for plastics, dyes and medicines.","subs":[1,1],"mult":1},{"els":[{"sym":"C","pct":"40.9","m":12.01},{"sym":"H","pct":"4.58","m":1.008},{"sym":"O","pct":"54.5","m":16}],"emp":[3,4,3],"molar":"176.12","n":2,"name":"vitamin C","use":"Found in oranges and peppers.","subs":[3,4,3],"mult":3},{"els":[{"sym":"C","pct":"82.7","m":12.01},{"sym":"H","pct":"17.3","m":1.008}],"emp":[2,5],"molar":"58.12","n":2,"name":"butane","use":"The fuel in a lighter.","subs":[2,5],"mult":2},{"els":[{"sym":"C","pct":"93.7","m":12.01},{"sym":"H","pct":"6.29","m":1.008}],"emp":[5,4],"molar":"128.16","n":2,"name":"naphthalene","use":"The smell of mothballs.","subs":[5,4],"mult":4},{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.74","m":1.008}],"emp":[1,1],"molar":"26.04","n":2,"name":"acetylene","use":"The fuel in a welding torch.","subs":[1,1],"mult":1},{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.74","m":1.008}],"emp":[1,1],"molar":"104.14","n":8,"name":"styrene","use":"The building block of Styrofoam cups.","subs":[1,1],"mult":1}]};
+const BANK={"p1": [{"els": [{"sym": "Ag", "pct": "63.5", "m": 107.87}, {"sym": "N", "pct": "8.24", "m": 14.01}, {"sym": "O", "pct": "28.2", "m": 16}], "subs": [1, 1, 3], "mult": 1, "name": "silver nitrate", "use": "Chemistry labs use it to test water for chloride. It turns skin dark if it spills."}, {"els": [{"sym": "K", "pct": "24.7", "m": 39.1}, {"sym": "Mn", "pct": "34.8", "m": 54.94}, {"sym": "O", "pct": "40.5", "m": 16}], "subs": [1, 1, 4], "mult": 1, "name": "potassium permanganate", "use": "A deep purple solid used to treat well water and clean fish tanks."}, {"els": [{"sym": "Na", "pct": "32.4", "m": 22.99}, {"sym": "S", "pct": "22.6", "m": 32.07}, {"sym": "O", "pct": "45.1", "m": 16}], "subs": [2, 1, 4], "mult": 1, "name": "sodium sulfate", "use": "A filler in powdered laundry detergent."}, {"els": [{"sym": "Ca", "pct": "40.0", "m": 40.08}, {"sym": "C", "pct": "12.0", "m": 12.01}, {"sym": "O", "pct": "48.0", "m": 16}], "subs": [1, 1, 3], "mult": 1, "name": "calcium carbonate", "use": "Chalk, seashells, and antacid tablets like Tums."}, {"els": [{"sym": "C", "pct": "52.1", "m": 12.01}, {"sym": "H", "pct": "13.1", "m": 1.008}, {"sym": "O", "pct": "34.7", "m": 16}], "subs": [2, 6, 1], "mult": 1, "name": "ethanol", "use": "The alcohol in hand sanitizer."}, {"els": [{"sym": "Cu", "pct": "39.8", "m": 63.55}, {"sym": "S", "pct": "20.1", "m": 32.07}, {"sym": "O", "pct": "40.1", "m": 16}], "subs": [1, 1, 4], "mult": 1, "name": "copper(II) sulfate", "use": "The bright blue crystals used to kill algae in ponds."}, {"els": [{"sym": "K", "pct": "31.9", "m": 39.1}, {"sym": "Cl", "pct": "28.9", "m": 35.45}, {"sym": "O", "pct": "39.2", "m": 16}], "subs": [1, 1, 3], "mult": 1, "name": "potassium chlorate", "use": "It supplies the oxygen in match heads and fireworks."}, {"els": [{"sym": "C", "pct": "20.0", "m": 12.01}, {"sym": "H", "pct": "6.71", "m": 1.008}, {"sym": "N", "pct": "46.7", "m": 14.01}, {"sym": "O", "pct": "26.6", "m": 16}], "subs": [1, 4, 2, 1], "mult": 1, "name": "urea", "use": "A lawn and farm fertilizer. Your body makes it too.", "h": true}, {"els": [{"sym": "C", "pct": "49.5", "m": 12.01}, {"sym": "H", "pct": "5.19", "m": 1.008}, {"sym": "N", "pct": "28.9", "m": 14.01}, {"sym": "O", "pct": "16.5", "m": 16}], "subs": [4, 5, 2, 1], "mult": 1, "name": "the simplest ratio in caffeine", "use": "Caffeine is C₈H₁₀N₄O₂, the stimulant in coffee and energy drinks. Its simplest ratio is C₄H₅N₂O.", "h": true}], "p2": [{"els": [{"sym": "C", "pct": "85.6", "m": 12.01}, {"sym": "H", "pct": "14.4", "m": 1.008}], "subs": [1, 2], "mult": 1, "name": "CH₂, the repeating unit of polyethylene", "use": "Polyethylene is the plastic in grocery bags and milk jugs."}, {"els": [{"sym": "Mg", "pct": "60.3", "m": 24.31}, {"sym": "O", "pct": "39.7", "m": 16}], "subs": [1, 1], "mult": 1, "name": "magnesium oxide", "use": "The white ash left when magnesium ribbon burns, like in the MgO lab."}, {"els": [{"sym": "Ca", "pct": "36.1", "m": 40.08}, {"sym": "Cl", "pct": "63.9", "m": 35.45}], "subs": [1, 2], "mult": 1, "name": "calcium chloride", "use": "Ice melt for sidewalks and roads in a Colorado winter."}, {"els": [{"sym": "S", "pct": "40.1", "m": 32.07}, {"sym": "O", "pct": "59.9", "m": 16}], "subs": [1, 3], "mult": 1, "name": "sulfur trioxide", "use": "It forms from burning coal and turns into acid rain."}, {"els": [{"sym": "Cu", "pct": "88.8", "m": 63.55}, {"sym": "O", "pct": "11.2", "m": 16}], "subs": [2, 1], "mult": 1, "name": "copper(I) oxide", "use": "A red pigment in paint for boat bottoms."}, {"els": [{"sym": "Fe", "pct": "46.5", "m": 55.85}, {"sym": "S", "pct": "53.5", "m": 32.07}], "subs": [1, 2], "mult": 1, "name": "iron pyrite", "use": "\"Fool’s gold.\""}, {"els": [{"sym": "C", "pct": "74.9", "m": 12.01}, {"sym": "H", "pct": "25.1", "m": 1.008}], "subs": [1, 4], "mult": 1, "name": "methane", "use": "Natural gas, the fuel in a Bunsen burner."}, {"els": [{"sym": "N", "pct": "82.2", "m": 14.01}, {"sym": "H", "pct": "17.8", "m": 1.008}], "subs": [1, 3], "mult": 1, "name": "ammonia", "use": "Used in many window cleaners and fertilizers."}], "p3": [{"els": [{"sym": "P", "pct": "43.6", "m": 30.97}, {"sym": "O", "pct": "56.4", "m": 16}], "subs": [2, 5], "mult": 2, "name": "P₂O₅ (phosphorus pentoxide)", "use": "It pulls water out of the air, so labs use it to keep things dry."}, {"els": [{"sym": "Fe", "pct": "69.9", "m": 55.85}, {"sym": "O", "pct": "30.1", "m": 16}], "subs": [2, 3], "mult": 2, "name": "iron(III) oxide", "use": "Rust."}, {"els": [{"sym": "Al", "pct": "52.9", "m": 26.98}, {"sym": "O", "pct": "47.1", "m": 16}], "subs": [2, 3], "mult": 2, "name": "aluminum oxide", "use": "Sandpaper grit, and the mineral in rubies and sapphires."}, {"els": [{"sym": "Fe", "pct": "72.4", "m": 55.85}, {"sym": "O", "pct": "27.6", "m": 16}], "subs": [3, 4], "mult": 3, "name": "magnetite", "use": "A magnetic iron ore. Some early compasses used it."}, {"els": [{"sym": "C", "pct": "81.7", "m": 12.01}, {"sym": "H", "pct": "18.3", "m": 1.008}], "subs": [3, 8], "mult": 3, "name": "propane", "use": "The fuel in a gas grill tank."}, {"els": [{"sym": "C", "pct": "82.7", "m": 12.01}, {"sym": "H", "pct": "17.3", "m": 1.008}], "subs": [2, 5], "mult": 2, "name": "C₂H₅, the empirical formula of butane", "use": "Butane is C₄H₁₀, the fuel in a lighter."}, {"els": [{"sym": "C", "pct": "60.0", "m": 12.01}, {"sym": "H", "pct": "4.48", "m": 1.008}, {"sym": "O", "pct": "35.5", "m": 16}], "subs": [9, 8, 4], "mult": 4, "name": "aspirin", "use": "A pain reliever.", "h": true}, {"els": [{"sym": "C", "pct": "40.9", "m": 12.01}, {"sym": "H", "pct": "4.58", "m": 1.008}, {"sym": "O", "pct": "54.5", "m": 16}], "subs": [3, 4, 3], "mult": 3, "name": "C₃H₄O₃, the empirical formula of vitamin C", "use": "Vitamin C is C₆H₈O₆, found in oranges and peppers."}, {"els": [{"sym": "C", "pct": "93.7", "m": 12.01}, {"sym": "H", "pct": "6.29", "m": 1.008}], "subs": [5, 4], "mult": 4, "name": "C₅H₄, the empirical formula of naphthalene", "use": "Naphthalene is C₁₀H₈, the smell of mothballs.", "h": true}, {"els": [{"sym": "K", "pct": "26.6", "m": 39.1}, {"sym": "Cr", "pct": "35.4", "m": 52}, {"sym": "O", "pct": "38.1", "m": 16}], "subs": [2, 2, 7], "mult": 2, "name": "potassium dichromate", "use": "An orange solid once used in breathalyzers."}, {"els": [{"sym": "N", "pct": "35.0", "m": 14.01}, {"sym": "H", "pct": "5.04", "m": 1.008}, {"sym": "O", "pct": "60.0", "m": 16}], "subs": [2, 4, 3], "mult": 2, "name": "ammonium nitrate (NH₄NO₃)", "use": "The chemical inside instant cold packs."}, {"els": [{"sym": "Ca", "pct": "38.8", "m": 40.08}, {"sym": "P", "pct": "20.0", "m": 30.97}, {"sym": "O", "pct": "41.3", "m": 16}], "subs": [3, 2, 8], "mult": 2, "name": "calcium phosphate, Ca₃(PO₄)₂", "use": "The mineral in bones and teeth."}], "m2": [{"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}], "emp": [1, 2], "molar": "70.13", "n": 5, "name": "cyclopentane", "use": "A hydrocarbon used to blow the foam insulation in refrigerators."}, {"els": [{"sym": "H", "m": 1.008}, {"sym": "O", "m": 16}], "emp": [1, 1], "molar": "34.02", "n": 2, "name": "hydrogen peroxide", "use": "The fizzy first-aid antiseptic in the brown bottle."}, {"els": [{"sym": "N", "m": 14.01}, {"sym": "O", "m": 16}], "emp": [1, 2], "molar": "92.02", "n": 2, "name": "dinitrogen tetroxide", "use": "A rocket fuel ingredient."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}], "emp": [1, 1], "molar": "26.04", "n": 2, "name": "acetylene", "use": "The fuel in a welding torch."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}], "emp": [2, 5], "molar": "58.12", "n": 2, "name": "butane", "use": "The fuel in a lighter."}, {"els": [{"sym": "B", "m": 10.81}, {"sym": "H", "m": 1.008}], "emp": [1, 3], "molar": "27.67", "n": 2, "name": "diborane", "use": "A gas used to make computer chips."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}], "emp": [1, 1], "molar": "104.14", "n": 8, "name": "styrene", "use": "The building block of Styrofoam cups."}], "m3": [{"els": [{"sym": "P", "m": 30.97}, {"sym": "O", "m": 16}], "emp": [2, 5], "molar": "283.89", "n": 2, "name": "phosphorus pentoxide (P₄O₁₀)", "use": "It pulls water out of the air, so labs use it to keep things dry."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}, {"sym": "O", "m": 16}], "emp": [1, 2, 1], "molar": "60.05", "n": 2, "name": "acetic acid", "use": "The acid in vinegar."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}, {"sym": "O", "m": 16}], "emp": [1, 2, 1], "molar": "90.08", "n": 3, "name": "lactic acid", "use": "The sour taste in yogurt."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}, {"sym": "O", "m": 16}], "emp": [1, 3, 1], "molar": "62.07", "n": 2, "name": "ethylene glycol", "use": "Car antifreeze."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}, {"sym": "O", "m": 16}], "emp": [3, 4, 3], "molar": "176.12", "n": 2, "name": "vitamin C", "use": "Found in oranges and peppers."}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}, {"sym": "N", "m": 14.01}, {"sym": "O", "m": 16}], "emp": [4, 5, 2, 1], "molar": "194.20", "n": 2, "name": "caffeine", "use": "The stimulant in coffee and energy drinks.", "h": true}, {"els": [{"sym": "C", "m": 12.01}, {"sym": "H", "m": 1.008}], "emp": [5, 4], "molar": "128.16", "n": 2, "name": "naphthalene", "use": "The smell of mothballs.", "h": true}], "m4": [{"els": [{"sym": "C", "pct": "92.3", "m": 12.01}, {"sym": "H", "pct": "7.7", "m": 1.008}], "emp": [1, 1], "molar": "78.11", "n": 6, "name": "benzene", "use": "A starting material for plastics, dyes and medicines.", "subs": [1, 1], "mult": 1}, {"els": [{"sym": "C", "pct": "40.9", "m": 12.01}, {"sym": "H", "pct": "4.58", "m": 1.008}, {"sym": "O", "pct": "54.5", "m": 16}], "emp": [3, 4, 3], "molar": "176.12", "n": 2, "name": "vitamin C", "use": "Found in oranges and peppers.", "subs": [3, 4, 3], "mult": 3}, {"els": [{"sym": "C", "pct": "82.7", "m": 12.01}, {"sym": "H", "pct": "17.3", "m": 1.008}], "emp": [2, 5], "molar": "58.12", "n": 2, "name": "butane", "use": "The fuel in a lighter.", "subs": [2, 5], "mult": 2}, {"els": [{"sym": "C", "pct": "93.7", "m": 12.01}, {"sym": "H", "pct": "6.29", "m": 1.008}], "emp": [5, 4], "molar": "128.16", "n": 2, "name": "naphthalene", "use": "The smell of mothballs.", "subs": [5, 4], "mult": 4, "h": true}, {"els": [{"sym": "C", "pct": "92.3", "m": 12.01}, {"sym": "H", "pct": "7.74", "m": 1.008}], "emp": [1, 1], "molar": "26.04", "n": 2, "name": "acetylene", "use": "The fuel in a welding torch.", "subs": [1, 1], "mult": 1}, {"els": [{"sym": "C", "pct": "92.3", "m": 12.01}, {"sym": "H", "pct": "7.74", "m": 1.008}], "emp": [1, 1], "molar": "104.14", "n": 8, "name": "styrene", "use": "The building block of Styrofoam cups.", "subs": [1, 1], "mult": 1}]};
 if(!S.pick||typeof S.pick!=='object')S.pick={};
 const SLOTS=[{id:'p1',label:'Problem 1'},{id:'p2',label:'Problem 2'},{id:'p3',label:'Problem 3'}];
 const MSLOTS=[{id:'m2',label:'Problem A'},{id:'m3',label:'Problem B'},{id:'m4',label:'Problem C',full:true}];
-function pickIdx(id){const n=BANK[id].length;const i=S.pick[id];if(!Number.isInteger(i)||i<0||i>=n)S.pick[id]=Math.floor(Math.random()*n);return S.pick[id]}
+function allowed(id){const a=BANK[id].map((q,i)=>i).filter(i=>!(lvl()==='chem'&&BANK[id][i].h));return a.length?a:BANK[id].map((q,i)=>i)}
+function pickIdx(id){const al=allowed(id);const i=S.pick[id];if(!al.includes(i)){if(Number.isInteger(i)){delete S.work[id];delete S.work[id+'-e'];delete S.work[id+'-m']}S.pick[id]=al[Math.floor(Math.random()*al.length)]}return S.pick[id]}
 function slotProb(s){const q=BANK[s.id][pickIdx(s.id)];return Object.assign({},q,{id:s.id,label:s.label,full:!!s.full})}
 function rebuild(){PR=SLOTS.map(slotProb);MP=MSLOTS.map(slotProb);save()}
-function another(id){const n=BANK[id].length;let i=S.pick[id];if(n>1){while(i===S.pick[id])i=Math.floor(Math.random()*n)}S.pick[id]=i;
+function another(id){const al=allowed(id);let i=S.pick[id];if(al.length>1){while(i===S.pick[id])i=al[Math.floor(Math.random()*al.length)]}else i=al[0];S.pick[id]=i;
   delete S.work[id];delete S.work[id+'-e'];delete S.work[id+'-m'];rebuild()}
 rebuild();
 const RHY=['Percent to grams','Grams to moles','Divide by smallest','Make it whole'];
@@ -544,6 +628,8 @@ function empStage(i,p,w,key){
   }
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
   if(!done&&!w.demo){
+    if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${CHINT[i]}</div>`;
+    b+=calcKeys(i,p);
     b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;
     if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
     if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${empHelp(i,p,w)}</div>`;
@@ -556,6 +642,7 @@ function empHTML(p,key,o){
   const prompt=p.prompt||`A compound is ${listPct(p)} by mass.${p.full?` Its molar mass is ${p.molar} g/mol. First find the empirical formula.`:' Find its empirical formula.'}`;
   let h=`<div class="solver"><div class="problem"><p class="prompt">${prompt}</p><div class="givens">${p.els.map(e=>`<span class="given">${tile(e.sym)}${e.pct}% · molar mass ${ms(e.m)} g/mol</span>`).join('')}</div></div>`;
   for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key)}
+  h+=massCount(p,w);
   if(w.stage>=4)h+=`<div class="result"><span>Empirical formula</span><span class="big">${fHTML(p.els,p.subs)}</span></div>`+(w.solved&&!p.full?reveal(p):'')+(w.solved&&p.full?`<p class="muted">Now use the molar mass below to find the molecular formula.</p>`:'');
   if(w.demo){h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`}
   else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
@@ -604,7 +691,7 @@ function molStage(i,p,w,key){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]}</span><span class="op">×</span><span>${shown(w.n)}</span><span class="op">=</span>${inp(key,'subs',j,w.subs[j],dis,'molecular subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`).join('');
   }
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
-  if(!done&&!w.demo){b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
+  if(!done&&!w.demo){if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${MHINT[i]}</div>`;b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
     if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${molHelp(i,p,w)}</div>`}
   return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${MST[i]}</h4><span class="tag">${['Σ g/mol','n = M ÷ EFM','subscripts × n'][i]}</span>${cfBtn(key+'/'+(i+1)+'-'+slug(MST[i]))}</div><div class="sb">${b}</div></div>`;
 }
@@ -627,10 +714,34 @@ function checkMol(p,w,i){
   w.stage=i+1;return true;
 }
 
+/* ---------- Mass vs count picture (RJ Ed Tech) ----------
+   After step 1 the grams show as bars; after step 2 the moles (a count of atoms) show beside them.
+   The light elements look tiny by mass and big by count, which is why the rhyme goes grams to moles. Values come from the problem. */
+function massCount(p,w){if(!(w.stage>=1))return '';
+  const g=p.els.map(e=>+e.pct),mol=p.els.map(e=>e.pct/e.m),gs=g.reduce((a,b)=>a+b,0),ms_=mol.reduce((a,b)=>a+b,0),gm=Math.max(...g),mm=Math.max(...mol);
+  const bars=(arr,mx,cls,fmt)=>arr.map((v,j)=>`<div class="mcrow">${tile(p.els[j].sym)}<div class="mcbar ${cls}"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div><span class="lb">${fmt(v,j)}</span></div>`).join('');
+  let h=`<div class="mc" aria-label="Mass compared with number of atoms"><div><h4>By mass (grams)</h4>${bars(g,gm,'m',(v,j)=>`${p.els[j].pct} g · ${Math.round(v/gs*100)}%`)}</div>`;
+  if(w.stage>=2){h+=`<div><h4>By count (moles of atoms)</h4>${bars(mol,mm,'c',(v)=>`${f(v)} mol · ${Math.round(v/ms_*100)}%`)}</div>`;
+    const gap=mol.map((v,j)=>v/ms_-g[j]/gs),k=gap.indexOf(Math.max(...gap));
+    h+=`<p class="ins">${p.els[k].sym} is ${Math.round(g[k]/gs*100)}% of the mass but ${Math.round(mol[k]/ms_*100)}% of the atoms. Formulas count atoms, so we compare moles, not grams.</p>`}
+  else h+=`<div class="muted" style="align-self:center">Finish step 2 to see the same elements counted as atoms.</div>`;
+  return h+`</div>`}
+
+/* ---------- Chemistry / Honors level (RJ Ed Tech) ----------
+   Chemistry: practice skips the four-element and ×4 compounds, each step shows a one-line hint, and Show me this step appears after one miss.
+   Honors: Sandy's original setup. Default is Honors. */
+function lvl(){return S.level==='chem'?'chem':'honors'}
+const CHINT=['Copy each percent as grams. 40.0% → 40.0 g.','Divide each mass by the molar mass under it.','Find the smallest number of moles, then divide every element by it.','Close to whole? × 1. Ends in .5? × 2. Ends in .33 or .67? × 3.'];
+const MHINT=['Multiply each atomic mass by its subscript, then add.','Molar mass on top, empirical formula mass on the bottom.','Multiply every subscript by n.'];
+function calcKeys(i,p){const e=p.els,a=e[0],mol=e.map(x=>x.pct/x.m),mn=Math.min(...mol),si=mol.indexOf(mn),o=si===0?1:0;
+  if(i===1)return `<details class="keys"><summary>Calculator keys</summary><table><tr><td>TI-84</td><td class="k">${a.pct} ÷ ${ms(a.m)} ENTER</td></tr><tr><td>TI-30XS</td><td class="k">${a.pct} ÷ ${ms(a.m)} enter</td></tr><tr><td>Phone or Desmos</td><td class="k">${a.pct} / ${ms(a.m)}</td></tr></table><p class="muted">Write down at least 4 digits. Rounding too early can change the ratio.</p></details>`;
+  if(i===2)return `<details class="keys"><summary>Calculator keys: store the smallest once</summary><table><tr><td>TI-84</td><td class="k">${f(mn)} STO→ ALPHA A ENTER, then ${f(mol[o])} ÷ ALPHA A ENTER</td></tr><tr><td>TI-30XS</td><td class="k">${f(mn)} sto→, pick a with the x yzt abcd key, enter; then ${f(mol[o])} ÷ a enter</td></tr><tr><td>Phone or Desmos</td><td class="k">${f(mol[o])} / ${f(mn)}</td></tr></table></details>`;
+  return ''}
+
 /* ---------- Show me this step + reveal (RJ Ed Tech) ----------
    After two wrong checks on a step, a button shows that step worked for ONE element (or the rule to use), so the student still does the rest.
    Each use is counted in the work record so the teacher can see it. */
-function helpBtn(w,i){return (w.miss&&w.miss[i]>=2&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:''}
+function helpBtn(w,i){return (w.miss&&w.miss[i]>=(lvl()==='chem'?1:2)&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:''}
 function reveal(p){return p.name?`<div class="reveal"><span class="eyebrow">What is it?</span><p>It’s <b>${p.name}</b>. ${p.use||''}</p></div>`:''}
 function empHelp(i,p,w){
   const e=p.els[0],g=+e.pct,mol=p.els.map(x=>x.pct/x.m),mn=Math.min(...mol),si=mol.indexOf(mn),r=mol.map(x=>x/mn);
@@ -720,6 +831,38 @@ function showMol(){const p=MP.find(x=>x.id===S.mtab)||MP[0];const host=document.
   else{const fresh=host.cloneNode(false);host.replaceWith(fresh);mount(fresh,'mol',p,p.id,{onSolved:drawMTabs})}
   drawMTabs()}
 document.getElementById('mtabs').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;S.mtab=b.dataset.m;save();showMol()});
+
+/* ---------- Gut check (Part 1) answered in Part 6 (RJ Ed Tech) ----------
+   Like the math labs: a practical question before any teaching, locked in, then answered with the math later. Prices are made up for teaching. */
+const GUT={q:'You need nitrogen for a lawn. Bag A is urea, labeled 46-0-0: 20 kg for $30. Bag B is ammonium nitrate, labeled 34-0-0: 20 kg for $25. Which gives you more nitrogen for your money?',
+  o:['Bag A, the $30 urea','Bag B, the $25 ammonium nitrate','About the same'],a:0};
+function drawGut(){const el=document.getElementById('gutCard');const g=S.gut;
+  el.innerHTML=`<div class="tqhead"><span class="eyebrow">Your gut</span>${cfBtn('gut')}</div><p class="prompt">${GUT.q}</p><p class="muted">Prices are made up for teaching. Go with your gut. You’ll do the math in Part 6.</p>
+   <div class="opts">${GUT.o.map((o,j)=>`<button class="opt${g===j?' right':''}" data-gut="${j}" ${g!=null?'disabled':''}>${o}</button>`).join('')}</div>
+   ${g!=null?`<div class="msg good">Locked in: “${GUT.o[g]}”. Part 6 checks it with the math.</div>`:''}`;
+  const an=document.getElementById('gutAns');
+  an.innerHTML=`<div class="eyebrow">The opening question, answered</div><p>${GUT.q}</p>${g!=null?`<p>Your gut said: <b>${GUT.o[g]}</b>. ${g===0?'Your gut was right.':'Here is why the math says Bag A.'}</p>`:`<p class="muted">You didn’t answer it in Part 1, so here is the math.</p>`}
+   <div class="labout"><span>Bag A: 20 kg × 0.46 = 9.2 kg N → $30 ÷ 9.2 kg = $3.26 per kg N</span><span>Bag B: 20 kg × 0.34 = 6.8 kg N → $25 ÷ 6.8 kg = $3.68 per kg N</span></div>
+   <p><b>Bag A wins.</b> It costs more per bag but less per kilogram of nitrogen. <b>Keep this:</b> compare the price of the element you need, not the price of the bag.</p>`}
+document.getElementById('gutCard').addEventListener('click',e=>{const b=e.target.closest('[data-gut]');if(!b||S.gut!=null)return;S.gut=+b.dataset.gut;save();drawGut();refresh();say(txt(document.querySelector('#gutCard .msg')))});
+
+/* ---------- Your lab data: MgO (RJ Ed Tech) ---------- */
+function labCalc(){const L=S.lab||{},c=num(L.c),cm=num(L.cm),cp=num(L.cp);
+  if(![c,cm,cp].every(isFinite))return {msg:'Type all three masses to see your formula.'};
+  if(!(cm>c))return {msg:'The crucible with Mg should weigh more than the empty crucible. Check the first two masses.'};
+  if(!(cp>cm))return {msg:'After heating, the crucible should weigh more than before: the Mg gained oxygen. Check the last mass.'};
+  const mg=cm-c,mgo=cp-c,o=cp-cm,nMg=mg/24.31,nO=o/16.00,r=nO/nMg,pMg=mg/mgo*100,err=Math.abs(pMg-60.3)/60.3*100;return {mg,mgo,o,nMg,nO,r,pMg,err}}
+function drawLab(){const R=labCalc(),el=document.getElementById('labOut');if(R.msg){el.innerHTML=`<span class="muted" style="font-family:var(--f-body)">${R.msg}</span>`;return}
+  const t=x=>x.toFixed(3),diag=R.r<0.9?'Your ratio is low: less oxygen than MgO needs. Common causes: some Mg did not burn, white MgO smoke escaped when the lid was off, or some Mg reacted with nitrogen in the air (Mg₃N₂). Adding a few drops of water and reheating turns Mg₃N₂ into MgO.'
+   :R.r>1.1?'Your ratio is high: more mass gained than MgO explains. Common causes: water left in the crucible or product, or the crucible was weighed before it cooled.':'Your ratio rounds to 1 : 1. Your data supports MgO.';
+  el.innerHTML=`<span>Mg: ${t(R.mg+0)} g · product: ${t(R.mgo)} g · oxygen gained: ${t(R.o)} g</span>
+   <span>Moles Mg = ${t(R.mg)} g ÷ 24.31 g/mol = ${R.nMg.toPrecision(3)} mol</span>
+   <span>Moles O = ${t(R.o)} g ÷ 16.00 g/mol = ${R.nO.toPrecision(3)} mol</span>
+   <span>Ratio O ÷ Mg = ${R.r.toFixed(2)} → ${R.r>=0.9&&R.r<=1.1?'<b>MgO</b>':'not a clean 1 : 1'}</span>
+   <span>Your % Mg = ${t(R.mg)} ÷ ${t(R.mgo)} × 100 = ${R.pMg.toFixed(1)}% · true value 60.3% · percent error ${R.err.toFixed(1)}%</span>
+   <p style="font-family:var(--f-body)">${diag}</p>`}
+document.querySelector('[data-sec="use"]').addEventListener('input',e=>{const k=e.target.dataset.lab;if(!k)return;S.lab=S.lab||{};S.lab[k]=e.target.value;save();drawLab()});
+function fillLab(){const L=S.lab||{};[['labC','c'],['labCM','cm'],['labCP','cp']].forEach(([id,k])=>{const i=document.getElementById(id);if(i&&document.activeElement!==i)i.value=L[k]||''});drawLab()}
 
 /* ---------- Use it: real problems (RJ Ed Tech) ----------
    Five situations a high schooler meets: a lawn, a supplement, the MgO lab, an unknown from a lab, and an ore choice.
@@ -821,6 +964,7 @@ function refresh(){
   if(cur==='summary')drawSummary();
   if(cur==='test'&&!document.querySelector('#testHost .tq'))drawTest();
   if(cur==='use'&&!document.querySelector('#useHost .uprob'))drawUse();
+  if(cur==='use'){drawGut();fillLab()}
 }
 function route(){
   const cur=current();
@@ -890,6 +1034,8 @@ function buildReport(){
   L.push(`  Empirical practice solved: ${pracSolved()}/3`);
   L.push(`  Molecular practice solved: ${molCount()}/3`);
   L.push(`  Use it, real problems solved: ${useOK()}/5`);
+  L.push(`  Level: ${lvl()==='chem'?'Chemistry':'Honors'} · Gut answer (fertilizer): ${S.gut!=null?GUT.o[S.gut]:'not answered'}`);
+  {const R=labCalc();if(!R.msg)L.push(`  My MgO lab: Mg ${R.mg.toFixed(3)} g, O ${R.o.toFixed(3)} g, ratio O/Mg ${R.r.toFixed(2)}, % Mg ${R.pMg.toFixed(1)}% (error ${R.err.toFixed(1)}%)`)}
   L.push(`  Test yourself: best ${testBest()}/${TN} · sets taken: ${(S.test&&S.test.sets)||0}`);
   L.push('');L.push('EMPIRICAL FORMULA PRACTICE');
   PR.forEach(p=>{L.push(...empReport(p,S.work[p.id],p.label));L.push('')});
@@ -964,7 +1110,10 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-cf]');if(!
 window.addEventListener('hashchange',()=>{if(CAN)SS.cancel();setTimeout(()=>{saySection();if(current()==='test')setTimeout(sayTest,50)},150)});
 window.addEventListener('pagehide',()=>{if(CAN)SS.cancel()});
 document.getElementById('quiz').addEventListener('click',e=>{const q=e.target.closest('[data-q]');if(!q||!raOn)return;setTimeout(()=>{const m=document.querySelectorAll('#quiz .q')[+q.dataset.q];const r=m&&m.querySelector('.msg');if(r)say(txt(r))},30)});
-syncSup();
+function syncLvl(){document.querySelectorAll('[data-lvl]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lvl===lvl())))}
+document.querySelectorAll('[data-lvl]').forEach(b=>b.addEventListener('click',()=>{if(lvl()===b.dataset.lvl)return;S.level=b.dataset.lvl;rebuild();syncLvl();showPractice();showMol();
+  ['exA','exB'].forEach(k=>{const h=document.getElementById(k);if(h&&h._c)draw(h)});refresh()}));
+syncSup();syncLvl();drawGut();
 
 /* ---------- boot ---------- */
 drawQuiz();drawRhyme();
