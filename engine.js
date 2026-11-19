@@ -897,6 +897,7 @@ function drawGraph(sim){if(sim.vlab&&sim.mode==='vlab')vlGraph(sim);const cv=sim
     const series=ms.map(m=>{const xs=[],ys=[];sim.hist.forEach(r=>{if(r.t>=xmin-1e-9){const v=r.v[m.id];if(Number.isFinite(v)){xs.push(r.t);ys.push(v);}}});return {m,xs,ys};});
     const allY=[].concat(...series.map(s=>s.ys));let ymin,ymax;
     if(o.min!==undefined&&o.max!==undefined){ymin=o.min;ymax=o.max;}
+    else if(o.auto&&allY.length){const lo=Math.min(...allY),hi=Math.max(...allY),pad=Math.max((hi-lo)*0.15,o.auto);ymin=lo-pad;ymax=hi+pad;} /* auto: zoom to the data; the number is the smallest half-range */
     else if(ms.every(m=>m.fixed)){ymin=Math.min(...ms.map(m=>m.min));ymax=Math.max(...ms.map(m=>m.max));}
     else{const declMin=Math.min(...ms.map(m=>m.min!==undefined?m.min:0)),declMax=Math.max(...ms.map(m=>(m.max!==null&&m.max!==undefined)?m.max:0));
       const lo=Math.min(declMin,...allY),hi=Math.max(...allY,1e-6);ymin=lo;ymax=(declMax>0&&hi<=declMax)?declMax:Math.max(declMax,hi*1.1);}

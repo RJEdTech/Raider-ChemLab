@@ -1038,7 +1038,7 @@ gibbs: {
 },
 galvanic: {
   hook: 'An AA battery pushes 1.5 V. Your zinc and copper cell reads 1.10 V. Which pair of metals in the menu gives the biggest voltage? Can any pair beat the AA battery?',
-  answer: 'Magnesium with silver reads 3.17 V, the biggest gap on the list. Magnesium with copper gives 2.71 V, and even zinc with silver gives 1.56 V. The farther apart two metals sit in the table of reduction potentials, the harder the push. Real magnesium has an oxide coating, so a lab cell reads a few tenths of a volt lower.',
+  answer: 'Yes. Zinc with silver (1.56 V) already beats the AA. Magnesium with copper reaches 2.71 V, and magnesium with silver, the two ends of the line, reads 3.17 V: the biggest gap in the menu. The farther apart two metals sit, the harder the push. (Real magnesium has an oxide coating, so a lab cell reads a few tenths of a volt lower.) Your phone goes further still: lithium sits past magnesium, so one lithium-ion cell gives about 3.7 V.',
   uses: [
     'Galvanized steel: guardrails and nails are coated with zinc, which gives up electrons more easily than iron, so the zinc corrodes first and protects the steel.',
     'Foil and a filling: biting aluminum foil with a metal filling makes a tiny cell in your saliva, and the current gives a sharp jolt.',

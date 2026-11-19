@@ -1078,6 +1078,29 @@ const GBP=(ctx,k,L)=>card(ctx,k,L,12,360,250);
 const GBG=(ctx,k,L)=>card(ctx,k,L,546,270,248);
 const GVC=(ctx,k,L)=>card(ctx,k,L,292,312,224);
 const GV6=(ctx,k,L)=>card(ctx,k,L,530,330,262);
+/* metal line (Nov 19, 2026): metals sit left to right from "lets go of electrons easily" to "grabs them hard".
+   The red bracket is the cell in the beakers, so its length IS the voltmeter reading. o.aa: Duracell AA bar
+   (zinc + MnO₂, 1.5 V); o.li: show lithium; o.phone: lithium-ion bar (≈3.7 V); o.hi: the metal just swapped in. */
+const GVE={Li:-3.04,Mg:-2.37,Al:-1.66,Zn:-0.76,Fe:-0.44,Ni:-0.25,Pb:-0.13,Cu:0.34,Ag:0.80};
+const GVCOL={Li:'#c9ccd1',Mg:'#c6cad0',Al:'#c2c7cd',Zn:'#9aa6b2',Fe:'#7d8086',Ni:'#a7a99c',Pb:'#6b7079',Cu:'#c87a3c',Ag:'#d5d9de'};
+function GVL(ctx,k,sim,lines,o,tau){o=o||{};const X0=262,W=276,py=222,ph=o.phone?202:180,kk=Math.min(k,1.1),T=(t,x,y,f)=>H.txt(ctx,t,x,y,f);
+  const xa=X0+18,xb=X0+W-18,pv=(xb-xa)/4.2,X=E=>xa+(E+3.2)*pv,a=sim.p.left,b=sim.p.right,an=GVE[a]<=GVE[b]?a:b,ca=an===a?b:a;
+  ctx.save();H.rr(ctx,X0,py,W,ph,10);ctx.fillStyle=PAL['cv-sol'];ctx.globalAlpha=0.97;ctx.fill();ctx.globalAlpha=1;ctx.lineWidth=1.3;ctx.strokeStyle=PAL['cv-soft'];ctx.stroke();ctx.restore();
+  const L=lines.map(l=>typeof l==='string'?[l]:l);if(L[0])T(L[0][0],X0+12,py+21,{s:15*kk,w:800});if(L[1])T(L[1][0],X0+12,py+40,{s:13*kk,w:600});
+  T('← lets go of e⁻ easily',X0+10,py+62,{s:11*kk,c:PAL['cv-soft']});T('grabs e⁻ hard →',X0+W-10,py+62,{s:11*kk,c:PAL['cv-soft'],a:'right'});
+  const ay=py+100,show=['Mg','Zn','Cu','Ag'].concat(o.li?['Li']:[]);[a,b].forEach(m=>{if(!show.includes(m))show.push(m);});
+  ctx.strokeStyle=PAL['cv-ink'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xa-6,ay);ctx.lineTo(xb+6,ay);ctx.stroke();
+  show.forEach(m=>{const x=X(GVE[m]),on=m===a||m===b;
+    if(m===o.hi){const r=12+3*Math.sin((tau||0)*5);ctx.strokeStyle=RED;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,ay,r,0,6.29);ctx.stroke();}
+    ctx.fillStyle=GVCOL[m];ctx.strokeStyle='#333';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,ay,on?8:6,0,6.29);ctx.fill();ctx.stroke();
+    T(m,x,py+86,{s:15*kk,w:on?800:600,a:'center',c:m===an?PAL['s1']:m===ca?PAL['s2']:PAL['cv-ink']});});
+  const x1=X(GVE[an]),x2=X(GVE[ca]),by=py+120,gap=GVE[ca]-GVE[an];
+  ctx.strokeStyle=RED;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(x1,by-9);ctx.lineTo(x1,by);ctx.lineTo(x2,by);ctx.lineTo(x2,by-9);ctx.stroke();
+  T('this cell: '+gap.toFixed(2)+' V',Math.min(Math.max((x1+x2)/2,X0+70),X0+W-70),by+19,{s:14*kk,w:800,c:RED,a:'center'});
+  const bar=(x,len,y,col,label)=>{ctx.fillStyle=col;H.rr(ctx,x,y,len,19,5);ctx.fill();T(label,x+len/2,y+14,{s:12*kk,w:700,c:'#fff',a:'center'});};
+  if(o.aa!==false)bar(X(GVE.Zn),1.5*pv,py+150,'#5f6570','AA 1.5 V');
+  if(o.phone)bar(X(GVE.Li),3.7*pv,py+175,GRN,'phone (lithium-ion) ≈ 3.7 V');
+  return py+ph;}
 
 BioLab.addLearn({
 light: {
@@ -1259,7 +1282,7 @@ galvanic: {
     ap: ['ΔG° = −nFE° and K', 'The Nernst equation: concentration changes the voltage', 'Electrolysis: forcing a reaction backward']
   },
   matters: 'Every battery in your phone, car and laptop is a galvanic cell. The same chemistry explains why ships carry zinc blocks to protect their steel hulls.',
-  question: 'A zinc strip and a copper strip sit in their own solutions, connected by a wire. Which way will electrons flow?',
+  question: 'A Duracell AA battery pushes 1.5 V. A zinc–copper cell pushes 1.10 V. Can two other metals beat the AA, and which pair pushes hardest?',
   startKey: 'cell', startRun: true,
   steps: [
     { key: 'cell', title: 'Zinc and copper', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
@@ -1271,14 +1294,33 @@ galvanic: {
       see: 'The salt bridge is removed. The voltage drops to 0 and the current stops.',
       why: 'Without it, charge piles up on each side and stops the electrons. The bridge’s ions keep both sides neutral.',
       overlay(sim,ctx,LH,k){GVC(ctx,k,[['No salt bridge',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V']);} },
-    { key: 'mass', lvl: 'honors', title: 'Watch the masses', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 4,
-      see: 'The cell runs. The zinc strip slowly loses mass and the copper strip gains it.',
+    { key: 'mass', title: 'Watch the masses', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 4,
+      see: 'The cell runs fast-forward. Read the mass tag on each strip: the zinc’s number falls and the copper’s rises.',
       why: 'Zinc dissolves into Zn²⁺; Cu²⁺ plates onto copper. A battery runs down as its anode is used up.',
       overlay(sim,ctx,LH,k){GVC(ctx,k,[['Current: '+f0(met(sim,'mA'))+' mA',700,13.5],'Zinc: '+f2(met(sim,'mL'))+' g','Copper: '+f2(met(sim,'mR'))+' g']);} },
-    { key: 'mgag', title: 'A bigger voltage', set: { mode: 'cell', left: 'Mg', right: 'Ag', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
-      see: 'Magnesium and silver: 3.17 V.',
-      why: { bio: 'The farther apart two metals are in how easily they give up electrons, the bigger the voltage.', honors: 'E°cell = E°cathode − E°anode = +0.80 − (−2.37) = 3.17 V.' },
-      overlay(sim,ctx,LH,k){GVC(ctx,k,[['Mg and Ag',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V','Anode: '+txt(sim,'anode')]);} },
+    { key: 'line', title: 'Why 1.10 V?', set: { mode: 'cell', left: 'Zn', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      see: 'Line the metals up from the one that lets go of electrons most easily (left) to the one that grabs them hardest (right). Zinc and copper sit 1.10 V apart. The gray bar is a Duracell AA: 1.5 V. This cell falls short.',
+      why: { bio: 'Every metal holds its electrons with a different strength. The voltmeter reads the <b>gap</b> between the two metals in the cell.', honors: 'Each spot is a standard reduction potential, E°. The gap is E°cell = E°cathode − E°anode = +0.34 − (−0.76) = 1.10 V.' },
+      overlay(sim,ctx,LH,k,tau){GVL(ctx,k,sim,[['Zinc and copper',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V'],{},tau);} },
+    { key: 'ag', title: 'Swap copper for silver', set: { mode: 'cell', left: 'Zn', right: 'Ag', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      cause: { from: { right: 'Cu' }, delay: 0.8, dur: 1, label: 'Right metal' },
+      see: 'Silver sits farther right than copper: it grabs electrons harder. The red gap stretches to 1.56 V, longer than the AA bar. This cell beats the AA.',
+      why: { bio: 'Zinc lets go of electrons just as easily as before, but the other end pulls harder, so the push is bigger.', honors: 'E°cell = +0.80 − (−0.76) = 1.56 V.' },
+      overlay(sim,ctx,LH,k,tau){GVL(ctx,k,sim,[['Zinc and silver',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V'],{hi:'Ag'},tau);} },
+    { key: 'mgcu', title: 'Swap zinc for magnesium', set: { mode: 'cell', left: 'Mg', right: 'Cu', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      cause: { from: { left: 'Zn' }, delay: 0.8, dur: 1, label: 'Left metal' },
+      see: 'Back to copper on the right, but magnesium on the left. Magnesium sits far to the left: it lets go of electrons much more easily than zinc. The gap jumps to 2.71 V.',
+      why: { bio: 'Moving the left end farther left stretches the gap even more than the silver swap did.', honors: 'E°cell = +0.34 − (−2.37) = 2.71 V.' },
+      overlay(sim,ctx,LH,k,tau){GVL(ctx,k,sim,[['Magnesium and copper',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V'],{hi:'Mg'},tau);} },
+    { key: 'mgag', title: 'The biggest gap', set: { mode: 'cell', left: 'Mg', right: 'Ag', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      cause: { from: { right: 'Cu' }, delay: 0.8, dur: 1, label: 'Right metal' },
+      see: 'Use both ends of the line: magnesium and silver. 3.17 V, more than two AA batteries. No pair in the menu beats it.',
+      why: { bio: 'The farther apart two metals sit on the line, the bigger the voltage.', honors: 'E°cell = E°cathode − E°anode = +0.80 − (−2.37) = 3.17 V.' },
+      overlay(sim,ctx,LH,k,tau){GVL(ctx,k,sim,[['Magnesium and silver',700,14],'Voltmeter: '+f2(met(sim,'volt'))+' V'],{hi:'Ag'},tau);} },
+    { key: 'yours', title: 'Your batteries', set: { mode: 'cell', left: 'Mg', right: 'Ag', sw: true, bridge: true, cL: 1, cR: 1 }, fresh: true, speed: 1,
+      see: 'A Duracell AA starts from zinc too, but pairs it with manganese dioxide instead of copper: 1.5 V. Your phone battery starts from lithium (Li), even farther left than magnesium, so one cell pushes about 3.7 V.',
+      why: { bio: 'Lithium lets go of electrons more easily than any other metal, and it is the lightest metal. Big push, little weight: that is why phones, laptops and electric cars run on lithium. Lithium reacts with water, so those batteries have no water inside, and this beaker lab can’t hold one.', honors: 'Li⁺/Li has E° = −3.04 V, the most negative of any metal. A lithium-ion cell moves Li⁺ between graphite and a metal oxide; that pair gives about 3.6–3.7 V per cell. Lithium reacts with water, so the electrolyte is an organic solvent, not water.' },
+      overlay(sim,ctx,LH,k,tau){GVL(ctx,k,sim,[['Your batteries on the same line',700,14],'Beakers still hold Mg and Ag'],{li:true,phone:true,hi:'Li'},tau);} },
     { key: 'six', lvl: 'honors', title: 'The six-way lab', set: { mode: 'six', set: 'A', pair: 0 }, fresh: true, speed: 1,
       run(sim){doAct(sim,'allsix');},
       see: 'Four metals on salt-soaked paper. The voltmeter measures all six pairs.',
@@ -1297,6 +1339,10 @@ galvanic: {
   useIt: [
     { do: 'Don’t mix old and new batteries in a device.',
       why: 'The old ones have lower voltage (their Q is larger) and can be driven backward by the new ones, leaking or heating.' },
+    { do: 'Look at how batteries are stacked in a flashlight or remote.',
+      why: 'Each cell gives its own push, so cells in a row add up: two AAs make 3 V. An electric car does the same with about a hundred lithium cells in a row to reach roughly 400 V.' },
+    { do: 'Notice how fast electric-car batteries are getting cheaper and quicker to charge.',
+      why: 'Battery packs cost about 93% less than in 2010 (BloombergNEF, 2025). Chinese makers led much of that with lithium iron phosphate (LFP) cells that skip expensive nickel and cobalt. In 2026, BYD and CATL showed car batteries that charge from about 10% to nearly full in under 10 minutes, and CATL started mass-producing sodium-ion batteries for cars. Sodium sits between lithium and magnesium on the line, and it comes from ordinary salt.' },
     { do: 'Notice zinc blocks on boat hulls and water heater anode rods.', lvl: 'honors',
       why: 'Zinc and magnesium give up electrons more easily than steel, so they corrode instead of the hull: a “sacrificial anode.”' }
   ],

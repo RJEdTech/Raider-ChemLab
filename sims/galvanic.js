@@ -107,15 +107,15 @@ const GAL={
     {id:'anode',label:'Anode (oxidation)',unit:'',lvl:'bio',text:true,modes:['cell','electro'],get:s=>{const c=calc(s);return c.Ecell<1e-6&&!c.electro?'None: same metal':c.Mx.n[0].toUpperCase()+c.Mx.n.slice(1)+(c.electro?' (+)':' (−)');}},
     {id:'flow',label:'Electrons flow',unit:'',lvl:'bio',text:true,modes:['cell','electro'],get:s=>{const c=calc(s);return c.I>0?c.Mx.s+' → '+c.Mr.s+' through the wire':'No current';}},
     {id:'mA',label:'Current',unit:'mA',lvl:'honors',min:0,max:null,d:1,modes:['cell','electro'],get:s=>1000*calc(s).I},
-    {id:'mL',label:'Left electrode mass',unit:'g',lvl:'honors',min:0,max:null,d:3,modes:['cell','electro'],get:s=>s.st.mL},
-    {id:'mR',label:'Right electrode mass',unit:'g',lvl:'honors',min:0,max:null,d:3,modes:['cell','electro'],get:s=>s.st.mR},
+    {id:'mL',label:'Left electrode mass',unit:'g',lvl:'bio',min:0,max:null,d:3,modes:['cell','electro'],get:s=>s.st.mL},
+    {id:'mR',label:'Right electrode mass',unit:'g',lvl:'bio',min:0,max:null,d:3,modes:['cell','electro'],get:s=>s.st.mR},
     {id:'E0',label:'E°cell (standard)',unit:'V',lvl:'ap',min:0,max:4,d:2,modes:['cell'],get:s=>calc(s).E0},
     {id:'E',label:'Ecell (Nernst, now)',unit:'V',lvl:'ap',min:0,max:4,d:3,modes:['cell','electro'],get:s=>calc(s).Ecell},
     {id:'dG',label:'ΔG° = −nFE°',unit:'kJ/mol',lvl:'ap',min:-1500,max:0,d:0,modes:['cell'],get:s=>{const c=calc(s);return -c.n*F*c.E0/1000;}},
     {id:'K',label:'Equilibrium constant K',unit:'',lvl:'ap',text:true,modes:['cell'],get:s=>{const c=calc(s),lk=c.n*c.E0/(RT_F*Math.LN10);if(lk<0.01)return '1';return lk>300?'> 10³⁰⁰':'10'+CL.sup(String(Math.round(lk)))+' (about)';}},
     {id:'plated',label:'Metal deposited on the cathode',unit:'g',lvl:'ap',min:0,max:null,d:3,modes:['electro','cell'],get:s=>s.st.plated}
   ],
-  graphs:[{id:'mass',label:'Electrode masses',lvl:'honors',lines:['mL','mR']},{id:'volt',label:'Voltmeter reading',lvl:'bio',lines:['volt']},{id:'mA',label:'Current',lvl:'honors',lines:['mA']},{id:'E',label:'Ecell over time',lvl:'ap',lines:['E']}],
+  graphs:[{id:'mass',label:'Electrode masses',lvl:'bio',lines:['mL','mR'],auto:0.02},{id:'volt',label:'Voltmeter reading',lvl:'bio',lines:['volt']},{id:'mA',label:'Current',lvl:'honors',lines:['mA']},{id:'E',label:'Ecell over time',lvl:'ap',lines:['E']}],
   defaultGraph:'volt',
   infoPanel(sim){const p=sim.p,st=sim.st,hon=atLeast('honors'),ap=atLeast('ap');
     if(p.mode==='six'){const S=SETS[p.set];let h='<h3>Six-way cell readings</h3><div class="tbl-wrap"><table><thead><tr><th>Red lead</th><th>Black lead</th><th>Reading (V)</th><th>Cathode</th></tr></thead><tbody>';
@@ -145,7 +145,7 @@ const GAL={
       return 'The power supply <b>forces electrons into the '+c.Mr.n+'</b>, so '+c.Mr.ion+' ions plate out as '+c.Mr.n+' metal ('+st.plated.toFixed(3)+' g so far), while the '+c.Mx.n+' dissolves. This is the reverse of the spontaneous reaction, so it needs at least '+c.Ecell.toFixed(2)+' V.';}
     if(c.Ecell<1e-6)return 'Both half-cells are the same, so neither metal pulls electrons harder. The meter reads 0 V.';
     let t='<b>'+c.Mx.n[0].toUpperCase()+c.Mx.n.slice(1)+' is the anode</b>: its atoms give up electrons and dissolve as '+c.Mx.ion+'. The electrons travel through the wire to the '+c.Mr.n+', where '+c.Mr.ion+' ions pick them up and plate out as metal. ';
-    t+=p.sw?(hon?'The anode has lost '+(M0-(c.an==='L'?st.mL:st.mR)).toFixed(3)+' g so far.':'The anode slowly loses mass and the cathode gains it.'):'The switch is open, so no current flows yet, but the voltmeter still reads the push: '+Math.abs(c.volt).toFixed(2)+' V.';
+    t+=p.sw?'The '+c.Mx.n+' strip has lost '+(M0-(c.an==='L'?st.mL:st.mR)).toFixed(3)+' g so far and the '+c.Mr.n+' strip has gained '+((c.ca==='L'?st.mL:st.mR)-M0).toFixed(3)+' g. Watch the mass tag on each strip.':'The switch is open, so no current flows yet, but the voltmeter still reads the push: '+Math.abs(c.volt).toFixed(2)+' V.';
     if(c.volt<0)t+=' The reading is negative because the red lead is on the anode.';
     return t;},
   tour:[
@@ -166,7 +166,7 @@ const GAL={
     return [
     {lvl:'bio',q:'In the zinc–copper cell, which electrode loses mass while the bulb is lit?',choices:['The zinc','The copper','Neither metal'],correct:0,
      baseline:{mode:'cell',left:'Zn',right:'Cu',sw:false},change:{sw:true},changeText:'Switch closed: the bulb lights',watch:'mass',
-     explain:{bio:'The zinc strip lost about '+loss.toFixed(3)+' g in two hours while the copper gained mass. Zinc atoms give up electrons and dissolve as Zn²⁺ ions. Copper ions take those electrons and plate out as copper metal.',honors:'Zn → Zn²⁺ + 2e⁻ at the anode; Cu²⁺ + 2e⁻ → Cu at the cathode. Watch the Electrode masses graph: one line falls as the other rises.'}},
+     explain:{bio:'The zinc strip’s mass tag dropped about '+loss.toFixed(3)+' g in two hours while the copper’s tag went up. Zinc atoms give up electrons and dissolve as Zn²⁺ ions. Copper ions take those electrons and plate out as copper metal.',honors:'Zn → Zn²⁺ + 2e⁻ at the anode; Cu²⁺ + 2e⁻ → Cu at the cathode. Watch the Electrode masses graph: one line falls as the other rises.'}},
     {lvl:'bio',q:'You swap the copper half-cell for silver in silver nitrate. What happens to the voltmeter reading?',choices:['It goes up','It goes down','It stays at 1.10 V'],correct:0,
      baseline:{mode:'cell',left:'Zn',right:'Cu',sw:true},change:{right:'Ag'},changeText:'Copper half-cell replaced with silver',watch:'volt',
      explain:{bio:'The reading rose from '+ZC.toFixed(2)+' V to '+ZA.toFixed(2)+' V. Silver ions pull on electrons more strongly than copper ions do, so the electrons get a bigger push from zinc to silver.',honors:'E°cell = +0.80 − (−0.76) = 1.56 V, compared with +0.34 − (−0.76) = 1.10 V for copper.'}},
@@ -216,6 +216,7 @@ function drawCell(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,v=sim.vis,c=calc(sim)
   if(hon||k<1.3)txt(ctx,p.bridge?'salt bridge (KNO₃)':'salt bridge removed',400,p.bridge?176:110,{s:12*k,c:PAL['cv-soft'],a:'center'});
   // electrodes
   strip(ctx,BK.L.ex,c.L,st.mL/M0);strip(ctx,BK.R.ex,c.R,st.mR/M0);
+  massTag(ctx,'L',st.mL,k);massTag(ctx,'R',st.mR,k);
   // wires: voltmeter on top, bulb or supply below
   const xl=BK.L.ex+EW/2,xr=BK.R.ex+EW/2;ctx.strokeStyle=PAL['cv-soft'];ctx.lineWidth=4;
   ctx.beginPath();ctx.moveTo(xl,ETOP);ctx.lineTo(xl,VY);ctx.lineTo(336,VY);ctx.moveTo(464,VY);ctx.lineTo(xr,VY);ctx.lineTo(xr,ETOP);ctx.stroke();
@@ -246,6 +247,13 @@ function drawCell(sim,ctx,vdt,k,t){const p=sim.p,st=sim.st,v=sim.vis,c=calc(sim)
   if(hon&&c.Ecell>1e-6||hon&&c.electro){txt(ctx,notation(c,true),400,262,{s:12.5*k,w:700,a:'center'});
     if(ap&&k<1.3&&!c.electro)txt(ctx,'E°cell = '+sgn(c.Mr.E)+' − ('+sgn(c.Mx.E)+') = '+c.E0.toFixed(2)+' V',400,284,{s:12*k,c:PAL['cv-soft'],a:'center'});}
 }
+/* mass tag on the outer side of each strip: what a balance would read, and the change since the start */
+function massTag(ctx,s,m,k){const kk=Math.min(k,1.2),w=64*kk,h=46*kk,x=s==='L'?BK.L.x+6:BK.R.x+BK.R.w-6-w,y=EBOT-h-4,d=m-M0,ch=Math.abs(d)>=0.0005;
+  const col=!ch?PAL['cv-soft']:d<0?'#c8102e':'#1e7d3a';
+  rr(ctx,x,y,w,h,6);ctx.fillStyle=PAL['card']||'#fff';ctx.globalAlpha=0.94;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=col;ctx.lineWidth=ch?2:1;ctx.stroke();
+  txt(ctx,'strip mass',x+w/2,y+12*kk,{s:9.5*kk,c:PAL['cv-soft'],a:'center'});
+  txt(ctx,m.toFixed(3)+' g',x+w/2,y+27*kk,{s:12.5*kk,w:800,a:'center'});
+  txt(ctx,ch?(d<0?'▼ ':'▲ ')+(d<0?'−':'+')+Math.abs(d).toFixed(3)+' g':'start',x+w/2,y+41*kk,{s:10*kk,w:700,c:col,a:'center'});}
 function mixHex(a,b,t){const h=x=>{x=x.replace('#','');if(x.length===3)x=x.split('').map(c=>c+c).join('');return [0,2,4].map(i=>parseInt(x.slice(i,i+2),16));};const A=h(a),B=h(b);return '#'+A.map((v,i)=>Math.round(lerp(v,B[i],clamp(t,0,1))).toString(16).padStart(2,'0')).join('');}
 function zoom(sim,ctx,s,o,isAn,isCa,vdt,k,c){const v=sim.vis,[cx,cy]=o.z,m=o.m,surfX=s==='L'?cx+ZR*0.35:cx-ZR*0.35,metalSide=s==='L'?1:-1;
   // connector to the electrode surface
