@@ -1018,6 +1018,7 @@ function status(){return{
 function current(){const h=(location.hash||'').slice(1);return SECS.some(s=>s[0]===h)?h:'learn'}
 function refresh(){
   const st=status(),cur=current();
+  try{gcMilestones()}catch(e){}
   document.getElementById('stepnav').innerHTML=SECS.map(([k,l],i)=>{
     const extra=k==='practice'?` (${pracSolved()}/3)`:k==='molecular'?(pracSolved()<3?' 🔒':` (${molCount()}/3)`):'';
     return (k==='lab'?'<li class="sep" aria-hidden="true">After you submit</li>':'')+`<li><a href="#${k}" class="${st[k]?'done':''}${k==='molecular'&&pracSolved()<3?' locked':''}" ${cur===k?'aria-current="page"':''}><span class="dot">${st[k]?'✓':i+1}</span>${l}${extra}</a></li>`}).join('');
@@ -1114,12 +1115,14 @@ function buildReport(){
 }
 document.getElementById('copyBtn').addEventListener('click',()=>{
   const txt=buildReport(),toast=document.getElementById('toast');
+  gcSend(['done','ChemLab','empirical-formula','copied-record',gcPeriod()].join('/'),'Copied work record');
   const sel=()=>{const r=document.createRange();const pre=document.getElementById('report');r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. The record is selected: press Ctrl+C (or ⌘C) to copy.'};
   try{navigator.clipboard.writeText(txt).then(()=>{toast.textContent='Copied. Paste it into your assignment.'},sel)}catch(e){sel()}
 });
 let downloads=null;
 document.getElementById('dlBtn').hidden=false;
 document.getElementById('dlBtn').addEventListener('click',async()=>{
+  gcSend(['done','ChemLab','empirical-formula','saved-record',gcPeriod()].join('/'),'Saved work record');
   const toast=document.getElementById('toast');
   const name=((S.student.name||'student').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')||'student');
   if(!downloads){try{const blob=new Blob([buildReport()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`empirical-formula-work-${name}.txt`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast.textContent='Saved to your downloads.'}catch(e){toast.textContent='Saving is blocked here. Use Copy instead.'}return}
@@ -1158,6 +1161,13 @@ function syncSup(){const ra=document.getElementById('raBtn'),er=document.getElem
 document.getElementById('raBtn').addEventListener('click',()=>{if(CAN)pickVoice();if(!voice){raOn=false;pk('raider-labs-readaloud',false);syncSup();showHow();return}
   raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn){const h=document.querySelector('section.sec:not([hidden]) .step.current');const host=h&&h.closest('.card,[id]');if(host)sayHost(host);else saySection()}else SS.cancel()});
 document.getElementById('erBtn').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});
+/* Anonymous finish-line counts (GoatCounter events, no names): done/ChemLab/empirical-formula/<milestone>, sent once per browser.
+   Copying or saving the work record also sends the class period the student typed (1R, 3W…), so a teacher can see which class finished. */
+function gcPeriod(){const v=((S.student&&S.student.period)||'').toUpperCase().replace(/[^0-9A-Z]/g,'');const m=v.match(/^(?:BLOCK|PERIOD|P)?([1-8])([RW])?$/)||v.match(/([1-8])([RW])/);return m?m[1]+(m[2]||''):'no-period'}
+function gcMilestone(k,title){S.gcDone=S.gcDone||{};if(S.gcDone[k])return;S.gcDone[k]=1;save();gcSend(['done','ChemLab','empirical-formula',k].join('/'),'Finished: '+title)}
+function gcMilestones(){const st=status(),T={learn:'definition check',rhyme:'rhyme',examples:'worked examples',practice:'practice (3/3)',molecular:'molecular (3/3)',lab:'opened a simulation',use:'real problems',test:'test yourself 8+',summary:'summary written'};
+  Object.keys(T).forEach(k=>{if(st[k])gcMilestone(k,T[k])});
+  if(S.work&&S.work['case-m']&&S.work['case-m'].solved)gcMilestone('case','solved the case')}
 function gcSend(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true})}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250)})(0)}
 const slug=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,40);
 /* "This confused me" on every step and question (same five reasons as student-help.js on the other Raider Labs sites).
@@ -1209,7 +1219,7 @@ function drawPath(){const el=document.getElementById('pathCard'),pth=S.path;
   else if(pth==='plain')el.innerHTML=`<p class="muted">Just the lesson, the way your teacher shows it. <button class="linkbtn" data-path="case">Want a mystery to solve instead?</button></p>`;
   else el.innerHTML=`<div class="eyebrow">How do you want to start?</div><p>Same lesson either way. Pick one:</p><div class="pathbtns"><button class="btn" data-path="case">🔎 Solve a mystery</button><button class="btn ghost" data-path="plain">📘 Just the lesson</button></div>`;
   document.getElementById('caseCard').hidden=pth!=='case';}
-document.getElementById('pathCard').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;S.path=b.dataset.path;save();drawPath();if(S.path==='case')say(txt(document.getElementById('pathCard')))});
+document.getElementById('pathCard').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;S.path=b.dataset.path;save();drawPath();gcSend('done/ChemLab/empirical-formula/path-'+S.path,'Chose path: '+S.path);if(S.path==='case')say(txt(document.getElementById('pathCard')))});
 drawPath();
 document.querySelector('[data-sec="lab"]').addEventListener('click',e=>{const a=e.target.closest('[data-sim]');if(!a)return;S.sims=S.sims||{};S.sims[a.dataset.sim]=1;save();refresh();gcSend('sim/ChemLab/empirical-formula/'+a.dataset.sim,'Opened simulation')});
 syncSup();
