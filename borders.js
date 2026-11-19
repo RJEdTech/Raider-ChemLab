@@ -13,6 +13,10 @@ models: {
   ],
   stops: 'Chemistry shows which model fits the evidence, and each model so far (Dalton, Thomson, Rutherford, Bohr) was replaced by a better one. Whether today’s quantum model shows what an atom really is, or is just our best tool for predicting, is a question in the philosophy of science.',
   church: 'The Church teaches that truth is one: what is really discovered about nature cannot contradict what faith holds, because both come from the same God (Vatican II, <i>Gaudium et Spes</i> 36; John Paul II, <i>Fides et Ratio</i> 34, 1998). The Church leaves the structure of the atom to science. It asks that the search be honest and done in line with moral norms, and it has no quarrel with models that change when the evidence does.',
+  faith: { items: [
+    { who: 'Fr. Pierre Gassendi', when: 'French priest and scientist, 1640s–1650s', says: 'He revived the ancient Greek idea of atoms, arguing that God created the atoms and their motions, so atomism did not have to mean a world without God. He helped make atoms respectable in modern science.' },
+    { who: 'Fr. Roger Boscovich', when: 'Croatian Jesuit, 1758', says: 'He pictured matter as points that pull and push on each other depending on distance, pushing back hard when very close. Faraday and Kelvin later took his idea seriously, and it looks a lot like how atoms really interact.' }
+  ] },
   views: [
     { who: 'Democritus', when: 'about 400 BC', says: 'Everything is made of tiny, uncuttable pieces moving through empty space. He reasoned his way there with no experiment at all.' },
     { who: 'Ernst Mach', when: '1890s', says: 'Atoms are a handy way to calculate, not things anyone has shown to exist. Science should stick to what we can observe and measure.' },
