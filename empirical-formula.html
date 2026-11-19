@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Empirical Formula Lab · Raider ChemLab</title>
+<meta name="description" content="Empirical and molecular formulas, step by step, by Dr. Sandy Robertson for Regis Jesuit Honors Chemistry.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson column, a sticky section stepper, and a lab-notebook "calc row" for every unit-labeled setup */
+:root{
+  --bg:#F2F6F7; --surface:#FFFFFF; --ink:#13222A; --muted:#55666E; --line:#D3DDE1;
+  --accent:#0B6E78; --accent-ink:#FFFFFF; --accent-soft:#DCEEF0;
+  --unit:#6A3FB5; --cancel:#C2412D;
+  --good:#1F7A3E; --good-soft:#E2F2E7; --warn:#8F5600; --warn-soft:#FBEFD9; --bad:#B3261E; --bad-soft:#FBE4E2;
+  --f-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1618; --surface:#162125; --ink:#E3ECEE; --muted:#93A6AD; --line:#2A3B41;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#143A3E;
+  --unit:#B89CFF; --cancel:#FF8B73;
+  --good:#71D293; --good-soft:#16301F; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --surface:#162125; --ink:#E3ECEE; --muted:#93A6AD; --line:#2A3B41;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#143A3E;
+  --unit:#B89CFF; --cancel:#FF8B73;
+  --good:#71D293; --good-soft:#16301F; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);letter-spacing:-.01em}
+h2{font-size:1.6rem;margin-bottom:.4rem}
+h3{font-size:1.15rem}
+p{margin:0;max-width:68ch}
+sub{font-size:.72em;line-height:0}
+b{font-weight:700}
+.eyebrow{font-family:var(--f-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}
+
+/* Header */
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:22px 16px;display:flex;flex-direction:column;gap:10px}
+.rhymebar{display:flex;flex-wrap:wrap;gap:6px 0;font-family:var(--f-mono);font-size:.86rem}
+.rhymebar span{padding:3px 10px;border:1.5px solid var(--line);border-left:none;background:var(--bg)}
+.rhymebar span:first-child{border-left:1.5px solid var(--line);border-radius:6px 0 0 6px}
+.rhymebar span:last-child{border-radius:0 6px 6px 0}
+.rhymebar span.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+nav.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.steps .scroller{overflow-x:auto}
+nav.steps ol{list-style:none;margin:0;padding-block:8px;display:flex;gap:4px;min-width:max-content}
+nav.steps a{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-family:var(--f-display);font-weight:500;font-size:.95rem;white-space:nowrap}
+nav.steps a:hover{background:var(--bg);color:var(--ink)}
+nav.steps a[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
+nav.steps .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:.75rem;font-family:var(--f-mono)}
+nav.steps a.done .dot{background:var(--good);border-color:var(--good);color:var(--surface)}
+nav.steps a.locked{opacity:.6}
+
+main .wrap{padding-block:28px 64px}
+section.sec{display:flex;flex-direction:column;gap:22px}
+.lead{font-size:1.1rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid2>*{min-width:0}
+
+.defbox{border:2px solid var(--accent);border-radius:10px;padding:18px 20px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.defbox p{font-size:1.15rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-display);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.f{font-family:var(--f-mono);font-size:1.02rem}
+
+/* Quiz */
+.q{display:flex;flex-direction:column;gap:10px;padding-block:14px;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:none;padding-top:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{font:inherit;font-family:var(--f-mono);padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+
+/* Buttons and chips */
+.btn{font:inherit;font-family:var(--f-display);font-weight:700;padding:9px 18px;border-radius:8px;border:none;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.small{padding:6px 12px;font-size:.88rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn{font:inherit;background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-size:.9rem}
+.chip{font:inherit;font-family:var(--f-mono);font-size:.92rem;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:disabled{cursor:default}
+.chip:not(.sel):disabled{opacity:.55}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Rhyme cards */
+.rcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;counter-reset:r}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.rcard .line{font-family:var(--f-display);font-weight:700;font-size:1.2rem}
+.rcard .trans{font-family:var(--f-mono);font-size:.95rem;background:var(--bg);border-radius:6px;padding:6px 10px;align-self:flex-start}
+.order-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.slot{min-height:44px;border:1.5px dashed var(--line);border-radius:8px;display:flex;align-items:center;padding:6px 12px;font-family:var(--f-mono);font-size:.92rem}
+.slot.filled{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+
+/* Solver */
+.solver{display:flex;flex-direction:column;gap:14px}
+.problem{display:flex;flex-direction:column;gap:10px}
+.prompt{font-size:1.08rem}
+.givens{display:flex;flex-wrap:wrap;gap:8px}
+.given{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.88rem;border:1px solid var(--line);border-radius:8px;padding:4px 10px 4px 4px;background:var(--bg)}
+.tile{display:inline-grid;place-items:center;min-width:2.1em;height:2.1em;padding:0 .25em;border:1.5px solid var(--ink);border-radius:4px;font-family:var(--f-display);font-weight:700;font-size:.95rem;background:var(--accent-soft);color:var(--ink);flex:none}
+.step{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.step>.sh{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-family:var(--f-mono);font-size:.85rem;flex:none}
+.step.done .n{background:var(--good)}
+.step .sh h4{margin:0;font-family:var(--f-display);font-size:1rem}
+.step .sh .tag{margin-left:auto;font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.step .sb{padding:14px;display:flex;flex-direction:column;gap:12px}
+.calc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:var(--f-mono);font-size:1rem;font-variant-numeric:tabular-nums}
+.op{color:var(--muted)}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.frac>span{padding:2px 6px;white-space:nowrap}
+.frac>span:first-child{border-bottom:2px solid var(--ink)}
+.frac>span.cap{border:none;font-family:var(--f-body);font-size:.72em;color:var(--muted);padding-top:1px}
+.paren{font-size:1.9em;font-weight:300;color:var(--muted);line-height:1}
+.u{color:var(--unit);font-weight:600}
+.u.x{text-decoration:line-through;text-decoration-color:var(--cancel);text-decoration-thickness:2px}
+.val{font-weight:600}
+input.num{font:inherit;font-family:var(--f-mono);width:7.5ch;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:right}
+input.num.w{width:4.5ch;text-align:center}
+input.num:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+input.num:disabled{background:transparent;border-color:transparent;color:var(--ink);font-weight:600;opacity:1;-webkit-text-fill-color:var(--ink)}
+.why{border-left:3px solid var(--accent);padding:6px 12px;background:var(--accent-soft);border-radius:0 6px 6px 0;max-width:72ch}
+.msg{padding:8px 12px;border-radius:6px;font-size:.95rem;max-width:72ch}
+.msg.bad{background:var(--bad-soft);color:var(--ink);border:1px solid var(--bad)}
+.msg.good{background:var(--good-soft);border:1px solid var(--good)}
+.result{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;padding:14px 18px;border-radius:10px;background:var(--good-soft);border:1.5px solid var(--good)}
+.result .big{font-family:var(--f-mono);font-size:1.7rem;font-weight:600}
+.mtable{font-family:var(--f-mono);font-size:.9rem}
+.mtable td,.mtable th{padding:5px 10px}
+
+.ptabs{display:flex;flex-wrap:wrap;gap:8px}
+.ptab{font:inherit;font-family:var(--f-display);font-weight:500;padding:7px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;gap:8px;align-items:center}
+.ptab[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ptab .ok{color:var(--good);font-weight:700}
+
+.lock{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.meter{height:10px;border-radius:999px;background:var(--line);width:min(320px,100%);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent)}
+.eq{font-family:var(--f-mono);font-size:1.1rem;padding:12px 16px;background:var(--bg);border-radius:8px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+
+/* Summary */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700}
+label.f span.h{font-weight:400;color:var(--muted);font-size:.92rem}
+input.text,textarea{font:inherit;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:96px;resize:vertical}
+input.text:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;gap:10px;align-items:center}
+.checklist .bx{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.8rem;flex:none}
+.checklist .bx.on{background:var(--good);border-color:var(--good);color:var(--surface)}
+pre.report{font-family:var(--f-mono);font-size:.82rem;line-height:1.5;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:420px;overflow:auto;white-space:pre;margin:0;user-select:text}
+.footnav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:8px}
+.toast{font-size:.92rem;color:var(--good)}
+@media (prefers-reduced-motion:no-preference){.step.current{animation:rise .25s ease-out}@keyframes rise{from{transform:translateY(4px)}to{transform:none}}}
+@media (max-width:520px){body{font-size:16px}.card{padding:16px}.calc{font-size:.93rem}}
+/* RJ Ed Tech additions (Nov 18, 2026): RJ band, support bar, Show me this step, real-world reveal, Easier reading */
+.rjband{background:#1d2124;color:#fff}
+.rjband .wrap{display:flex;align-items:center;gap:12px;padding-block:8px;flex-wrap:wrap}
+.rjband a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.rjband img{height:30px;width:auto}
+.rjband .by{margin-left:auto;font-size:.88rem;color:#d6dbde}
+.sup{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sup .btn.small[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sup .chip{font-family:var(--f-body);font-size:.85rem;padding:4px 10px}
+.sup .tip{font-size:.88rem;color:var(--muted)}
+.helpbox{border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:0 6px 6px 0;max-width:72ch}
+.helpbox b.k{font-family:var(--f-mono)}
+.reveal{display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-radius:10px;border:1.5px dashed var(--good);max-width:72ch}
+.reveal .eyebrow{color:var(--good)}
+.newrow{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+footer.credit{border-top:1px solid var(--line);background:var(--surface)}
+footer.credit .wrap{padding-block:16px;font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+footer.credit a{color:var(--accent)}
+#raHow{max-width:min(540px,92vw);border:0;border-radius:12px;padding:20px 22px;background:var(--surface);color:var(--ink);line-height:1.55}
+#raHow::backdrop{background:rgba(0,0,0,.45)}#raHow ol{padding-left:22px}#raHow li{margin-bottom:10px}#raHow img{display:block;max-width:100%;margin-top:6px;border-radius:6px}
+html.easy :is(p,li,.why,.msg,.helpbox,.prompt,label.f,.reveal,td){font-size:1.12rem;line-height:1.8;letter-spacing:.035em;word-spacing:.14em}
+html.easy .eyebrow,html.easy th{text-transform:none;letter-spacing:.02em}
+html.easy i,html.easy em{font-style:normal;font-weight:700}
+html.easy p{max-width:62ch}
+</style>
+</head>
+<body>
+
+
+<div class="rjband"><div class="wrap"><a href="./" title="Raider ChemLab home"><img src="data:image/png;base64,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" alt="RJ">Raider ChemLab</a><span class="by">Lesson by Dr. Sandy Robertson</span></div></div>
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Honors Chemistry · Stoichiometry</div>
+    <h1>Empirical Formula Lab</h1>
+    <div class="rhymebar" id="rhymebar" aria-label="The rhyme">
+      <span>percent to grams</span><span>grams to moles</span><span>divide by smallest</span><span>make it whole</span>
+    </div>
+    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button><button class="btn ghost small" id="cfBtn">😕 This confused me</button><span id="cfBox" class="sup"></span></div>
+  </div>
+</header>
+<nav class="steps" aria-label="Lesson sections"><div class="wrap scroller"><ol id="stepnav"></ol></div></nav>
+
+<main><div class="wrap">
+
+<!-- 1. DEFINITION -->
+<section class="sec" data-sec="learn">
+  <div><div class="eyebrow">Part 1</div><h2>What is an empirical formula?</h2></div>
+  <div class="defbox">
+    <div class="eyebrow">Definition</div>
+    <p>An <b>empirical formula</b> shows the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
+    <p class="muted">A <b>molecular formula</b> shows the <b>actual number</b> of atoms of each element in one molecule. The molecular formula is always a whole-number multiple (<i>n</i>) of the empirical formula.</p>
+  </div>
+  <div class="grid2">
+    <div class="card stack">
+      <h3>Reduce it like a fraction</h3>
+      <p>Glucose has 6 C, 12 H and 6 O. Every subscript is divisible by 6, so divide them all by 6.</p>
+      <div class="eq">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub> <span class="op">÷ 6 →</span> <b>CH<sub>2</sub>O</b></div>
+      <p class="muted">The ratio 6 : 12 : 6 is the same as 1 : 2 : 1. Only the simplest version is the empirical formula.</p>
+    </div>
+    <div class="card stack">
+      <h3>Why chemists need it</h3>
+      <p>When a lab analyzes an unknown compound (for example by combustion analysis), it measures <b>mass percent</b> of each element. Mass data can only tell you the <i>ratio</i> of atoms. That ratio is the empirical formula. To get the real molecule, you also need the <b>molar mass</b>.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tablewrap"><table>
+      <thead><tr><th>Compound</th><th>Molecular formula</th><th>Divide by</th><th>Empirical formula</th></tr></thead>
+      <tbody>
+        <tr><td>Glucose</td><td class="f">C<sub>6</sub>H<sub>12</sub>O<sub>6</sub></td><td class="f">6</td><td class="f">CH<sub>2</sub>O</td></tr>
+        <tr><td>Hydrogen peroxide</td><td class="f">H<sub>2</sub>O<sub>2</sub></td><td class="f">2</td><td class="f">HO</td></tr>
+        <tr><td>Benzene</td><td class="f">C<sub>6</sub>H<sub>6</sub></td><td class="f">6</td><td class="f">CH</td></tr>
+        <tr><td>Ethane</td><td class="f">C<sub>2</sub>H<sub>6</sub></td><td class="f">2</td><td class="f">CH<sub>3</sub></td></tr>
+        <tr><td>Water</td><td class="f">H<sub>2</sub>O</td><td class="f">1</td><td class="f">H<sub>2</sub>O (already simplest)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Check yourself</div>
+    <div id="quiz"></div>
+  </div>
+  <div class="footnav"><span></span><button class="btn" data-go="rhyme">Next: the rhyme →</button></div>
+</section>
+
+<!-- 2. RHYME -->
+<section class="sec" data-sec="rhyme" hidden>
+  <div><div class="eyebrow">Part 2</div><h2>Percent composition → empirical formula</h2>
+  <p class="lead">Percent composition tells you what percent of a compound's mass comes from each element. Four moves turn those percents into a formula. Learn them as a rhyme.</p></div>
+  <div class="rcards">
+    <div class="rcard"><span class="eyebrow">Step 1</span><span class="line">Percent to grams</span><span class="trans">% → g</span><p>Assume a <b>100 g sample</b>. Then 40.0% carbon is simply 40.0 g of carbon.</p></div>
+    <div class="rcard"><span class="eyebrow">Step 2</span><span class="line">Grams to moles</span><span class="trans">g × (1 mol / M g) → mol</span><p>Atoms combine by <b>count</b>, not by mass. Moles count particles, so convert each mass using the element's molar mass.</p></div>
+    <div class="rcard"><span class="eyebrow">Step 3</span><span class="line">Divide by smallest</span><span class="trans">mol ÷ mol → ratio</span><p>Divide <b>every</b> mole value by the smallest one. The smallest becomes 1, and the units cancel, leaving a pure ratio.</p></div>
+    <div class="rcard"><span class="eyebrow">Step 4</span><span class="line">Make it whole</span><span class="trans">ratio × n → whole numbers</span><p>Subscripts must be whole numbers. If a ratio is not within about 0.1 of a whole number, multiply <b>all</b> ratios by the same number.</p></div>
+  </div>
+  <div class="card stack">
+    <h3>"Make it whole" multipliers</h3>
+    <p>Never round 1.5 up to 2. A decimal like that is a signal to multiply.</p>
+    <div class="tablewrap"><table class="mtable">
+      <thead><tr><th>Ratio ends in about…</th><th>Multiply every ratio by</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>.5</td><td>2</td><td>1.5 × 2 = 3</td></tr>
+        <tr><td>.33 or .67</td><td>3</td><td>1.33 × 3 = 4</td></tr>
+        <tr><td>.25 or .75</td><td>4</td><td>2.25 × 4 = 9</td></tr>
+        <tr><td>.2, .4, .6, .8</td><td>5</td><td>1.4 × 5 = 7</td></tr>
+        <tr><td>.9 or .1 (like 1.98 or 3.03)</td><td>1 (just round)</td><td>1.98 → 2</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Check yourself</div>
+    <h3>Put the rhyme in order</h3>
+    <p class="muted">Tap the lines in the order you do them.</p>
+    <div class="order-slots" id="slots"></div>
+    <div class="row" id="pool"></div>
+    <div id="rhymemsg"></div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="learn">← Definition</button><button class="btn" data-go="examples">Next: worked examples →</button></div>
+</section>
+
+<!-- 3. EXAMPLES -->
+<section class="sec" data-sec="examples" hidden>
+  <div><div class="eyebrow">Part 3</div><h2>Worked examples</h2>
+  <p class="lead">Step through each example. Watch the units: every setup is written so that the unit you don't want sits on the bottom and <span class="u x">cancels</span>.</p></div>
+  <div class="card stack"><div class="eyebrow">Example A · whole numbers right away</div><div id="exA"></div></div>
+  <div class="card stack"><div class="eyebrow">Example B · needs "make it whole"</div><div id="exB"></div></div>
+  <div class="footnav"><button class="btn ghost" data-go="rhyme">← The rhyme</button><button class="btn" data-go="practice">Next: practice →</button></div>
+</section>
+
+<!-- 4. PRACTICE -->
+<section class="sec" data-sec="practice" hidden>
+  <div><div class="eyebrow">Part 4</div><h2>Practice: empirical formulas</h2>
+  <p class="lead">Fill in each step, with units, and press <b>Check</b>. Your calculator work goes in the boxes. Solve all <b>3</b> to unlock molecular formulas.</p></div>
+  <div class="ptabs" id="ptabs" role="tablist"></div>
+  <div class="card" id="practiceHost"></div>
+  <div class="footnav"><button class="btn ghost" data-go="examples">← Worked examples</button><button class="btn" data-go="molecular">Next: molecular formula →</button></div>
+</section>
+
+<!-- 5. MOLECULAR -->
+<section class="sec" data-sec="molecular" hidden>
+  <div><div class="eyebrow">Part 5</div><h2>From empirical to molecular formula</h2></div>
+  <div id="molLock" class="card lock" hidden></div>
+  <div id="molBody" class="sec" style="gap:22px">
+    <div class="grid2">
+      <div class="card stack">
+        <h3>The idea</h3>
+        <p>The empirical formula is the smallest repeating "unit." A real molecule contains <i>n</i> of those units. The molar mass tells you how many.</p>
+        <div class="eq"><i>n</i> = <span class="frac"><span>molar mass <span class="u x">g/mol</span></span><span>empirical formula mass <span class="u x">g/mol</span></span></span></div>
+        <p class="muted">The g/mol units cancel, so <i>n</i> is a pure whole number.</p>
+      </div>
+      <div class="card stack">
+        <h3>Three steps</h3>
+        <p><b>1.</b> Add the atomic masses in the empirical formula to get the <b>empirical formula mass</b> (g/mol).</p>
+        <p><b>2.</b> Divide the given <b>molar mass</b> by it to find <i>n</i>.</p>
+        <p><b>3.</b> Multiply <b>every</b> subscript in the empirical formula by <i>n</i>.</p>
+      </div>
+    </div>
+    <div class="card stack"><div class="eyebrow">Worked example · glucose</div><div id="m1"></div></div>
+    <div><h3 style="margin-bottom:10px">Practice</h3><div class="ptabs" id="mtabs" role="tablist"></div></div>
+    <div class="card" id="molHost"></div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="practice">← Practice</button><button class="btn" data-go="summary">Next: summary &amp; submit →</button></div>
+</section>
+
+<!-- 6. SUMMARY -->
+<section class="sec" data-sec="summary" hidden>
+  <div><div class="eyebrow">Part 6</div><h2>Summarize and submit</h2>
+  <p class="lead">Explain the process in your own words. Your answers and every step you entered are collected into one work record below that you can copy or save for your teacher.</p></div>
+  <div class="card stack">
+    <div class="grid2">
+      <label class="f" for="stName">Name<input class="text" id="stName" data-st="name" autocomplete="name"></label>
+      <label class="f" for="stPeriod">Class period<input class="text" id="stPeriod" data-st="period"></label>
+    </div>
+    <label class="f" for="stTeacher">Teacher<input class="text" id="stTeacher" data-st="teacher"></label>
+  </div>
+  <div class="card stack" id="sumQs"></div>
+  <div class="grid2">
+    <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
+    <div class="card stack"><h3>Turn it in</h3>
+      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
+      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn" hidden>Save as .txt</button></div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="card stack"><h3>Work record preview</h3><pre class="report" id="report" tabindex="0"></pre></div>
+  <div class="footnav"><button class="btn ghost" data-go="molecular">← Molecular formula</button><span></span></div>
+</section>
+
+</div></main>
+<footer class="credit"><div class="wrap">
+  <span><b>Empirical Formula Lab</b> was written by Dr. Sandy Robertson for Regis Jesuit Honors Chemistry. It is her work, shared here with her name on it; it is not covered by the Raider ChemLab license.</span>
+  <span>RJ Ed Tech added the new-numbers practice, Show me this step, and Read aloud. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
+</div></footer>
+
+<script>
+(function(){
+const KEY='ef-lab-v2';
+let S={work:{},quiz:{},rhyme:{order:[],done:false},student:{name:'',period:'',teacher:''},sum:{},ptab:'p1',mtab:'m2',pick:{}};
+try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(o&&typeof o==='object')S=Object.assign(S,o);}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- data ---------- */
+const EX={
+ exA:{id:'exA',els:[{sym:'C',pct:'40.0',m:12.01},{sym:'H',pct:6.71,m:1.008},{sym:'O',pct:53.3,m:16.00}],subs:[1,2,1],mult:1,
+  prompt:'A sugar is 40.0% carbon, 6.71% hydrogen and 53.3% oxygen by mass. Find its empirical formula.',
+  notes:['40.0% C means 40.0 g of carbon in every 100 g of compound. The "g sample" units cancel, leaving g C.',
+   'Divide by molar mass. Put g C on the bottom of the conversion factor so it cancels the g C on top, leaving mol C.',
+   'Carbon and oxygen tie for the smallest amount (3.331 mol). Dividing every value by 3.331 mol cancels the mol units and leaves the atom ratio.',
+   '1 : 2.00 : 1 are already whole numbers, so the multiplier is 1. Empirical formula: CH₂O.']},
+ exB:{id:'exB',els:[{sym:'Fe',pct:69.9,m:55.85},{sym:'O',pct:30.1,m:16.00}],subs:[2,3],mult:2,
+  prompt:'An iron oxide is 69.9% iron and 30.1% oxygen by mass. Find its empirical formula.',
+  notes:['69.9% Fe → 69.9 g Fe and 30.1% O → 30.1 g O in a 100 g sample.',
+   '69.9 g Fe ÷ 55.85 g/mol = 1.252 mol Fe. 30.1 g O ÷ 16.00 g/mol = 1.881 mol O.',
+   'Iron has fewer moles, so divide both by 1.252 mol. Fe = 1.00, O = 1.50.',
+   '1.50 is not close to a whole number, so do not round it. A ratio ending in .5 means multiply everything by 2: Fe 1.00 × 2 = 2, O 1.50 × 2 = 3. Empirical formula: Fe₂O₃.']}
+};
+/* PR and MP are built from the banks below (see "problem banks"). */
+let PR=[],MP=[];
+const M1={id:'m1',els:[{sym:'C',m:12.01},{sym:'H',m:1.008},{sym:'O',m:16.00}],emp:[1,2,1],molar:180.16,n:6,
+ notes:['Add the masses in one CH₂O unit: 1(12.01) + 2(1.008) + 1(16.00) = 30.03 g/mol.',
+  'n = 180.16 g/mol ÷ 30.03 g/mol = 6.00. The g/mol units cancel, so n is a pure number: six CH₂O units fit in one molecule.',
+  'Multiply every subscript by 6: C 1×6, H 2×6, O 1×6. Molecular formula: C₆H₁₂O₆ (glucose).']};
+/* ---------- problem banks (RJ Ed Tech, Nov 18 2026) ----------
+   Each practice slot draws a real compound from its bank, so classmates get different numbers and a student can ask for more.
+   Percents are 3 significant figures, computed from the same atomic masses the lesson uses; every entry was checked with this page's own grader.
+   p1: three or more elements, whole numbers right away; p2: two elements, whole numbers right away; p3: needs "make it whole" (x2, x3 or x4).
+   m2, m3: empirical formula and molar mass given; m4: percents and molar mass given. Sandy's original problems are the first entry of each bank. */
+const BANK={"p1":[{"els":[{"sym":"Ag","pct":"63.5","m":107.87},{"sym":"N","pct":"8.24","m":14.01},{"sym":"O","pct":"28.2","m":16}],"subs":[1,1,3],"mult":1,"name":"silver nitrate","use":"Chemistry labs use it to test water for chloride. It turns skin dark if it spills."},{"els":[{"sym":"K","pct":"24.7","m":39.1},{"sym":"Mn","pct":"34.8","m":54.94},{"sym":"O","pct":"40.5","m":16}],"subs":[1,1,4],"mult":1,"name":"potassium permanganate","use":"A deep purple solid used to treat well water and clean fish tanks."},{"els":[{"sym":"Na","pct":"32.4","m":22.99},{"sym":"S","pct":"22.6","m":32.07},{"sym":"O","pct":"45.1","m":16}],"subs":[2,1,4],"mult":1,"name":"sodium sulfate","use":"A filler in powdered laundry detergent."},{"els":[{"sym":"Ca","pct":"40.0","m":40.08},{"sym":"C","pct":"12.0","m":12.01},{"sym":"O","pct":"48.0","m":16}],"subs":[1,1,3],"mult":1,"name":"calcium carbonate","use":"Chalk, seashells, and antacid tablets like Tums."},{"els":[{"sym":"C","pct":"52.1","m":12.01},{"sym":"H","pct":"13.1","m":1.008},{"sym":"O","pct":"34.7","m":16}],"subs":[2,6,1],"mult":1,"name":"ethanol","use":"The alcohol in hand sanitizer."},{"els":[{"sym":"Cu","pct":"39.8","m":63.55},{"sym":"S","pct":"20.1","m":32.07},{"sym":"O","pct":"40.1","m":16}],"subs":[1,1,4],"mult":1,"name":"copper(II) sulfate","use":"The bright blue crystals used to kill algae in ponds."},{"els":[{"sym":"K","pct":"31.9","m":39.1},{"sym":"Cl","pct":"28.9","m":35.45},{"sym":"O","pct":"39.2","m":16}],"subs":[1,1,3],"mult":1,"name":"potassium chlorate","use":"It supplies the oxygen in match heads and fireworks."},{"els":[{"sym":"C","pct":"20.0","m":12.01},{"sym":"H","pct":"6.71","m":1.008},{"sym":"N","pct":"46.7","m":14.01},{"sym":"O","pct":"26.6","m":16}],"subs":[1,4,2,1],"mult":1,"name":"urea","use":"A lawn and farm fertilizer. Your body makes it too."},{"els":[{"sym":"C","pct":"49.5","m":12.01},{"sym":"H","pct":"5.19","m":1.008},{"sym":"N","pct":"28.9","m":14.01},{"sym":"O","pct":"16.5","m":16}],"subs":[4,5,2,1],"mult":1,"name":"the simplest ratio in caffeine","use":"Caffeine is C₈H₁₀N₄O₂, the stimulant in coffee and energy drinks. Its simplest ratio is C₄H₅N₂O."}],"p2":[{"els":[{"sym":"C","pct":"85.6","m":12.01},{"sym":"H","pct":"14.4","m":1.008}],"subs":[1,2],"mult":1,"name":"CH₂, the repeating unit of polyethylene","use":"Polyethylene is the plastic in grocery bags and milk jugs."},{"els":[{"sym":"Mg","pct":"60.3","m":24.31},{"sym":"O","pct":"39.7","m":16}],"subs":[1,1],"mult":1,"name":"magnesium oxide","use":"The white ash left when magnesium ribbon burns, like in the MgO lab."},{"els":[{"sym":"Ca","pct":"36.1","m":40.08},{"sym":"Cl","pct":"63.9","m":35.45}],"subs":[1,2],"mult":1,"name":"calcium chloride","use":"Ice melt for sidewalks and roads in a Colorado winter."},{"els":[{"sym":"S","pct":"40.1","m":32.07},{"sym":"O","pct":"59.9","m":16}],"subs":[1,3],"mult":1,"name":"sulfur trioxide","use":"It forms from burning coal and turns into acid rain."},{"els":[{"sym":"Cu","pct":"88.8","m":63.55},{"sym":"O","pct":"11.2","m":16}],"subs":[2,1],"mult":1,"name":"copper(I) oxide","use":"A red pigment in paint for boat bottoms."},{"els":[{"sym":"Fe","pct":"46.5","m":55.85},{"sym":"S","pct":"53.5","m":32.07}],"subs":[1,2],"mult":1,"name":"iron pyrite","use":"\"Fool’s gold.\""},{"els":[{"sym":"C","pct":"74.9","m":12.01},{"sym":"H","pct":"25.1","m":1.008}],"subs":[1,4],"mult":1,"name":"methane","use":"Natural gas, the fuel in a Bunsen burner."},{"els":[{"sym":"N","pct":"82.2","m":14.01},{"sym":"H","pct":"17.8","m":1.008}],"subs":[1,3],"mult":1,"name":"ammonia","use":"Used in many window cleaners and fertilizers."}],"p3":[{"els":[{"sym":"P","pct":"43.6","m":30.97},{"sym":"O","pct":"56.4","m":16}],"subs":[2,5],"mult":2,"name":"P₂O₅ (phosphorus pentoxide)","use":"It pulls water out of the air, so labs use it to keep things dry."},{"els":[{"sym":"Fe","pct":"69.9","m":55.85},{"sym":"O","pct":"30.1","m":16}],"subs":[2,3],"mult":2,"name":"iron(III) oxide","use":"Rust."},{"els":[{"sym":"Al","pct":"52.9","m":26.98},{"sym":"O","pct":"47.1","m":16}],"subs":[2,3],"mult":2,"name":"aluminum oxide","use":"Sandpaper grit, and the mineral in rubies and sapphires."},{"els":[{"sym":"Fe","pct":"72.4","m":55.85},{"sym":"O","pct":"27.6","m":16}],"subs":[3,4],"mult":3,"name":"magnetite","use":"A magnetic iron ore. Some early compasses used it."},{"els":[{"sym":"C","pct":"81.7","m":12.01},{"sym":"H","pct":"18.3","m":1.008}],"subs":[3,8],"mult":3,"name":"propane","use":"The fuel in a gas grill tank."},{"els":[{"sym":"C","pct":"82.7","m":12.01},{"sym":"H","pct":"17.3","m":1.008}],"subs":[2,5],"mult":2,"name":"C₂H₅, the empirical formula of butane","use":"Butane is C₄H₁₀, the fuel in a lighter."},{"els":[{"sym":"C","pct":"60.0","m":12.01},{"sym":"H","pct":"4.48","m":1.008},{"sym":"O","pct":"35.5","m":16}],"subs":[9,8,4],"mult":4,"name":"aspirin","use":"A pain reliever."},{"els":[{"sym":"C","pct":"40.9","m":12.01},{"sym":"H","pct":"4.58","m":1.008},{"sym":"O","pct":"54.5","m":16}],"subs":[3,4,3],"mult":3,"name":"C₃H₄O₃, the empirical formula of vitamin C","use":"Vitamin C is C₆H₈O₆, found in oranges and peppers."},{"els":[{"sym":"C","pct":"93.7","m":12.01},{"sym":"H","pct":"6.29","m":1.008}],"subs":[5,4],"mult":4,"name":"C₅H₄, the empirical formula of naphthalene","use":"Naphthalene is C₁₀H₈, the smell of mothballs."},{"els":[{"sym":"K","pct":"26.6","m":39.1},{"sym":"Cr","pct":"35.4","m":52},{"sym":"O","pct":"38.1","m":16}],"subs":[2,2,7],"mult":2,"name":"potassium dichromate","use":"An orange solid once used in breathalyzers."},{"els":[{"sym":"N","pct":"35.0","m":14.01},{"sym":"H","pct":"5.04","m":1.008},{"sym":"O","pct":"60.0","m":16}],"subs":[2,4,3],"mult":2,"name":"ammonium nitrate (NH₄NO₃)","use":"The chemical inside instant cold packs."},{"els":[{"sym":"Ca","pct":"38.8","m":40.08},{"sym":"P","pct":"20.0","m":30.97},{"sym":"O","pct":"41.3","m":16}],"subs":[3,2,8],"mult":2,"name":"calcium phosphate, Ca₃(PO₄)₂","use":"The mineral in bones and teeth."}],"m2":[{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,2],"molar":"70.13","n":5,"name":"cyclopentane","use":"A hydrocarbon used to blow the foam insulation in refrigerators."},{"els":[{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,1],"molar":"34.02","n":2,"name":"hydrogen peroxide","use":"The fizzy first-aid antiseptic in the brown bottle."},{"els":[{"sym":"N","m":14.01},{"sym":"O","m":16}],"emp":[1,2],"molar":"92.02","n":2,"name":"dinitrogen tetroxide","use":"A rocket fuel ingredient."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,1],"molar":"26.04","n":2,"name":"acetylene","use":"The fuel in a welding torch."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[2,5],"molar":"58.12","n":2,"name":"butane","use":"The fuel in a lighter."},{"els":[{"sym":"B","m":10.81},{"sym":"H","m":1.008}],"emp":[1,3],"molar":"27.67","n":2,"name":"diborane","use":"A gas used to make computer chips."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[1,1],"molar":"104.14","n":8,"name":"styrene","use":"The building block of Styrofoam cups."}],"m3":[{"els":[{"sym":"P","m":30.97},{"sym":"O","m":16}],"emp":[2,5],"molar":"283.89","n":2,"name":"phosphorus pentoxide (P₄O₁₀)","use":"It pulls water out of the air, so labs use it to keep things dry."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,2,1],"molar":"60.05","n":2,"name":"acetic acid","use":"The acid in vinegar."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,2,1],"molar":"90.08","n":3,"name":"lactic acid","use":"The sour taste in yogurt."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[1,3,1],"molar":"62.07","n":2,"name":"ethylene glycol","use":"Car antifreeze."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"O","m":16}],"emp":[3,4,3],"molar":"176.12","n":2,"name":"vitamin C","use":"Found in oranges and peppers."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008},{"sym":"N","m":14.01},{"sym":"O","m":16}],"emp":[4,5,2,1],"molar":"194.20","n":2,"name":"caffeine","use":"The stimulant in coffee and energy drinks."},{"els":[{"sym":"C","m":12.01},{"sym":"H","m":1.008}],"emp":[5,4],"molar":"128.16","n":2,"name":"naphthalene","use":"The smell of mothballs."}],"m4":[{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.7","m":1.008}],"emp":[1,1],"molar":"78.11","n":6,"name":"benzene","use":"A starting material for plastics, dyes and medicines.","subs":[1,1],"mult":1},{"els":[{"sym":"C","pct":"40.9","m":12.01},{"sym":"H","pct":"4.58","m":1.008},{"sym":"O","pct":"54.5","m":16}],"emp":[3,4,3],"molar":"176.12","n":2,"name":"vitamin C","use":"Found in oranges and peppers.","subs":[3,4,3],"mult":3},{"els":[{"sym":"C","pct":"82.7","m":12.01},{"sym":"H","pct":"17.3","m":1.008}],"emp":[2,5],"molar":"58.12","n":2,"name":"butane","use":"The fuel in a lighter.","subs":[2,5],"mult":2},{"els":[{"sym":"C","pct":"93.7","m":12.01},{"sym":"H","pct":"6.29","m":1.008}],"emp":[5,4],"molar":"128.16","n":2,"name":"naphthalene","use":"The smell of mothballs.","subs":[5,4],"mult":4},{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.74","m":1.008}],"emp":[1,1],"molar":"26.04","n":2,"name":"acetylene","use":"The fuel in a welding torch.","subs":[1,1],"mult":1},{"els":[{"sym":"C","pct":"92.3","m":12.01},{"sym":"H","pct":"7.74","m":1.008}],"emp":[1,1],"molar":"104.14","n":8,"name":"styrene","use":"The building block of Styrofoam cups.","subs":[1,1],"mult":1}]};
+if(!S.pick||typeof S.pick!=='object')S.pick={};
+const SLOTS=[{id:'p1',label:'Problem 1'},{id:'p2',label:'Problem 2'},{id:'p3',label:'Problem 3'}];
+const MSLOTS=[{id:'m2',label:'Problem A'},{id:'m3',label:'Problem B'},{id:'m4',label:'Problem C',full:true}];
+function pickIdx(id){const n=BANK[id].length;const i=S.pick[id];if(!Number.isInteger(i)||i<0||i>=n)S.pick[id]=Math.floor(Math.random()*n);return S.pick[id]}
+function slotProb(s){const q=BANK[s.id][pickIdx(s.id)];return Object.assign({},q,{id:s.id,label:s.label,full:!!s.full})}
+function rebuild(){PR=SLOTS.map(slotProb);MP=MSLOTS.map(slotProb);save()}
+function another(id){const n=BANK[id].length;let i=S.pick[id];if(n>1){while(i===S.pick[id])i=Math.floor(Math.random()*n)}S.pick[id]=i;
+  delete S.work[id];delete S.work[id+'-e'];delete S.work[id+'-m'];rebuild()}
+rebuild();
+const RHY=['Percent to grams','Grams to moles','Divide by smallest','Make it whole'];
+const MST=['Find the empirical formula mass','Divide molar mass by empirical formula mass','Multiply every subscript by n'];
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{const x=parseFloat(String(v??'').replace(/,/g,'').trim());return isFinite(x)?x:NaN};
+const near=(a,b,rel,abs)=>isFinite(a)&&Math.abs(a-b)<=Math.max(abs,rel*Math.abs(b));
+const f=n=>!isFinite(n)?'?':(Math.abs(n)>=10?n.toFixed(2):Math.abs(n)>=1?n.toFixed(3):n.toFixed(4));
+const u=(t,x)=>`<span class="u${x?' x':''}">${t}</span>`;
+const frac=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const ms=m=>m<10&&m!==Math.round(m*100)/100?String(m):m.toFixed(2);
+const tile=s=>`<span class="tile">${s}</span>`;
+const fHTML=(els,subs)=>els.map((e,i)=>e.sym+(+subs[i]>1?`<sub>${subs[i]}</sub>`:'')).join('');
+const fTXT=(els,subs)=>els.map((e,i)=>e.sym+(+subs[i]>1?subs[i]:'')).join('');
+const shown=v=>(v===undefined||v===null||v==='')?'?':esc(v);
+function inp(key,k,i,val,dis,label,cls=''){
+  const id=`${key}-${k}${i!=null?'-'+i:''}`;
+  return `<input class="num ${cls}" id="${id}" data-k="${k}"${i!=null?` data-i="${i}"`:''} value="${esc(val??'')}" ${dis?'disabled':''} inputmode="decimal" autocomplete="off" aria-label="${esc(label)}">`;
+}
+function W(key,init){if(!S.work[key])S.work[key]=init();return S.work[key]}
+
+/* ---------- empirical solver ---------- */
+function empExp(p){const moles=p.els.map(e=>e.pct/e.m);const min=Math.min(...moles);return{moles,si:moles.indexOf(min),ratio:moles.map(x=>x/min)}}
+const newEmpW=()=>({stage:0,grams:[],moles:[],si:null,ratio:[],mult:null,subs:[],attempts:0,solved:false,msg:''});
+function demoEmpW(p){const e=empExp(p);return{stage:0,demo:true,grams:p.els.map(x=>String(x.pct)),moles:e.moles.map(f),si:e.si,ratio:e.ratio.map(x=>x.toFixed(2)),mult:p.mult,subs:p.subs.map(String)}}
+
+function empStage(i,p,w,key){
+  const done=w.stage>i, dis=done||w.demo;
+  let b='';
+  if(i===0){
+    b+=`<p class="muted">Assume a 100 g sample, so each percent becomes that many grams.</p>`;
+    b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span class="val">${e.pct} %</span><span>${e.sym}</span><span class="op">=</span>${frac(`${e.pct} ${u('g '+e.sym)}`,`100 ${u('g sample',done)}`)}<span class="op">×</span><span>100 ${u('g sample',done)}</span><span class="op">=</span>${inp(key,'grams',j,w.grams[j],dis,'grams of '+e.sym)}${u('g '+e.sym)}</div>`).join('');
+  }
+  if(i===1){
+    b+=`<p class="muted">Multiply by a conversion factor built from the element's molar mass, with grams on the bottom so grams cancel.</p>`;
+    b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span class="val">${shown(w.grams[j])}</span>${u('g '+e.sym,done)}<span class="op">×</span><span class="frac"><span>1 ${u('mol '+e.sym)}</span><span>${ms(e.m)} ${u('g '+e.sym,done)}</span><span class="cap">molar mass of ${e.sym}</span></span><span class="op">=</span>${inp(key,'moles',j,w.moles[j],dis,'moles of '+e.sym)}${u('mol '+e.sym)}</div>`).join('');
+  }
+  if(i===2){
+    b+=`<p class="muted">Which element has the smallest number of moles?</p><div class="row">`+
+      p.els.map((e,j)=>`<button class="chip${w.si===j?' sel':''}" data-act="si" data-v="${j}" ${dis?'disabled':''}>${e.sym}: ${shown(w.moles[j])} mol</button>`).join('')+`</div>`;
+    if(w.si!=null){
+      const s=p.els[w.si];
+      b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}${frac(`<span class="val">${shown(w.moles[j])}</span> ${u('mol '+e.sym,done)}`,`<span class="val">${shown(w.moles[w.si])}</span> ${u('mol',done)}`)}<span class="op">=</span>${inp(key,'ratio',j,w.ratio[j],dis,'mole ratio for '+e.sym)}<span class="muted">${done?'(no units)':''}</span></div>`).join('');
+    }
+  }
+  if(i===3){
+    b+=`<p class="muted">Are all ratios within about 0.1 of a whole number? If yes, multiply by 1. If not, pick the multiplier that makes them whole.</p><div class="row">`+
+      [1,2,3,4,5].map(m=>`<button class="chip${w.mult===m?' sel':''}" data-act="mult" data-v="${m}" ${dis?'disabled':''}>× ${m}</button>`).join('')+`</div>`;
+    if(w.mult!=null){
+      b+=p.els.map((e,j)=>{const r=num(w.ratio[j]);const prod=r*w.mult;
+        return `<div class="calc">${tile(e.sym)}<span class="val">${shown(w.ratio[j])}</span><span class="op">×</span><span>${w.mult}</span><span class="op">=</span><span class="val">${isFinite(prod)?prod.toFixed(2):'?'}</span><span class="op">≈</span>${inp(key,'subs',j,w.subs[j],dis,'subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`}).join('');
+    }
+  }
+  if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  if(!done&&!w.demo){
+    b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;
+    if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
+    if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${empHelp(i,p,w)}</div>`;
+  }
+  return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${RHY[i]}</h4><span class="tag">${['% → g','g → mol','mol ÷ mol','× n → whole'][i]}</span></div><div class="sb">${b}</div></div>`;
+}
+
+function empHTML(p,key,o){
+  const w=W(key,()=>o.demo?demoEmpW(p):newEmpW());
+  const prompt=p.prompt||`A compound is ${listPct(p)} by mass.${p.full?` Its molar mass is ${p.molar} g/mol. First find the empirical formula.`:' Find its empirical formula.'}`;
+  let h=`<div class="solver"><div class="problem"><p class="prompt">${prompt}</p><div class="givens">${p.els.map(e=>`<span class="given">${tile(e.sym)}${e.pct}% · molar mass ${ms(e.m)} g/mol</span>`).join('')}</div></div>`;
+  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key)}
+  if(w.stage>=4)h+=`<div class="result"><span>Empirical formula</span><span class="big">${fHTML(p.els,p.subs)}</span></div>`+(w.solved&&!p.full?reveal(p):'')+(w.solved&&p.full?`<p class="muted">Now use the molar mass below to find the molecular formula.</p>`:'');
+  if(w.demo){h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`}
+  else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
+  return h+`</div>`;
+}
+function listPct(p){const a=p.els.map(e=>`${e.pct}% ${e.sym}`);return a.length>2?a.slice(0,-1).join(', ')+', and '+a[a.length-1]:a.join(' and ')}
+
+function fail(w,m){w.msg=m;return false}
+function checkEmp(p,w,i){
+  w.attempts=(w.attempts||0)+1;w.msg='';
+  if(i===0){for(let j=0;j<p.els.length;j++){const e=p.els[j];if(!near(num(w.grams[j]),e.pct,0,0.051))return fail(w,`Check ${e.sym}: in a 100 g sample, ${e.pct}% means ${e.pct} g of ${e.sym}.`)}}
+  if(i===1){for(let j=0;j<p.els.length;j++){const e=p.els[j],g=num(w.grams[j]),v=num(w.moles[j]),ex=g/e.m;
+    if(!near(v,ex,0.02,0.002)){if(near(v,g*e.m,0.02,0.01))return fail(w,`${e.sym}: it looks like you multiplied by ${ms(e.m)}. Grams only cancel when g ${e.sym} is on the <b>bottom</b>, so divide: ${g} g ÷ ${ms(e.m)} g/mol.`);
+      return fail(w,`${e.sym}: check your division. ${g} g ${e.sym} × (1 mol / ${ms(e.m)} g) = ? mol ${e.sym}. Keep at least 3 significant figures.`)}}}
+  if(i===2){if(w.si==null)return fail(w,'First choose the element with the smallest number of moles.');
+    const mv=w.moles.map(num);const sm=mv.indexOf(Math.min(...mv));
+    if(w.si!==sm)return fail(w,`${p.els[w.si].sym} is not the smallest. Compare the mole values (not the grams) and pick the smallest.`);
+    for(let j=0;j<p.els.length;j++){const ex=mv[j]/mv[w.si];if(!near(num(w.ratio[j]),ex,0,0.03))return fail(w,`${p.els[j].sym}: divide ${w.moles[j]} mol by ${w.moles[w.si]} mol. Round to two decimal places.`)}}
+  if(i===3){if(w.mult==null)return fail(w,'Choose a multiplier first (× 1 if the ratios are already whole numbers).');
+    const r=w.ratio.map(num);const off=r.findIndex(x=>Math.abs(x*w.mult-Math.round(x*w.mult))>0.12);
+    if(off>=0)return fail(w,`${p.els[off].sym}: ${r[off].toFixed(2)} × ${w.mult} = ${(r[off]*w.mult).toFixed(2)}, which is not close to a whole number. Try a different multiplier (see the table in Part 2).`);
+    const s=p.els.map((_,j)=>num(w.subs[j]));
+    if(s.some(x=>!Number.isInteger(x)||x<1))return fail(w,'Each subscript must be a whole number of at least 1.');
+    if(s.every((x,j)=>x===p.subs[j])){w.stage=4;w.solved=true;w.msg='';return true}
+    const k=s[0]/p.subs[0];if(Number.isInteger(k)&&k>1&&s.every((x,j)=>x===p.subs[j]*k))return fail(w,`Every subscript is divisible by ${k}. An empirical formula uses the <b>smallest</b> whole-number ratio, so use a smaller multiplier.`);
+    return fail(w,'Round each product to the nearest whole number and enter it as the subscript.')}
+  w.stage=i+1;return true;
+}
+
+/* ---------- molecular solver ---------- */
+const newMolW=()=>({stage:0,parts:[],efm:'',nRaw:'',n:'',subs:[],attempts:0,solved:false,msg:''});
+function demoMolW(p){const parts=p.els.map((e,i)=>p.emp[i]*e.m);const efm=parts.reduce((a,b)=>a+b,0);
+  return{stage:0,demo:true,parts:parts.map(x=>x.toFixed(2)),efm:efm.toFixed(2),nRaw:(p.molar/efm).toFixed(2),n:String(p.n),subs:p.emp.map(x=>String(x*p.n))}}
+function molStage(i,p,w,key){
+  const done=w.stage>i, dis=done||w.demo;let b='';
+  if(i===0){
+    b+=`<p class="muted">Multiply each atomic mass by its subscript in ${fHTML(p.els,p.emp)}, then add.</p>`;
+    b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]} atom${p.emp[j]>1?'s':''}</span><span class="op">×</span><span><span class="muted">molar mass</span> ${ms(e.m)} ${u('g/mol')}</span><span class="op">=</span>${inp(key,'parts',j,w.parts[j],dis,'mass contribution of '+e.sym)}${u('g/mol')}</div>`).join('');
+    b+=`<div class="calc"><b>Empirical formula mass</b><span class="op">=</span>${inp(key,'efm',null,w.efm,dis,'empirical formula mass')}${u('g/mol')}</div>`;
+  }
+  if(i===1){
+    b+=`<div class="calc"><i>n</i><span class="op">=</span>${frac(`${p.molar} ${u('g/mol',done)}`,`<span class="val">${shown(w.efm)}</span> ${u('g/mol',done)}`)}<span class="op">=</span>${inp(key,'nRaw',null,w.nRaw,dis,'n before rounding')}</div>`;
+    b+=`<div class="calc">Whole number <i>n</i><span class="op">=</span>${inp(key,'n',null,w.n,dis,'n as a whole number','w')}</div>`;
+  }
+  if(i===2){
+    b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]}</span><span class="op">×</span><span>${shown(w.n)}</span><span class="op">=</span>${inp(key,'subs',j,w.subs[j],dis,'molecular subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`).join('');
+  }
+  if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  if(!done&&!w.demo){b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
+    if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${molHelp(i,p,w)}</div>`}
+  return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${MST[i]}</h4><span class="tag">${['Σ g/mol','n = M ÷ EFM','subscripts × n'][i]}</span></div><div class="sb">${b}</div></div>`;
+}
+function molHTML(p,key,o){
+  const w=W(key,()=>o.demo?demoMolW(p):newMolW());
+  let h=`<div class="solver"><div class="problem"><p class="prompt">${p.full?'Now use the molar mass. ':''}Empirical formula <b style="font-family:var(--f-mono)">${fHTML(p.els,p.emp)}</b>, molar mass <b style="font-family:var(--f-mono)">${p.molar} g/mol</b>. Find the molecular formula.</p></div>`;
+  for(let i=0;i<3;i++){if(w.demo?i<w.stage:i<=w.stage)h+=molStage(i,p,w,key)}
+  if(w.stage>=3)h+=`<div class="result"><span>Molecular formula</span><span class="big">${fHTML(p.els,p.emp.map(x=>x*p.n))}</span></div>`+(w.solved&&!w.demo?reveal(p):'');
+  if(w.demo)h+=`<div class="row">${w.stage<3?`<button class="btn" data-act="next">Show step ${w.stage+1}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`;
+  else if(!p.full)h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button></div>`;
+  return h+`</div>`;
+}
+function checkMol(p,w,i){
+  w.attempts=(w.attempts||0)+1;w.msg='';
+  if(i===0){for(let j=0;j<p.els.length;j++){const e=p.els[j],ex=p.emp[j]*e.m;if(!near(num(w.parts[j]),ex,0.005,0.011))return fail(w,`${e.sym}: ${p.emp[j]} × ${ms(e.m)} g/mol = ? g/mol.`)}
+    const sum=p.els.reduce((a,e,j)=>a+p.emp[j]*e.m,0);if(!near(num(w.efm),sum,0.005,0.02))return fail(w,'Add the contributions of every element to get the empirical formula mass.')}
+  if(i===1){const ex=p.molar/num(w.efm);if(!near(num(w.nRaw),ex,0.02,0.03)){if(near(num(w.nRaw),1/ex,0.03,0.01))return fail(w,'Your fraction is upside down. Molar mass goes on top: n = molar mass ÷ empirical formula mass.');return fail(w,`Divide ${p.molar} g/mol by ${w.efm} g/mol.`)}
+    if(num(w.n)!==p.n)return fail(w,'Round n to the nearest whole number. A molecule contains a whole number of empirical units.')}
+  if(i===2){for(let j=0;j<p.els.length;j++){if(num(w.subs[j])!==p.emp[j]*p.n)return fail(w,`${p.els[j].sym}: multiply its empirical subscript (${p.emp[j]}) by n = ${p.n}.`)}w.stage=3;w.solved=true;return true}
+  w.stage=i+1;return true;
+}
+
+/* ---------- Show me this step + reveal (RJ Ed Tech) ----------
+   After two wrong checks on a step, a button shows that step worked for ONE element (or the rule to use), so the student still does the rest.
+   Each use is counted in the work record so the teacher can see it. */
+function helpBtn(w,i){return (w.miss&&w.miss[i]>=2&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:''}
+function reveal(p){return p.name?`<div class="reveal"><span class="eyebrow">What is it?</span><p>It’s <b>${p.name}</b>. ${p.use||''}</p></div>`:''}
+function empHelp(i,p,w){
+  const e=p.els[0],g=+e.pct,mol=p.els.map(x=>x.pct/x.m),mn=Math.min(...mol),si=mol.indexOf(mn),r=mol.map(x=>x/mn);
+  if(i===0)return `Each percent becomes that many grams. For ${e.sym}: ${e.pct}% → <b class="k">${e.pct} g ${e.sym}</b>. Do the same for every element.`;
+  if(i===1)return `Divide grams by the molar mass. For ${e.sym}: <b class="k">${e.pct} g ÷ ${ms(e.m)} g/mol = ${f(g/e.m)} mol</b>. On your calculator type <b class="k">${e.pct} ÷ ${ms(e.m)} =</b>. Now do the others the same way, and keep at least 3 significant figures.`;
+  if(i===2)return `${p.els[si].sym} has the fewest moles (${f(mn)} mol), so divide every element by ${f(mn)}. For ${e.sym}: <b class="k">${f(mol[0])} ÷ ${f(mn)} = ${r[0].toFixed(2)}</b>. Round each ratio to two decimal places.`;
+  const off=r.map(x=>Math.abs(x-Math.round(x))),k=off.indexOf(Math.max(...off));
+  if(p.mult===1)return `Every ratio is within 0.1 of a whole number, so choose <b class="k">× 1</b> and round each one.`;
+  return `Look at ${p.els[k].sym}: ${r[k].toFixed(2)} is not close to a whole number, so don’t round it. Find its decimal in the “Make it whole” table in Part 2: it says multiply <b>every</b> ratio by <b class="k">${p.mult}</b>.`;}
+function molHelp(i,p,w){
+  const e=p.els[0];
+  if(i===0)return `Multiply each atomic mass by its subscript. For ${e.sym}: <b class="k">${p.emp[0]} × ${ms(e.m)} = ${(p.emp[0]*e.m).toFixed(2)} g/mol</b>. Do every element, then add all the pieces for the empirical formula mass.`;
+  if(i===1)return `The molar mass goes on top: <b class="k">n = ${p.molar} ÷ ${shown(w.efm)}</b>. On your calculator type <b class="k">${p.molar} ÷ ${shown(w.efm)} =</b>, then round to the nearest whole number.`;
+  return `Multiply each subscript in ${fHTML(p.els,p.emp)} by n. For ${e.sym}: <b class="k">${p.emp[0]} × ${p.n} = ${p.emp[0]*p.n}</b>.`;}
+
+/* ---------- mounting ---------- */
+function mount(host,kind,p,key,o={}){host._c={kind,p,key,o};if(!host._b){host._b=1;host.addEventListener('input',onIn);host.addEventListener('click',onClick);host.addEventListener('keydown',onKey)}draw(host)}
+function draw(host){const c=host._c;host.innerHTML=c.kind==='emp'?empHTML(c.p,c.key,c.o):molHTML(c.p,c.key,c.o)}
+function onIn(ev){const t=ev.target;if(!t.dataset||!t.dataset.k)return;const c=this._c;const w=S.work[c.key];const k=t.dataset.k;
+  if(t.dataset.i!=null){(w[k]||(w[k]=[]))[+t.dataset.i]=t.value}else w[k]=t.value;save()}
+function onKey(ev){if(ev.key==='Enter'&&ev.target.matches('input.num')){const b=this.querySelector('.step.current [data-act="check"]');if(b){ev.preventDefault();b.click()}}}
+function onClick(ev){
+  const b=ev.target.closest('[data-act]');if(!b||!this.contains(b))return;
+  const c=this._c,w=S.work[c.key],a=b.dataset.act;
+  if(a==='check'){const ok=(c.kind==='emp'?checkEmp:checkMol)(c.p,w,+b.dataset.s);if(!ok){w.miss=w.miss||{};w.miss[b.dataset.s]=(w.miss[b.dataset.s]||0)+1}save();draw(this);sayHost(this);
+    if(ok){const nx=this.querySelector('.step.current input:not([disabled]), .step.current .chip:not([disabled])');if(nx)nx.focus({preventScroll:false})}
+    else{const m=this.querySelector('.msg.bad');if(m)m.scrollIntoView({block:'nearest'})}
+    if(w.solved&&c.o.onSolved)c.o.onSolved();refresh();return}
+  if(a==='next'){w.stage++;save();draw(this);refresh();sayHost(this);return}
+  if(a==='help'){w.shown=w.shown||{};w.shown[b.dataset.s]=true;w.helps=(w.helps||0)+1;save();draw(this);sayHost(this);return}
+  if(a==='another'){another(c.p.id);if(c.p.id[0]==='p')showPractice();else showMol();refresh();return}
+  if(a==='replay'){w.stage=0;save();draw(this);return}
+  if(a==='si'){w.si=+b.dataset.v;w.ratio=[];save();draw(this);const x=this.querySelector('.step.current input:not([disabled])');if(x)x.focus();return}
+  if(a==='mult'){w.mult=+b.dataset.v;save();draw(this);const x=this.querySelector('.step.current input:not([disabled])');if(x)x.focus();return}
+  if(a==='reset'){delete S.work[c.key];if(c.o.onReset)c.o.onReset();save();draw(this);refresh();return}
+}
+function mountFull(host,p){
+  host.innerHTML=`<div class="stack" style="gap:18px"><div class="se"></div><div class="sm"></div></div>`;
+  const se=host.querySelector('.se'),sm=host.querySelector('.sm');
+  const showMol=()=>{const w=S.work[p.id+'-e'];if(w&&w.solved){sm.hidden=false;mount(sm,'mol',p,p.id+'-m',{onSolved:drawMTabs})}else{sm.hidden=true;sm.innerHTML=''}};
+  mount(se,'emp',p,p.id+'-e',{onSolved:showMol,onReset:()=>{delete S.work[p.id+'-m']}});
+  showMol();
+}
+
+/* ---------- quiz ---------- */
+const QUIZ=[
+ {q:'What is the empirical formula of glucose, C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>?',o:['C<sub>3</sub>H<sub>6</sub>O<sub>3</sub>','CH<sub>2</sub>O','CHO','C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>'],a:1,why:'Divide every subscript by 6, the largest number that divides all of them. C₃H₆O₃ is still divisible by 3.'},
+ {q:'What is the empirical formula of N<sub>2</sub>O<sub>4</sub>?',o:['N<sub>2</sub>O<sub>4</sub>','NO','NO<sub>2</sub>','N<sub>4</sub>O<sub>2</sub>'],a:2,why:'2 : 4 reduces to 1 : 2, so NO₂.'},
+ {q:'Which pair of compounds has the same empirical formula?',o:['C<sub>2</sub>H<sub>4</sub> and C<sub>2</sub>H<sub>6</sub>','C<sub>2</sub>H<sub>2</sub> and C<sub>6</sub>H<sub>6</sub>','CO and CO<sub>2</sub>','H<sub>2</sub>O and H<sub>2</sub>O<sub>2</sub>'],a:1,why:'Both reduce to CH. Different molecules can share one empirical formula, which is why we also need molar mass.'},
+ {q:'Which compound\'s molecular formula is already its empirical formula?',o:['H<sub>2</sub>O<sub>2</sub>','C<sub>2</sub>H<sub>4</sub>','H<sub>2</sub>O','N<sub>2</sub>H<sub>4</sub>'],a:2,why:'2 : 1 cannot be reduced further, so H₂O is both.'}
+];
+function drawQuiz(){
+  const el=document.getElementById('quiz');
+  el.innerHTML=QUIZ.map((q,i)=>{const ch=S.quiz[i];
+    return `<div class="q"><p><b>${i+1}.</b> ${q.q}</p><div class="opts">${q.o.map((o,j)=>`<button class="opt${ch===j?(j===q.a?' right':' wrong'):''}" data-q="${i}" data-o="${j}">${o}</button>`).join('')}</div>${ch!=null?`<div class="msg ${ch===q.a?'good':'bad'}">${ch===q.a?'Correct. ':'Not quite. '}${q.why}</div>`:''}</div>`}).join('');
+}
+document.getElementById('quiz').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;S.quiz[b.dataset.q]=+b.dataset.o;save();drawQuiz();refresh()});
+
+/* ---------- rhyme order ---------- */
+const POOL=[2,0,3,1];
+function drawRhyme(){
+  const o=S.rhyme.order;
+  document.getElementById('slots').innerHTML=[0,1,2,3].map(i=>`<div class="slot${o[i]!=null?' filled':''}">${i+1}. ${o[i]!=null?RHY[o[i]].toLowerCase():''}</div>`).join('');
+  document.getElementById('pool').innerHTML=POOL.map(k=>`<button class="chip" data-r="${k}" ${o.includes(k)||S.rhyme.done?'disabled':''}>${RHY[k].toLowerCase()}</button>`).join('')+(o.length&&!S.rhyme.done?`<button class="linkbtn" data-r="clear">Clear</button>`:'');
+  const m=document.getElementById('rhymemsg');
+  if(S.rhyme.done)m.innerHTML=`<div class="msg good">Correct: percent to grams, grams to moles, divide by smallest, make it whole.</div>`;
+  else if(o.length===4)m.innerHTML=`<div class="msg bad">Not in order yet. Think about the units: you need grams before you can get moles, and moles before you can compare them. <button class="linkbtn" data-r="clear">Try again</button></div>`;
+  else m.innerHTML='';
+}
+document.querySelector('[data-sec="rhyme"]').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;
+  if(b.dataset.r==='clear'){S.rhyme.order=[]}else{S.rhyme.order.push(+b.dataset.r);if(S.rhyme.order.length===4&&S.rhyme.order.every((v,i)=>v===i))S.rhyme.done=true}
+  save();drawRhyme();refresh()});
+
+/* ---------- practice tabs ---------- */
+function drawPTabs(){
+  document.getElementById('ptabs').innerHTML=PR.map(p=>{const w=S.work[p.id];return `<button class="ptab" role="tab" aria-selected="${S.ptab===p.id}" data-p="${p.id}">${p.label}${w&&w.solved?'<span class="ok">✓</span>':''}</button>`}).join('');
+}
+function showPractice(){const p=PR.find(x=>x.id===S.ptab)||PR[0];mount(document.getElementById('practiceHost'),'emp',p,p.id,{onSolved:drawPTabs});drawPTabs()}
+document.getElementById('ptabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;S.ptab=b.dataset.p;save();showPractice()});
+
+function drawMTabs(){
+  document.getElementById('mtabs').innerHTML=MP.map(p=>`<button class="ptab" role="tab" aria-selected="${S.mtab===p.id}" data-m="${p.id}">${p.label}${molSolved(p)?'<span class="ok">✓</span>':''}</button>`).join('');
+}
+function molSolved(p){const w=S.work[p.full?p.id+'-m':p.id];return !!(w&&w.solved)}
+function showMol(){const p=MP.find(x=>x.id===S.mtab)||MP[0];const host=document.getElementById('molHost');
+  if(p.full){host._c=null;host._b=0;const fresh=host.cloneNode(false);host.replaceWith(fresh);mountFull(fresh,p)}
+  else{const fresh=host.cloneNode(false);host.replaceWith(fresh);mount(fresh,'mol',p,p.id,{onSolved:drawMTabs})}
+  drawMTabs()}
+document.getElementById('mtabs').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;S.mtab=b.dataset.m;save();showMol()});
+
+/* ---------- progress + routing ---------- */
+const SECS=[['learn','Definition'],['rhyme','The rhyme'],['examples','Worked examples'],['practice','Practice'],['molecular','Molecular formula'],['summary','Summary']];
+const pracSolved=()=>PR.filter(p=>S.work[p.id]&&S.work[p.id].solved).length;
+const molCount=()=>MP.filter(molSolved).length;
+const SQ=[
+ {k:'q1',t:'What is an empirical formula, and how is it different from a molecular formula?'},
+ {k:'q2',t:'Explain each line of the rhyme: percent to grams, grams to moles, divide by smallest, make it whole. Include the units at each step.'},
+ {k:'q3',t:'Why do we assume a 100 g sample, and why must we convert grams to moles before comparing elements?'},
+ {k:'q4',t:'How do you find the molecular formula when you know the empirical formula and the molar mass? Why do the units cancel when you find n?'}
+];
+function status(){return{
+  learn:QUIZ.every((q,i)=>S.quiz[i]===q.a),
+  rhyme:!!S.rhyme.done,
+  examples:['exA','exB'].every(k=>S.work[k]&&S.work[k].stage>=4),
+  practice:pracSolved()>=3,
+  molecular:molCount()>=3,
+  summary:SQ.every(q=>(S.sum[q.k]||'').trim().length>=20)&&(S.student.name||'').trim().length>0
+}}
+function current(){const h=(location.hash||'').slice(1);return SECS.some(s=>s[0]===h)?h:'learn'}
+function refresh(){
+  const st=status(),cur=current();
+  document.getElementById('stepnav').innerHTML=SECS.map(([k,l],i)=>{
+    const extra=k==='practice'?` (${pracSolved()}/3)`:k==='molecular'?(pracSolved()<3?' 🔒':` (${molCount()}/3)`):'';
+    return `<li><a href="#${k}" class="${st[k]?'done':''}${k==='molecular'&&pracSolved()<3?' locked':''}" ${cur===k?'aria-current="page"':''}><span class="dot">${st[k]?'✓':i+1}</span>${l}${extra}</a></li>`}).join('');
+  // rhyme bar: highlight the step currently active in the visible solver
+  const bar=[...document.querySelectorAll('#rhymebar span')];bar.forEach(s=>s.classList.remove('on'));
+  // lock state
+  const locked=pracSolved()<3;
+  document.getElementById('molLock').hidden=!locked;document.getElementById('molBody').hidden=locked;
+  if(locked)document.getElementById('molLock').innerHTML=`<div class="eyebrow">Locked</div><h3>Master empirical formulas first</h3><p>Solve all 3 practice problems to unlock molecular formulas. You have solved ${pracSolved()}.</p><div class="meter"><i style="width:${pracSolved()/3*100>100?100:pracSolved()/3*100}%"></i></div><button class="btn" data-go="practice">Go to practice</button>`;
+  if(cur==='summary')drawSummary();
+}
+function route(){
+  const cur=current();
+  document.querySelectorAll('section.sec[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==cur);
+  refresh();
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;location.hash=g.dataset.go;window.scrollTo({top:0,behavior:'smooth'})});
+window.addEventListener('hashchange',()=>{route();window.scrollTo({top:0})});
+
+/* rhyme bar follows the focused step */
+document.addEventListener('focusin',e=>{const st=e.target.closest&&e.target.closest('.step');const bar=[...document.querySelectorAll('#rhymebar span')];bar.forEach(s=>s.classList.remove('on'));
+  if(!st)return;const h=st.querySelector('h4');const i=h?RHY.indexOf(h.textContent):-1;if(i>=0)bar[i].classList.add('on')});
+
+/* ---------- summary + report ---------- */
+function drawSummary(){
+  const q=document.getElementById('sumQs');
+  if(!q._init){q._init=1;q.innerHTML=`<h3>In your own words</h3>`+SQ.map((s,i)=>`<label class="f" for="sum-${s.k}">${i+1}. ${s.t}<textarea id="sum-${s.k}" data-sum="${s.k}"></textarea></label>`).join('');
+    q.querySelectorAll('textarea').forEach(t=>{t.value=S.sum[t.dataset.sum]||''});
+    document.querySelectorAll('[data-st]').forEach(t=>{t.value=S.student[t.dataset.st]||''});}
+  const st=status();
+  const items=[
+    ['Definition check: '+QUIZ.filter((x,i)=>S.quiz[i]===x.a).length+'/4 correct',st.learn],
+    ['Rhyme in the correct order',st.rhyme],
+    ['Worked examples A and B stepped through',['exA','exB'].every(k=>S.work[k]&&S.work[k].stage>=4)],
+    ['Empirical practice: '+pracSolved()+'/3 solved',st.practice],
+    ['Molecular practice: '+molCount()+'/3 solved',st.molecular],
+    ['Name and all four summary answers written',st.summary]];
+  document.getElementById('checklist').innerHTML=items.map(([t,ok])=>`<li><span class="bx${ok?' on':''}">${ok?'✓':''}</span>${t}</li>`).join('');
+  document.getElementById('report').textContent=buildReport();
+}
+document.querySelector('[data-sec="summary"]').addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.sum){S.sum[t.dataset.sum]=t.value}else if(t.dataset.st){S.student[t.dataset.st]=t.value}else return;
+  save();clearTimeout(drawSummary._t);drawSummary._t=setTimeout(()=>{drawSummary();refresh()},250)});
+
+function empReport(p,w,title){
+  const L=[];L.push(`${title} — ${listPct(p)} by mass`);
+  if(!w||(!w.solved&&!w.stage&&!w.attempts)){L.push('  (not attempted)');return L}
+  L.push(`  Status: ${w.solved?'SOLVED':'in progress (finished '+w.stage+' of 4 steps)'} · ${w.attempts||0} checks · Show me this step used ${w.helps||0} time${w.helps===1?'':'s'}`);
+  if(w.stage>0){L.push('  1) Percent to grams (assume a 100 g sample)');p.els.forEach((e,j)=>L.push(`     ${e.pct} % ${e.sym} = (${e.pct} g ${e.sym} / 100 g sample) x 100 g sample = ${w.grams[j]} g ${e.sym}`))}
+  if(w.stage>1){L.push('  2) Grams to moles');p.els.forEach((e,j)=>L.push(`     ${w.grams[j]} g ${e.sym} x (1 mol ${e.sym} / ${ms(e.m)} g ${e.sym} [molar mass]) = ${w.moles[j]} mol ${e.sym}`))}
+  if(w.stage>2){const s=p.els[w.si];L.push(`  3) Divide by smallest (${s.sym}, ${w.moles[w.si]} mol)`);p.els.forEach((e,j)=>L.push(`     ${w.moles[j]} mol ${e.sym} / ${w.moles[w.si]} mol = ${w.ratio[j]}`))}
+  if(w.stage>3){L.push(`  4) Make it whole (multiply by ${w.mult})`);p.els.forEach((e,j)=>L.push(`     ${e.sym}: ${w.ratio[j]} x ${w.mult} = ${(num(w.ratio[j])*w.mult).toFixed(2)} -> ${w.subs[j]}`));L.push(`  Empirical formula: ${fTXT(p.els,p.subs)}`)}
+  return L;
+}
+function molReport(p,w){
+  const L=[];
+  if(!w||(!w.solved&&!w.stage&&!w.attempts)){L.push('  Molecular part: (not attempted)');return L}
+  L.push(`  Molecular part — empirical formula ${fTXT(p.els,p.emp)}, molar mass ${p.molar} g/mol · ${w.solved?'SOLVED':'in progress'} · ${w.attempts||0} checks · Show me this step used ${w.helps||0} time${w.helps===1?'':'s'}`);
+  if(w.stage>0){L.push('  a) Empirical formula mass');p.els.forEach((e,j)=>L.push(`     ${p.emp[j]} x ${ms(e.m)} g/mol ${e.sym} = ${w.parts[j]} g/mol`));L.push(`     EFM = ${w.efm} g/mol`)}
+  if(w.stage>1){L.push(`  b) n = ${p.molar} g/mol / ${w.efm} g/mol = ${w.nRaw} -> n = ${w.n}`)}
+  if(w.stage>2){L.push('  c) Multiply subscripts by n');p.els.forEach((e,j)=>L.push(`     ${e.sym}: ${p.emp[j]} x ${w.n} = ${w.subs[j]}`));L.push(`  Molecular formula: ${fTXT(p.els,p.emp.map(x=>x*p.n))}`)}
+  return L;
+}
+function buildReport(){
+  const st=S.student,L=[];
+  L.push('EMPIRICAL & MOLECULAR FORMULAS — WORK RECORD');
+  L.push(`Student: ${st.name||'________'}    Class period: ${st.period||'____'}    Teacher: ${st.teacher||'________'}`);
+  L.push(`Date: ${new Date().toLocaleDateString()}`);
+  L.push('');L.push('THE RHYME: percent to grams, grams to moles, divide by smallest, make it whole');
+  L.push('');L.push('MY SUMMARY');
+  SQ.forEach((q,i)=>{L.push(`${i+1}. ${q.t}`);L.push('   '+((S.sum[q.k]||'').trim().replace(/\n/g,'\n   ')||'(blank)'));L.push('')});
+  L.push('PROGRESS');
+  L.push(`  Definition check: ${QUIZ.filter((x,i)=>S.quiz[i]===x.a).length}/4 correct`);
+  L.push(`  Rhyme ordered correctly: ${S.rhyme.done?'yes':'no'}`);
+  L.push(`  Empirical practice solved: ${pracSolved()}/3`);
+  L.push(`  Molecular practice solved: ${molCount()}/3`);
+  L.push('');L.push('EMPIRICAL FORMULA PRACTICE');
+  PR.forEach(p=>{L.push(...empReport(p,S.work[p.id],p.label));L.push('')});
+  L.push('MOLECULAR FORMULA PRACTICE');
+  MP.forEach(p=>{
+    if(p.full){L.push(...empReport(p,S.work[p.id+'-e'],p.label+` (molar mass ${p.molar} g/mol)`));if(S.work[p.id+'-e']&&S.work[p.id+'-e'].solved)L.push(...molReport(p,S.work[p.id+'-m']))}
+    else{L.push(`${p.label}`);L.push(...molReport(p,S.work[p.id]))}
+    L.push('')});
+  return L.join('\n');
+}
+document.getElementById('copyBtn').addEventListener('click',()=>{
+  const txt=buildReport(),toast=document.getElementById('toast');
+  const sel=()=>{const r=document.createRange();const pre=document.getElementById('report');r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. The record is selected: press Ctrl+C (or ⌘C) to copy.'};
+  try{navigator.clipboard.writeText(txt).then(()=>{toast.textContent='Copied. Paste it into your assignment.'},sel)}catch(e){sel()}
+});
+let downloads=null;
+document.getElementById('dlBtn').hidden=false;
+document.getElementById('dlBtn').addEventListener('click',async()=>{
+  const toast=document.getElementById('toast');
+  const name=((S.student.name||'student').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')||'student');
+  if(!downloads){try{const blob=new Blob([buildReport()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`empirical-formula-work-${name}.txt`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast.textContent='Saved to your downloads.'}catch(e){toast.textContent='Saving is blocked here. Use Copy instead.'}return}
+  try{await downloads.save({filename:`empirical-formula-work-${name}.txt`,data:buildReport()});toast.textContent='Saved.'}
+  catch(e){toast.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving is not available here. Use Copy instead.';if(e&&e.code!=='declined'&&e.code!=='rate_limited')document.getElementById('dlBtn').hidden=true}
+});
+
+/* ---------- Read aloud, Easier reading, This confused me (RJ Ed Tech; same rules as student-help.js on the Raider Labs sites) ----------
+   Read aloud uses only a natural-sounding voice (Edge "Online (Natural)", Apple Premium/Enhanced); with none, it shows how to use Edge's own Read aloud.
+   Settings share the Raider Labs keys, so a student's choice carries over. "This confused me" sends only the section, step and a one-tap reason. */
+const SS=window.speechSynthesis,CAN=!!(SS&&typeof SpeechSynthesisUtterance!=='undefined');
+const gk=k=>{try{return localStorage.getItem(k)==='on'}catch(e){return false}},pk=(k,v)=>{try{localStorage.setItem(k,v?'on':'off')}catch(e){}};
+let raOn=CAN&&gk('raider-labs-readaloud'),easy=gk('raider-labs-easyread'),voice=null;
+function pickVoice(){if(!CAN)return;const vs=SS.getVoices()||[];const en=vs.filter(v=>/^en(-|_)?US/i.test(v.lang));const pool=en.length?en:vs.filter(v=>/^en/i.test(v.lang));voice=pool.find(v=>/natural|online|neural|premium|enhanced/i.test(v.name))||null}
+if(CAN){pickVoice();if(SS.addEventListener)SS.addEventListener('voiceschanged',()=>{pickVoice();syncSup()})}
+function speakable(t){return t.replace(/\s+/g,' ')
+  .replace(/[₀-₉]/g,c=>String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c)))
+  .replace(/\b((?:[A-Z][a-z]?\d*){2,})\b/g,m=>m.replace(/([A-Z][a-z]?)(\d*)/g,' $1 $2 '))
+  .replace(/g\/mol/g,'grams per mole').replace(/(\d)\s*%/g,'$1 percent').replace(/(\d) g\b/g,'$1 grams').replace(/\bmol\b/g,'moles')
+  .replace(/÷/g,' divided by ').replace(/×/g,' times ').replace(/→/g,' to ').replace(/≈/g,' about ').replace(/Σ/g,'sum of ').replace(/[✓🔒😕🔊]/g,'').replace(/\s+/g,' ').trim()}
+function say(t){if(!CAN||!voice||!raOn||!t)return;SS.cancel();(speakable(t).match(/[^.!?]+[.!?]*/g)||[t]).forEach(p=>{const u=new SpeechSynthesisUtterance(p.trim());u.voice=voice;u.lang=voice.lang||'en-US';u.rate=.95;SS.speak(u)})}
+const txt=el=>{if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('button,input,script,style').forEach(x=>x.remove());c.querySelectorAll('p,div,h2,h3,h4,li,tr').forEach(x=>x.append(document.createTextNode('. ')));return c.textContent.replace(/\s+/g,' ').replace(/(\.\s*){2,}/g,'. ').trim()};
+function sayHost(host){if(!raOn)return;const m=host.querySelector('.msg.bad');const hb=host.querySelector('.helpbox');const rv=host.querySelector('.reveal');const r=host.querySelector('.result');
+  if(hb&&!m){say(txt(hb));return}if(m){say(txt(m));return}
+  if(r){say(txt(r)+(rv?' '+txt(rv):''));return}
+  const st=[...host.querySelectorAll('.step')].pop();if(st){const h=st.querySelector('h4'),p=st.querySelector('.sb > p'),wy=st.querySelector('.why');say([h&&h.textContent,p&&txt(p),wy&&txt(wy)].filter(Boolean).join('. '))}}
+function saySection(){if(!raOn)return;const s=document.querySelector('section.sec:not([hidden])');if(!s)return;const lk=s.querySelector('#molLock:not([hidden])');
+  say([txt(s.querySelector('h2')),txt(s.querySelector('.lead')),lk?txt(lk):txt(s.querySelector('.defbox'))].filter(Boolean).join(' '))}
+function showHow(){let d=document.getElementById('raHow');if(!d){d=document.createElement('dialog');d.id='raHow';const edge=/Edg\//.test(navigator.userAgent);
+  const st=[['Open this page in Microsoft Edge','Edge has natural-sounding voices built in. Copy the link and paste it into Edge.'],['Select the words you want to hear','Right-click them and choose <b>Read aloud selection</b>, or press <b>Ctrl + Shift + U</b> for the whole page.'],['Pick a natural voice','Click <b>Voice options</b> and choose a voice with <b>Natural</b> in its name.'],['Fewer distractions','Select the text, right-click, and choose <b>Open in Immersive Reader</b>.']].map((x,i)=>[x,i]).filter(q=>!(edge&&q[1]===0));
+  d.innerHTML='<h2>Hear it read aloud in Microsoft Edge</h2><p>'+(edge?'Edge’s natural voices haven’t loaded yet. Wait a few seconds and try again, or use Edge’s own Read aloud:':'This browser doesn’t have a natural-sounding voice, so use Edge’s Read aloud.')+'</p><ol>'+st.map(([x,i])=>'<li><b>'+x[0]+'</b><br>'+x[1]+'<img src="img/read-aloud-'+(i+1)+'.png" alt="" loading="lazy" onerror="this.remove()"></li>').join('')+'</ol><button class="btn">Got it</button>';
+  d.querySelector('button').addEventListener('click',()=>d.close());document.body.appendChild(d)}if(d.showModal)d.showModal();else d.setAttribute('open','')}
+function syncSup(){const ra=document.getElementById('raBtn'),er=document.getElementById('erBtn');raOn=raOn&&!!voice;
+  ra.textContent=raOn?'🔊 Read aloud: on':'🔊 Read aloud';ra.setAttribute('aria-pressed',String(raOn));
+  er.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';er.setAttribute('aria-pressed',String(easy));document.documentElement.classList.toggle('easy',easy)}
+document.getElementById('raBtn').addEventListener('click',()=>{if(CAN)pickVoice();if(!voice){raOn=false;pk('raider-labs-readaloud',false);syncSup();showHow();return}
+  raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn){const h=document.querySelector('section.sec:not([hidden]) .step.current');const host=h&&h.closest('.card,[id]');if(host)sayHost(host);else saySection()}else SS.cancel()});
+document.getElementById('erBtn').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});
+function gcSend(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true})}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250)})(0)}
+const slug=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,40);
+const cfDone=new Set();
+document.getElementById('cfBtn').addEventListener('click',()=>{const sec=current();const st=document.querySelector('section.sec:not([hidden]) .step.current h4');
+  const extra=sec==='practice'?S.ptab:sec==='molecular'?S.mtab:'';const path=['confused','ChemLab','empirical-formula',sec,extra,st?slug(st.textContent):''].filter(Boolean).join('/');
+  const box=document.getElementById('cfBox');box.innerHTML='';if(cfDone.has(path)){box.innerHTML='<span class="tip">Thanks, noted.</span>';return}cfDone.add(path);gcSend(path,'Confusing step');
+  [['reading','Too much to read'],['words','Words I don’t know'],['math','The math'],['question','The question']].forEach(([k,l])=>{const c=document.createElement('button');c.className='chip';c.textContent=l;
+    c.addEventListener('click',()=>{gcSend(path+'/why-'+k,'Confusing: '+l);box.innerHTML='<span class="tip">'+(k==='reading'?'Thanks. Try 🔊 Read aloud or Aa Easier reading.':k==='math'?'Thanks. Miss a step twice and a “Show me this step” button appears.':k==='words'?'Thanks. Part 1 has the definitions; ask your teacher about any word.':'Thanks. Try the worked examples in Part 3, or ask your teacher.')+'</span>'});box.appendChild(c)});});
+window.addEventListener('hashchange',()=>{if(CAN)SS.cancel();setTimeout(saySection,150)});
+window.addEventListener('pagehide',()=>{if(CAN)SS.cancel()});
+document.getElementById('quiz').addEventListener('click',e=>{const q=e.target.closest('[data-q]');if(!q||!raOn)return;setTimeout(()=>{const m=document.querySelectorAll('#quiz .q')[+q.dataset.q];const r=m&&m.querySelector('.msg');if(r)say(txt(r))},30)});
+syncSup();
+
+/* ---------- boot ---------- */
+drawQuiz();drawRhyme();
+mount(document.getElementById('exA'),'emp',EX.exA,'exA',{demo:true});
+mount(document.getElementById('exB'),'emp',EX.exB,'exB',{demo:true});
+mount(document.getElementById('m1'),'mol',M1,'m1',{demo:true});
+showPractice();showMol();
+route();
+})();
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each section (#part) counts as its own page. A visit through the school's Securly filter (?scrlybrkr) adds ?sd = school device. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+</body>
+</html>
