@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stoichiometry Lab · Raider ChemLab</title>
+<meta name="description" content="Stoichiometry step by step: grams to moles, moles to moles, moles to grams, then limiting reactants. Raider ChemLab, RJ Ed Tech.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one lesson column, a sticky section stepper, and a lab-notebook "calc row" for every unit-labeled setup */
+:root{
+  --bg:#F2F6F7; --surface:#FFFFFF; --ink:#13222A; --muted:#55666E; --line:#D3DDE1;
+  --accent:#0B6E78; --accent-ink:#FFFFFF; --accent-soft:#DCEEF0;
+  --unit:#6A3FB5; --cancel:#C2412D;
+  --good:#1F7A3E; --good-soft:#E2F2E7; --warn:#8F5600; --warn-soft:#FBEFD9; --bad:#B3261E; --bad-soft:#FBE4E2;
+  --f-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1618; --surface:#162125; --ink:#E3ECEE; --muted:#93A6AD; --line:#2A3B41;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#143A3E;
+  --unit:#B89CFF; --cancel:#FF8B73;
+  --good:#71D293; --good-soft:#16301F; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --surface:#162125; --ink:#E3ECEE; --muted:#93A6AD; --line:#2A3B41;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#143A3E;
+  --unit:#B89CFF; --cancel:#FF8B73;
+  --good:#71D293; --good-soft:#16301F; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);letter-spacing:-.01em}
+h2{font-size:1.6rem;margin-bottom:.4rem}
+h3{font-size:1.15rem}
+p{margin:0;max-width:68ch}
+sub{font-size:.72em;line-height:0}
+b{font-weight:700}
+.eyebrow{font-family:var(--f-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}
+
+/* Header */
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:22px 16px;display:flex;flex-direction:column;gap:10px}
+.rhymebar{display:flex;flex-wrap:wrap;gap:6px 0;font-family:var(--f-mono);font-size:.86rem}
+.rhymebar span{padding:3px 10px;border:1.5px solid var(--line);border-left:none;background:var(--bg)}
+.rhymebar span:first-child{border-left:1.5px solid var(--line);border-radius:6px 0 0 6px}
+.rhymebar span:last-child{border-radius:0 6px 6px 0}
+.rhymebar span.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+nav.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+nav.steps .scroller{overflow-x:auto}
+nav.steps ol{list-style:none;margin:0;padding-block:8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+nav.steps li.sep{font-family:var(--f-display);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 4px 0 10px;border-left:1.5px solid var(--line);margin-left:4px}
+nav.steps a{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-family:var(--f-display);font-weight:500;font-size:.95rem;white-space:nowrap}
+nav.steps a:hover{background:var(--bg);color:var(--ink)}
+nav.steps a[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
+nav.steps .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:.75rem;font-family:var(--f-mono)}
+nav.steps a.done .dot{background:var(--good);border-color:var(--good);color:var(--surface)}
+nav.steps a.locked{opacity:.6}
+@media (max-width:640px){nav.steps{position:static}nav.steps ol{padding-inline:0;gap:2px 4px}nav.steps a{padding:5px 8px;font-size:.88rem;gap:6px}nav.steps .dot{width:19px;height:19px;font-size:.7rem}nav.steps li.sep{flex-basis:100%;border-left:0;margin:2px 0 0;padding:4px 4px 0}}
+
+main .wrap{padding-block:28px 64px}
+section.sec{display:flex;flex-direction:column;gap:22px}
+.lead{font-size:1.1rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid2>*{min-width:0}
+
+.defbox{border:2px solid var(--accent);border-radius:10px;padding:18px 20px;background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.defbox p{font-size:1.15rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-display);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.f{font-family:var(--f-mono);font-size:1.02rem}
+
+/* Quiz */
+.q{display:flex;flex-direction:column;gap:10px;padding-block:14px;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:none;padding-top:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{font:inherit;font-family:var(--f-mono);padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+
+/* Buttons and chips */
+.btn{font:inherit;font-family:var(--f-display);font-weight:700;padding:9px 18px;border-radius:8px;border:none;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.small{padding:6px 12px;font-size:.88rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn{font:inherit;background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-size:.9rem}
+.chip{font:inherit;font-family:var(--f-mono);font-size:.92rem;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:disabled{cursor:default}
+.chip:not(.sel):disabled{opacity:.55}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Rhyme cards */
+.rcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;counter-reset:r}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.rcard .line{font-family:var(--f-display);font-weight:700;font-size:1.2rem}
+.rcard .trans{font-family:var(--f-mono);font-size:.95rem;background:var(--bg);border-radius:6px;padding:6px 10px;align-self:flex-start}
+.order-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.slot{min-height:44px;border:1.5px dashed var(--line);border-radius:8px;display:flex;align-items:center;padding:6px 12px;font-family:var(--f-mono);font-size:.92rem}
+.slot.filled{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+
+/* Solver */
+.solver{display:flex;flex-direction:column;gap:14px}
+.problem{display:flex;flex-direction:column;gap:10px}
+.prompt{font-size:1.08rem}
+.givens{display:flex;flex-wrap:wrap;gap:8px}
+.given{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.88rem;border:1px solid var(--line);border-radius:8px;padding:4px 10px 4px 4px;background:var(--bg)}
+.tile{display:inline-grid;place-items:center;min-width:2.1em;height:2.1em;padding:0 .25em;border:1.5px solid var(--ink);border-radius:4px;font-family:var(--f-display);font-weight:700;font-size:.95rem;background:var(--accent-soft);color:var(--ink);flex:none}
+.step{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.step>.sh{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-family:var(--f-mono);font-size:.85rem;flex:none}
+.step.done .n{background:var(--good)}
+.step .sh h4{margin:0;font-family:var(--f-display);font-size:1rem}
+.step .sh .tag{margin-left:auto;font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.step .sb{padding:14px;display:flex;flex-direction:column;gap:12px}
+.calc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:var(--f-mono);font-size:1rem;font-variant-numeric:tabular-nums}
+.op{color:var(--muted)}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.frac>span{padding:2px 6px;white-space:nowrap}
+.frac>span:first-child{border-bottom:2px solid var(--ink)}
+.frac>span.cap{border:none;font-family:var(--f-body);font-size:.72em;color:var(--muted);padding-top:1px}
+.paren{font-size:1.9em;font-weight:300;color:var(--muted);line-height:1}
+.u{color:var(--unit);font-weight:600}
+.u.x{text-decoration:line-through;text-decoration-color:var(--cancel);text-decoration-thickness:2px}
+.val{font-weight:600}
+input.num{font:inherit;font-family:var(--f-mono);width:7.5ch;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:right}
+input.num.w{width:4.5ch;text-align:center}
+input.num:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+input.num:disabled{background:transparent;border-color:transparent;color:var(--ink);font-weight:600;opacity:1;-webkit-text-fill-color:var(--ink)}
+.why{border-left:3px solid var(--accent);padding:6px 12px;background:var(--accent-soft);border-radius:0 6px 6px 0;max-width:72ch}
+.msg{padding:8px 12px;border-radius:6px;font-size:.95rem;max-width:72ch}
+.msg.bad{background:var(--bad-soft);color:var(--ink);border:1px solid var(--bad)}
+.msg.good{background:var(--good-soft);border:1px solid var(--good)}
+.result{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;padding:14px 18px;border-radius:10px;background:var(--good-soft);border:1.5px solid var(--good)}
+.result .big{font-family:var(--f-mono);font-size:1.7rem;font-weight:600}
+.mtable{font-family:var(--f-mono);font-size:.9rem}
+.mtable td,.mtable th{padding:5px 10px}
+
+.ptabs{display:flex;flex-wrap:wrap;gap:8px}
+.ptab{font:inherit;font-family:var(--f-display);font-weight:500;padding:7px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;gap:8px;align-items:center}
+.ptab[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ptab .ok{color:var(--good);font-weight:700}
+
+.lock{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.meter{height:10px;border-radius:999px;background:var(--line);width:min(320px,100%);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent)}
+.eq{font-family:var(--f-mono);font-size:1.1rem;padding:12px 16px;background:var(--bg);border-radius:8px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+
+/* Summary */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700}
+label.f span.h{font-weight:400;color:var(--muted);font-size:.92rem}
+input.text,textarea{font:inherit;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:96px;resize:vertical}
+input.text:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checklist li{display:flex;gap:10px;align-items:center}
+.checklist .bx{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.8rem;flex:none}
+.checklist .bx.on{background:var(--good);border-color:var(--good);color:var(--surface)}
+pre.report{font-family:var(--f-mono);font-size:.82rem;line-height:1.5;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:420px;overflow:auto;white-space:pre;margin:0;user-select:text}
+.footnav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:8px}
+.toast{font-size:.92rem;color:var(--good)}
+@media (prefers-reduced-motion:no-preference){.step.current{animation:rise .25s ease-out}@keyframes rise{from{transform:translateY(4px)}to{transform:none}}}
+@media (max-width:520px){body{font-size:16px}.card{padding:16px}.calc{font-size:.93rem}}
+/* RJ Ed Tech additions (Nov 18, 2026): RJ band, support bar, Show me this step, real-world reveal, Easier reading */
+.rjband{background:#1d2124;color:#fff}
+.rjband .wrap{display:flex;align-items:center;gap:12px;padding-block:8px;flex-wrap:wrap}
+.rjband a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.rjband img{height:30px;width:auto}
+.rjband .by{margin-left:auto;font-size:.88rem;color:#d6dbde}
+.sup{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sup .btn.small[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.sup .chip{font-family:var(--f-body);font-size:.85rem;padding:4px 10px}
+.sup .tip{font-size:.88rem;color:var(--muted)}
+.helpbox{border-left:3px solid var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:0 6px 6px 0;max-width:72ch}
+.helpbox b.k{font-family:var(--f-mono)}
+.reveal{display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-radius:10px;border:1.5px dashed var(--good);max-width:72ch}
+.reveal .eyebrow{color:var(--good)}
+.pathbtns{display:flex;flex-wrap:wrap;gap:10px}.pathbtns .btn{font-size:1rem;padding:10px 18px}
+.newrow{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+footer.credit{border-top:1px solid var(--line);background:var(--surface)}
+footer.credit .wrap{padding-block:16px;font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+footer.credit a{color:var(--accent)}
+#raHow{max-width:min(540px,92vw);border:0;border-radius:12px;padding:20px 22px;background:var(--surface);color:var(--ink);line-height:1.55}
+#raHow::backdrop{background:rgba(0,0,0,.45)}#raHow ol{padding-left:22px}#raHow li{margin-bottom:10px}#raHow img{display:block;max-width:100%;margin-top:6px;border-radius:6px}
+.cfb{font:inherit;font-size:.82rem;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap}
+.cfb:hover{color:var(--ink);border-color:var(--accent)}.cfb:disabled{cursor:default;opacity:.85}
+.cfwhy{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+.cfwhy .chip{font-family:var(--f-body);font-size:.82rem;padding:3px 10px}.cfwhy .tip{font-size:.88rem;color:var(--muted)}
+.step>.sh .cfb{margin-left:6px}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px 18px;margin:0}
+.terms div{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-top:1px solid var(--line)}
+.terms dt{font-family:var(--f-display);font-weight:700}.terms dd{margin:0}.terms .eqs{font-family:var(--f-mono);font-size:.92rem;color:var(--unit)}
+.uses{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.use{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.use .ic{font-size:1.6rem;line-height:1}.use h4{margin:0;font-family:var(--f-display);font-size:1.05rem}
+.use .m{font-family:var(--f-mono);font-size:.9rem;background:var(--bg);border-radius:6px;padding:6px 10px;overflow-x:auto;white-space:nowrap}
+.use a{color:var(--accent)}
+.tq{display:flex;flex-direction:column;gap:12px}.tq .opts{flex-direction:column;align-items:stretch}.tq .opt{text-align:left;font-family:var(--f-body)}
+.tqhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.tqhead .cfb{margin-left:auto}
+.dots{display:flex;gap:5px;flex-wrap:wrap}.dots i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--line);display:block}
+.dots i.r{background:var(--good);border-color:var(--good)}.dots i.w{background:var(--bad);border-color:var(--bad)}.dots i.c{border-color:var(--accent);border-width:2.5px}
+.score{font-family:var(--f-mono);font-size:2rem;font-weight:600}
+.lvl{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden}
+.lvl button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.85rem;padding:6px 12px;border:0;background:transparent;color:var(--accent);cursor:pointer}
+.lvl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.mc{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
+.mc h4{margin:0 0 6px;font-family:var(--f-display);font-size:.95rem}
+.mcrow{display:grid;grid-template-columns:2.3em minmax(60px,1fr) auto;gap:8px;align-items:center;margin:5px 0}.mcrow .lb{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
+.mcbar{height:20px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.mcbar i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.mcbar.m i{background:var(--muted)}.mcbar.c i{background:var(--accent)}
+
+.mc .ins{grid-column:1/-1;margin:0;font-weight:700}
+.bigpic{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:stretch}
+.bp{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);display:flex;flex-direction:column;gap:6px;text-align:center;align-items:center}
+.bp .big{font-size:1.8rem;line-height:1.1}.bp .k{font-family:var(--f-mono);font-size:.9rem}
+.bp b{font-family:var(--f-display)}
+.batch{display:flex;flex-wrap:wrap;gap:10px}.batch>div{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.batch .e{font-size:1.25rem;letter-spacing:.06em;word-break:break-all}
+.gut .opts{flex-direction:column;align-items:stretch}.gut .opt{text-align:left;font-family:var(--f-body)}
+.wo{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.wo>div{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.wo .x,.wo .ok{font-family:var(--f-mono);font-size:.9rem;padding:5px 8px;border-radius:6px}
+.wo .x{background:var(--bad-soft);border:1px solid var(--bad)}.wo .ok{background:var(--good-soft);border:1px solid var(--good)}
+details.keys{border:1px dashed var(--line);border-radius:8px;padding:6px 12px;max-width:72ch}
+details.keys summary{cursor:pointer;font-weight:700;font-size:.92rem}
+details.keys table{font-size:.9rem}details.keys td{padding:5px 8px}details.keys td.k{font-family:var(--f-mono)}
+.chint{font-size:.95rem;border-left:3px solid var(--unit);padding:4px 10px;max-width:72ch}
+.lab{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.lab label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.95rem}
+.lab input{font:inherit;font-family:var(--f-mono);padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:10ch}
+.labout{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:.95rem}
+.jobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.jobs>div{border-left:3px solid var(--accent);padding:6px 12px}
+.xbtn{font:inherit;font-size:.85rem;font-weight:700;padding:4px 10px;border-radius:999px;border:1.5px solid var(--unit);background:transparent;color:var(--unit);cursor:pointer;align-self:flex-start}
+.xbtn[aria-expanded="true"]{background:var(--unit);color:var(--surface)}
+.expl{border:1.5px solid var(--unit);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:76ch}
+.expl .k{font-family:var(--f-mono);font-size:.92rem;background:var(--bg);border-radius:6px;padding:4px 8px;align-self:flex-start}
+.cfhelp{border:1.5px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;max-width:76ch;width:100%}
+.cfhelp>b:first-child{font-family:var(--f-display)}.cfhelp p{margin:0}
+.cfhelp .k{font-family:var(--f-mono);font-size:.92rem;background:var(--bg);border-radius:6px;padding:4px 8px;align-self:flex-start}
+.cfb[aria-expanded="true"]{background:var(--warn);border-color:var(--warn);color:var(--surface)}
+.uprob{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.uprob h4{margin:0;font-family:var(--f-display)}.upart{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.upart label{font-weight:700;min-width:min(100%,260px)}.upart input{font:inherit;font-family:var(--f-mono);width:9ch;padding:5px 8px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);text-align:right}
+.upart .ok{color:var(--good);font-weight:700}.upart .no{color:var(--warn);font-weight:700}
+html.easy :is(p,li,.why,.msg,.helpbox,.prompt,label.f,.reveal,td,dd,.tq .opt){font-size:1.12rem;line-height:1.8;letter-spacing:.035em;word-spacing:.14em}
+html.easy .eyebrow,html.easy th{text-transform:none;letter-spacing:.02em}
+html.easy i,html.easy em{font-style:normal;font-weight:700}
+html.easy p{max-width:62ch}
+</style>
+</head>
+<body>
+<div class="rjband"><div class="wrap"><a href="./" title="Raider ChemLab home"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD8AAABQCAYAAACu/a1QAAAKKElEQVR4nO2cWWxcVx3Gf9+513ZiJ21ju7S0LxAKgkSN3QXK0hIHRCshqvahtlTEIkqliPIAqhAPLHIskBAgeOOl9AUkNlssLyxKqsROQ9VCI7JAkEqJgtSmbRJnT7zM3PPxcGcS2xlPxvb1IiWfdDQz955zz/nO8l/O+d/RcEf3HuNWicjywjYtwfpTU+uqgQ+/9uKY6U3EULZYFYbFevA8IIkJBz9SGhv/2XD7Xe8TQ5khGLQYFa4k8gACn7W8UfIvhju6Py2IAg9CUnRlK408oAR03tjC20Y6un+068aum/ogG6S30A5YgeQBnCBilE9F/LBS/Xpn+6b7+gpe/yuUPAASSiROSr4thPDsSEfX1lfuuKOlKBmwkslXkUYYN3HM0reOnl7z8VwGLHwJpOBMcgYzVZ2u9nCDC1GPRlKdgRAEoXKEC4ndXESdAKnROplWTSHvXOefr9te04zUUkQjAsQI5+t1gLEwwchF1AmQytoWQ2wKyMIysqNvCQpfsK4cWeMIWgPsCJE/RocQFOc3A2whOQbfF6zPRvm00JItxbTn5D9+N/PiC+1dt5fgiVnKWKZZgf9sPr5/e0Ht2D7c0TWB9aTF6XozoEikUwXHKQ6HdayPZf51I9RdWnZ0S6VsAsxbBfUCQ0DP6NAPhju7V4EfNz63FDMgnao7+8Fb2Rv36M7sqmyE+xjKBullofp3kN7EoN0OeyLZZyQKW9f1sGJUncBR5VYVKNCuhhVDHkCEJfUsVxT5pcaKIb9Ybms9rAjyN3NMAgMWXrJOSOdd0qiq6gbpnfdjTnE4bGGkNNJ5z9sj5S8BYyyRoTNf8nLQREXFLdTNzPZ03HVb5vJPJdZbnFsyI2euBYSC4aIi94/c3L3WdpAUnXsnl9RU9bc9fS1X89j58Fq4HP0RiXcCZ1S3TXKhtv08ykhiQmYD0XcLcibAVNOk+vuKBezL9135bRhz7tjUIx6BJhfp1c2znCwmwGNFNKJiytbz6DLBWqQjq1K/nPfp0IJtgvkLPFADPv+CUSHeJsKxJGRPfuitg0cMVe2wIKwIVTc7LhMPIXvygWMHDw9CUgRxWELyAldTg/kjVxDvTfoWrl0uYSHTvi5sNFXYTZV9BoKIdaw622qydMyJn9j81sEjOfFid28XZORUjRGBY37BVFRZ9fhLlY2+3FtzdeRTm0Ad19U4yJo8G9Jj/RB6CxBwMzFn8s5PUNqQ/haI3yvZSpTEJqXRmnSqEMeBdDKNAONAM+OOCm4huBTSGGK2LopnZLcishozQMjjmDvWlrJHBuBXG+lNWO6RV77XFwznPnriwCvzrPeNkY6uEaPHIJ6upTUCkqVxmUcMvylCtc3EvKe9cdKfC8zAFdveV2JbRdANsznpYSTbrfhbSB4Rqmmy5QeU8SLSpl3tm97/sZMHXip63c+bvJAHIPYDAw2QH7j0baRs0M4TB/d9rKPrgKVNwhddQ/MoP7ZOQtBjwEu9bCh0lycYVE0bK5+NupVTy1RTI+WG6A0DEC3+gN0S8SyklCg3eze/0N51Owy40kkqIoWp+rcPMoEVYrkR7tPKzEGHVyW3S2wHXpdDM7OUtVy2WVcSj+bPtyt5F5z0YvsHbqhWNJZNhNVJSyyFsXdHJ886P8aaAWXCNxiGm1etfvpc6WJY29R6adp/6LUXxxvphOr6He7s+qbM5y2fmsVczk+H4KjLPL72THrhMGNaz+oFLwENd3bvmnYBbDtBtM1ayggxiXWW3Pl2xAnSxESITzz01oFjV7O/DUEQd7d3b8jkX0tMMMuyUd4BiaXjmMnZ8s0VqcxNNauj1qhful0ZDd9qV71SEvB4zCYbcnZEbuHp5L5DIx3dL4M/ONt5nUGIzPatFLjXl1qebX3XryS3ziYrmWyTCCZXKTQ8HYfoDTCUGf3e9v2S68lMSUw2+uxGUE9yNoJpZTTHUakKvok02ynxP6wW6suLQqR8NS2rS1sNMnjorQMXsP8CtLmgM/9GsOz+/L8YMkAWmv4gdE5LsEFSxbKTr1iJ4ePH9/4X+UWgra6wLRAhr2ihiWpoy7wavZFeAYSo38kkzsVpY6kxuLI5YuVeaRTEVNa6+TR4OmQgsTReitmcZ1NfLvh0S/v554+ebjsk6x1IEw2a2Vc1q2VarNyanZo3FXx9ZuZY6dFQ2WyIRkF46vXqtbyEK7vXytasXncKKoZJ4zDAe159dWLH2vd+sbVt9ZryxGSE1bMWiLGUhFDOYki/GqRPmni2poVoFJV8Q5Rfz3CIU9pVmMGwXNjV0bVN6HFUe18Ao0nCww+O/uPozFtp0SGdC/W3DdrWwKDcxj3JUfZmxomull1uM4RhCD1T3O+06E3BhUKXva66GGS9trI3DjdwfJUoiarsPWyZQn7ZVd1y4jr5axXXyV+ruE7+WsV18tcqrpO/VnGd/LWKa5p8oTE5Bg2zOTnO2zwzGneIPMC4h5GoBo60lwKFks998ZFGTnhXBAohb/qDGIjPd959TznGBxW4aDxtSQlFR1pJ+fuWY/ue66c/DDCwrDOgoJE/JIBIuVvS08AJefqzJZcRHbKeAZ7bWCmznCg2Ds8aR5wwPoWmv+8uyCRZ5qJBQwVU159Hlsz77YRCpb3yw4YUSISmJUOCacrkksDrObygum/mmAYgyvVfAKyHJQw/lSxNyN60p+PDa+9lb6n6Pt1c0y42p1sYKe/q6HpU4iHkc7NEddTFkpHPQ8t8EXR3pou/2N3evaGPoWnxPI2mLYyUd9/c/ZjE9+Klx88dixZ7WwuVCJbzxusd9PPdHV3fzcoMp0SNh+arSv5VcTKsDs3xQih/KtrfBs5X3tyoE9Ewu01ROHmjWH8glIAuYJotf0cpo1GJm2uccVZZVT9jknCBDJtO8lfc6xIHZ4a2xLXPDwsmb0msieikLkd91MqXIMpACXRjrSi8akHP+KzcHK90Sj1BX8bqQPw1deubtQKkClrzQ9GglsmWPwG/TEwHrh5/zwoZAnK5VvIs18ljiOqezBpnNm+z2H62KX3q/tEXzl26NbUBCyd+JYY7u/oEX4uwRnCWpZMtzkPpWAc82zO6//uQ2wMDNfyJQsn7cmBS3NG56T3N1oDhXolTlfuLqV2q639NUPhJqRx3JknSnpRK/3zgzMFTizjtc1RUURykN/nEiQOvtI2mnxM8E2GNTYsXKdzEECuhcK1B+lbZ8XAa6ImUb8uaQu8LN2xov9zEy1iUkehjKOuHcC97S5tH9/8wNU8hncRaV3S8TeXlhxZBYvPl1nKyI1FYFUVzINwq4svl5uY7Z0ZlwCJOw8oa0yC9yQOj+4dDSh/wZ6Ebrla2UQhigFUyZ0BP9ozu33UuHVsNcW0aOSL53ya5tUyo+c8vi23hVf9aIvnom/uObxnd/xXBj+cQSFT32babDMftsLVndN/fX+aepi3HD70JfsMJNzmqM+Dbt5x4177Kmp8m9P4PGALmSB+aZc8AAAAASUVORK5CYII=" alt="RJ">Raider ChemLab</a><span class="by">A Raider ChemLab lesson</span></div></div>
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Honors Chemistry · Stoichiometry</div>
+    <h1>Stoichiometry Lab</h1>
+    <div class="rhymebar" id="rhymebar" aria-label="The road map">
+      <span>grams to moles</span><span>moles to moles</span><span>moles to grams</span>
+    </div>
+    <div class="sup" id="sup"><button class="btn ghost small" id="raBtn" aria-pressed="false">🔊 Read aloud</button><button class="btn ghost small" id="erBtn" aria-pressed="false">Aa Easier reading</button></div>
+  </div>
+</header>
+<nav class="steps" aria-label="Lesson sections"><div class="wrap scroller"><ol id="stepnav"></ol></div></nav>
+
+<main><div class="wrap">
+
+<!-- 1. WHAT IT IS -->
+<section class="sec" data-sec="learn">
+  <div><div class="eyebrow">Part 1</div><h2>What is stoichiometry?</h2></div>
+  <div class="card stack" id="pathCard"></div>
+  <div class="defbox">
+    <div class="eyebrow">Definition</div>
+    <p><b>Stoichiometry</b> uses a <b>balanced equation</b> to find how much of one substance reacts with, or is made from, another.</p>
+    <p class="muted">The <b>coefficients</b> (the big numbers in front) count <b>moles</b>. Their ratio, the <b>mole ratio</b>, is the bridge from one substance to another.</p>
+    <button class="xbtn" id="defX" aria-expanded="false" aria-controls="defXp">🤔 What does this mean?</button>
+    <div class="expl" id="defXp" hidden>
+      <p><b>A balanced equation is a recipe that counts.</b> A s’more takes 2 graham crackers and 1 marshmallow. That recipe tells you that 10 crackers need 5 marshmallows, no matter how much each one weighs.</p>
+      <span class="k">2H₂ + O₂ → 2H₂O: 2 mol H₂ react with 1 mol O₂ to make 2 mol H₂O</span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card stack">
+      <h3>Read an equation as a recipe</h3>
+      <div class="eq">2H₂ + O₂ → 2H₂O</div>
+      <p><b>2 mol</b> of hydrogen react with <b>1 mol</b> of oxygen to make <b>2 mol</b> of water.</p>
+      <p class="muted">Double it and you get 4 : 2 : 4. The ratio stays the same.</p>
+    </div>
+    <div class="card stack">
+      <h3>Why moles, not grams?</h3>
+      <p>Coefficients count particles. Different substances weigh different amounts per particle, so <b>2 g of H₂ and 2 g of O₂ are not the same number of molecules</b>. That is why every problem goes through moles.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tablewrap"><table>
+      <thead><tr><th>Equation</th><th>Mole ratio</th><th>Read it as</th></tr></thead>
+      <tbody>
+        <tr><td class="f">2H₂ + O₂ → 2H₂O</td><td class="f">2 mol H₂O / 1 mol O₂</td><td>2 water for every 1 oxygen</td></tr>
+        <tr><td class="f">N₂ + 3H₂ → 2NH₃</td><td class="f">2 mol NH₃ / 1 mol N₂</td><td>2 ammonia for every 1 nitrogen</td></tr>
+        <tr><td class="f">C₃H₈ + 5O₂ → 3CO₂ + 4H₂O</td><td class="f">3 mol CO₂ / 1 mol C₃H₈</td><td>3 carbon dioxide for every 1 propane</td></tr>
+        <tr><td class="f">2Al + 3CuCl₂ → 2AlCl₃ + 3Cu</td><td class="f">3 mol Cu / 2 mol Al</td><td>3 copper for every 2 aluminum</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Check yourself</div>
+    <div id="quiz"></div>
+  </div>
+  <div class="footnav"><span></span><button class="btn" data-go="map">Next: the road map →</button></div>
+</section>
+
+<!-- 2. ROAD MAP -->
+<section class="sec" data-sec="map" hidden>
+  <div><div class="eyebrow">Part 2</div><h2>The road map</h2>
+  <p class="lead">Every stoichiometry problem takes the same three moves. You can’t skip the middle: the equation only speaks moles.</p></div>
+  <div class="rcards">
+    <div class="rcard"><span class="eyebrow">Step 1</span><span class="line">Grams to moles</span><span class="trans">g A × (1 mol A / M g A)</span><p>Divide by the <b>molar mass</b> of what you have. Grams cancel.</p></div>
+    <div class="rcard"><span class="eyebrow">Step 2</span><span class="line">Moles to moles</span><span class="trans">mol A × (b mol B / a mol A)</span><p>Use the <b>mole ratio</b> from the coefficients. What you want goes on top.</p></div>
+    <div class="rcard"><span class="eyebrow">Step 3</span><span class="line">Moles to grams</span><span class="trans">mol B × (M g B / 1 mol B)</span><p>Multiply by the <b>molar mass</b> of what you want. Moles cancel.</p></div>
+  </div>
+  <div class="card stack">
+    <h3>All three in one line</h3>
+    <div class="eq">g A × <span class="frac"><span>1 mol A</span><span>g A</span></span> × <span class="frac"><span>b mol B</span><span>a mol A</span></span> × <span class="frac"><span>g B</span><span>1 mol B</span></span> = g B</div>
+    <p class="muted">Each fraction cancels the unit before it. If a unit doesn’t cancel, a fraction is upside down.</p>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Check yourself</div>
+    <div class="tqhead"><h3>Put the road map in order</h3><button class="cfb" data-cf="map/order" aria-expanded="false">😕 This confused me</button></div>
+    <div id="mapHelp"></div>
+    <p class="muted">Tap the moves in the order you do them.</p>
+    <div class="order-slots" id="slots"></div>
+    <div class="row" id="pool"></div>
+    <div id="rhymemsg"></div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="learn">← What it is</button><button class="btn" data-go="examples">Next: worked examples →</button></div>
+</section>
+
+<!-- 3. EXAMPLES -->
+<section class="sec" data-sec="examples" hidden>
+  <div><div class="eyebrow">Part 3</div><h2>Worked examples</h2>
+  <p class="lead">Step through each one. Watch the units: every fraction is set up so the unit you don’t want sits on the bottom and <span class="u x">cancels</span>.</p></div>
+  <div class="card stack"><div class="eyebrow">Example A · a 2 : 2 ratio</div><div id="exA"></div></div>
+  <div class="card stack"><div class="eyebrow">Example B · a 1 : 3 ratio</div><div id="exB"></div></div>
+  <div class="footnav"><button class="btn ghost" data-go="map">← The road map</button><button class="btn" data-go="practice">Next: practice →</button></div>
+</section>
+
+<!-- 4. PRACTICE -->
+<section class="sec" data-sec="practice" hidden>
+  <div><div class="eyebrow">Part 4</div><h2>Practice</h2>
+  <p class="lead">Fill in each step, with units, and press <b>Check</b>. Your calculator work goes in the boxes. Solve all <b>3</b> to unlock limiting reactants.</p></div>
+  <div class="ptabs" id="ptabs" role="tablist"></div>
+  <div class="card" id="practiceHost"></div>
+  <div class="card stack" id="caseCard" hidden>
+    <div class="eyebrow">Solve the case</div>
+    <h3>How much powder is in the airbag?</h3>
+    <p class="muted">Same three moves. This time you start with the product and work back to the reactant.</p>
+    <div id="caseHost"></div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="examples">← Worked examples</button><button class="btn" data-go="limiting">Next: limiting reactant →</button></div>
+</section>
+
+<!-- 5. LIMITING REACTANT -->
+<section class="sec" data-sec="limiting" hidden>
+  <div><div class="eyebrow">Part 5</div><h2>Which runs out first?</h2></div>
+  <div id="limLock" class="card lock" hidden></div>
+  <div id="limBody" class="sec" style="gap:22px">
+    <div class="grid2">
+      <div class="card stack">
+        <h3>The idea</h3>
+        <p>When you mix two reactants, one usually runs out first. It is the <b>limiting reactant</b>, and it decides how much product you get. The other one is <b>in excess</b>: some is left over.</p>
+        <p class="muted">A s’more takes 2 crackers and 1 marshmallow. With 10 crackers and 4 marshmallows, you make only 4 s’mores. The marshmallows are limiting.</p>
+      </div>
+      <div class="card stack">
+        <h3>Four steps</h3>
+        <p><b>1.</b> Change both reactants to moles.</p>
+        <p><b>2.</b> Use each mole ratio to find how much product each one could make.</p>
+        <p><b>3.</b> The reactant that makes <b>less</b> product is limiting.</p>
+        <p><b>4.</b> Change that smaller amount of product to grams.</p>
+      </div>
+    </div>
+    <div class="card stack"><div class="eyebrow">Worked example · water</div><div id="l0"></div></div>
+    <div><h3 style="margin-bottom:10px">Practice</h3><div class="ptabs" id="ltabs" role="tablist"></div></div>
+    <div class="card" id="limHost"></div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="practice">← Practice</button><button class="btn" data-go="summary">Next: summary &amp; submit →</button></div>
+</section>
+
+<!-- 6. SUMMARY -->
+<section class="sec" data-sec="summary" hidden>
+  <div><div class="eyebrow">Part 6</div><h2>Summarize and submit</h2>
+  <p class="lead">Explain the process in your own words. Your answers and every step you entered are collected into one work record below that you can copy or save for your teacher.</p></div>
+  <div class="card stack">
+    <div class="grid2">
+      <label class="f" for="stName">Name<input class="text" id="stName" data-st="name" autocomplete="name"></label>
+      <label class="f" for="stPeriod">Class period<input class="text" id="stPeriod" data-st="period"></label>
+    </div>
+    <label class="f" for="stTeacher">Teacher<input class="text" id="stTeacher" data-st="teacher"></label>
+  </div>
+  <div class="card stack" id="sumQs"></div>
+  <div class="grid2">
+    <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
+    <div class="card stack"><h3>Turn it in</h3>
+      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
+      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn">Save as .txt</button></div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="card stack"><h3>Work record preview</h3><pre class="report" id="report" tabindex="0"></pre></div>
+  <div class="footnav"><button class="btn ghost" data-go="limiting">← Limiting reactant</button><button class="btn" data-go="lab">Next: lab simulation →</button></div>
+</section>
+
+<!-- 7. LAB SIMULATION -->
+<section class="sec" data-sec="lab" hidden>
+  <div><div class="eyebrow">Part 7 · after you submit</div><h2>Lab simulation</h2>
+  <p class="lead">Now use it. Each simulation opens in Raider ChemLab in a new tab, so this lesson stays where you left it.</p></div>
+  <div class="card stack">
+    <div class="eyebrow">Start here</div>
+    <h3>Walk through the reaction mixer</h3>
+    <p>A guided walkthrough: mix reactants, watch the particles react, and see which one runs out first. It is the same road map, drawn as molecules.</p>
+    <div class="row"><a class="btn" data-sim="stoich-walk" href="./?mode=guided&amp;level=honors#stoich" target="_blank" rel="noopener">Start the walkthrough ↗</a></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Or choose another simulation</div>
+    <div class="uses">
+      <div class="use"><span class="ic" aria-hidden="true">🎒</span><h4>Air bag lab</h4><p>RJ’s lab: baking soda and vinegar in a zip bag. Find the amounts that fill the bag without bursting it.</p><a class="btn ghost small" data-sim="airbag" href="./?mode=guided&amp;level=honors#airbag" target="_blank" rel="noopener">Open the air bag lab ↗</a></div>
+      <div class="use"><span class="ic" aria-hidden="true">🥉</span><h4>Aluminum and copper(II) chloride</h4><p>In the reaction mixer, choose <b>Aluminum in copper(II) chloride</b>. Predict the copper, then check it.</p><a class="btn ghost small" data-sim="alcu" href="./?mode=lab&amp;level=honors#stoich" target="_blank" rel="noopener">Open the reaction mixer ↗</a></div>
+      <div class="use"><span class="ic" aria-hidden="true">🎈</span><h4>Gas stoichiometry (next)</h4><p>Same road map, but the answer is liters of gas instead of grams.</p><a class="btn ghost small" data-sim="gasstoich" href="./?mode=guided&amp;level=honors#gasstoich" target="_blank" rel="noopener">Preview gas stoichiometry ↗</a></div>
+    </div>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="summary">← Summary</button><button class="btn" data-go="use">Next: why it matters →</button></div>
+</section>
+
+<!-- 8. WHY IT MATTERS -->
+<section class="sec" data-sec="use" hidden>
+  <div><div class="eyebrow">Part 8 · after you submit</div><h2>Why it matters</h2>
+  <p class="lead">Where people use this math, and what it tells you about your own world.</p></div>
+  <div class="card stack">
+    <div class="eyebrow">A puzzle from the EPA</div>
+    <h3>How can 6 pounds of gas make 20 pounds of CO₂?</h3>
+    <p>A gallon of gasoline weighs about 6 pounds. The EPA says burning it makes about <b>8,887 grams (about 20 pounds) of CO₂</b>. Stoichiometry explains it: each CO₂ is mostly oxygen, and that oxygen comes from the air, not the tank.</p>
+    <div class="eq">2C₈H₁₈ + 25O₂ → 16CO₂ + 18H₂O</div>
+    <p class="muted">You’ll work it out yourself in the first real problem below.</p>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">How people use it</div>
+    <div class="uses">
+      <div class="use"><span class="ic" aria-hidden="true">🚗</span><h4>Airbags</h4><p>Engineers pack exactly enough propellant to fill the bag in a crash. Too little and it won’t protect you; too much and it can burst.</p><div class="m">g N₂ → mol N₂ → mol NaN₃ → g NaN₃</div></div>
+      <div class="use"><span class="ic" aria-hidden="true">💊</span><h4>Making medicine</h4><p>A drug factory works out how much of each starting chemical to buy. Extra of the cheap one makes sure none of the expensive one is wasted.</p><div class="m">limiting reactant = the expensive one</div></div>
+      <div class="use"><span class="ic" aria-hidden="true">🌾</span><h4>Fertilizer</h4><p>Most farm fertilizer starts as ammonia: N₂ + 3H₂ → 2NH₃. Plants grown with it feed about half the people on Earth.</p><div class="m">1 mol N₂ → 2 mol NH₃</div></div>
+      <div class="use"><span class="ic" aria-hidden="true">🚀</span><h4>Rockets</h4><p>Rockets carry their own oxygen. Engineers load fuel and oxygen by the mole ratio, because every extra kilogram has to be lifted.</p><div class="m">2H₂ + O₂ → 2H₂O</div></div>
+    </div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Your lab data</div>
+    <h3>Your aluminum and copper(II) chloride lab</h3>
+    <p class="muted">Type the masses from your lab notebook. CuCl₂ was in excess, so the aluminum sets how much copper you can make. 2Al + 3CuCl₂ → 2AlCl₃ + 3Cu</p>
+    <div class="lab">
+      <label>Aluminum that reacted (g)<input id="labAl" data-lab="al" inputmode="decimal" autocomplete="off" placeholder="number"></label>
+      <label>Dry copper you collected (g)<input id="labCu" data-lab="cu" inputmode="decimal" autocomplete="off" placeholder="number"></label>
+    </div>
+    <div id="labOut" class="labout" aria-live="polite"></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Your turn</div>
+    <h3>Real problems</h3>
+    <p class="muted">Every answer is a number. You never type a formula. Type the number, press Check, and after one try you can see the worked answer.</p>
+    <div id="useHost" class="stack"></div>
+  </div>
+  <div class="card stack">
+    <div class="eyebrow">Use it in your life</div>
+    <ul class="stack" style="margin:0;padding-left:20px">
+      <li><b>Do:</b> When a recipe or a reaction says “2 to 1,” ask whether it means by count or by weight. <b>Why:</b> equations count particles (moles), not grams.</li>
+      <li><b>Do:</b> Before you shop for a party, find the ingredient that runs out first. <b>Why:</b> that limiting ingredient decides how many you can make; extra of everything else is wasted.</li>
+      <li><b>Do:</b> In lab, measure the limiting reactant most carefully. <b>Why:</b> it sets your answer. The excess one only has to be “enough.”</li>
+      <li><b>Do:</b> Remember 1 gallon of gasoline ≈ 20 pounds of CO₂. <b>Why:</b> it’s a quick way to estimate a car trip’s exhaust, and now you know where that mass comes from.</li>
+    </ul>
+  </div>
+  <div class="footnav"><button class="btn ghost" data-go="lab">← Lab simulation</button><button class="btn" data-go="test">Next: test yourself →</button></div>
+</section>
+
+<!-- 9. TEST YOURSELF -->
+<section class="sec" data-sec="test" hidden>
+  <div><div class="eyebrow">Part 9 · after you submit</div><h2>Test yourself</h2>
+  <p class="lead">Ten quiz-style questions to study for the test. Get a new set any time.</p></div>
+  <div class="card" id="testHost"></div>
+  <div class="footnav"><button class="btn ghost" data-go="use">← Why it matters</button><span></span></div>
+</section>
+
+</div></main>
+<footer class="credit"><div class="wrap">
+  <span><b>Stoichiometry Lab</b>, RJ Ed Tech, built on the model of Dr. Sandy Robertson’s Empirical Formula Lab. Teachers: please check the content and tell us what to change. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
+  <span>© 2026 Jason Beyer, RJ Ed Tech · CC BY-NC 4.0</span>
+</div></footer>
+
+<script>
+(function(){
+const KEY='stoich-lab-v1';
+let S={work:{},quiz:{},rhyme:{order:[],done:false},student:{name:'',period:'',teacher:''},sum:{},ptab:'p1',ltab:'l1',pick:{}};
+try{const raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(o&&typeof o==='object')S=Object.assign(S,o);}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{const x=parseFloat(String(v??'').replace(/,/g,'').trim());return isFinite(x)?x:NaN};
+const near=(a,b,rel,abs)=>isFinite(a)&&Math.abs(a-b)<=Math.max(abs,rel*Math.abs(b));
+const f=n=>!isFinite(n)?'?':(Math.abs(n)>=100?n.toFixed(1):Math.abs(n)>=10?n.toFixed(2):Math.abs(n)>=1?n.toFixed(3):n.toPrecision(3));
+const u=(t,x)=>`<span class="u${x?' x':''}">${t}</span>`;
+const frac=(a,b,cap)=>`<span class="frac"><span>${a}</span><span>${b}</span>${cap?`<span class="cap">${cap}</span>`:''}</span>`;
+const ms=m=>(+m).toFixed(2);
+const tile=s=>`<span class="tile">${s}</span>`;
+const shown=v=>(v===undefined||v===null||v==='')?'?':esc(v);
+function inp(key,k,i,val,dis,label,cls=''){const id=`${key}-${k}${i!=null?'-'+i:''}`;
+  return `<input class="num ${cls}" id="${id}" data-k="${k}"${i!=null?` data-i="${i}"`:''} value="${esc(val??'')}" ${dis?'disabled':''} inputmode="decimal" autocomplete="off" aria-label="${esc(label)}" placeholder="number">`}
+function W(key,init){if(!S.work[key])S.work[key]=init();return S.work[key]}
+
+/* ---------- data (every bank entry checked with this page's grader; see build notes) ---------- */
+const BANK={"p1": [{"rx": "water", "eq": "2H₂ + O₂ → 2H₂O", "A": {"f": "H₂", "m": 2.02, "c": 2}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "2.00", "verb": "form", "name": "water from hydrogen", "use": "A hydrogen fuel cell does this to power a car: its only exhaust is water."}, {"rx": "water", "eq": "2H₂ + O₂ → 2H₂O", "A": {"f": "H₂", "m": 2.02, "c": 2}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "3.00", "verb": "form", "name": "water from hydrogen", "use": "A hydrogen fuel cell does this to power a car: its only exhaust is water."}, {"rx": "water", "eq": "2H₂ + O₂ → 2H₂O", "A": {"f": "H₂", "m": 2.02, "c": 2}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "5.00", "verb": "form", "name": "water from hydrogen", "use": "A hydrogen fuel cell does this to power a car: its only exhaust is water."}, {"rx": "water", "eq": "2H₂ + O₂ → 2H₂O", "A": {"f": "H₂", "m": 2.02, "c": 2}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "6.00", "verb": "form", "name": "water from hydrogen", "use": "A hydrogen fuel cell does this to power a car: its only exhaust is water."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "8.00", "verb": "form", "name": "CO₂ from natural gas", "use": "A gas stove or Bunsen burner makes this CO₂ every time it burns."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "24.0", "verb": "form", "name": "CO₂ from natural gas", "use": "A gas stove or Bunsen burner makes this CO₂ every time it burns."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "32.0", "verb": "form", "name": "CO₂ from natural gas", "use": "A gas stove or Bunsen burner makes this CO₂ every time it burns."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "40.0", "verb": "form", "name": "CO₂ from natural gas", "use": "A gas stove or Bunsen burner makes this CO₂ every time it burns."}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "2.00", "verb": "form", "name": "CO₂ from baking soda", "use": "The gas that inflates the bag in RJ’s air bag lab, and makes cakes rise."}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "4.00", "verb": "form", "name": "CO₂ from baking soda", "use": "The gas that inflates the bag in RJ’s air bag lab, and makes cakes rise."}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "5.00", "verb": "form", "name": "CO₂ from baking soda", "use": "The gas that inflates the bag in RJ’s air bag lab, and makes cakes rise."}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 1}, "g": "6.00", "verb": "form", "name": "CO₂ from baking soda", "use": "The gas that inflates the bag in RJ’s air bag lab, and makes cakes rise."}, {"rx": "mghcl", "eq": "Mg + 2HCl → MgCl₂ + H₂", "A": {"f": "Mg", "m": 24.31, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 1}, "g": "1.20", "verb": "form", "name": "hydrogen from magnesium and acid", "use": "The fizz when magnesium ribbon drops into acid."}, {"rx": "mghcl", "eq": "Mg + 2HCl → MgCl₂ + H₂", "A": {"f": "Mg", "m": 24.31, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 1}, "g": "2.43", "verb": "form", "name": "hydrogen from magnesium and acid", "use": "The fizz when magnesium ribbon drops into acid."}, {"rx": "mghcl", "eq": "Mg + 2HCl → MgCl₂ + H₂", "A": {"f": "Mg", "m": 24.31, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 1}, "g": "3.00", "verb": "form", "name": "hydrogen from magnesium and acid", "use": "The fizz when magnesium ribbon drops into acid."}, {"rx": "mghcl", "eq": "Mg + 2HCl → MgCl₂ + H₂", "A": {"f": "Mg", "m": 24.31, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 1}, "g": "4.86", "verb": "form", "name": "hydrogen from magnesium and acid", "use": "The fizz when magnesium ribbon drops into acid."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "CO", "m": 28.01, "c": 3}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "14.0", "verb": "form", "name": "CO₂ in a steel furnace", "use": "Blast furnaces use carbon monoxide to pull oxygen out of iron ore."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "CO", "m": 28.01, "c": 3}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "28.0", "verb": "form", "name": "CO₂ in a steel furnace", "use": "Blast furnaces use carbon monoxide to pull oxygen out of iron ore."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "CO", "m": 28.01, "c": 3}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "42.0", "verb": "form", "name": "CO₂ in a steel furnace", "use": "Blast furnaces use carbon monoxide to pull oxygen out of iron ore."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "CO", "m": 28.01, "c": 3}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "56.0", "verb": "form", "name": "CO₂ in a steel furnace", "use": "Blast furnaces use carbon monoxide to pull oxygen out of iron ore."}], "p2": [{"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "NH₃", "m": 17.03, "c": 2}, "g": "14.0", "verb": "form", "name": "ammonia from nitrogen", "use": "Most farm fertilizer starts as ammonia made this way. It feeds about half the world’s people."}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "NH₃", "m": 17.03, "c": 2}, "g": "28.0", "verb": "form", "name": "ammonia from nitrogen", "use": "Most farm fertilizer starts as ammonia made this way. It feeds about half the world’s people."}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "NH₃", "m": 17.03, "c": 2}, "g": "42.0", "verb": "form", "name": "ammonia from nitrogen", "use": "Most farm fertilizer starts as ammonia made this way. It feeds about half the world’s people."}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "NH₃", "m": 17.03, "c": 2}, "g": "56.0", "verb": "form", "name": "ammonia from nitrogen", "use": "Most farm fertilizer starts as ammonia made this way. It feeds about half the world’s people."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "C₃H₈", "m": 44.09, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 4}, "g": "22.0", "verb": "form", "name": "water from burning propane", "use": "That’s the drip from a gas grill or a car’s tailpipe on a cold morning."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "C₃H₈", "m": 44.09, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 4}, "g": "44.1", "verb": "form", "name": "water from burning propane", "use": "That’s the drip from a gas grill or a car’s tailpipe on a cold morning."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "C₃H₈", "m": 44.09, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 4}, "g": "66.1", "verb": "form", "name": "water from burning propane", "use": "That’s the drip from a gas grill or a car’s tailpipe on a cold morning."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "C₃H₈", "m": 44.09, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 4}, "g": "88.2", "verb": "form", "name": "water from burning propane", "use": "That’s the drip from a gas grill or a car’s tailpipe on a cold morning."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "8.00", "verb": "form", "name": "water from burning natural gas", "use": "Furnace and stove flames make water vapor along with CO₂."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "16.0", "verb": "form", "name": "water from burning natural gas", "use": "Furnace and stove flames make water vapor along with CO₂."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "24.0", "verb": "form", "name": "water from burning natural gas", "use": "Furnace and stove flames make water vapor along with CO₂."}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "H₂O", "m": 18.02, "c": 2}, "g": "32.0", "verb": "form", "name": "water from burning natural gas", "use": "Furnace and stove flames make water vapor along with CO₂."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "Fe₂O₃", "m": 159.7, "c": 1}, "B": {"f": "Fe", "m": 55.85, "c": 2}, "g": "80.0", "verb": "form", "name": "iron from iron ore", "use": "How steel mills turn rust-red ore into iron."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "Fe₂O₃", "m": 159.7, "c": 1}, "B": {"f": "Fe", "m": 55.85, "c": 2}, "g": "160", "verb": "form", "name": "iron from iron ore", "use": "How steel mills turn rust-red ore into iron."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "Fe₂O₃", "m": 159.7, "c": 1}, "B": {"f": "Fe", "m": 55.85, "c": 2}, "g": "240.", "verb": "form", "name": "iron from iron ore", "use": "How steel mills turn rust-red ore into iron."}, {"rx": "fe2o3", "eq": "Fe₂O₃ + 3CO → 2Fe + 3CO₂", "A": {"f": "Fe₂O₃", "m": 159.7, "c": 1}, "B": {"f": "Fe", "m": 55.85, "c": 2}, "g": "320.", "verb": "form", "name": "iron from iron ore", "use": "How steel mills turn rust-red ore into iron."}, {"rx": "mgo", "eq": "2Mg + O₂ → 2MgO", "A": {"f": "O₂", "m": 32.0, "c": 1}, "B": {"f": "MgO", "m": 40.31, "c": 2}, "g": "8.00", "verb": "form", "name": "magnesium oxide", "use": "The white ash in your MgO lab."}, {"rx": "mgo", "eq": "2Mg + O₂ → 2MgO", "A": {"f": "O₂", "m": 32.0, "c": 1}, "B": {"f": "MgO", "m": 40.31, "c": 2}, "g": "16.0", "verb": "form", "name": "magnesium oxide", "use": "The white ash in your MgO lab."}, {"rx": "mgo", "eq": "2Mg + O₂ → 2MgO", "A": {"f": "O₂", "m": 32.0, "c": 1}, "B": {"f": "MgO", "m": 40.31, "c": 2}, "g": "24.0", "verb": "form", "name": "magnesium oxide", "use": "The white ash in your MgO lab."}, {"rx": "mgo", "eq": "2Mg + O₂ → 2MgO", "A": {"f": "O₂", "m": 32.0, "c": 1}, "B": {"f": "MgO", "m": 40.31, "c": 2}, "g": "32.0", "verb": "form", "name": "magnesium oxide", "use": "The white ash in your MgO lab."}, {"rx": "glu", "eq": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O", "A": {"f": "C₆H₁₂O₆", "m": 180.16, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 6}, "g": "45.0", "verb": "form", "name": "CO₂ from glucose", "use": "Your cells do this all day: it’s the CO₂ you breathe out."}, {"rx": "glu", "eq": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O", "A": {"f": "C₆H₁₂O₆", "m": 180.16, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 6}, "g": "90.1", "verb": "form", "name": "CO₂ from glucose", "use": "Your cells do this all day: it’s the CO₂ you breathe out."}, {"rx": "glu", "eq": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O", "A": {"f": "C₆H₁₂O₆", "m": 180.16, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 6}, "g": "135", "verb": "form", "name": "CO₂ from glucose", "use": "Your cells do this all day: it’s the CO₂ you breathe out."}, {"rx": "glu", "eq": "C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O", "A": {"f": "C₆H₁₂O₆", "m": 180.16, "c": 1}, "B": {"f": "CO₂", "m": 44.01, "c": 6}, "g": "180", "verb": "form", "name": "CO₂ from glucose", "use": "Your cells do this all day: it’s the CO₂ you breathe out."}], "p3": [{"rx": "kclo3", "eq": "2KClO₃ → 2KCl + 3O₂", "A": {"f": "KClO₃", "m": 122.55, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 3}, "g": "12.3", "verb": "form", "name": "oxygen from potassium chlorate", "use": "A classic lab source of oxygen gas."}, {"rx": "kclo3", "eq": "2KClO₃ → 2KCl + 3O₂", "A": {"f": "KClO₃", "m": 122.55, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 3}, "g": "24.5", "verb": "form", "name": "oxygen from potassium chlorate", "use": "A classic lab source of oxygen gas."}, {"rx": "kclo3", "eq": "2KClO₃ → 2KCl + 3O₂", "A": {"f": "KClO₃", "m": 122.55, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 3}, "g": "36.8", "verb": "form", "name": "oxygen from potassium chlorate", "use": "A classic lab source of oxygen gas."}, {"rx": "kclo3", "eq": "2KClO₃ → 2KCl + 3O₂", "A": {"f": "KClO₃", "m": 122.55, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 3}, "g": "49.0", "verb": "form", "name": "oxygen from potassium chlorate", "use": "A classic lab source of oxygen gas."}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "Cu", "m": 63.55, "c": 3}, "g": "0.540", "verb": "form", "name": "copper from the aluminum lab", "use": "RJ’s aluminum and copper(II) chloride lab: the red-brown copper you collect."}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "Cu", "m": 63.55, "c": 3}, "g": "1.08", "verb": "form", "name": "copper from the aluminum lab", "use": "RJ’s aluminum and copper(II) chloride lab: the red-brown copper you collect."}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "Cu", "m": 63.55, "c": 3}, "g": "1.62", "verb": "form", "name": "copper from the aluminum lab", "use": "RJ’s aluminum and copper(II) chloride lab: the red-brown copper you collect."}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "Cu", "m": 63.55, "c": 3}, "g": "2.16", "verb": "form", "name": "copper from the aluminum lab", "use": "RJ’s aluminum and copper(II) chloride lab: the red-brown copper you collect."}, {"rx": "h2o2", "eq": "2H₂O₂ → 2H₂O + O₂", "A": {"f": "H₂O₂", "m": 34.02, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 1}, "g": "17.0", "verb": "form", "name": "oxygen from hydrogen peroxide", "use": "The foam in “elephant toothpaste” is this oxygen."}, {"rx": "h2o2", "eq": "2H₂O₂ → 2H₂O + O₂", "A": {"f": "H₂O₂", "m": 34.02, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 1}, "g": "34.0", "verb": "form", "name": "oxygen from hydrogen peroxide", "use": "The foam in “elephant toothpaste” is this oxygen."}, {"rx": "h2o2", "eq": "2H₂O₂ → 2H₂O + O₂", "A": {"f": "H₂O₂", "m": 34.02, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 1}, "g": "51.0", "verb": "form", "name": "oxygen from hydrogen peroxide", "use": "The foam in “elephant toothpaste” is this oxygen."}, {"rx": "h2o2", "eq": "2H₂O₂ → 2H₂O + O₂", "A": {"f": "H₂O₂", "m": 34.02, "c": 2}, "B": {"f": "O₂", "m": 32.0, "c": 1}, "g": "68.0", "verb": "form", "name": "oxygen from hydrogen peroxide", "use": "The foam in “elephant toothpaste” is this oxygen."}, {"rx": "rust", "eq": "4Fe + 3O₂ → 2Fe₂O₃", "A": {"f": "Fe", "m": 55.85, "c": 4}, "B": {"f": "Fe₂O₃", "m": 159.7, "c": 2}, "g": "11.2", "verb": "form", "name": "rust", "use": "How a steel bike chain rusts in the rain."}, {"rx": "rust", "eq": "4Fe + 3O₂ → 2Fe₂O₃", "A": {"f": "Fe", "m": 55.85, "c": 4}, "B": {"f": "Fe₂O₃", "m": 159.7, "c": 2}, "g": "22.3", "verb": "form", "name": "rust", "use": "How a steel bike chain rusts in the rain."}, {"rx": "rust", "eq": "4Fe + 3O₂ → 2Fe₂O₃", "A": {"f": "Fe", "m": 55.85, "c": 4}, "B": {"f": "Fe₂O₃", "m": 159.7, "c": 2}, "g": "33.5", "verb": "form", "name": "rust", "use": "How a steel bike chain rusts in the rain."}, {"rx": "rust", "eq": "4Fe + 3O₂ → 2Fe₂O₃", "A": {"f": "Fe", "m": 55.85, "c": 4}, "B": {"f": "Fe₂O₃", "m": 159.7, "c": 2}, "g": "44.7", "verb": "form", "name": "rust", "use": "How a steel bike chain rusts in the rain."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "O₂", "m": 32.0, "c": 5}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "32.0", "verb": "form", "name": "CO₂ from the oxygen a grill uses", "use": "Every 5 O₂ a propane flame uses makes 3 CO₂."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "O₂", "m": 32.0, "c": 5}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "64.0", "verb": "form", "name": "CO₂ from the oxygen a grill uses", "use": "Every 5 O₂ a propane flame uses makes 3 CO₂."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "O₂", "m": 32.0, "c": 5}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "96.0", "verb": "form", "name": "CO₂ from the oxygen a grill uses", "use": "Every 5 O₂ a propane flame uses makes 3 CO₂."}, {"rx": "c3h8", "eq": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O", "A": {"f": "O₂", "m": 32.0, "c": 5}, "B": {"f": "CO₂", "m": 44.01, "c": 3}, "g": "160", "verb": "form", "name": "CO₂ from the oxygen a grill uses", "use": "Every 5 O₂ a propane flame uses makes 3 CO₂."}], "l1": [{"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 3}, "P": {"f": "NH₃", "m": 17.03, "c": 2}, "gA": "28.0", "gB": "9.00", "name": "ammonia", "use": "Factories run this with extra hydrogen so all the nitrogen gets used.", "lim": 0, "gP": 34.036}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 3}, "P": {"f": "NH₃", "m": 17.03, "c": 2}, "gA": "28.0", "gB": "4.00", "name": "ammonia", "use": "Factories run this with extra hydrogen so all the nitrogen gets used.", "lim": 1, "gP": 22.482}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 3}, "P": {"f": "NH₃", "m": 17.03, "c": 2}, "gA": "56.0", "gB": "10.0", "name": "ammonia", "use": "Factories run this with extra hydrogen so all the nitrogen gets used.", "lim": 1, "gP": 56.205}, {"rx": "nh3", "eq": "N₂ + 3H₂ → 2NH₃", "A": {"f": "N₂", "m": 28.02, "c": 1}, "B": {"f": "H₂", "m": 2.02, "c": 3}, "P": {"f": "NH₃", "m": 17.03, "c": 2}, "gA": "14.0", "gB": "4.00", "name": "ammonia", "use": "Factories run this with extra hydrogen so all the nitrogen gets used.", "lim": 0, "gP": 17.018}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "O₂", "m": 32.0, "c": 2}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "16.0", "gB": "48.0", "name": "CO₂ from a gas flame", "use": "A flame without enough oxygen makes soot and carbon monoxide instead.", "lim": 1, "gP": 33.008}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "O₂", "m": 32.0, "c": 2}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "16.0", "gB": "80.0", "name": "CO₂ from a gas flame", "use": "A flame without enough oxygen makes soot and carbon monoxide instead.", "lim": 0, "gP": 43.9}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "O₂", "m": 32.0, "c": 2}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "8.00", "gB": "48.0", "name": "CO₂ from a gas flame", "use": "A flame without enough oxygen makes soot and carbon monoxide instead.", "lim": 0, "gP": 21.95}, {"rx": "ch4", "eq": "CH₄ + 2O₂ → CO₂ + 2H₂O", "A": {"f": "CH₄", "m": 16.04, "c": 1}, "B": {"f": "O₂", "m": 32.0, "c": 2}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "32.0", "gB": "96.0", "name": "CO₂ from a gas flame", "use": "A flame without enough oxygen makes soot and carbon monoxide instead.", "lim": 1, "gP": 66.015}], "l2": [{"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "CuCl₂", "m": 134.45, "c": 3}, "P": {"f": "Cu", "m": 63.55, "c": 3}, "gA": "1.00", "gB": "5.00", "name": "copper from the aluminum lab", "use": "In RJ’s lab, whichever runs out first sets how much copper you can collect.", "lim": 1, "gP": 2.363}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "CuCl₂", "m": 134.45, "c": 3}, "P": {"f": "Cu", "m": 63.55, "c": 3}, "gA": "0.500", "gB": "5.00", "name": "copper from the aluminum lab", "use": "In RJ’s lab, whichever runs out first sets how much copper you can collect.", "lim": 0, "gP": 1.767}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "CuCl₂", "m": 134.45, "c": 3}, "P": {"f": "Cu", "m": 63.55, "c": 3}, "gA": "1.00", "gB": "10.0", "name": "copper from the aluminum lab", "use": "In RJ’s lab, whichever runs out first sets how much copper you can collect.", "lim": 0, "gP": 3.533}, {"rx": "alcu", "eq": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu", "A": {"f": "Al", "m": 26.98, "c": 2}, "B": {"f": "CuCl₂", "m": 134.45, "c": 3}, "P": {"f": "Cu", "m": 63.55, "c": 3}, "gA": "2.00", "gB": "10.0", "name": "copper from the aluminum lab", "use": "In RJ’s lab, whichever runs out first sets how much copper you can collect.", "lim": 1, "gP": 4.727}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "HC₂H₃O₂", "m": 60.05, "c": 1}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "4.00", "gB": "2.50", "name": "CO₂ for the air bag lab", "use": "In RJ’s air bag lab, the limiting reactant sets how full the bag gets.", "lim": 1, "gP": 1.832}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "HC₂H₃O₂", "m": 60.05, "c": 1}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "2.00", "gB": "3.00", "name": "CO₂ for the air bag lab", "use": "In RJ’s air bag lab, the limiting reactant sets how full the bag gets.", "lim": 0, "gP": 1.048}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "HC₂H₃O₂", "m": 60.05, "c": 1}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "5.00", "gB": "3.00", "name": "CO₂ for the air bag lab", "use": "In RJ’s air bag lab, the limiting reactant sets how full the bag gets.", "lim": 1, "gP": 2.199}, {"rx": "soda", "eq": "NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂", "A": {"f": "NaHCO₃", "m": 84.01, "c": 1}, "B": {"f": "HC₂H₃O₂", "m": 60.05, "c": 1}, "P": {"f": "CO₂", "m": 44.01, "c": 1}, "gA": "3.00", "gB": "3.00", "name": "CO₂ for the air bag lab", "use": "In RJ’s air bag lab, the limiting reactant sets how full the bag gets.", "lim": 0, "gP": 1.572}]};
+const CASE=Object.assign({"rx": "azide", "eq": "2NaN₃ → 2Na + 3N₂", "A": {"f": "N₂", "m": 28.02, "c": 3}, "B": {"f": "NaN₃", "m": 65.02, "c": 2}, "g": "70.0", "verb": "need", "name": "about 108 g of sodium azide", "use": "Roughly the mass of a stick of butter. Too little and the bag doesn’t fill in time; too much and it can burst. Engineers do exactly this math."},{id:'case',label:'The case'});
+const EX={
+ exA:{id:'exA',eq:'2H₂ + O₂ → 2H₂O',A:{f:'H₂',m:2.02,c:2},B:{f:'H₂O',m:18.02,c:2},g:'4.00',verb:'form',
+  notes:['Divide by the molar mass of H₂. Put g H₂ on the bottom so it cancels, leaving mol H₂: 4.00 ÷ 2.02 = 1.980 mol.','The equation says 2 mol H₂ make 2 mol H₂O. What you want (H₂O) goes on top, what you have (H₂) on the bottom. 2/2 = 1, so the moles stay 1.980.','Multiply by the molar mass of water: 1.980 mol × 18.02 g/mol = 35.7 g H₂O.']},
+ exB:{id:'exB',eq:'C₃H₈ + 5O₂ → 3CO₂ + 4H₂O',A:{f:'C₃H₈',m:44.09,c:1},B:{f:'CO₂',m:44.01,c:3},g:'44.1',verb:'form',
+  notes:['44.1 g ÷ 44.09 g/mol = 1.000 mol of propane, the fuel in a gas grill.','Each C₃H₈ makes 3 CO₂, so the ratio is (3 mol CO₂ / 1 mol C₃H₈): 1.000 × 3 = 3.000 mol CO₂.','3.000 mol × 44.01 g/mol = 132 g of CO₂. Burning 44 g of propane makes three times its mass in CO₂: the extra mass is oxygen from the air.']}};
+const L0={id:'l0',eq:'2H₂ + O₂ → 2H₂O',A:{f:'H₂',m:2.02,c:2},B:{f:'O₂',m:32.00,c:1},P:{f:'H₂O',m:18.02,c:2},gA:'4.00',gB:'16.0',lim:1,
+  notes:['H₂: 4.00 ÷ 2.02 = 1.980 mol. O₂: 16.0 ÷ 32.00 = 0.5000 mol.','From H₂: 1.980 × (2/2) = 1.980 mol H₂O. From O₂: 0.5000 × (2/1) = 1.000 mol H₂O.','O₂ makes less water (1.000 mol), so O₂ is the limiting reactant. Some H₂ is left over.','1.000 mol × 18.02 g/mol = 18.0 g of water.']};
+const RHY=['Grams to moles','Moles to moles','Moles to grams'];
+const LST=['Grams to moles','Product from each','Pick the limiting reactant','Grams of product'];
+const SLOTS=[{id:'p1',label:'Problem 1'},{id:'p2',label:'Problem 2'},{id:'p3',label:'Problem 3'}];
+const LSLOTS=[{id:'l1',label:'Problem A'},{id:'l2',label:'Problem B'}];
+let PR=[],LP=[];
+function pickIdx(id){const n=BANK[id].length,i=S.pick[id];if(!Number.isInteger(i)||i<0||i>=n)S.pick[id]=Math.floor(Math.random()*n);return S.pick[id]}
+function slotProb(s){return Object.assign({},BANK[s.id][pickIdx(s.id)],{id:s.id,label:s.label})}
+function rebuild(){PR=SLOTS.map(slotProb);LP=LSLOTS.map(slotProb);save()}
+function another(id){const n=BANK[id].length;let i=S.pick[id];if(n>1){while(i===S.pick[id])i=Math.floor(Math.random()*n)}S.pick[id]=i;delete S.work[id];rebuild()}
+if(!S.pick||typeof S.pick!=='object')S.pick={};
+rebuild();
+
+/* ---------- stoichiometry solver: g A → mol A → mol B → g B ---------- */
+const newW=()=>({stage:0,mA:'',cT:'',cB:'',mB:'',gB:'',attempts:0,solved:false,msg:''});
+function demoW(p){const mA=p.g/p.A.m,mB=mA*p.B.c/p.A.c;return{stage:0,demo:true,mA:f(mA),cT:String(p.B.c),cB:String(p.A.c),mB:f(mB),gB:f(mB*p.B.m)}}
+function goal(p){return p.verb==='need'?`How many grams of ${p.B.f} are needed to make ${p.g} g of ${p.A.f}?`:`How many grams of ${p.B.f} ${p.verb==='form'?'form from':'react with'} ${p.g} g of ${p.A.f}?`}
+function stStage(i,p,w,key){
+  const done=w.stage>i,dis=done||w.demo,A=p.A,B=p.B;let b='';
+  if(i===0){b+=`<p class="muted">Divide by the molar mass of ${A.f}, with grams on the bottom so grams cancel.</p>`;
+    b+=`<div class="calc">${tile(A.f)}<span class="val">${p.g}</span>${u('g '+A.f,done)}<span class="op">×</span>${frac('1 '+u('mol '+A.f),ms(A.m)+' '+u('g '+A.f,done),'molar mass of '+A.f)}<span class="op">=</span>${inp(key,'mA',null,w.mA,dis,'moles of '+A.f)}${u('mol '+A.f)}</div>`}
+  if(i===1){b+=`<p class="muted">Use the mole ratio from the coefficients in <b>${p.eq}</b>. What you want goes on top.</p>`;
+    b+=`<div class="calc">${tile(A.f)}<span class="val">${shown(w.mA)}</span>${u('mol '+A.f,done)}<span class="op">×</span><span class="frac"><span>${inp(key,'cT',null,w.cT,dis,'coefficient on top','w')} ${u('mol '+B.f)}</span><span>${inp(key,'cB',null,w.cB,dis,'coefficient on the bottom','w')} ${u('mol '+A.f,done)}</span><span class="cap">mole ratio</span></span><span class="op">=</span>${inp(key,'mB',null,w.mB,dis,'moles of '+B.f)}${u('mol '+B.f)}</div>`}
+  if(i===2){b+=`<p class="muted">Multiply by the molar mass of ${B.f}, with moles on the bottom so moles cancel.</p>`;
+    b+=`<div class="calc">${tile(B.f)}<span class="val">${shown(w.mB)}</span>${u('mol '+B.f,done)}<span class="op">×</span>${frac(ms(B.m)+' '+u('g '+B.f),'1 '+u('mol '+B.f,done),'molar mass of '+B.f)}<span class="op">=</span>${inp(key,'gB',null,w.gB,dis,'grams of '+B.f)}${u('g '+B.f)}</div>`}
+  if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  if(!done&&!w.demo){b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;
+    if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
+    if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${stHelp(i,p,w)}</div>`}
+  {const cw=key+'/'+(i+1)+'-'+slug(RHY[i]);if(CFOPEN.has(cw))b=cfPanel(cw,ASK_S[i],ANOTHER_S[i](p),START_S[i],(!done&&!w.demo&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:'')+b}
+  return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${RHY[i]}</h4><span class="tag">${['g → mol','mol → mol','mol → g'][i]}</span>${cfBtn(key+'/'+(i+1)+'-'+slug(RHY[i]))}</div><div class="sb">${b}</div></div>`}
+function stHTML(p,key,o){const w=W(key,()=>o.demo?demoW(p):newW());
+  let h=`<div class="solver"><div class="problem"><div class="eq">${p.eq}</div><p class="prompt">${goal(p)}</p><div class="givens"><span class="given">${tile(p.A.f)}molar mass ${ms(p.A.m)} g/mol</span><span class="given">${tile(p.B.f)}molar mass ${ms(p.B.m)} g/mol</span></div></div>`;
+  for(let i=0;i<3;i++){if(w.demo?i<w.stage:i<=w.stage)h+=stStage(i,p,w,key)}
+  if(w.stage>=3){h+=`<div class="result"><span>Answer</span><span class="big">${shown(w.gB)} g ${p.B.f}</span></div>`;if(w.solved&&!w.demo&&p.name)h+=reveal(p)}
+  if(w.demo)h+=`<div class="row">${w.stage<3?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`;
+  else if(p.id!=='case')h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another problem':'New numbers: a different problem'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
+  else h+=`<div class="newrow"><button class="linkbtn" data-act="reset">Start the case over</button></div>`;
+  return h+`</div>`}
+function fail(w,m){w.msg=m;return false}
+function checkSt(p,w,i){w.attempts=(w.attempts||0)+1;w.msg='';const A=p.A,B=p.B;
+  if(i===0){const v=num(w.mA),ex=p.g/A.m;if(!near(v,ex,0.02,0.0005)){if(near(v,p.g*A.m,0.02,0.01))return fail(w,`It looks like you multiplied by ${ms(A.m)}. Grams only cancel when g ${A.f} is on the <b>bottom</b>, so divide: ${p.g} ÷ ${ms(A.m)}.`);return fail(w,`Check your division: ${p.g} g ÷ ${ms(A.m)} g/mol = ? mol ${A.f}. Keep at least 3 significant figures.`)}}
+  if(i===1){const t=num(w.cT),bt=num(w.cB);if(t===A.c&&bt===B.c&&A.c!==B.c)return fail(w,`The ratio is upside down. ${B.f} is what you want, so its coefficient (${B.c}) goes on <b>top</b>, and ${A.f}’s (${A.c}) on the bottom.`);
+    if(!(t===B.c&&bt===A.c))return fail(w,`Use the coefficients in front of ${B.f} (top) and ${A.f} (bottom) in ${p.eq}. A missing coefficient means 1.`);
+    const ex=num(w.mA)*B.c/A.c;if(!near(num(w.mB),ex,0.02,0.0005))return fail(w,`${shown(w.mA)} × ${B.c} ÷ ${A.c} = ? mol ${B.f}.`)}
+  if(i===2){const ex=num(w.mB)*B.m,v=num(w.gB);if(!near(v,ex,0.02,0.005)){if(near(v,num(w.mB)/B.m,0.03,0.0005))return fail(w,`It looks like you divided. Moles cancel when mol ${B.f} is on the bottom, so multiply: ${shown(w.mB)} × ${ms(B.m)}.`);return fail(w,`${shown(w.mB)} mol × ${ms(B.m)} g/mol = ? g ${B.f}.`)}
+    w.stage=3;w.solved=true;w.msg='';return true}
+  w.stage=i+1;return true}
+function stHelp(i,p,w){const A=p.A,B=p.B;
+  if(i===0)return `${p.g} g ÷ ${ms(A.m)} g/mol = <b class="k">${f(p.g/A.m)} mol ${A.f}</b>. On your calculator: <b class="k">${p.g} ÷ ${ms(A.m)} =</b>.`;
+  if(i===1)return `In ${p.eq}, ${B.f} has coefficient ${B.c} and ${A.f} has ${A.c}. The ratio is <b class="k">(${B.c} mol ${B.f} / ${A.c} mol ${A.f})</b>. Multiply your moles by ${B.c}, then divide by ${A.c}.`;
+  return `Multiply your moles by ${ms(B.m)}: <b class="k">${shown(w.mB)} × ${ms(B.m)} =</b>.`}
+
+/* ---------- limiting reactant solver ---------- */
+const newL=()=>({stage:0,nA:'',nB:'',pA:'',pB:'',lim:null,gP:'',attempts:0,solved:false,msg:''});
+function demoL(p){const nA=p.gA/p.A.m,nB=p.gB/p.B.m,pA=nA*p.P.c/p.A.c,pB=nB*p.P.c/p.B.c;return{stage:0,demo:true,nA:f(nA),nB:f(nB),pA:f(pA),pB:f(pB),lim:pA<pB?0:1,gP:f(Math.min(pA,pB)*p.P.m)}}
+function lStage(i,p,w,key){const done=w.stage>i,dis=done||w.demo,R=[p.A,p.B],G=[p.gA,p.gB];let b='';
+  if(i===0){b+=`<p class="muted">Change each reactant to moles.</p>`+R.map((r,j)=>`<div class="calc">${tile(r.f)}<span class="val">${G[j]}</span>${u('g '+r.f,done)}<span class="op">÷</span><span>${ms(r.m)} ${u('g/mol')}</span><span class="op">=</span>${inp(key,j?'nB':'nA',null,j?w.nB:w.nA,dis,'moles of '+r.f)}${u('mol '+r.f)}</div>`).join('')}
+  if(i===1){b+=`<p class="muted">Use each mole ratio to find how much ${p.P.f} each reactant could make.</p>`+R.map((r,j)=>`<div class="calc">${tile(r.f)}<span class="val">${shown(j?w.nB:w.nA)}</span>${u('mol '+r.f,done)}<span class="op">×</span>${frac(p.P.c+' '+u('mol '+p.P.f),r.c+' '+u('mol '+r.f,done))}<span class="op">=</span>${inp(key,j?'pB':'pA',null,j?w.pB:w.pA,dis,'moles of product from '+r.f)}${u('mol '+p.P.f)}</div>`).join('')}
+  if(i===2){b+=`<p class="muted">Which reactant makes <b>less</b> ${p.P.f}?</p><div class="row">`+R.map((r,j)=>`<button class="chip${w.lim===j?' sel':''}" data-act="lim" data-v="${j}" ${dis?'disabled':''}>${r.f}: ${shown(j?w.pB:w.pA)} mol ${p.P.f}</button>`).join('')+`</div>`}
+  if(i===3){const sm=w.lim===1?w.pB:w.pA;b+=`<div class="calc">${tile(p.P.f)}<span class="val">${shown(sm)}</span>${u('mol '+p.P.f,done)}<span class="op">×</span>${frac(ms(p.P.m)+' '+u('g '+p.P.f),'1 '+u('mol '+p.P.f,done))}<span class="op">=</span>${inp(key,'gP',null,w.gP,dis,'grams of '+p.P.f)}${u('g '+p.P.f)}</div>`}
+  if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
+  if(!done&&!w.demo){b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
+    if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${lHelp(i,p,w)}</div>`}
+  {const cw=key+'/'+(i+1)+'-'+slug(LST[i]);if(CFOPEN.has(cw))b=cfPanel(cw,ASK_L[i],ANOTHER_L[i],START_L[i],(!done&&!w.demo&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:'')+b}
+  return `<div class="step${done?' done':' current'}"><div class="sh"><span class="n">${done?'✓':i+1}</span><h4>${LST[i]}</h4><span class="tag">${['g → mol','× ratio','smaller wins','mol → g'][i]}</span>${cfBtn(key+'/'+(i+1)+'-'+slug(LST[i]))}</div><div class="sb">${b}</div></div>`}
+function lHTML(p,key,o){const w=W(key,()=>o.demo?demoL(p):newL());
+  let h=`<div class="solver"><div class="problem"><div class="eq">${p.eq}</div><p class="prompt">You mix ${p.gA} g of ${p.A.f} with ${p.gB} g of ${p.B.f}. Which runs out first, and how many grams of ${p.P.f} can form?</p><div class="givens">${[p.A,p.B,p.P].map(r=>`<span class="given">${tile(r.f)}molar mass ${ms(r.m)} g/mol</span>`).join('')}</div></div>`;
+  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=lStage(i,p,w,key)}
+  if(w.stage>=4){const lr=[p.A,p.B][w.lim];h+=`<div class="result"><span>Limiting reactant: <b>${lr.f}</b> · Product</span><span class="big">${shown(w.gP)} g ${p.P.f}</span></div>`;if(w.solved&&!w.demo&&p.name)h+=reveal(p)}
+  if(w.demo)h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${LST[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`;
+  else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another problem':'New numbers: a different problem'}</button><button class="linkbtn" data-act="reset">Start this problem over</button></div>`;
+  return h+`</div>`}
+function checkL(p,w,i){w.attempts=(w.attempts||0)+1;w.msg='';const R=[p.A,p.B],G=[p.gA,p.gB];
+  if(i===0){for(let j=0;j<2;j++){const v=num(j?w.nB:w.nA),ex=G[j]/R[j].m;if(!near(v,ex,0.02,0.0005))return fail(w,`${R[j].f}: ${G[j]} g ÷ ${ms(R[j].m)} g/mol = ? mol.`)}}
+  if(i===1){for(let j=0;j<2;j++){const n=num(j?w.nB:w.nA),ex=n*p.P.c/R[j].c,v=num(j?w.pB:w.pA);if(!near(v,ex,0.02,0.0005)){if(near(v,n*R[j].c/p.P.c,0.02,0.0005))return fail(w,`From ${R[j].f}: the ratio is upside down. ${p.P.f} goes on top: × ${p.P.c} ÷ ${R[j].c}.`);return fail(w,`From ${R[j].f}: ${shown(j?w.nB:w.nA)} × ${p.P.c} ÷ ${R[j].c} = ? mol ${p.P.f}.`)}}}
+  if(i===2){if(w.lim==null)return fail(w,'Pick the reactant that makes less product.');const a=num(w.pA),b=num(w.pB),sm=a<b?0:1;if(w.lim!==sm)return fail(w,`${R[w.lim].f} makes more ${p.P.f}, so it is the one left over (in excess). The limiting reactant makes <b>less</b> product.`)}
+  if(i===3){const sm=num(w.lim===1?w.pB:w.pA),ex=sm*p.P.m;if(!near(num(w.gP),ex,0.02,0.005))return fail(w,`${shown(w.lim===1?w.pB:w.pA)} mol × ${ms(p.P.m)} g/mol = ? g ${p.P.f}. Use the smaller amount of product.`);w.stage=4;w.solved=true;w.msg='';return true}
+  w.stage=i+1;return true}
+function lHelp(i,p,w){const R=[p.A,p.B],G=[p.gA,p.gB];
+  if(i===0)return `${R[0].f}: <b class="k">${G[0]} ÷ ${ms(R[0].m)} = ${f(G[0]/R[0].m)} mol</b>. Now do ${R[1].f} the same way.`;
+  if(i===1)return `From ${R[0].f}: <b class="k">${shown(w.nA)} × ${p.P.c} ÷ ${R[0].c}</b>. From ${R[1].f}: <b class="k">${shown(w.nB)} × ${p.P.c} ÷ ${R[1].c}</b>.`;
+  if(i===2)return `Compare the two amounts of ${p.P.f}. The smaller one is limiting: like running out of marshmallows before crackers.`;
+  return `Take the smaller amount of ${p.P.f} and multiply by ${ms(p.P.m)} g/mol.`}
+
+function helpBtn(w,i){return (w.miss&&w.miss[i]>=2&&!(w.shown&&w.shown[i]))?`<button class="btn ghost small" data-act="help" data-s="${i}">Show me this step</button>`:''}
+function reveal(p){return `<div class="reveal"><span class="eyebrow">What is it?</span><p>You found <b>${p.name}</b>. ${p.use||''}</p></div>`}
+
+/* ---------- mounting ---------- */
+function mount(host,kind,p,key,o={}){host._c={kind,p,key,o};if(!host._b){host._b=1;host.addEventListener('input',onIn);host.addEventListener('click',onClick);host.addEventListener('keydown',onKey)}draw(host)}
+function draw(host){const c=host._c;host.innerHTML=c.kind==='st'?stHTML(c.p,c.key,c.o):lHTML(c.p,c.key,c.o)}
+function onIn(ev){const t=ev.target;if(!t.dataset||!t.dataset.k)return;const c=this._c;const w=S.work[c.key];w[t.dataset.k]=t.value;save()}
+function onKey(ev){if(ev.key==='Enter'&&ev.target.matches('input.num')){const b=this.querySelector('.step.current [data-act="check"]');if(b){ev.preventDefault();b.click()}}}
+function onClick(ev){const b=ev.target.closest('[data-act]');if(!b||!this.contains(b))return;const c=this._c,w=S.work[c.key],a=b.dataset.act;
+  if(a==='check'){const ok=(c.kind==='st'?checkSt:checkL)(c.p,w,+b.dataset.s);if(!ok){w.miss=w.miss||{};w.miss[b.dataset.s]=(w.miss[b.dataset.s]||0)+1}save();draw(this);sayHost(this);
+    if(ok){const nx=this.querySelector('.step.current input:not([disabled]), .step.current .chip:not([disabled])');if(nx)nx.focus({preventScroll:false})}else{const m=this.querySelector('.msg.bad');if(m)m.scrollIntoView({block:'nearest'})}
+    if(w.solved&&c.o.onSolved)c.o.onSolved();refresh();return}
+  if(a==='next'){w.stage++;save();draw(this);refresh();sayHost(this);return}
+  if(a==='help'){w.shown=w.shown||{};w.shown[b.dataset.s]=true;w.helps=(w.helps||0)+1;save();draw(this);sayHost(this);return}
+  if(a==='another'){another(c.p.id);if(c.p.id[0]==='p')showPractice();else showLim();refresh();return}
+  if(a==='replay'){w.stage=0;save();draw(this);return}
+  if(a==='lim'){w.lim=+b.dataset.v;save();draw(this);return}
+  if(a==='reset'){delete S.work[c.key];save();draw(this);refresh();return}}
+
+/* ---------- quiz ---------- */
+const QUIZ=[
+ {q:'In 2H₂ + O₂ → 2H₂O, how many moles of H₂O form from 2 mol of H₂?',o:['2','1','4','18'],a:0,why:'The coefficients of H₂ and H₂O are both 2, so 2 mol H₂ make 2 mol H₂O.'},
+ {q:'In N₂ + 3H₂ → 2NH₃, what is the mole ratio of NH₃ to N₂?',o:['1 : 2','2 : 1','3 : 2','2 : 3'],a:1,why:'2 mol NH₃ form for every 1 mol N₂ (a missing coefficient means 1).'},
+ {q:'Why do we change grams to moles before using the balanced equation?',o:['The equation is written in grams','Coefficients count moles, not grams','Grams can’t be multiplied','Moles are always smaller numbers'],a:1,why:'Coefficients count particles. Equal grams of different substances are different numbers of particles.'},
+ {q:'In 2H₂ + O₂ → 2H₂O, how many moles of O₂ react with 4 mol of H₂?',o:['4','8','2','1'],a:2,why:'The ratio is 1 O₂ for every 2 H₂, so 4 mol H₂ need 2 mol O₂.'}];
+const QHELP=[['Read the equation as a recipe: 2 H₂ make how many H₂O?','Look at the numbers in front of H₂ and H₂O.'],['For every 1 N₂, how many NH₃ form?','A missing coefficient means 1.'],['What do the coefficients count?','Think: is the recipe in particles or in weight?'],['For every 2 H₂, how many O₂ are used? Now double it.','Use the ratio 1 O₂ / 2 H₂.']];
+function drawQuiz(){const el=document.getElementById('quiz');
+  el.innerHTML=QUIZ.map((q,i)=>{const ch=S.quiz[i];return `<div class="q"><div class="tqhead"><p><b>${i+1}.</b> ${q.q}</p>${cfBtn('quiz/q'+(i+1))}</div><div class="opts">${q.o.map((o,j)=>`<button class="opt${ch===j?(j===q.a?' right':' wrong'):''}" data-q="${i}" data-o="${j}">${o}</button>`).join('')}</div>${CFOPEN.has('quiz/q'+(i+1))?cfPanel('quiz/q'+(i+1),QHELP[i][0],null,QHELP[i][1],''):''}${ch!=null?`<div class="msg ${ch===q.a?'good':'bad'}">${ch===q.a?'Correct. ':'Not quite. '}${q.why}</div>`:''}</div>`}).join('')}
+document.getElementById('quiz').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;S.quiz[b.dataset.q]=+b.dataset.o;save();drawQuiz();refresh();setTimeout(()=>{const m=document.querySelectorAll('#quiz .q')[+b.dataset.q];const r=m&&m.querySelector('.msg');if(r)say(txt(r))},30)});
+
+/* ---------- road map order ---------- */
+const POOL=[1,2,0];
+function drawRhyme(){const o=S.rhyme.order;
+  document.getElementById('slots').innerHTML=[0,1,2].map(i=>`<div class="slot${o[i]!=null?' filled':''}">${i+1}. ${o[i]!=null?RHY[o[i]].toLowerCase():''}</div>`).join('');
+  document.getElementById('pool').innerHTML=POOL.map(k=>`<button class="chip" data-r="${k}" ${o.includes(k)||S.rhyme.done?'disabled':''}>${RHY[k].toLowerCase()}</button>`).join('')+(o.length&&!S.rhyme.done?`<button class="linkbtn" data-r="clear">Clear</button>`:'');
+  const m=document.getElementById('rhymemsg');
+  if(S.rhyme.done)m.innerHTML=`<div class="msg good">Correct: grams to moles, moles to moles, moles to grams.</div>`;
+  else if(o.length===3)m.innerHTML=`<div class="msg bad">Not in order yet. The equation only speaks moles, so you need moles before you can use it. <button class="linkbtn" data-r="clear">Try again</button></div>`;
+  else m.innerHTML=''}
+document.querySelector('[data-sec="map"]').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;
+  if(b.dataset.r==='clear')S.rhyme.order=[];else{S.rhyme.order.push(+b.dataset.r);if(S.rhyme.order.length===3&&S.rhyme.order.every((v,i)=>v===i))S.rhyme.done=true}
+  save();drawRhyme();refresh()});
+
+/* ---------- practice + limiting tabs ---------- */
+function drawPTabs(){document.getElementById('ptabs').innerHTML=PR.map(p=>{const w=S.work[p.id];return `<button class="ptab" role="tab" aria-selected="${S.ptab===p.id}" data-p="${p.id}">${p.label}${w&&w.solved?'<span class="ok">✓</span>':''}</button>`}).join('')}
+function showPractice(){const p=PR.find(x=>x.id===S.ptab)||PR[0];mount(document.getElementById('practiceHost'),'st',p,p.id,{onSolved:drawPTabs});drawPTabs()}
+document.getElementById('ptabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;S.ptab=b.dataset.p;save();showPractice()});
+function drawLTabs(){document.getElementById('ltabs').innerHTML=LP.map(p=>{const w=S.work[p.id];return `<button class="ptab" role="tab" aria-selected="${S.ltab===p.id}" data-l="${p.id}">${p.label}${w&&w.solved?'<span class="ok">✓</span>':''}</button>`}).join('')}
+function showLim(){const p=LP.find(x=>x.id===S.ltab)||LP[0];mount(document.getElementById('limHost'),'lim',p,p.id,{onSolved:drawLTabs});drawLTabs()}
+document.getElementById('ltabs').addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(!b)return;S.ltab=b.dataset.l;save();showLim()});
+
+/* ---------- Your lab data: Al + CuCl2 ---------- */
+function labCalc(){const L=S.lab||{},al=num(L.al),cu=num(L.cu);if(!isFinite(al)||!isFinite(cu))return {msg:'Type both masses to compare your copper with the prediction.'};
+  if(!(al>0&&cu>0))return {msg:'Both masses should be more than 0 g.'};
+  const nAl=al/26.98,nCu=nAl*3/2,pred=nCu*63.55,pct=cu/pred*100;return {al,cu,nAl,nCu,pred,pct}}
+function drawLab(){const R=labCalc(),el=document.getElementById('labOut');if(R.msg){el.innerHTML=`<span class="muted" style="font-family:var(--f-body)">${R.msg}</span>`;return}
+  const diag=R.pct>105?'More copper than predicted usually means it wasn’t fully dry, or some solid from the solution came along. Dry it longer and weigh again.':R.pct<85?'Less copper than predicted usually means some was lost when pouring off the liquid, or some aluminum didn’t react.':'Close to the prediction. Nice lab work.';
+  el.innerHTML=`<span>Moles Al = ${R.al.toFixed(3)} g ÷ 26.98 g/mol = ${R.nAl.toPrecision(3)} mol</span><span>Moles Cu = ${R.nAl.toPrecision(3)} × (3 mol Cu / 2 mol Al) = ${R.nCu.toPrecision(3)} mol</span><span>Predicted copper = ${R.nCu.toPrecision(3)} × 63.55 g/mol = <b>${R.pred.toFixed(3)} g</b></span><span>You collected ${R.cu.toFixed(3)} g → <b>${R.pct.toFixed(1)}%</b> of the prediction (your percent yield)</span><p style="font-family:var(--f-body)">${diag}</p>`}
+document.querySelector('[data-sec="use"]').addEventListener('input',e=>{const k=e.target.dataset.lab;if(!k)return;S.lab=S.lab||{};S.lab[k]=e.target.value;save();drawLab()});
+function fillLab(){const L=S.lab||{};[['labAl','al'],['labCu','cu']].forEach(([id,k])=>{const i=document.getElementById(id);if(i&&document.activeElement!==i)i.value=L[k]||''});drawLab()}
+
+/* ---------- Use it: real problems ---------- */
+const r3=x=>x.toPrecision(3);
+function useMake(v){const pk=(a,k)=>a[v[k]%a.length];
+  const gal=pk([5,8,10,12,15],0),pe=pk([34.0,51.0,68.0,85.0],1),bs=pk([2.00,3.00,4.00,6.00],2),h2=pk([500,1000,2000],3);
+  const oct=2800,nO=oct/114.22,nC=nO*8,kg=nC*44.01/1000;
+  return [
+  {id:'gas',ask:'A gallon of gas is about 2,800 g of octane. Follow the road map from grams of octane to kilograms of CO₂.',start:'(a) 2,800 ÷ 114.22. (b) × 16 ÷ 2. (c) × 44.01, then ÷ 1,000 for kg.',t:'🚗 One gallon of gasoline',p:`Treat a gallon of gasoline as 2,800 g of octane, C₈H₁₈ (114.22 g/mol). 2C₈H₁₈ + 25O₂ → 16CO₂ + 18H₂O. CO₂ is 44.01 g/mol.`,
+   parts:[{l:'(a) Moles of octane',a:nO,tol:.02,u:'mol C₈H₁₈'},{l:'(b) Moles of CO₂ made',a:nC,tol:.02,u:'mol CO₂'},{l:'(c) Kilograms of CO₂',a:kg,tol:.02,u:'kg CO₂'},{l:`(d) Your family burns ${gal} gallons a week. About how many kg of CO₂ is that?`,a:kg*gal,tol:.03,u:'kg CO₂'}],
+   w:`(a) 2,800 ÷ 114.22 = <b>${r3(nO)} mol</b>. (b) × 16/2 = <b>${r3(nC)} mol CO₂</b>. (c) × 44.01 = ${Math.round(nC*44.01)} g = <b>${kg.toFixed(2)} kg</b>. (d) ${kg.toFixed(2)} × ${gal} = <b>${(kg*gal).toFixed(0)} kg</b> a week. The EPA uses 8.887 kg per gallon because real gasoline isn’t pure octane, but your math explains where the mass comes from: oxygen from the air.`},
+  {id:'foam',ask:'How many grams of oxygen gas come out of the hydrogen peroxide?',start:'g H₂O₂ ÷ 34.02 → × 1/2 → × 32.00.',t:'🧪 Elephant toothpaste',p:`The foam in “elephant toothpaste” is oxygen from 2H₂O₂ → 2H₂O + O₂. A demo breaks down ${pe.toFixed(1)} g of H₂O₂ (34.02 g/mol). O₂ is 32.00 g/mol.`,
+   parts:[{l:'Grams of O₂ released',a:pe/34.02/2*32,tol:.02,u:'g O₂'}],
+   w:`${pe.toFixed(1)} ÷ 34.02 = ${r3(pe/34.02)} mol H₂O₂ → × (1/2) = ${r3(pe/34.02/2)} mol O₂ → × 32.00 = <b>${(pe/34.02/2*32).toFixed(1)} g O₂</b>.`},
+  {id:'soda',ask:'Baking soda and vinegar react 1 : 1 to make CO₂. How much CO₂ does your baking soda make if the vinegar is in excess?',start:'g NaHCO₃ ÷ 84.01 → × 1/1 → × 44.01.',t:'🎒 The air bag lab',p:`In RJ’s air bag lab you add ${bs.toFixed(2)} g of baking soda, NaHCO₃ (84.01 g/mol), to plenty of vinegar. NaHCO₃ + HC₂H₃O₂ → NaC₂H₃O₂ + H₂O + CO₂. CO₂ is 44.01 g/mol.`,
+   parts:[{l:'Grams of CO₂ made',a:bs/84.01*44.01,tol:.02,u:'g CO₂'}],
+   w:`${bs.toFixed(2)} ÷ 84.01 = ${r3(bs/84.01)} mol → × 1 = same moles of CO₂ → × 44.01 = <b>${(bs/84.01*44.01).toFixed(2)} g CO₂</b>.`},
+  {id:'rocket',ask:'How much oxygen does it take to burn this much hydrogen completely?',start:'kg works like g here: ÷ 2.02 → × 1/2 → × 32.00.',t:'🚀 Rocket fuel',p:`A rocket engine burns hydrogen with oxygen: 2H₂ + O₂ → 2H₂O. How many kilograms of O₂ completely burn ${h2.toLocaleString()} kg of H₂ (2.02 g/mol)? O₂ is 32.00 g/mol.`,
+   parts:[{l:'Kilograms of O₂ needed',a:h2/2.02/2*32,tol:.02,u:'kg O₂'}],
+   w:`Kilograms work just like grams here (thousands of moles). ${h2.toLocaleString()} ÷ 2.02 = ${r3(h2/2.02)} → × (1/2) = ${r3(h2/2.02/2)} → × 32.00 = <b>${Math.round(h2/2.02/2*32).toLocaleString()} kg O₂</b>. That’s about 8 kg of oxygen for every 1 kg of hydrogen.`}];}
+function useState(){if(!S.use||!Array.isArray(S.use.v)||S.use.v.length<4)S.use={v:[0,1,2,3].map(()=>Math.floor(Math.random()*20)),ans:{},ok:{},tried:{},shown:{}};return S.use}
+const useOK=()=>{const U=useState();return useMake(U.v).filter(p=>p.parts.every((_,j)=>U.ok[p.id+j])).length};
+function drawUse(){const U=useState(),host=document.getElementById('useHost'),PS=useMake(U.v);
+  host.innerHTML=PS.map(p=>`<div class="uprob" data-u="${p.id}"><div class="tqhead"><h4>${p.t}</h4>${cfBtn('use/'+p.id)}</div><p>${p.p}</p>${CFOPEN.has('use/'+p.id)?cfPanel('use/'+p.id,p.ask,null,p.start,U.shown[p.id]?'':'<button class="btn ghost small" data-uact="show">Show the worked answer</button>'):''}
+    ${p.parts.map((q,j)=>{const k=p.id+j;return `<div class="upart"><label for="u-${k}">${q.l}</label><input id="u-${k}" data-k="${k}" inputmode="decimal" autocomplete="off" placeholder="number" value="${esc(U.ans[k]||'')}"><span class="muted">${q.u}</span>${U.tried[k]?(U.ok[k]?'<span class="ok">✓ Correct</span>':'<span class="no">Not yet</span>'):''}</div>`}).join('')}
+    <div class="row"><button class="btn small" data-uact="check">Check</button>${p.parts.some((_,j)=>U.tried[p.id+j])?`<button class="btn ghost small" data-uact="show">${U.shown[p.id]?'Hide':'Show'} the worked answer</button>`:''}</div>
+    ${U.shown[p.id]?`<div class="why">${p.w}</div>`:''}</div>`).join('')+`<div class="row"><button class="btn ghost small" data-uact="new">New numbers</button><span class="muted">${useOK()} of ${PS.length} solved</span></div>`}
+document.getElementById('useHost').addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;useState().ans[k]=e.target.value;save()});
+document.getElementById('useHost').addEventListener('click',e=>{const b=e.target.closest('[data-uact]');if(!b)return;const U=useState();
+  if(b.dataset.uact==='new'){U.v=U.v.map(x=>x+1+Math.floor(Math.random()*3));U.ans={};U.ok={};U.tried={};U.shown={};save();drawUse();refresh();return}
+  const box=b.closest('[data-u]'),p=useMake(U.v).find(x=>x.id===box.dataset.u);
+  if(b.dataset.uact==='show'){U.shown[p.id]=!U.shown[p.id];save();drawUse();if(U.shown[p.id])say(txt(document.querySelector(`[data-u="${p.id}"] .why`)));return}
+  p.parts.forEach((q,j)=>{const k=p.id+j,v=num(U.ans[k]);if(U.ans[k]==null||U.ans[k]==='')return;U.tried[k]=true;U.ok[k]=near(v,q.a,q.tol,1e-9)});save();drawUse();refresh();
+  say(p.parts.every((_,j)=>U.ok[p.id+j])?'Correct. All parts are right.':'Not yet. Check your setup, or press Show the worked answer.')});
+
+/* ---------- Test yourself ---------- */
+const TQ=[{"id": "def", "q": "What does stoichiometry let you do?", "o": ["Find how much of one substance reacts or forms from another", "Balance an equation by changing the small subscripts in formulas", "Find the empirical formula of a compound from its percents", "Weigh every chemical in a reaction on a lab balance"], "why": "It uses the coefficients (the mole ratio) to go from an amount of one substance to an amount of another.", "ask": "What is stoichiometry for?", "hint": "Think about the road map: grams to moles, moles to moles, moles to grams."}, {"id": "coef", "q": "In 2H₂ + O₂ → 2H₂O, what do the coefficients count?", "o": ["Moles of each substance", "Grams of each substance in the reaction", "Atoms inside each molecule", "Liters of each gas at any temperature"], "why": "Coefficients count particles, so they count moles. 2 mol H₂ react with 1 mol O₂.", "ask": "What does the big number in front of a formula mean?", "hint": "It is a count, like the number in a recipe."}, {"id": "whymol", "q": "Why can’t you go straight from grams of A to grams of B using the coefficients?", "o": ["The coefficients compare moles, not grams", "Grams can’t be multiplied", "The equation is only true for gases", "You always need the empirical formula first"], "why": "Different substances have different molar masses, so equal moles weigh different amounts. The ratio only works in moles.", "ask": "Why do we need moles in the middle?", "hint": "A balanced equation is a recipe in moles."}, {"id": "ratio1", "q": "In N₂ + 3H₂ → 2NH₃, how many moles of NH₃ form from 1 mol N₂?", "o": ["2", "3", "1", "6"], "why": "1 mol N₂ makes 2 mol NH₃: the coefficients are 1 and 2.", "ask": "Read the equation as a recipe: 1 N₂ makes how many NH₃?", "hint": "Look at the numbers in front of N₂ and NH₃."}, {"id": "ratio2", "q": "In N₂ + 3H₂ → 2NH₃, how many moles of H₂ react with 2 mol N₂?", "o": ["6", "3", "2", "1.5"], "why": "The ratio is 3 mol H₂ for every 1 mol N₂, so 2 mol N₂ × 3 = 6 mol H₂.", "ask": "For every N₂, how many H₂ are used? Now do that twice.", "hint": "Multiply 2 by the ratio (3 H₂ / 1 N₂)."}, {"id": "factor", "q": "Which mole ratio changes mol O₂ into mol H₂O for 2H₂ + O₂ → 2H₂O?", "o": ["(2 mol H₂O / 1 mol O₂)", "(1 mol O₂ / 2 mol H₂O)", "(2 mol H₂ / 2 mol H₂O)", "(18.02 g H₂O / 1 mol H₂O)"], "why": "What you want goes on top and what you have goes on the bottom, so mol O₂ cancels.", "ask": "Which fraction cancels mol O₂ and leaves mol H₂O?", "hint": "The unit you start with goes on the bottom."}, {"id": "step1", "q": "You have 36.0 g of water. What is the first step to find grams of O₂ it could make?", "o": ["Divide 36.0 g by 18.02 g/mol", "Multiply 36.0 g by the mole ratio from the equation", "Multiply 36.0 g by the molar mass of O₂, 32.00 g/mol", "Divide 36.0 g by the coefficient 2"], "why": "Always start by changing grams into moles: 36.0 ÷ 18.02 = 2.00 mol H₂O.", "ask": "What does the road map say to do first with grams?", "hint": "Road map step 1."}, {"id": "calcmol", "q": "How many moles is 88.0 g of CO₂ (44.01 g/mol)?", "o": ["2.00 mol", "0.500 mol", "3,873 mol", "44.0 mol"], "why": "88.0 g ÷ 44.01 g/mol = 2.00 mol CO₂.", "ask": "Change 88.0 g of CO₂ into moles.", "hint": "Divide grams by the molar mass."}, {"id": "calcg", "q": "How many grams is 3.00 mol of H₂O (18.02 g/mol)?", "o": ["54.1 g", "6.01 g", "0.166 g", "21.0 g"], "why": "3.00 mol × 18.02 g/mol = 54.1 g.", "ask": "Change 3.00 mol of water into grams.", "hint": "Multiply moles by the molar mass."}, {"id": "full", "q": "2H₂ + O₂ → 2H₂O. How many grams of water form from 4.00 g of H₂ (2.02 g/mol)?", "o": ["35.7 g", "4.00 g", "71.4 g", "17.8 g"], "why": "4.00 ÷ 2.02 = 1.98 mol H₂ → ×(2/2) = 1.98 mol H₂O → ×18.02 = 35.7 g.", "ask": "Follow the road map from grams of H₂ to grams of H₂O.", "hint": "4.00 ÷ 2.02 first."}, {"id": "flip", "q": "A student writes 2.00 mol H₂ × (2 mol H₂ / 2 mol H₂O). What’s wrong?", "o": ["The ratio is upside down", "They should multiply by the molar mass of water instead", "Nothing is wrong, because the two 2s cancel out", "They should add the coefficients instead of dividing"], "why": "mol H₂ must cancel, so it goes on the bottom and mol H₂O on top: (2 mol H₂O / 2 mol H₂).", "ask": "Which unit should be left at the end?", "hint": "The unit you want goes on top."}, {"id": "propane", "q": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O. How many mol CO₂ form from 2 mol C₃H₈?", "o": ["6", "3", "2", "10"], "why": "Each C₃H₈ makes 3 CO₂, so 2 × 3 = 6 mol CO₂.", "ask": "For each propane, how many CO₂ form? Now double it.", "hint": "Use the ratio 3 CO₂ / 1 C₃H₈."}, {"id": "frac", "q": "2Al + 3CuCl₂ → 2AlCl₃ + 3Cu. How many mol Cu form from 0.040 mol Al?", "o": ["0.060 mol", "0.040 mol", "0.027 mol", "0.12 mol"], "why": "0.040 mol Al × (3 mol Cu / 2 mol Al) = 0.060 mol Cu.", "ask": "Use the ratio of Cu to Al from the equation.", "hint": "The ratio is 3 Cu for every 2 Al."}, {"id": "limdef", "q": "What is a limiting reactant?", "o": ["The reactant that runs out first", "The reactant with the smallest mass in grams", "The reactant with the smallest coefficient in the equation", "The product that forms first in the reaction"], "why": "Like the marshmallows when you run out of them first: it sets how much product you can make.", "ask": "Which reactant decides how much product you get?", "hint": "Think of a recipe where one ingredient runs out."}, {"id": "limsmall", "q": "Is the reactant with the smaller mass always the limiting reactant?", "o": ["No. Compare the product each makes", "Yes, the smaller mass always runs out first", "Yes, but only if the reactant is a gas", "No, the bigger mass is always the limiting one"], "why": "Mass alone doesn’t tell you. Change to moles and use the ratio to see which makes less product.", "ask": "Can you tell which runs out just by weighing them?", "hint": "Think about molar masses and coefficients."}, {"id": "limhow", "q": "How do you find the limiting reactant?", "o": ["See which makes less product", "Pick the reactant with the bigger coefficient", "Pick the reactant with the smaller molar mass", "Add the masses together and divide by 2"], "why": "Work out the product from each reactant. The one that makes less is limiting.", "ask": "What do you calculate for each reactant?", "hint": "Do the road map once for each reactant."}, {"id": "smores", "q": "A s’more needs 2 crackers and 1 marshmallow. You have 10 crackers and 4 marshmallows. How many s’mores can you make?", "o": ["4", "5", "10", "14"], "why": "Crackers could make 5, marshmallows only 4. Marshmallows run out first, so 4 s’mores.", "ask": "Which runs out first?", "hint": "How many s’mores could the crackers make? The marshmallows?"}, {"id": "limcalc", "q": "N₂ + 3H₂ → 2NH₃. You have 1.0 mol N₂ and 6.0 mol H₂. Which is limiting?", "o": ["N₂", "H₂", "Neither", "Both"], "why": "N₂ could make 2.0 mol NH₃; H₂ could make 4.0 mol. N₂ makes less, so N₂ is limiting.", "ask": "Which reactant makes less ammonia?", "hint": "From N₂: ×2. From H₂: ×2/3."}, {"id": "excess", "q": "Why do factories often add extra of the cheaper reactant?", "o": ["So the expensive reactant is all used up", "So the reaction goes backward", "So the product weighs more than the reactants", "To change the coefficients"], "why": "Making the cheap one the excess reactant makes sure the expensive one becomes the limiting reactant and none is wasted.", "ask": "Which reactant would you rather run out of?", "hint": "Think about cost."}, {"id": "gas", "q": "A gallon of gasoline weighs about 6 pounds but makes about 20 pounds of CO₂. Where does the extra mass come from?", "o": ["Oxygen from the air", "The car’s engine metal", "Mass is created when fuel burns", "Water vapor turning into CO₂"], "why": "Each CO₂ is mostly oxygen, and that oxygen comes from the air. Mass is conserved.", "ask": "Where do the O atoms in CO₂ come from?", "hint": "Look at the equation: what reacts with the fuel?"}, {"id": "airbag", "q": "2NaN₃ → 2Na + 3N₂. How many mol NaN₃ make 3 mol N₂?", "o": ["2", "3", "1.5", "6"], "why": "The coefficients say 2 NaN₃ make 3 N₂.", "ask": "Read the equation: how many NaN₃ make 3 N₂?", "hint": "Look at the numbers in front of NaN₃ and N₂."}, {"id": "conserve", "q": "In any balanced equation, what is the same on both sides?", "o": ["Each kind of atom", "The total number of moles of molecules", "The total number of molecules", "The coefficients on each side"], "why": "Atoms are rearranged, not made or destroyed, so each kind of atom is conserved (and so is mass). Moles of molecules can change.", "ask": "What does “balanced” mean?", "hint": "Count atoms, not molecules."}];
+const TN=10;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newSet(){S.test=S.test||{best:0,sets:0};S.test.set=shuffle(TQ.map((_,i)=>i)).slice(0,TN).map(i=>({q:i,ord:shuffle([0,1,2,3])}));S.test.i=0;S.test.ans=[];save()}
+function drawTest(){const host=document.getElementById('testHost');if(!S.test||!S.test.set)newSet();const t=S.test;
+  const dots=`<div class="dots" aria-hidden="true">${t.set.map((_,k)=>`<i class="${t.ans[k]==null?(k===t.i?'c':''):(t.ans[k]?'r':'w')}"></i>`).join('')}</div>`;
+  if(t.i>=TN){const sc=t.ans.filter(Boolean).length;const miss=t.set.map((s,k)=>({s,k})).filter(x=>!t.ans[x.k]).map(x=>{const q=TQ[x.s.q];return `<li><b>${q.q}</b><br>Answer: ${q.o[0]}. ${q.why}</li>`}).join('');
+    host.innerHTML=`<div class="tq">${dots}<div class="row"><span class="score">${sc} / ${TN}</span><span class="muted">Best so far: ${t.best} / ${TN} · sets taken: ${t.sets}</span></div><p>${sc>=9?'Excellent. You have this.':sc>=7?'Solid. Look over the ones you missed, then try a new set.':'Keep going. Rework the practice problems in Part 4, then try a new set.'}</p>${miss?`<div class="stack"><h3>Look these over</h3><ol class="stack" style="margin:0;padding-left:22px">${miss}</ol></div>`:''}<div class="row"><button class="btn" data-t="new">Try a new set</button></div></div>`;return}
+  const s=t.set[t.i],q=TQ[s.q],a=t.ans[t.i];
+  host.innerHTML=`<div class="tq"><div class="tqhead"><span class="eyebrow">Question ${t.i+1} of ${TN}</span>${dots}${cfBtn('test/'+q.id)}</div><p class="prompt">${q.q}</p>${CFOPEN.has('test/'+q.id)&&a==null?cfPanel('test/'+q.id,q.ask,null,q.hint,''):''}
+    <div class="opts">${s.ord.map(j=>`<button class="opt${a==null?'':j===0?' right':(t.pick===j?' wrong':'')}" data-t="pick" data-j="${j}" ${a!=null?'disabled':''}>${q.o[j]}</button>`).join('')}</div>
+    ${a!=null?`<div class="msg ${a?'good':'bad'}" role="status"><b>${a?'Correct.':'Not quite.'}</b> The answer is ${q.o[0]}. ${q.why}</div><div class="row"><button class="btn" data-t="next">${t.i+1<TN?'Next question →':'See my score'}</button></div>`:''}</div>`}
+document.getElementById('testHost').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=S.test;
+  if(b.dataset.t==='pick'&&t.ans[t.i]==null){const j=+b.dataset.j;t.pick=j;t.ans[t.i]=(j===0);save();drawTest();const m=document.querySelector('#testHost .msg');if(m)say(txt(m));refresh();return}
+  if(b.dataset.t==='next'){t.i++;t.pick=null;if(t.i>=TN){t.sets=(t.sets||0)+1;t.best=Math.max(t.best||0,t.ans.filter(Boolean).length)}save();drawTest();refresh();if(t.i<TN)sayTest();return}
+  if(b.dataset.t==='new'){newSet();drawTest();refresh();sayTest();return}});
+function sayTest(){const h=document.getElementById('testHost');const p=h.querySelector('.prompt');if(!p)return;say(txt(p)+' '+[...h.querySelectorAll('.opt')].map((o,i)=>'Choice '+(i+1)+': '+o.textContent+'.').join(' '))}
+const testBest=()=>(S.test&&S.test.best)||0;
+
+/* ---------- progress + routing ---------- */
+const SECS=[['learn','What it is'],['map','The road map'],['examples','Worked examples'],['practice','Practice'],['limiting','Limiting reactant'],['summary','Summary'],['lab','Lab simulation'],['use','Why it matters'],['test','Test yourself']];
+const pracSolved=()=>PR.filter(p=>S.work[p.id]&&S.work[p.id].solved).length;
+const limCount=()=>LP.filter(p=>S.work[p.id]&&S.work[p.id].solved).length;
+const SQ=[{k:'q1',t:'What do the coefficients in a balanced equation tell you?'},{k:'q2',t:'Explain each step of the road map (grams to moles, moles to moles, moles to grams). Include the units at each step.'},{k:'q3',t:'Why can’t you go straight from grams of one substance to grams of another?'},{k:'q4',t:'What is a limiting reactant, and how do you find it?'}];
+function status(){return{learn:QUIZ.every((q,i)=>S.quiz[i]===q.a),map:!!S.rhyme.done,examples:['exA','exB'].every(k=>S.work[k]&&S.work[k].stage>=3),practice:pracSolved()>=3,limiting:limCount()>=2,
+  summary:SQ.every(q=>(S.sum[q.k]||'').trim().length>=20)&&(S.student.name||'').trim().length>0,lab:!!(S.sims&&Object.keys(S.sims).length),use:useOK()>=3,test:testBest()>=8}}
+function current(){const h=(location.hash||'').slice(1);return SECS.some(s=>s[0]===h)?h:'learn'}
+function refresh(){const st=status(),cur=current();
+  document.getElementById('stepnav').innerHTML=SECS.map(([k,l],i)=>{const extra=k==='practice'?` (${pracSolved()}/3)`:k==='limiting'?(pracSolved()<3?' 🔒':` (${limCount()}/2)`):'';
+    return (k==='lab'?'<li class="sep" aria-hidden="true">After you submit</li>':'')+`<li><a href="#${k}" class="${st[k]?'done':''}${k==='limiting'&&pracSolved()<3?' locked':''}" ${cur===k?'aria-current="page"':''}><span class="dot">${st[k]?'✓':i+1}</span>${l}${extra}</a></li>`}).join('');
+  const locked=pracSolved()<3;document.getElementById('limLock').hidden=!locked;document.getElementById('limBody').hidden=locked;
+  if(locked)document.getElementById('limLock').innerHTML=`<div class="eyebrow">Locked</div><h3>Master the road map first</h3><p>Solve all 3 practice problems to unlock limiting reactants. You have solved ${pracSolved()}.</p><div class="meter"><i style="width:${Math.min(100,pracSolved()/3*100)}%"></i></div><button class="btn" data-go="practice">Go to practice</button>`;
+  if(cur==='summary')drawSummary();
+  if(cur==='test'&&!document.querySelector('#testHost .tq'))drawTest();
+  if(cur==='use'){if(!document.querySelector('#useHost .uprob'))drawUse();fillLab()}}
+function route(){const cur=current();document.querySelectorAll('section.sec[data-sec]').forEach(s=>s.hidden=s.dataset.sec!==cur);refresh()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;location.hash=g.dataset.go;window.scrollTo({top:0,behavior:'smooth'})});
+window.addEventListener('hashchange',()=>{route();window.scrollTo({top:0})});
+document.addEventListener('focusin',e=>{const st=e.target.closest&&e.target.closest('.step');const bar=[...document.querySelectorAll('#rhymebar span')];bar.forEach(s=>s.classList.remove('on'));if(!st)return;const h=st.querySelector('h4');const i=h?RHY.indexOf(h.textContent):-1;if(i>=0)bar[i].classList.add('on')});
+
+/* ---------- summary + report ---------- */
+function drawSummary(){const q=document.getElementById('sumQs');
+  if(!q._init){q._init=1;q.innerHTML=`<h3>In your own words</h3>`+SQ.map((s,i)=>`<label class="f" for="sum-${s.k}">${i+1}. ${s.t}<textarea id="sum-${s.k}" data-sum="${s.k}"></textarea></label>`).join('');q.querySelectorAll('textarea').forEach(t=>{t.value=S.sum[t.dataset.sum]||''});document.querySelectorAll('[data-st]').forEach(t=>{t.value=S.student[t.dataset.st]||''})}
+  const st=status();const items=[['Definition check: '+QUIZ.filter((x,i)=>S.quiz[i]===x.a).length+'/4 correct',st.learn],['Road map in the correct order',st.map],['Worked examples A and B stepped through',st.examples],['Practice: '+pracSolved()+'/3 solved',st.practice],['Limiting reactant: '+limCount()+'/2 solved',st.limiting],['Name and all four summary answers written',st.summary]];
+  document.getElementById('checklist').innerHTML=items.map(([t,ok])=>`<li><span class="bx${ok?' on':''}">${ok?'✓':''}</span>${t}</li>`).join('');document.getElementById('report').textContent=buildReport()}
+document.querySelector('[data-sec="summary"]').addEventListener('input',e=>{const t=e.target;if(t.dataset.sum)S.sum[t.dataset.sum]=t.value;else if(t.dataset.st)S.student[t.dataset.st]=t.value;else return;save();clearTimeout(drawSummary._t);drawSummary._t=setTimeout(()=>{drawSummary();refresh()},250)});
+function stReport(p,w){const L=[`${p.label}: ${p.eq} · ${p.g} g ${p.A.f} → g ${p.B.f}`];if(!w||(!w.solved&&!w.stage&&!w.attempts)){L.push('  (not attempted)');return L}
+  L.push(`  Status: ${w.solved?'SOLVED':'in progress ('+w.stage+' of 3 steps)'} · ${w.attempts||0} checks · Show me this step used ${w.helps||0} time${w.helps===1?'':'s'}`);
+  if(w.stage>0)L.push(`  1) ${p.g} g ${p.A.f} x (1 mol / ${ms(p.A.m)} g) = ${w.mA} mol ${p.A.f}`);if(w.stage>1)L.push(`  2) ${w.mA} mol ${p.A.f} x (${w.cT} mol ${p.B.f} / ${w.cB} mol ${p.A.f}) = ${w.mB} mol ${p.B.f}`);if(w.stage>2)L.push(`  3) ${w.mB} mol ${p.B.f} x (${ms(p.B.m)} g / 1 mol) = ${w.gB} g ${p.B.f}`);return L}
+function lReport(p,w){const L=[`${p.label}: ${p.eq} · ${p.gA} g ${p.A.f} + ${p.gB} g ${p.B.f}`];if(!w||(!w.solved&&!w.stage&&!w.attempts)){L.push('  (not attempted)');return L}
+  L.push(`  Status: ${w.solved?'SOLVED':'in progress ('+w.stage+' of 4 steps)'} · ${w.attempts||0} checks`);if(w.stage>0)L.push(`  1) ${w.nA} mol ${p.A.f}, ${w.nB} mol ${p.B.f}`);if(w.stage>1)L.push(`  2) product from ${p.A.f}: ${w.pA} mol; from ${p.B.f}: ${w.pB} mol ${p.P.f}`);if(w.stage>2)L.push(`  3) limiting reactant: ${[p.A,p.B][w.lim].f}`);if(w.stage>3)L.push(`  4) ${w.gP} g ${p.P.f}`);return L}
+function buildReport(){const st=S.student,L=[];L.push('STOICHIOMETRY — WORK RECORD');L.push(`Student: ${st.name||'________'}    Class period: ${st.period||'____'}    Teacher: ${st.teacher||'________'}`);L.push(`Date: ${new Date().toLocaleDateString()}`);
+  L.push('');L.push('THE ROAD MAP: grams to moles, moles to moles, moles to grams');L.push('');L.push('MY SUMMARY');SQ.forEach((q,i)=>{L.push(`${i+1}. ${q.t}`);L.push('   '+((S.sum[q.k]||'').trim().replace(/\n/g,'\n   ')||'(blank)'));L.push('')});
+  L.push('PROGRESS');L.push(`  Definition check: ${QUIZ.filter((x,i)=>S.quiz[i]===x.a).length}/4 correct`);L.push(`  Road map ordered correctly: ${S.rhyme.done?'yes':'no'}`);L.push(`  Practice solved: ${pracSolved()}/3`);L.push(`  Limiting reactant solved: ${limCount()}/2`);
+  if(S.path==='case')L.push(`  The case (airbag): ${S.work.case&&S.work.case.solved?'SOLVED, '+S.work.case.gB+' g NaN3':'not solved yet'}`);
+  L.push(`  Lab simulations opened: ${S.sims?Object.keys(S.sims).join(', '):'none'}`);L.push(`  Why it matters, real problems solved: ${useOK()}/4`);{const R=labCalc();if(!R.msg)L.push(`  My Al + CuCl2 lab: ${R.al.toFixed(3)} g Al -> predicted ${R.pred.toFixed(3)} g Cu; collected ${R.cu.toFixed(3)} g (${R.pct.toFixed(1)}%)`)}
+  L.push(`  Test yourself: best ${testBest()}/${TN} · sets taken: ${(S.test&&S.test.sets)||0}`);L.push('');L.push('PRACTICE');PR.forEach(p=>{L.push(...stReport(p,S.work[p.id]));L.push('')});L.push('LIMITING REACTANT');LP.forEach(p=>{L.push(...lReport(p,S.work[p.id]));L.push('')});return L.join('\n')}
+document.getElementById('copyBtn').addEventListener('click',()=>{const t=buildReport(),toast=document.getElementById('toast');const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('report'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. The record is selected: press Ctrl+C (or ⌘C) to copy.'};try{navigator.clipboard.writeText(t).then(()=>{toast.textContent='Copied. Paste it into your assignment.'},sel)}catch(e){sel()}});
+document.getElementById('dlBtn').addEventListener('click',()=>{const toast=document.getElementById('toast');const name=((S.student.name||'student').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')||'student');try{const blob=new Blob([buildReport()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`stoichiometry-work-${name}.txt`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast.textContent='Saved to your downloads.'}catch(e){toast.textContent='Saving is blocked here. Use Copy instead.'}});
+
+/* ---------- Read aloud, Easier reading (shared rules) ---------- */
+const SS=window.speechSynthesis,CAN=!!(SS&&typeof SpeechSynthesisUtterance!=='undefined');
+const gk=k=>{try{return localStorage.getItem(k)==='on'}catch(e){return false}},pk=(k,v)=>{try{localStorage.setItem(k,v?'on':'off')}catch(e){}};
+let raOn=CAN&&gk('raider-labs-readaloud'),easy=gk('raider-labs-easyread'),voice=null;
+function pickVoice(){if(!CAN)return;const vs=SS.getVoices()||[];const en=vs.filter(v=>/^en(-|_)?US/i.test(v.lang));const pool=en.length?en:vs.filter(v=>/^en/i.test(v.lang));voice=pool.find(v=>/natural|online|neural|premium|enhanced/i.test(v.name))||null}
+if(CAN){pickVoice();if(SS.addEventListener)SS.addEventListener('voiceschanged',()=>{pickVoice();syncSup()})}
+function speakable(t){return t.replace(/\s+/g,' ')
+  .replace(/[₀-₉]/g,c=>String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c)))
+  .replace(/\b((?:[A-Z][a-z]?\d*){2,})\b/g,m=>m.replace(/([A-Z][a-z]?)(\d*)/g,' $1 $2 '))
+  .replace(/g\/mol/g,'grams per mole').replace(/(\d)\s*%/g,'$1 percent').replace(/(\d) g\b/g,'$1 grams').replace(/\bmol\b/g,'moles')
+  .replace(/÷/g,' divided by ').replace(/×/g,' times ').replace(/→/g,' to ').replace(/≈/g,' about ').replace(/Σ/g,'sum of ').replace(/[✓🔒😕🔊]/g,'').replace(/\s+/g,' ').trim()}
+function say(t){if(!CAN||!voice||!raOn||!t)return;SS.cancel();(speakable(t).match(/[^.!?]+[.!?]*/g)||[t]).forEach(p=>{const u=new SpeechSynthesisUtterance(p.trim());u.voice=voice;u.lang=voice.lang||'en-US';u.rate=.95;SS.speak(u)})}
+const txt=el=>{if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('button,input,script,style').forEach(x=>x.remove());c.querySelectorAll('p,div,h2,h3,h4,li,tr').forEach(x=>x.append(document.createTextNode('. ')));return c.textContent.replace(/\s+/g,' ').replace(/(\.\s*){2,}/g,'. ').trim()};
+function sayHost(host){if(!raOn)return;const m=host.querySelector('.msg.bad');const hb=host.querySelector('.helpbox');const rv=host.querySelector('.reveal');const r=host.querySelector('.result');
+  if(hb&&!m){say(txt(hb));return}if(m){say(txt(m));return}
+  if(r){say(txt(r)+(rv?' '+txt(rv):''));return}
+  const st=[...host.querySelectorAll('.step')].pop();if(st){const h=st.querySelector('h4'),p=st.querySelector('.sb > p'),wy=st.querySelector('.why');say([h&&h.textContent,p&&txt(p),wy&&txt(wy)].filter(Boolean).join('. '))}}
+function saySection(){if(!raOn)return;const s=document.querySelector('section.sec:not([hidden])');if(!s)return;const lk=s.querySelector('#limLock:not([hidden])');
+  say([txt(s.querySelector('h2')),txt(s.querySelector('.lead')),lk?txt(lk):txt(s.querySelector('.defbox'))].filter(Boolean).join(' '))}
+function showHow(){let d=document.getElementById('raHow');if(!d){d=document.createElement('dialog');d.id='raHow';const edge=/Edg\//.test(navigator.userAgent);
+  const st=[['Open this page in Microsoft Edge','Edge has natural-sounding voices built in. Copy the link and paste it into Edge.'],['Select the words you want to hear','Right-click them and choose <b>Read aloud selection</b>, or press <b>Ctrl + Shift + U</b> for the whole page.'],['Pick a natural voice','Click <b>Voice options</b> and choose a voice with <b>Natural</b> in its name.'],['Fewer distractions','Select the text, right-click, and choose <b>Open in Immersive Reader</b>.']].map((x,i)=>[x,i]).filter(q=>!(edge&&q[1]===0));
+  d.innerHTML='<h2>Hear it read aloud in Microsoft Edge</h2><p>'+(edge?'Edge’s natural voices haven’t loaded yet. Wait a few seconds and try again, or use Edge’s own Read aloud:':'This browser doesn’t have a natural-sounding voice, so use Edge’s Read aloud.')+'</p><ol>'+st.map(([x,i])=>'<li><b>'+x[0]+'</b><br>'+x[1]+'<img src="img/read-aloud-'+(i+1)+'.png" alt="" loading="lazy" onerror="this.remove()"></li>').join('')+'</ol><button class="btn">Got it</button>';
+  d.querySelector('button').addEventListener('click',()=>d.close());document.body.appendChild(d)}if(d.showModal)d.showModal();else d.setAttribute('open','')}
+function syncSup(){const ra=document.getElementById('raBtn'),er=document.getElementById('erBtn');raOn=raOn&&!!voice;
+  ra.textContent=raOn?'🔊 Read aloud: on':'🔊 Read aloud';ra.setAttribute('aria-pressed',String(raOn));
+  er.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';er.setAttribute('aria-pressed',String(easy));document.documentElement.classList.toggle('easy',easy)}
+document.getElementById('raBtn').addEventListener('click',()=>{if(CAN)pickVoice();if(!voice){raOn=false;pk('raider-labs-readaloud',false);syncSup();showHow();return}
+  raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn){const h=document.querySelector('section.sec:not([hidden]) .step.current');const host=h&&h.closest('.card,[id]');if(host)sayHost(host);else saySection()}else SS.cancel()});
+document.getElementById('erBtn').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});
+function gcSend(path,title){(function go(n){const g=window.goatcounter;if(g&&typeof g.count==='function'){try{g.count({path,title,event:true})}catch(e){}}else if(n<40)setTimeout(()=>go(n+1),250)})(0)}
+const slug=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,40);
+
+/* ---------- This confused me: help first, then the reason (anonymous) ---------- */
+function cfBtn(where){const o=CFOPEN.has(where);return `<button class="cfb" data-cf="${esc(where)}" aria-expanded="${o}" title="Get help with this part">😕 ${o?'Close help':'This confused me'}</button>`}
+const CFOPEN=new Set(),CFWHY=new Map(),cfDone=new Set();
+const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
+const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading at the top.',see:'Thanks. Compare your numbers with the worked examples in Part 3, step by step.',words:'Thanks. Part 1 has the definitions. Ask your teacher about any other word.',fast:'Thanks. Take one step at a time, and use Show me this step.',question:'Thanks. That helps us rewrite it. Ask your teacher, too.'};
+const ASK_S=['How many moles is the mass you were given? Divide it by that substance’s molar mass.','How many moles of the substance you want go with your moles? Use the coefficients from the equation.','How much do those moles weigh? Multiply by the molar mass of the substance you want.'];
+const START_S=['Grams ÷ molar mass. The molar mass is in the gray box above the steps.','Top: the coefficient of what you want. Bottom: the coefficient of what you have. A missing coefficient is 1.','Moles × molar mass of what you want.'];
+const ANOTHER_S=[p=>`<p><b>Weight to count.</b> You can’t count molecules on a scale, so change the weight into a count first. Moles are a count, like a dozen. The equation is written in counts, not weights.</p><span class="k">${p.g} g ÷ ${ms(p.A.m)} g/mol = ? mol ${p.A.f}</span>`,
+ p=>`<p><b>Follow the recipe.</b> ${p.eq} is a recipe in moles. It says ${p.A.c} ${p.A.f} goes with ${p.B.c} ${p.B.f}. If you have more or less, scale it the same way.</p><span class="k">mol ${p.A.f} × (${p.B.c} mol ${p.B.f} / ${p.A.c} mol ${p.A.f})</span>`,
+ p=>`<p><b>Count back to weight.</b> Now you know how many moles of ${p.B.f}. To weigh them, multiply by how much one mole weighs.</p><span class="k">mol ${p.B.f} × ${ms(p.B.m)} g/mol = g ${p.B.f}</span>`];
+const ASK_L=['How many moles of each reactant do you have?','If each reactant were used up completely, how much product could it make?','Which reactant runs out first?','How much does the product weigh?'];
+const START_L=['Divide each mass by its molar mass.','Moles × (product coefficient ÷ reactant coefficient), once for each reactant.','The one that makes less product is limiting.','Use the smaller amount of product, and multiply by its molar mass.'];
+const ANOTHER_L=['<p><b>Same first move as always.</b> Change grams to moles for both reactants, because the recipe counts moles.</p>','<p><b>Pretend each one is the only thing that matters.</b> “If I used up all my crackers, how many s’mores?” Then: “If I used up all my marshmallows, how many?”</p>','<p><b>The smaller number wins.</b> You can only make as many s’mores as the ingredient that runs out first allows. The other reactant is left over (in excess).</p>','<p><b>Back to the scale.</b> Only the limiting reactant’s amount of product really forms, so change that one to grams.</p>'];
+function cfPanel(where,ask,another,start,act){const w=CFWHY.get(where);
+  return `<div class="cfhelp" data-cfp="${esc(where)}"><b>Let’s try it another way.</b>${ask?`<p><b>What it’s asking:</b> ${ask}</p>`:''}${another?`<div><b>Another way to see it:</b> ${another}</div>`:''}${start?`<p><b>How to start:</b> ${start}</p>`:''}${act?`<div class="row">${act}</div>`:''}
+   <div class="cfwhy">${w?`<span class="tip">${TIP[w]}</span>`:`<span class="tip">Still confused? Tell us what kind (anonymous):</span>${WHY.map(([k,l])=>`<button class="chip" data-why="${k}">${l}</button>`).join('')}`}</div></div>`}
+function hostOf(el){while(el&&!el._c)el=el.parentElement;return el}
+document.addEventListener('click',e=>{const y=e.target.closest('[data-why]');
+  if(y){e.preventDefault();e.stopPropagation();const pn=y.closest('.cfhelp'),where=pn.dataset.cfp,k=y.dataset.why;CFWHY.set(where,k);gcSend(['confused','ChemLab','stoichiometry',current(),where].join('/')+'/why-'+k,'Confusing: '+k);pn.querySelector('.cfwhy').innerHTML=`<span class="tip">${TIP[k]}</span>`;return}
+  const b=e.target.closest('[data-cf]');if(!b)return;e.preventDefault();e.stopPropagation();const where=b.dataset.cf,open=!CFOPEN.has(where);if(open)CFOPEN.add(where);else CFOPEN.delete(where);
+  if(open&&!cfDone.has(where)){cfDone.add(where);gcSend(['confused','ChemLab','stoichiometry',current(),where].join('/'),'Confusing step')}
+  const h=hostOf(b);if(h)draw(h);else if(where.startsWith('quiz/'))drawQuiz();else if(where.startsWith('use/'))drawUse();else if(where.startsWith('test/'))drawTest();
+  else if(where==='map/order'){const r=document.getElementById('mapHelp');r.innerHTML=open?cfPanel(where,'Put the three moves in the order you do them.','<p><b>Think about where the equation fits.</b> It only speaks moles, so the mole-to-mole move has to happen in the middle.</p>','Start with what you’re given: grams.',''):'';b.setAttribute('aria-expanded',String(open));b.textContent=open?'😕 Close help':'😕 This confused me'}
+  if(open){const pn=document.querySelector(`.cfhelp[data-cfp="${CSS.escape(where)}"]`);if(pn){pn.scrollIntoView({block:'nearest'});say(txt(pn).replace(/Still confused\?.*$/,''))}}},true);
+window.addEventListener('hashchange',()=>{if(CAN)SS.cancel();setTimeout(()=>{saySection();if(current()==='test')setTimeout(sayTest,50)},150)});
+window.addEventListener('pagehide',()=>{if(CAN)SS.cancel()});
+document.getElementById('defX').addEventListener('click',e=>{const b=e.currentTarget,pn=document.getElementById('defXp');pn.hidden=!pn.hidden;b.setAttribute('aria-expanded',String(!pn.hidden));b.textContent=pn.hidden?'🤔 What does this mean?':'🤔 Hide the other explanation';if(!pn.hidden)say(txt(pn))});
+
+/* ---------- Choose how to start: the airbag mystery, or just the lesson ---------- */
+const CASETXT='<p><b>A car crashes. In 30 milliseconds, faster than a blink, a bag bursts out of the steering wheel and fills with gas.</b> That gas came from a small amount of powder. Many airbags used sodium azide: 2NaN₃ → 2Na + 3N₂.</p><p>The bag needs <b>70.0 g of nitrogen gas</b> to fill. <b>How much powder do the engineers pack in?</b> Too little and the bag won’t fill in time; too much and it can burst. You’ll solve it at the end of Part 4.</p>';
+function drawPath(){const el=document.getElementById('pathCard'),pth=S.path;
+  if(pth==='case')el.innerHTML=`<div class="eyebrow">The case</div>${CASETXT}<div><button class="linkbtn" data-path="plain">Switch to just the lesson</button></div>`;
+  else if(pth==='plain')el.innerHTML=`<p class="muted">Just the lesson, step by step. <button class="linkbtn" data-path="case">Want a mystery to solve instead?</button></p>`;
+  else el.innerHTML=`<div class="eyebrow">How do you want to start?</div><p>Same lesson either way. Pick one:</p><div class="pathbtns"><button class="btn" data-path="case">🔎 Solve a mystery</button><button class="btn ghost" data-path="plain">📘 Just the lesson</button></div>`;
+  document.getElementById('caseCard').hidden=pth!=='case'}
+document.getElementById('pathCard').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;S.path=b.dataset.path;save();drawPath();if(S.path==='case')say(txt(document.getElementById('pathCard')))});
+document.querySelector('[data-sec="lab"]').addEventListener('click',e=>{const a=e.target.closest('[data-sim]');if(!a)return;S.sims=S.sims||{};S.sims[a.dataset.sim]=1;save();refresh();gcSend('sim/ChemLab/stoichiometry/'+a.dataset.sim,'Opened simulation')});
+syncSup();drawPath();
+
+/* ---------- boot ---------- */
+drawQuiz();drawRhyme();
+mount(document.getElementById('exA'),'st',EX.exA,'exA',{demo:true});
+mount(document.getElementById('exB'),'st',EX.exB,'exB',{demo:true});
+mount(document.getElementById('l0'),'lim',L0,'l0',{demo:true});
+mount(document.getElementById('caseHost'),'st',CASE,'case',{});
+showPractice();showLim();
+route();
+})();
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each section (#part) counts as its own page. A visit through the school's Securly filter (?scrlybrkr) adds ?sd = school device. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+
+</body>
+</html>
