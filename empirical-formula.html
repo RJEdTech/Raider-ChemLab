@@ -240,20 +240,6 @@ footer.credit a{color:var(--accent)}
 .ffgrp{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
 @media (max-width:560px){.ffx{flex-basis:100%;flex-direction:row;gap:8px;min-width:0}.ffx b{transform:rotate(90deg)}}
 .mcwrap{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.rl,.at{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface);display:flex;flex-direction:column;gap:7px}
-.rl h4,.at h4{margin:0;font-family:var(--f-display);font-size:.95rem}
-.rlrow,.atrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
-.rltrack{display:flex;height:20px;background:rgba(0,0,0,.04);border-radius:4px;overflow:hidden}
-.rltrack i{display:block;height:100%;border-right:2px solid #fff;box-sizing:border-box}
-.rltrack i:nth-child(odd){background:#7aa7e0}.rltrack i:nth-child(even){background:#a9c7ee}
-.rltrack i.part{background:repeating-linear-gradient(45deg,#f2b8a8,#f2b8a8 4px,#f8d6cc 4px,#f8d6cc 8px)}
-.rl .lb,.at .lb{font-family:var(--f-mono);font-size:.85rem;white-space:nowrap}
-.atoms{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:20px}
-.atom{width:18px;height:18px;border-radius:50%;display:inline-block;border:2px solid rgba(0,0,0,.25);box-sizing:border-box}
-.atomcut{width:var(--w);height:18px;overflow:hidden;display:inline-block;position:relative}
-.atomcut .atom{position:absolute;left:0;top:0;border-style:dashed}
-.atomcut::after{content:"";position:absolute;right:0;top:0;bottom:0;border-right:2px solid #c0392b}
-.rl .ins,.at .ins{margin:2px 0 0;font-weight:700}
 .wc-h{font:700 17px var(--f-display);fill:var(--muted)}.wc-l{font:700 22px var(--f-mono);fill:var(--ink);text-anchor:middle}.wc-v{font:700 17px var(--f-mono);fill:var(--ink)}.wc-c{font:700 19px var(--f-mono);fill:var(--ink);text-anchor:middle}
 #wcScene .lk-stage svg{max-width:540px}
 .wc-bH{fill:#cfe3ff;stroke:#2f6fd6;stroke-width:2}.wc-bO{fill:#f2b8b1;stroke:#d9483b;stroke-width:2}
@@ -666,7 +652,7 @@ function empStage(i,p,w,key){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span class="val">${shown(w.grams[j])}</span>${u('g '+e.sym,done)}<span class="op">×</span><span class="frac"><span>1 ${u('mol '+e.sym)}</span><span>${ms(e.m)} ${u('g '+e.sym,done)}</span><span class="cap">molar mass of ${e.sym}</span></span><span class="op">=</span>${inp(key,'moles',j,w.moles[j],dis,'moles of '+e.sym)}${u('mol '+e.sym)}</div>`).join('');
   }
   if(i===2){
-    b+=`<p class="muted">Which element has the smallest number of moles?</p><div class="row">`+
+    b+=`<p class="muted">Which element has the smallest number of <b>moles</b>? Use your answers from step 2, not the molar masses.</p><div class="row">`+
       p.els.map((e,j)=>`<button class="chip${w.si===j?' sel':''}" data-act="si" data-v="${j}" ${dis?'disabled':''}>${e.sym}: ${shown(w.moles[j])} mol</button>`).join('')+`</div>`;
     if(w.si!=null){
       const s=p.els[w.si];
@@ -674,7 +660,7 @@ function empStage(i,p,w,key){
     }
   }
   if(i===3){
-    b+=`<p class="muted">Are all ratios within about 0.1 of a whole number? If yes, multiply by 1. If not, pick the multiplier that makes them whole.</p><div class="row">`+
+    b+=`<p class="muted">Subscripts count atoms, and there is no such thing as part of an atom. Are all ratios within about 0.1 of a whole number? If yes, multiply by 1. If not, pick the multiplier that makes them whole.</p><div class="row">`+
       [1,2,3,4,5].map(m=>`<button class="chip${w.mult===m?' sel':''}" data-act="mult" data-v="${m}" ${dis?'disabled':''}>× ${m}</button>`).join('')+`</div>`;
     if(w.mult!=null){
       b+=p.els.map((e,j)=>{const r=num(w.ratio[j]);const prod=r*w.mult;
@@ -696,7 +682,7 @@ function empHTML(p,key,o){
   const w=W(key,()=>o.demo?demoEmpW(p):newEmpW());
   const prompt=p.prompt||`A compound is ${listPct(p)} by mass.${p.full?` Its molar mass is ${p.molar} g/mol. First find the empirical formula.`:' Find its empirical formula.'}`;
   let h=`<div class="solver"><div class="problem"><p class="prompt">${prompt}</p><div class="givens">${p.els.map(e=>`<span class="given">${tile(e.sym)}${e.pct}% · molar mass ${ms(e.m)} g/mol</span>`).join('')}</div></div>`;
-  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key);if(i===1&&w.stage>=2)h+=`<div class="mcwrap"><div class="eyebrow">Weight vs count for this compound</div>${massCount(p,w)}</div>`;const vis=w.demo?w.stage>i:w.stage>=i;if(i===2&&vis)h+=`<div class="mcwrap">${rulerPic(p,w)}</div>`;if(i===3&&vis)h+=`<div class="mcwrap">${atomsPic(p,w)}</div>`}
+  for(let i=0;i<4;i++){if(w.demo?i<w.stage:i<=w.stage)h+=empStage(i,p,w,key);if(i===1&&w.stage>=2)h+=`<div class="mcwrap"><div class="eyebrow">Weight vs count for this compound</div>${massCount(p,w)}</div>`}
   if(w.stage>=4)h+=`<div class="result"><span>Empirical formula</span><span class="big">${fHTML(p.els,p.subs)}</span></div>`+(w.solved&&!p.full?reveal(p):'')+(w.solved&&p.full?`<p class="muted">Now use the molar mass below to find the molecular formula.</p>`:'');
   if(w.demo){h+=`<div class="row">${w.stage<4?`<button class="btn" data-act="next">Show step ${w.stage+1}: ${RHY[w.stage]}</button>`:`<button class="btn ghost small" data-act="replay">Replay example</button>`}</div>`}
   else h+=`<div class="newrow"><button class="btn ghost small" data-act="another">${w.solved?'Try another compound':'New numbers: a different compound'}</button><button class="linkbtn" data-act="reset">Start this problem over</button>${w.attempts?`<span class="muted" style="font-size:.9rem">${w.attempts} check${w.attempts>1?'s':''} so far</span>`:''}</div>`;
@@ -738,7 +724,7 @@ function molStage(i,p,w,key){
     b+=`<div class="calc"><b>Empirical formula mass</b><span class="op">=</span>${inp(key,'efm',null,w.efm,dis,'empirical formula mass')}${u('g/mol')}</div>`;
   }
   if(i===1){
-    b+=`<p class="muted">How many ${fHTML(p.els,p.emp)} units fit in one molecule? Divide the whole molecule’s mass by the mass of one unit.</p>`;
+    b+=`<p class="muted">How many ${fHTML(p.els,p.emp)} units fit in one molecule? Divide the molecule’s molar mass (the bigger number) by the mass of one ${fHTML(p.els,p.emp)} unit from step 1.</p>`;
     b+=`<div class="calc"><i>n</i><span class="op">=</span>${frac(`${p.molar} ${u('g/mol',done)}`,`<span class="val">${shown(w.efm)}</span> ${u('g/mol',done)}`)}<span class="op">=</span>${inp(key,'nRaw',null,w.nRaw,dis,'n before rounding')}</div>`;
     b+=`<div class="calc">Whole number <i>n</i><span class="op">=</span>${inp(key,'n',null,w.n,dis,'n as a whole number','w')}</div>`;
   }
@@ -790,29 +776,6 @@ function massCount(p,w){if(!(w.stage>=1))return '';
     h+=`<p class="ins">${p.els[k].sym} is ${Math.round(g[k]/gs*100)}% of the mass but ${Math.round(mol[k]/ms_*100)}% of the atoms. Formulas count atoms, so we compare moles, not grams.</p>`}
   else h+=`<div class="muted" style="align-self:center">Finish step 2 to see the same elements counted as atoms.</div>`;
   return h+`</div>`}
-
-/* ---------- See it: divide by smallest + make it whole (RJ Ed Tech, Nov 19) ----------
-   Students' "This confused me" clicks on Nov 19 landed on these two steps, which were only fractions and number boxes.
-   Ruler: each element's moles as a bar, cut into pieces the length of the smallest bar. Dividing by the smallest = counting pieces.
-   Atoms: the ratio drawn as atoms. A cut atom is the reason for "make it whole"; the ×n row appears only once the step is solved,
-   so the picture never gives away the multiplier. Values come from the problem, not the student's typing. */
-const ATC=['#3f4a5a','#cfe0f5','#d65a4a','#4f8fd9','#c99a2e'];
-function rulerPic(p,w){const mol=p.els.map(e=>e.pct/e.m),mn=Math.min(...mol),mx=Math.max(...mol),si=mol.indexOf(mn),seg=mn/mx*100,got=w.stage>=3;
-  const rows=p.els.map((e,j)=>{const r=mol[j]/mn,near=Math.abs(r-Math.round(r))<0.1,full=near?Math.round(r):Math.floor(r),part=near?0:r-full;let t='';
-    for(let k=0;k<full;k++)t+=`<i style="width:${seg.toFixed(2)}%"></i>`;
-    if(part>0.02)t+=`<i class="part" style="width:${(seg*part).toFixed(2)}%"></i>`;
-    return `<div class="rlrow">${tile(e.sym)}<div class="rltrack" aria-hidden="true">${t}</div><span class="lb">${got?(r.toFixed(2)==='1.00'?'1 piece':r.toFixed(2)+' pieces'):(j===si?'1 piece':'? pieces')}</span></div>`}).join('');
-  return `<div class="rl" role="img" aria-label="Moles of each element drawn as bars, cut into pieces the size of the smallest bar, ${p.els[si].sym}."><h4>Use the smallest as a ruler</h4>${rows}
-   <p class="ins">${p.els[si].sym} is the smallest bar, so it is 1 piece. Dividing by the smallest just counts how many of those pieces fit in each bar.</p></div>`}
-function atomRow(n,c){const near=Math.abs(n-Math.round(n))<0.1,full=near?Math.round(n):Math.floor(n),part=near?0:n-full;let h='';for(let k=0;k<full;k++)h+=`<span class="atom" style="background:${c}"></span>`;
-  if(part>0.1&&part<0.9)h+=`<span class="atomcut" style="--w:${Math.round(18*part)}px"><span class="atom" style="background:${c}"></span></span>`;return h}
-function atomsPic(p,w){const mol=p.els.map(e=>e.pct/e.m),mn=Math.min(...mol),r=mol.map(x=>x/mn),m=p.mult||1,got=w.stage>=4;
-  const off=r.map(x=>Math.abs(x-Math.round(x))),k=off.indexOf(Math.max(...off)),cut=m>1;
-  const rows=p.els.map((e,j)=>`<div class="atrow">${tile(e.sym)}<div class="atoms">${atomRow(r[j],ATC[j%ATC.length])}</div><span class="lb">${r[j].toFixed(2)}</span></div>`).join('');
-  const rows2=got&&cut?`<h4 style="margin-top:6px">× ${m}: every atom whole</h4>`+p.els.map((e,j)=>`<div class="atrow">${tile(e.sym)}<div class="atoms">${atomRow(Math.round(r[j]*m),ATC[j%ATC.length])}</div><span class="lb">${Math.round(r[j]*m)}</span></div>`).join(''):'';
-  const note=cut?(got?`Multiplying <b>every</b> row by ${m} turned the cut atom into whole ones, and kept the ratio the same.`:`${p.els[k].sym} ends in a cut atom (${r[k].toFixed(2)}). There is no such thing as part of an atom, and rounding would change the compound. What number makes <b>every</b> row whole?`)
-    :(off[k]<0.005?`Every row is already whole atoms, so × 1.`:`Every row is already whole atoms. A ratio like ${r[k].toFixed(2)} is just rounding from the lab numbers, not part of an atom, so × 1 and round.`);
-  return `<div class="at" role="img" aria-label="The mole ratio drawn as atoms."><h4>The ratio as atoms</h4>${rows}${rows2}<p class="ins">${note}</p></div>`}
 
 /* ---------- Chemistry / Honors level (RJ Ed Tech) ----------
    Chemistry: practice skips the four-element and ×4 compounds, each step shows a one-line hint, and Show me this step appears after one miss.
@@ -1217,7 +1180,7 @@ function cfBtn(where){const o=CFOPEN.has(where);return `<button class="cfb" data
 const CFOPEN=new Set(),CFWHY=new Map(),cfDone=new Set();
 const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
 const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading at the top.',see:'Thanks. Compare your numbers with the worked examples in Part 3, step by step.',words:'Thanks. Part 1 has the definitions. Ask your teacher about any other word.',fast:'Thanks. Take one step at a time, and use Show me this step.',question:'Thanks. That helps us rewrite it. Ask your teacher, too.'};
-const ASK_E=['Turn each percent into grams. Pretend you have exactly 100 g, so the percent and the grams are the same number.','How many moles (a count of atoms) is each mass? Divide each mass by that element’s molar mass.','Which element has the fewest moles? Divide every element’s moles by that number.','Are all your ratios close to whole numbers? If not, what number makes them whole when you multiply every one?'];
+const ASK_E=['Turn each percent into grams. Pretend you have exactly 100 g, so the percent and the grams are the same number.','How many moles (a count of atoms) is each mass? Divide each mass by that element’s molar mass.','Which element has the fewest moles (your step 2 answers, not the molar masses)? Divide every element’s moles by that number.','Are all your ratios close to whole numbers? If not, what number makes them whole when you multiply every one?'];
 const ASK_M=['How much does one copy of the empirical formula weigh? Add up the masses of its atoms.','How many copies fit in the real molecule? Divide the molar mass by your answer from step 1.','Write the real formula: multiply each subscript by n.'];
 const QHELP=[['Which formula keeps the same 1 : 2 : 1 ratio as C₆H₁₂O₆, but in the smallest whole numbers?','Find the biggest number that divides 6, 12 and 6, and divide every subscript by it.'],
  ['Reduce the subscripts 2 and 4 to the smallest whole numbers.','What number divides both 2 and 4?'],
