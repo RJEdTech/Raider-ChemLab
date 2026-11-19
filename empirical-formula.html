@@ -240,6 +240,21 @@ footer.credit a{color:var(--accent)}
 .ffgrp{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
 @media (max-width:560px){.ffx{flex-basis:100%;flex-direction:row;gap:8px;min-width:0}.ffx b{transform:rotate(90deg)}}
 .mcwrap{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.movie{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);margin:6px 0 10px}
+.movie svg{width:100%;height:auto;display:block;max-height:420px}
+.mva{transition:transform .9s cubic-bezier(.4,.1,.2,1),opacity .6s}
+.mva circle{stroke:rgba(0,0,0,.35);stroke-width:1.2}
+.mva text{text-anchor:middle;font-family:var(--f-mono);font-weight:700}
+.noanim .mva{transition:none!important}
+.mvt{text-anchor:middle;font-size:13px;font-weight:700;fill:currentColor}
+.mvt.bad{fill:#c0392b}
+.mvbox{fill:rgba(79,143,217,.07);stroke:#7aa7e0;stroke-width:1.5;stroke-dasharray:5 4;transition:opacity .4s}
+.mvbox.left{fill:rgba(192,57,43,.06);stroke:#c0392b}
+.mvbox.mol{fill:none;stroke:#8a6fc0;stroke-dasharray:none}
+.mvfade{animation:mvf .5s ease-out}@keyframes mvf{from{opacity:0}to{opacity:1}}
+.mvcap{margin:6px 0}.mvctl{align-items:center}
+.mvbtn{margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){.mva{transition:opacity .2s}}
 .wc-h{font:700 17px var(--f-display);fill:var(--muted)}.wc-l{font:700 22px var(--f-mono);fill:var(--ink);text-anchor:middle}.wc-v{font:700 17px var(--f-mono);fill:var(--ink)}.wc-c{font:700 19px var(--f-mono);fill:var(--ink);text-anchor:middle}
 #wcScene .lk-stage svg{max-width:540px}
 .wc-bH{fill:#cfe3ff;stroke:#2f6fd6;stroke-width:2}.wc-bO{fill:#f2b8b1;stroke:#d9483b;stroke-width:2}
@@ -667,6 +682,7 @@ function empStage(i,p,w,key){
         return `<div class="calc">${tile(e.sym)}<span class="val">${shown(w.ratio[j])}</span><span class="op">×</span><span>${w.mult}</span><span class="op">=</span><span class="val">${isFinite(prod)?prod.toFixed(2):'?'}</span><span class="op">≈</span>${inp(key,'subs',j,w.subs[j],dis,'subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`}).join('');
     }
   }
+  b=mvBtn(key+'|emp|'+i)+b;
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
   if(!done&&!w.demo){
     if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${CHINT[i]}</div>`;
@@ -731,6 +747,7 @@ function molStage(i,p,w,key){
   if(i===2){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]}</span><span class="op">×</span><span>${shown(w.n)}</span><span class="op">=</span>${inp(key,'subs',j,w.subs[j],dis,'molecular subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`).join('');
   }
+  if(i>0)b=mvBtn(key+'|mol|'+i)+b;
   if(w.demo&&p.notes)b+=`<div class="why">${p.notes[i]}</div>`;
   if(!done&&!w.demo){if(lvl()==='chem')b+=`<div class="chint"><b>Hint:</b> ${MHINT[i]}</div>`;b+=`<div class="row"><button class="btn small" data-act="check" data-s="${i}">Check step ${i+1}</button>${helpBtn(w,i)}</div>`;if(w.msg)b+=`<div class="msg bad" role="status">${w.msg}</div>`;
     if(w.shown&&w.shown[i])b+=`<div class="helpbox"><b>Show me this step.</b> ${molHelp(i,p,w)}</div>`}
@@ -776,6 +793,120 @@ function massCount(p,w){if(!(w.stage>=1))return '';
     h+=`<p class="ins">${p.els[k].sym} is ${Math.round(g[k]/gs*100)}% of the mass but ${Math.round(mol[k]/ms_*100)}% of the atoms. Formulas count atoms, so we compare moles, not grams.</p>`}
   else h+=`<div class="muted" style="align-self:center">Finish step 2 to see the same elements counted as atoms.</div>`;
   return h+`</div>`}
+
+/* ---------- Watch it with atoms (RJ Ed Tech, Nov 19: Jason) ----------
+   "Pictures that give why or what each step is doing … with atoms … so they can see why they are doing this and what it means."
+   Opt-in: each step has a ⚛️ button. A short movie of real atoms (a small sample, in the problem's true ratio), one frame per idea,
+   moved by the student with Next/Back so they can read. Every caption says what happens to the atoms and why we do it.
+   Values come from the problem, never the student's typing. Atom size grows with atomic mass. */
+const ACOL={C:'#3f4a5a',H:'#f4f6f8',O:'#d65a4a',N:'#4f8fd9',Fe:'#c27a3a',S:'#e3c440',Ag:'#b8bfc6',Cl:'#5bbf6a',Na:'#9b7fd1',K:'#9b7fd1',Mg:'#8fb3c9',Ca:'#d9d2c3',P:'#e08a3c',Cu:'#c26a3a',Al:'#a7b4c2',Cr:'#6aa58f',Mn:'#9b6fb0',Zn:'#8c9bb0',B:'#e0a080',Si:'#c9b48a'};
+const ADARK=new Set(['C','N','Fe','Na','K','Cu','O','P','Cr','Mn']);
+const MV={W:620,H:300};
+const MOPEN=new Set(),MFRAME=new Map();
+const sub=n=>n>1?String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]):'';
+const fT=(els,s)=>els.map((e,i)=>e.sym+sub(s[i])).join('');
+function atomSize(e,sc){return (4+3.4*Math.cbrt(e.m))*(sc||1)}
+function mvSample(p){const mol=p.els.map(e=>e.pct/e.m),si=mol.indexOf(Math.min(...mol)),subs=p.subs.map(Number),tot=subs.reduce((a,b)=>a+b,0);
+  let K=(p.mult||1)>1?2:Math.max(1,Math.min(4,Math.floor(16/tot)));if(subs[si]*K<2&&tot*2<=40)K=2;
+  const n=subs.map(s=>s*K),atoms=[];n.forEach((c,j)=>{for(let k=0;k<c;k++)atoms.push({j})});
+  return {mol,si,subs,K,n,atoms,G:n[si],mult:p.mult||1,ratio:mol.map(v=>v/mol[si])}}
+/* layouts */
+function lyBlocks(p,split){const tot=p.els.reduce((a,e)=>a+ +e.pct,0),gap=split?10:0,avail=MV.W-40-gap*(p.els.length-1);let x=20;
+  return p.els.map((e,j)=>{const w=Math.max(split?26:0,avail*(+e.pct)/tot);const b={x,w,j};x+=w+gap;return b})}
+function lyPiles(p,S_){const E=p.els.length,cw=(MV.W-20)/E,pos=[];
+  p.els.forEach((e,j)=>{const r=atomSize(e),d=2*r+4,list=S_.atoms.map((a,i)=>a.j===j?i:-1).filter(i=>i>=0),cols=Math.min(6,Math.max(2,Math.ceil(Math.sqrt(list.length*1.5))));
+    list.forEach((i,k)=>{const c=k%cols,rw=Math.floor(k/cols),x0=10+cw*(j+.5)-(Math.min(cols,list.length)-1)*d/2;pos[i]={x:x0+c*d,y:PY0(p)+rw*d,o:1}})});return pos}
+const PY0=p=>112+Math.max(...p.els.map(e=>atomSize(e)));
+function lyGroups(p,S_,G,mode){/* mode 'one': only smallest placed; 'deal': all dealt evenly, leftovers below; 'whole': exact */
+  const E=p.els.length,bw=Math.min(150,(MV.W-20)/G-10),bx=g=>10+((MV.W-20)-G*(bw+10))/2+g*(bw+10)+5;
+  const per=S_.n.map(c=>Math.floor(c/G)),rowH=p.els.map(e=>2*atomSize(e)+4),maxPer=Math.max(...per,1);
+  const cols=Math.max(1,Math.floor((bw-8)/ (2*Math.max(...p.els.map(e=>atomSize(e)))+4)));
+  const rowsFor=j=>Math.max(1,Math.ceil(per[j]/cols));
+  let hIn=8;const rowY=[];p.els.forEach((e,j)=>{rowY[j]=hIn+rowH[j]/2;hIn+=rowH[j]*rowsFor(j)});const bh=hIn+6,by=20;
+  const boxes=Array.from({length:G},(_,g)=>({x:bx(g),y:by,w:bw,h:bh,cls:'g'}));
+  const pos=[],pile=lyPiles(p,S_),left=[];
+  p.els.forEach((e,j)=>{const list=S_.atoms.map((a,i)=>a.j===j?i:-1).filter(i=>i>=0),d=2*atomSize(e)+4;
+    list.forEach((i,k)=>{
+      if(mode==='one'&&j!==S_.si){pos[i]={...pile[i],y:pile[i].y-PY0(p)+by+bh+44,o:1};return}
+      const g=k%G,slot=Math.floor(k/G);
+      if(slot>=per[j]){left.push(i);return}
+      const c=slot%cols,rw=Math.floor(slot/cols),nInRow=Math.min(cols,per[j]-rw*cols);
+      pos[i]={x:boxes[g].x+bw/2-(nInRow-1)*d/2+c*d,y:by+rowY[j]+rw*rowH[j],o:1}})});
+  let lb=null;if(left.length){const y=by+bh+42;let x=MV.W/2-(left.length-1)*15;left.forEach(i=>{pos[i]={x,y,o:1};x+=30});lb={x:MV.W/2-left.length*15-16,y:y-20,w:left.length*30+32,h:40,cls:'left'}}
+  return {pos,boxes:lb?boxes.concat([lb]):boxes,left:left.length}}
+/* frames */
+function empFrames(i,p){const S_=mvSample(p),els=p.els,sm=els[S_.si].sym,R=S_.ratio.map(r=>r.toFixed(2)),ff=fT(els,p.subs),gramsTxt=els.map(e=>`${e.pct} g ${e.sym}`).join(', ');
+  const hide=S_.atoms.map(()=>({x:MV.W/2,y:60,o:0}));
+  const blocks1=[{x:20,w:MV.W-40,j:-1,label:'100 g of the compound'}],blocks2=lyBlocks(p,true).map(b=>({...b,label:`${els[b.j].pct} g ${els[b.j].sym}`}));
+  const piles=lyPiles(p,S_),startFromBlocks=S_.atoms.map(a=>{const b=blocks2[a.j];return{x:b.x+b.w/2,y:58,o:0}});
+  const counts=els.map((e,j)=>`${S_.n[j]} ${e.sym}`).join(', ');
+  const pileLbl=els.map((e,j)=>({x:10+(MV.W-20)/els.length*(j+.5),y:104,t:`${f(S_.mol[j])} mol ${e.sym}`}));
+  const one=lyGroups(p,S_,S_.G,'one'),deal=lyGroups(p,S_,S_.G,'deal'),whole=lyGroups(p,S_,S_.K,'deal');
+  const even=!deal.left,perTxt=els.map((e,j)=>`${R[j].replace(/\.00$/,'')} ${e.sym}`).join(', ');
+  if(i===0)return[
+    {blocks:blocks1,pos:hide,cap:`<b>What it means:</b> “${els[0].pct}% carbon” means ${els[0].pct} out of every 100 parts by mass. So picture exactly <b>100 g</b> of the compound.`},
+    {blocks:blocks2,pos:hide,cap:`<b>What happens:</b> each percent becomes grams: ${gramsTxt}. <b>Why:</b> we need real amounts to work with, and 100 g makes the math easy. Any size sample gives the same formula.`}];
+  if(i===1)return[
+    {blocks:blocks2,pos:startFromBlocks,cap:`<b>The problem:</b> grams tell you how <i>heavy</i> each part is, not how <i>many</i> atoms. But a formula counts atoms.`},
+    {blocks:blocks2,pos:piles,labels:pileLbl,cap:`<b>What happens:</b> dividing by the molar mass turns grams into a count of atoms (moles). Heavy atoms are big, so a few of them fill a lot of grams. Light atoms are tiny, so it takes many. <span class="muted">Drawn as a small sample: ${counts}.</span>`}];
+  if(i===2)return[
+    {pos:piles.map(q=>({...q,y:q.y-PY0(p)+44+Math.max(...els.map(e=>atomSize(e)))})),labels:pileLbl.map(l=>({...l,y:30})),cap:`<b>The problem:</b> numbers like ${els.map((e,j)=>f(S_.mol[j])).join(' and ')} are real counts, but they don’t look like a formula yet.`},
+    {pos:one.pos,boxes:one.boxes,cap:`<b>What happens:</b> give each ${sm} atom its own group. ${sm} has the fewest, so it decides how many groups there are. <b>Why the smallest?</b> Then every group gets at least one of everything.`},
+    {pos:deal.pos,boxes:deal.boxes,cap:even?`<b>What it means:</b> deal the other atoms out evenly. Every group gets ${perTxt}. Dividing by the smallest asks “how many of each atom per ${sm}?” That splits the sample into as many identical groups as possible.`:`Deal out the rest. Every group gets ${perTxt}… but ${deal.left} atom${deal.left>1?'s are':' is'} left over, because each group would need part of an atom. Step 4 fixes that.`}];
+  /* i===3 */
+  if(S_.mult===1)return[
+    {pos:deal.pos,boxes:deal.boxes,cap:`<b>Check:</b> every group already has whole atoms (${perTxt}). Numbers like 2.01 only come from rounding in the lab data, not from part of an atom.`},
+    {pos:deal.pos,boxes:deal.boxes,focus:0,cap:`<b>What it means:</b> one group is the empirical formula, <b>${ff}</b>: the smallest whole-number recipe for this compound. Multiply by 1. <b>Why stop at this size?</b> A smaller group would need part of an atom, and a bigger one is just copies of this one.`}];
+  return[
+    {pos:deal.pos,boxes:deal.boxes,cap:`<b>The problem:</b> each group would need ${perTxt}. There is no such thing as part of an atom, and rounding would make a different compound.`},
+    {pos:whole.pos,boxes:whole.boxes,cap:`<b>What happens:</b> put ${S_.mult} groups together. Now every group has whole atoms: ${els.map((e,j)=>`${p.subs[j]} ${e.sym}`).join(', ')}. Same ratio, no partial atoms. That is <b>${ff}</b>, and why you multiply <b>every</b> ratio by ${S_.mult}. <b>Why ${S_.mult} and not more?</b> ${S_.mult} is the smallest number that makes every group whole. Bigger groups would just be copies of this one.`}]}
+function molFrames(i,p){const els=p.els,emp=p.emp.map(Number),n=+p.n,efm=els.reduce((a,e,j)=>a+emp[j]*e.m,0),ef=fT(els,emp),mf=fT(els,emp.map(x=>x*n));
+  const unitAtoms=[];els.forEach((e,j)=>{for(let k=0;k<emp[j];k++)unitAtoms.push(j)});
+  const atoms=[];for(let u=0;u<n;u++)unitAtoms.forEach(j=>atoms.push({j,u}));
+  const rmax=Math.max(...els.map(e=>atomSize(e))),cols=Math.ceil(Math.sqrt(unitAtoms.length)),rows=Math.ceil(unitAtoms.length/cols);
+  let sc=1;const cw0=cols*(2*rmax+3)+10;if(n*cw0>MV.W-40)sc=(MV.W-40)/(n*cw0);
+  const d=(2*rmax+3)*sc,cw=cols*d+10*sc,ch=rows*d+10*sc,mx=(MV.W-n*cw)/2,my=150;
+  const inUnit=(k,ox,oy)=>({x:ox+5*sc+(k%cols+.5)*d,y:oy+5*sc+(Math.floor(k/cols)+.5)*d});
+  const unitPos=(u,ox,oy,o)=>atoms.map((a,i)=>i>=u*unitAtoms.length&&i<(u+1)*unitAtoms.length?{...inUnit(i-u*unitAtoms.length,ox,oy),o}:null);
+  const merge=(...arr)=>atoms.map((_,i)=>arr.map(x=>x[i]).find(Boolean)||{x:MV.W/2,y:my,o:0});
+  const outline={x:mx-4,y:my-6,w:n*cw+8,h:ch+12,cls:'mol',label:`one molecule: ${p.molar} g/mol`};
+  const ux=(MV.W-cw)/2,oneAt=unitPos(0,ux,34,1);
+  const filled=merge(...Array.from({length:n},(_,u)=>unitPos(u,mx+u*cw,my,1)));
+  const unitBoxes=Array.from({length:n},(_,u)=>({x:mx+u*cw+2,y:my-2,w:cw-4,h:ch+4,cls:'g'}));
+  if(i===1)return[
+    {pos:merge(oneAt),sc,boxes:[{x:ux-4,y:30,w:cw+8,h:ch+8,cls:'g',label:`one ${ef}: ${efm.toFixed(2)} g/mol`},outline],cap:`<b>The question:</b> one ${ef} unit weighs ${efm.toFixed(2)} g/mol. The whole molecule weighs ${p.molar} g/mol. How many ${ef} units are inside one molecule?`},
+    {pos:filled,sc,stagger:unitAtoms.length,boxes:[outline,...unitBoxes],cap:`<b>What happens:</b> fill the molecule with units. ${n} × ${efm.toFixed(2)} = ${(n*efm).toFixed(2)}, which matches ${p.molar}. <b>What dividing means:</b> ${p.molar} ÷ ${efm.toFixed(2)} = ${n} counts how many units fit. The bigger number (the molecule) goes on top.`}];
+  const ly={};const pos=atoms.map(()=>null);els.forEach((e,j)=>{const list=atoms.map((a,i)=>a.j===j?i:-1).filter(i=>i>=0),dd=(2*atomSize(e)+3)*sc,c=Math.min(12,list.length);
+    list.forEach((i,k)=>{pos[i]={x:MV.W/2-(c-1)*dd/2+(k%c)*dd,y:110+j*0+0,o:1}})});
+  let y=110;els.forEach((e,j)=>{const list=atoms.map((a,i)=>a.j===j?i:-1).filter(i=>i>=0),dd=(2*atomSize(e)+3)*sc,c=Math.min(12,list.length),rws=Math.ceil(list.length/c);
+    list.forEach((i,k)=>{pos[i].y=y+Math.floor(k/c)*dd});y+=rws*dd+4});
+  return[
+    {pos:filled,sc,boxes:[outline,...unitBoxes],cap:`<b>Where we are:</b> ${n} copies of ${ef} make one molecule.`},
+    {pos,sc,boxes:[{x:MV.W/2-Math.min(12,Math.max(...emp)*n)*(2*rmax+3)*sc/2-14,y:92,w:Math.min(12,Math.max(...emp)*n)*(2*rmax+3)*sc+28,h:y-92+6,cls:'mol',label:mf}],cap:`<b>What happens:</b> join the ${n} copies into one molecule and count each kind of atom: ${els.map((e,j)=>`${emp[j]} × ${n} = ${emp[j]*n} ${e.sym}`).join(', ')}. <b>That’s why</b> you multiply every subscript by ${n}: the molecular formula is <b>${mf}</b>.`}]}
+/* player */
+function movieHTML(id){return `<div class="movie" data-mv="${esc(id)}"><svg viewBox="0 0 ${MV.W} ${MV.H}" role="img"></svg><p class="mvcap" aria-live="polite"></p><div class="row mvctl"><button class="btn ghost small" data-mvb="-1">◀ Back</button><span class="muted mvn"></span><button class="btn small" data-mvb="1">Next ▶</button></div></div>`}
+function movieInit(host){host.querySelectorAll('.movie').forEach(m=>{const id=m.dataset.mv,[key,kind,si]=id.split('|'),c=host._c;if(!c)return;
+  const frames=kind==='emp'?empFrames(+si,c.p):molFrames(+si,c.p),els=c.p.els,sc=frames[0].sc||1;m._f=frames;
+  const svg=m.querySelector('svg');let atoms=[];
+  let hMax=120;frames.forEach(fr=>{(fr.pos||[]).forEach(q=>{if(q&&q.o)hMax=Math.max(hMax,q.y+26)});(fr.boxes||[]).forEach(b=>hMax=Math.max(hMax,b.y+b.h+(b.cls==='left'?26:12)))});svg.setAttribute('viewBox',`0 0 ${MV.W} ${Math.ceil(hMax)}`);
+  if(kind==='emp'){const S_=mvSample(c.p);atoms=S_.atoms.map(a=>a.j)}else{const emp=c.p.emp.map(Number);for(let u=0;u<+c.p.n;u++)els.forEach((e,j)=>{for(let k=0;k<emp[j];k++)atoms.push(j)})}
+  svg.innerHTML=`<g class="mvbl"></g><g class="mvbx"></g><g class="mvlb"></g>`+atoms.map((j,i)=>{const e=els[j],r=atomSize(e,sc);return `<g class="mva" data-i="${i}" style="opacity:0"><circle r="${r.toFixed(1)}" fill="${ACOL[e.sym]||'#9aa3ad'}"/>${r>=7?`<text dy="${(r*0.32).toFixed(1)}" font-size="${(r*0.95).toFixed(1)}" fill="${ADARK.has(e.sym)?'#fff':'#222'}">${e.sym}</text>`:''}</g>`}).join('');
+  m.addEventListener('click',ev=>{const b=ev.target.closest('[data-mvb]');if(!b)return;const k=Math.max(0,Math.min(frames.length-1,(MFRAME.get(id)||0)+ +b.dataset.mvb));MFRAME.set(id,k);movieShow(m,k,true);try{say(txt(m.querySelector('.mvcap')))}catch(e){}});
+  movieShow(m,MFRAME.get(id)||0,false)})}
+function movieShow(m,k,anim){const fr=m._f[k],svg=m.querySelector('svg'),els=m.closest('[data-mvhost]')?null:null;
+  svg.classList.toggle('noanim',!anim);
+  const host=m.closest('.solver')?m.closest('.solver').parentElement:null,c=host&&host._c,E=c?c.p.els:[];
+  svg.querySelector('.mvbl').innerHTML=(fr.blocks||[]).map(b=>`<g class="mvfade"><rect x="${b.x.toFixed(1)}" y="40" width="${b.w.toFixed(1)}" height="34" rx="6" fill="${b.j<0?'#cfd8e3':(ACOL[E[b.j].sym]||'#9aa3ad')}" stroke="rgba(0,0,0,.25)"/><text x="${(b.x+b.w/2).toFixed(1)}" y="${b.j<0?62:28}" class="mvt">${b.label}</text></g>`).join('');
+  svg.querySelector('.mvbx').innerHTML=(fr.boxes||[]).map(b=>`<g class="mvfade"><rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${b.w.toFixed(1)}" height="${b.h.toFixed(1)}" rx="9" class="mvbox ${b.cls}"/>${b.label?`<text x="${(b.x+b.w/2).toFixed(1)}" y="${(b.y-7).toFixed(1)}" class="mvt">${b.label}</text>`:''}${b.cls==='left'?`<text x="${(b.x+b.w/2).toFixed(1)}" y="${(b.y+b.h+16).toFixed(1)}" class="mvt bad">left over: can’t be shared without cutting an atom</text>`:''}</g>`).join('');
+  svg.querySelector('.mvlb').innerHTML=(fr.labels||[]).map(l=>`<text x="${l.x.toFixed(1)}" y="${l.y}" class="mvt mvfade">${l.t}</text>`).join('');
+  svg.querySelectorAll('.mva').forEach((g,i)=>{const p_=fr.pos[i]||{x:MV.W/2,y:150,o:0};let o=p_.o;if(fr.focus!=null&&fr.boxes){const b=fr.boxes[fr.focus];if(!(p_.x>b.x&&p_.x<b.x+b.w&&p_.y>b.y&&p_.y<b.y+b.h))o=Math.min(o,.18)}
+    g.style.transitionDelay=anim&&fr.stagger?(Math.floor(i/fr.stagger)*0.35).toFixed(2)+'s':'0s';
+    g.style.transform=`translate(${p_.x.toFixed(1)}px,${p_.y.toFixed(1)}px)`;g.style.opacity=o});
+  if(fr.focus!=null&&fr.boxes){svg.querySelectorAll('.mvbox').forEach((r,j)=>{if(j!==fr.focus)r.style.opacity=.25})}
+  m.querySelector('.mvcap').innerHTML=fr.cap;m.querySelector('.mvn').textContent=`${k+1} of ${m._f.length}`;
+  m.querySelector('[data-mvb="-1"]').disabled=k===0;const nx=m.querySelector('[data-mvb="1"]');nx.disabled=k===m._f.length-1;
+  if(!anim)requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')))}
+function mvBtn(id){const o=MOPEN.has(id);return `<button class="xbtn mvbtn" data-act="movie" data-mvid="${esc(id)}" aria-expanded="${o}">⚛️ ${o?'Hide the atoms':'Watch it with atoms'}</button>`+(o?movieHTML(id):'')}
 
 /* ---------- Chemistry / Honors level (RJ Ed Tech) ----------
    Chemistry: practice skips the four-element and ×4 compounds, each step shows a one-line hint, and Show me this step appears after one miss.
@@ -824,7 +955,7 @@ function molHelp(i,p,w){
 
 /* ---------- mounting ---------- */
 function mount(host,kind,p,key,o={}){host._c={kind,p,key,o};if(!host._b){host._b=1;host.addEventListener('input',onIn);host.addEventListener('click',onClick);host.addEventListener('keydown',onKey)}draw(host)}
-function draw(host){const c=host._c;host.innerHTML=c.kind==='emp'?empHTML(c.p,c.key,c.o):molHTML(c.p,c.key,c.o)}
+function draw(host){const c=host._c;host.innerHTML=c.kind==='emp'?empHTML(c.p,c.key,c.o):molHTML(c.p,c.key,c.o);try{movieInit(host)}catch(e){console.error(e)}}
 function onIn(ev){const t=ev.target;if(!t.dataset||!t.dataset.k)return;const c=this._c;const w=S.work[c.key];const k=t.dataset.k;
   if(t.dataset.i!=null){(w[k]||(w[k]=[]))[+t.dataset.i]=t.value}else w[k]=t.value;save()}
 function onKey(ev){if(ev.key==='Enter'&&ev.target.matches('input.num')){const b=this.querySelector('.step.current [data-act="check"]');if(b){ev.preventDefault();b.click()}}}
@@ -835,6 +966,7 @@ function onClick(ev){
     if(ok){const nx=this.querySelector('.step.current input:not([disabled]), .step.current .chip:not([disabled])');if(nx)nx.focus({preventScroll:false})}
     else{const m=this.querySelector('.msg.bad');if(m)m.scrollIntoView({block:'nearest'})}
     if(w.solved&&c.o.onSolved)c.o.onSolved();refresh();return}
+  if(a==='movie'){const id=b.dataset.mvid;if(MOPEN.has(id))MOPEN.delete(id);else{MOPEN.add(id);gcSend('atoms/ChemLab/empirical-formula/'+id.replace(/\|/g,'/'),'Watched atoms')}draw(this);const mv=this.querySelector(`[data-mv="${CSS.escape(id)}"]`);if(mv)mv.scrollIntoView({block:'nearest'});return}
   if(a==='next'){w.stage++;save();draw(this);refresh();sayHost(this);return}
   if(a==='expl-unused'){const x=b.dataset.x;if(XOPEN.has(x))XOPEN.delete(x);else XOPEN.add(x);draw(this);if(XOPEN.has(x)){const btn=this.querySelector(`[data-x="${CSS.escape(x)}"]`);const pn=btn&&btn.nextElementSibling;if(pn&&pn.classList.contains('expl'))say(txt(pn))}return}
   if(a==='help'){w.shown=w.shown||{};w.shown[b.dataset.s]=true;w.helps=(w.helps||0)+1;save();draw(this);sayHost(this);return}
