@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clean the Water · Raider ChemLab</title>
+<meta name="description" content="Stranded at a winter camp near an old mine: plan how to turn a bucket of dirty ice into water that's safe to drink, step by step, at the particle level.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="kit/lesson-kit.css?v=1">
+<style>
+:root{
+  --bg:#F2F6F7; --surface:#FFFFFF; --ink:#13222A; --muted:#55666E; --line:#D3DDE1;
+  --accent:#0B6E78; --accent-ink:#FFFFFF; --accent-soft:#DCEEF0;
+  --good:#1F7A3E; --good-soft:#E2F2E7; --warn:#8F5600; --warn-soft:#FBEFD9; --bad:#B3261E; --bad-soft:#FBE4E2;
+  --f-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --aH:#F4F4F4; --aO:#D9483B; --aC:#3A3F44; --aMg:#7FBF3F; --aFe:#B5622A; --aAg:#BFC4C9; --aK:#8F40D4; --aCl:#3CB043; --aNa:#AB5CF2;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#202325; --surface:#2A2E31; --ink:#E6ECEE; --muted:#A3B0B5; --line:#3C4448;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#1E3B3E;
+  --good:#71D293; --good-soft:#1C3324; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.4rem)}h2{font-size:1.5rem}h3{font-size:1.12rem}
+p{margin:0;max-width:70ch}
+.eyebrow{font-family:var(--f-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}
+.rjband{background:#1d2124;color:#fff}
+.rjband .wrap{display:flex;align-items:center;gap:12px;padding-block:8px;flex-wrap:wrap}
+.rjband a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.rjband img{height:30px;width:auto}
+.rjband .by{margin-left:auto;font-size:.88rem;color:#d6dbde}
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:20px 14px;display:flex;flex-direction:column;gap:10px}
+nav.parts{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav.parts ol{list-style:none;margin:0;padding:8px 0;display:flex;flex-wrap:wrap;gap:4px}
+nav.parts a{display:block;padding:6px 11px;border-radius:8px;color:var(--muted);text-decoration:none;font-family:var(--f-display);font-weight:500;font-size:.93rem}
+nav.parts a:hover{background:var(--bg);color:var(--ink)}
+@media (max-width:640px){nav.parts{position:static}nav.parts a{padding:4px 8px;font-size:.86rem}}
+main .wrap{padding-block:26px 60px;display:flex;flex-direction:column;gap:40px}
+section{display:flex;flex-direction:column;gap:16px;scroll-margin-top:60px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.btn{font:600 .95rem var(--f-body);border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:8px 15px;cursor:pointer;min-height:40px}
+.btn.ghost{background:var(--surface);color:var(--accent)}.btn.small{padding:5px 11px;font-size:.88rem;min-height:34px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.tier:focus-visible,.pick:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.msg{border-radius:8px;padding:10px 12px;font-weight:600}
+.msg.ok{background:var(--good-soft);color:var(--good)}.msg.no{background:var(--warn-soft);color:var(--warn)}.msg.info{background:var(--accent-soft);color:var(--ink)}
+.eq{font:600 1.35rem var(--f-mono);letter-spacing:.01em}
+.eq .blank{display:inline-block;min-width:1.3em;border-bottom:2px solid var(--accent);text-align:center;color:var(--accent)}
+.credit-note{font-size:.88rem;color:var(--muted)}
+/* word cards */
+.word{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.word .w{font:700 1.6rem var(--f-display)}
+.word .mean{border-left:4px solid var(--line);padding:4px 0 4px 10px}
+.word .mean.sci{border-color:var(--accent)}
+.word .lbl{font:700 .74rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* scale demo */
+.demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+.pick{display:block;width:100%;text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px 12px;cursor:pointer}
+.pick:hover{border-color:var(--accent)}
+.pick.ok{border-color:var(--good);background:var(--good-soft)}.pick.no{border-color:var(--warn);background:var(--warn-soft)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.scaleTxt{font:700 34px var(--f-mono);fill:#7CFFB2}
+.cap{font:600 14px var(--f-body);fill:var(--ink)}
+.capm{font:500 13px var(--f-body);fill:var(--muted)}
+.lk-focus{stroke:#c8102e!important;stroke-width:3!important}
+/* builder */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tier{text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.tier b{font-family:var(--f-display);font-size:1.05rem}
+.tier[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.tier small{color:var(--muted)}
+.bsvg{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.bsvg .side{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.bsvg .sidelbl{font:700 14px var(--f-display);fill:var(--muted);text-anchor:middle;letter-spacing:.05em}
+.bsvg .arrow{font:700 34px var(--f-display);fill:var(--muted);text-anchor:middle}
+.bsvg .ghost{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:3 3;opacity:.6}
+.bsvg .alab{font:700 10px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.bsvg .empty{font:500 14px var(--f-body);fill:var(--muted);text-anchor:middle}
+.ctrls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.ctrls{grid-template-columns:1fr}}
+.ctrlside{display:flex;flex-direction:column;gap:6px}
+.ctrlside .lbl{font:700 .78rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sp .f{font:600 1.05rem var(--f-mono);min-width:5.5em}
+.sp button{width:38px;height:38px;border-radius:8px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);font:700 1.2rem var(--f-body);cursor:pointer}
+.sp button:disabled{opacity:.4;cursor:default}
+.sp .n{font:700 1.1rem var(--f-mono);min-width:1.6em;text-align:center}
+table.tally{border-collapse:collapse;font-size:.95rem}
+table.tally th,table.tally td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+table.tally th{background:var(--bg);font-family:var(--f-display)}
+table.tally td.el{font:700 1rem var(--f-mono);text-align:left}
+table.tally input{width:4.2em;font:600 1rem var(--f-mono);padding:6px;border:1.5px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);color:var(--ink)}
+table.tally input.ok{border-color:var(--good);background:var(--good-soft)}
+table.tally input.no{border-color:var(--warn);background:var(--warn-soft)}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.9rem;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #555}
+.whycare{border-left:4px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0}
+.hands{border:1.5px dashed var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
+footer.credit{border-top:1px solid var(--line);background:var(--surface)}
+footer.credit .wrap{padding-block:16px;font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+footer.credit a{color:var(--accent)}
+
+/* clean water */
+.story{font-size:1.05rem}
+.story p+p{margin-top:8px}
+table.ranks{border-collapse:collapse;font-size:.95rem;width:100%;min-width:520px}
+table.ranks th,table.ranks td{border:1px solid var(--line);padding:7px 9px;text-align:center}
+table.ranks th{background:var(--bg);font-family:var(--f-display)}
+table.ranks td:first-child{text-align:left;font-weight:600}
+.dot{display:inline-block;vertical-align:middle;border-radius:50%;border:1px solid #444;margin-right:6px}
+.lab{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-areas:'pic acts' 'meter acts';gap:14px;align-items:start}
+.lab .pic{grid-area:pic}.lab .actcol{grid-area:acts}.lab .meter{grid-area:meter}
+@media (max-width:760px){.lab{grid-template-columns:1fr;grid-template-areas:'pic' 'acts' 'meter'}}
+.wsvg{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.act{font:600 .92rem var(--f-body);text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;min-height:56px}
+.act:hover{border-color:var(--accent)}.act:disabled{opacity:.45;cursor:default}
+.act .ic{font-size:1.3rem;line-height:1}
+.act small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.act:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.meter{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.meter>div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface)}
+.meter .k{font:700 .72rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meter .v{font:700 1.05rem var(--f-mono)}
+.meter .good{color:var(--good)}.meter .bad{color:var(--bad)}
+ol.log{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+ol.log li{padding-left:2px}
+ol.log .heat{display:block;color:var(--warn);font-size:.92rem}
+ol.log .chg{display:block;font-size:.95rem}
+.realtab{border-collapse:collapse;font-size:.95rem}
+.realtab th,.realtab td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.realtab th{background:var(--bg);font-family:var(--f-display)}
+</style>
+</head>
+<body>
+<div class="rjband"><div class="wrap"><a href="./" title="Raider ChemLab home"><img src="data:image/png;base64,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" alt="RJ">Raider ChemLab</a><span class="by">A Raider ChemLab challenge</span></div></div>
+<header class="top"><div class="wrap">
+  <div class="eyebrow">Chemistry · Separating mixtures</div>
+  <h1>Clean the Water</h1>
+  <p>A bucket of dirty ice, a camp stove and a few supplies. Plan how to make water that’s safe to drink, one step at a time.</p>
+  <div id="sup"></div>
+</div></header>
+<nav class="parts" aria-label="Challenge parts"><div class="wrap"><ol>
+  <li><a href="#story">1 · The story</a></li><li><a href="#particles">2 · What’s in it</a></li><li><a href="#lab">3 · Your plan</a></li><li><a href="#real">4 · Real numbers</a></li><li><a href="#why">5 · Why care</a></li><li><a href="#test">6 · Test yourself</a></li>
+</ol></div></nav>
+
+<main><div class="wrap">
+
+<section id="story">
+  <div><div class="eyebrow">Part 1</div><h2>The story</h2></div>
+  <div class="card story">
+    <p>You’re camping in the mountains in winter, near an old mine. Overnight a bear knocks over your table, spills your fresh water and eats all your food.</p>
+    <p>The creek next to camp is frozen. You chip a bucket of ice out of it. It’s cloudy with dirt and grit from the mine, and a test kit shows a <b>chemical from the mine</b> that would make you sick. You have about a day before help arrives.</p>
+    <p>The sun is strong in the afternoon, the snow is cold, and you have a camp stove with <b>6 cans of fuel</b>.</p>
+  </div>
+</section>
+
+<section id="particles">
+  <div><div class="eyebrow">Part 2</div><h2>What’s in the bucket</h2></div>
+  <p>Zoom way in and the ice has five kinds of particles. They differ in size, in what heat does to them, and in how harmful they are. Ranks first: 1 is smallest or lowest.</p>
+  <div class="card" style="overflow-x:auto">
+    <table class="ranks">
+      <tr><th></th><th><span class="dot" style="width:12px;height:12px;background:var(--aO)"></span>Water</th><th><span class="dot" style="width:12px;height:12px;background:#2fa84f"></span>Mine chemical</th><th><span class="dot" style="width:8px;height:8px;background:#7a3fb0;border-radius:3px"></span>Germs</th><th><span class="dot" style="width:14px;height:14px;background:#d98a2b"></span>Fine dirt</th><th><span class="dot" style="width:20px;height:20px;background:#3b2f2a"></span>Large dirt</th></tr>
+      <tr><td>Size</td><td>1</td><td>1 (about the same as water)</td><td>2</td><td>3</td><td>4</td></tr>
+      <tr><td>Turns to gas when you boil it?</td><td>Yes</td><td>No, stays behind</td><td>No, and boiling kills them</td><td>No</td><td>No</td></tr>
+      <tr><td>Harm if you drink it</td><td>None</td><td>Makes you sick</td><td>Makes you sick</td><td>Gritty, not toxic</td><td>Gritty, not toxic</td></tr>
+    </table>
+    <p class="muted">The picture in Part 3 isn’t to scale: a speck of dirt is thousands to millions of times wider than a water molecule. Part 4 has the real sizes.</p>
+  </div>
+</section>
+
+<section id="lab">
+  <div><div class="eyebrow">Part 3</div><h2>Your plan</h2></div>
+  <p>Pick a step. The picture shows what happens to the particles, and your plan writes itself below. You can start over as often as you like. There’s more than one good plan.</p>
+  <div class="lab">
+    <svg class="wsvg pic" id="wSvg" viewBox="0 0 560 360" role="img" aria-label="Particle view of your water and of what you have removed"></svg>
+    <div class="meter" id="meter" aria-live="polite"></div>
+    <div class="stack actcol">
+      <div class="acts" id="acts"></div>
+      <div class="row"><button class="btn" id="drink">🥤 I’m done: drink it</button><button class="btn ghost small" id="restart">⟲ Start over</button></div>
+    </div>
+  </div>
+  <div id="wMsg" aria-live="polite"></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h3>My plan</h3><button class="btn ghost small" id="copy">Copy my plan</button></div>
+    <ol class="log" id="log"><li class="muted" style="list-style:none;margin-left:-1.3em">No steps yet.</li></ol>
+  </div>
+  <div id="cfLab"></div>
+</section>
+
+<section id="real">
+  <div><div class="eyebrow">Part 4</div><h2>The real numbers</h2></div>
+  <div class="card" style="overflow-x:auto">
+    <table class="realtab">
+      <tr><th>Particle</th><th>Real size (about)</th><th>What catches it</th></tr>
+      <tr><td>Water molecule</td><td>0.0000003 mm</td><td>Nothing. It goes through every filter here.</td></tr>
+      <tr><td>Dissolved mine metals</td><td>about the same as water</td><td>No filter here. Distilling leaves them behind, and lime can make them settle out.</td></tr>
+      <tr><td>Bacteria</td><td>0.001–0.002 mm</td><td>Too small for a coffee filter. Boiling kills them.</td></tr>
+      <tr><td>Fine dirt (silt)</td><td>0.004–0.06 mm</td><td>A coffee filter catches most of it.</td></tr>
+      <tr><td>Sand and grit</td><td>0.06–2 mm</td><td>A kitchen strainer catches the bigger pieces.</td></tr>
+    </table>
+    <p><b>Why the chemical is hard:</b> it’s dissolved, mixed in molecule by molecule, so it’s about as small as water itself. No hole is small enough to let water through and stop the chemical. Instead you use a <b>difference in boiling</b>: water turns to steam and the chemical stays in the pot.</p>
+    <p><b>Mountain boiling:</b> water boils at 100 °C at sea level but only about 95 °C in Denver and about 90 °C at 10,000 feet, because there’s less air pressing down. That’s why the CDC says to boil water for 1 minute, but 3 minutes above 6,500 feet. It also says boiling does not remove chemicals.</p>
+  </div>
+</section>
+
+<section id="why">
+  <div><div class="eyebrow">Part 5</div><h2>Why care?</h2></div>
+  <div class="whycare"><b>This happened in Colorado.</b> On August 5, 2015, about 3 million gallons of mine water poured out of the Gold King Mine near Silverton and turned the Animas River orange. Towns downstream had to stop using the river for their water.</div>
+  <div id="world"></div>
+</section>
+
+<section id="test">
+  <div><div class="eyebrow">Part 6</div><h2>Test yourself</h2></div>
+  <div id="testBox"></div>
+</section>
+
+</div></main>
+
+<footer class="credit"><div class="wrap">
+  <span><b>Clean the Water</b>, RJ Ed Tech, built from Paul Stearman’s “Cleaning Dirty Water” final assessment and his particle-modeling lessons. Teachers: please check the content and tell us what to change. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
+  <span>Sources: CDC, boil water advisory guidance; U.S. EPA, Gold King Mine response and the Gladstone Interim Water Treatment Plant.</span>
+  <span>© 2026 Jason Beyer, RJ Ed Tech · CC BY-NC 4.0</span>
+</div></footer>
+
+<script src="kit/lesson-kit.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+LK.setup({site:'ChemLab',page:'clean-water',key:'chemlab-clean-water-v1'});
+LK.supports('#sup');
+const $=s=>document.querySelector(s),RM=LK.reducedMotion;
+const C={L:'#3b2f2a',F:'#d98a2b',X:'#2fa84f',B:'#2f6fd6',G:'#7a3fb0'};
+
+/* ---------- the state ---------- */
+let st;
+function fresh(){return {phase:'ice',cups:8,fuel:6,hours:0,L:4,F:8,X:6,G:5,neut:false,dead:false,log:[],tray:[],over:false}}
+st=fresh();
+
+/* ---------- the picture ---------- */
+const svg=$('#wSvg'),BX={x:20,y:60,w:330,h:270},TR={x:370,y:60,w:172,h:270};
+let parts=[],raf=0,anim=null,gen=0;
+function rnd(a,b){return a+Math.random()*(b-a)}
+function build(){parts=[];const nW=Math.round(st.cups*4);const add=(t,n)=>{for(let i=0;i<n;i++)parts.push({t,x:0,y:0,vx:rnd(-1,1),vy:rnd(-1,1),a:rnd(0,6.28)})};
+  add('W',nW);add('X',st.X);add('G',st.G);add('F',st.F);add('L',st.L);
+  /* ice: a frozen grid; liquid: random spots in the water */
+  const top=BX.y+BX.h-Math.max(60,st.cups/8*(BX.h-30));parts.forEach((p,i)=>{p.x=rnd(BX.x+18,BX.x+BX.w-18);p.y=rnd(top+14,BX.y+BX.h-14)});
+  if(st.phase==='ice'){const cols=10;parts.forEach((p,i)=>{p.x=BX.x+20+(i%cols)*(BX.w-40)/(cols-1);p.y=top+16+Math.floor(i/cols)*((BX.y+BX.h-30-top)/Math.max(1,Math.ceil(parts.length/cols)-1))})}}
+function pSVG(p){const tr=`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`;switch(p.t){
+  case 'W':return `<g transform="${tr} rotate(${(p.a*57).toFixed(0)})"><circle r="4.4" fill="var(--aO)" stroke="#333" stroke-width=".5"/><circle cx="-3.6" cy="3.2" r="2.6" fill="#f4f4f4" stroke="#333" stroke-width=".5"/><circle cx="3.6" cy="3.2" r="2.6" fill="#f4f4f4" stroke="#333" stroke-width=".5"/></g>`;
+  case 'X':return st.neut?`<g transform="${tr}"><circle cx="-3" r="5" fill="${C.X}" stroke="#333" stroke-width=".6"/><circle cx="4.5" r="5" fill="${C.B}" stroke="#333" stroke-width=".6"/></g>`:`<g transform="${tr}"><circle r="5" fill="${C.X}" stroke="#333" stroke-width=".6"/></g>`;
+  case 'G':return `<g transform="${tr} rotate(${(p.a*57).toFixed(0)})"><rect x="-6" y="-3" width="12" height="6" rx="3" fill="${st.dead?'#9aa0a6':C.G}" stroke="#333" stroke-width=".6"/>${st.dead?'<path d="M-3 -2 L3 2 M3 -2 L-3 2" stroke="#333" stroke-width="1"/>':''}</g>`;
+  case 'F':return `<circle transform="${tr}" r="7" fill="${C.F}" stroke="#333" stroke-width=".6"/>`;
+  case 'L':return `<circle transform="${tr}" r="13" fill="${C.L}" stroke="#222" stroke-width=".6"/>`}}
+function frame(){const top=BX.y+BX.h-Math.max(60,st.cups/8*(BX.h-30));
+  let h=`<text x="${BX.x+BX.w/2}" y="${BX.y-26}" text-anchor="middle" style="font:700 14px var(--f-display);fill:var(--muted);letter-spacing:.05em">YOUR WATER · ${st.phase==='ice'?'FROZEN':'LIQUID'}</text>
+    <text x="${BX.x+BX.w/2}" y="${BX.y-9}" text-anchor="middle" style="font:500 12px var(--f-body);fill:var(--muted)">${st.cups} cups</text>
+    <path d="M${BX.x} ${BX.y} L${BX.x+10} ${BX.y+BX.h} L${BX.x+BX.w-10} ${BX.y+BX.h} L${BX.x+BX.w} ${BX.y}" fill="var(--surface)" stroke="#7b8a91" stroke-width="2.5"/>
+    <rect x="${BX.x+8}" y="${top}" width="${BX.w-16}" height="${BX.y+BX.h-top-2}" fill="${st.phase==='ice'?'#dcefff':'#cfe8f6'}" opacity="${st.phase==='ice'?.95:.7}" rx="4"/>
+    ${st.phase==='ice'?`<path d="M${BX.x+30} ${top+20} l40 30 M${BX.x+180} ${top+40} l-30 50 M${BX.x+250} ${top+15} l30 40" stroke="#fff" stroke-width="3" opacity=".8"/>`:''}`;
+  h+=parts.filter(p=>!p.gone).map(pSVG).join('');
+  h+=`<rect x="${TR.x}" y="${TR.y}" width="${TR.w}" height="${TR.h}" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-dasharray="5 4"/>
+    <text x="${TR.x+TR.w/2}" y="${TR.y-14}" text-anchor="middle" style="font:700 14px var(--f-display);fill:var(--muted);letter-spacing:.05em">LEFT BEHIND</text>`;
+  if(!st.tray.length)h+=`<text x="${TR.x+TR.w/2}" y="${TR.y+TR.h/2}" text-anchor="middle" style="font:500 13px var(--f-body);fill:var(--muted)">Nothing yet</text>`;
+  st.tray.slice(-6).forEach((t,i)=>{const y=TR.y+26+i*42;h+=`<text x="${TR.x+10}" y="${y-6}" style="font:600 11px var(--f-body);fill:var(--muted)">${LK.esc(t.where)}</text>`;
+    let x=TR.x+16;t.items.forEach(([k,n])=>{for(let j=0;j<Math.min(n,6);j++){const w=k==='L'?22:k==='W'?11:12;if(x+w/2>TR.x+TR.w-6)break;h+=pSVG({t:k,x:x,y:y+10,a:0});x+=w}x+=6})});
+  if(anim)h+=anim.extra||'';
+  svg.innerHTML=h}
+function loop(){cancelAnimationFrame(raf);if(RM()||st.phase!=='liquid'){frame();return}
+  const top=BX.y+BX.h-Math.max(60,st.cups/8*(BX.h-30));
+  (function f(){parts.forEach(p=>{if(p.gone||p.fly)return;const sp=p.t==='L'?.25:p.t==='F'?.45:.9;p.vx+=rnd(-.3,.3);p.vy+=rnd(-.3,.3)+(p.t==='L'?.05:p.t==='F'?.02:0);p.vx=Math.max(-sp,Math.min(sp,p.vx));p.vy=Math.max(-sp,Math.min(sp,p.vy));
+      p.x+=p.vx;p.y+=p.vy;p.a+=.03;if(p.x<BX.x+18||p.x>BX.x+BX.w-18)p.vx*=-1;if(p.y<top+10||p.y>BX.y+BX.h-12)p.vy*=-1;p.x=Math.max(BX.x+18,Math.min(BX.x+BX.w-18,p.x));p.y=Math.max(top+10,Math.min(BX.y+BX.h-12,p.y))});
+    parts.filter(p=>p.fly).forEach(p=>{p.k=Math.min(1,p.k+.022);const u=p.k*p.k*(3-2*p.k);p.x=p.x0+(p.x1-p.x0)*u;p.y=p.y0+(p.y1-p.y0)*u-Math.sin(u*Math.PI)*p.arc;if(p.k>=1){p.fly=false;p.gone=true}});
+    frame();raf=requestAnimationFrame(f)})()}
+/* send some particles flying out of the water (to the tray, or up as steam) */
+function fly(types,to,cb){const g=gen;const ps=parts.filter(p=>!p.gone&&types.includes(p.t));
+  if(RM()||!ps.length){ps.forEach(p=>p.gone=true);cb&&cb();return}
+  ps.forEach(p=>{p.fly=true;p.k=-Math.random()*.3;p.x0=p.x;p.y0=p.y;p.x1=to==='up'?p.x+rnd(-40,40):rnd(TR.x+20,TR.x+TR.w-20);p.y1=to==='up'?BX.y-40:rnd(TR.y+40,TR.y+TR.h-20);p.arc=to==='up'?0:70});
+  setTimeout(()=>{if(g===gen)cb&&cb()},1700)}
+
+/* ---------- meter ---------- */
+function status(){const clear=!st.L&&!st.F,germs=!st.G||st.dead,chem=!st.X||st.neut;return {clear,germs,chem,safe:clear&&germs&&chem}}
+function meter(){const s=status(),y=(ok,a,b)=>`<span class="${ok?'good':'bad'}">${ok?a:b}</span>`;
+  $('#meter').innerHTML=`<div><span class="k">Clear?</span><div class="v">${y(s.clear,'Yes','Cloudy')}</div></div><div><span class="k">Germs</span><div class="v">${y(s.germs,st.G?'Killed':'None','Alive')}</div></div><div><span class="k">Mine chemical</span><div class="v">${y(s.chem,st.X?'Made harmless':'Gone','Still toxic')}</div></div><div><span class="k">Water</span><div class="v">${st.cups} cups</div></div><div><span class="k">Fuel left</span><div class="v">${st.fuel} of 6</div></div><div><span class="k">Time</span><div class="v">${st.hours} h</div></div>`}
+
+/* ---------- steps ---------- */
+const ACT=[
+ {k:'melt',ic:'🔥',t:'Melt it',d:'Stove + big pot',fuel:1},
+ {k:'strain',ic:'🥅',t:'Pour through a strainer or cloth mask',d:'Big holes',fuel:0},
+ {k:'coffee',ic:'☕',t:'Pour through a coffee filter',d:'Tiny holes',fuel:0},
+ {k:'towel',ic:'🧻',t:'Soak with paper towels',d:'Squeeze into a bowl',fuel:0},
+ {k:'neut',ic:'🧪',t:'Add the neutralizer',d:'Grabs the mine chemical',fuel:0},
+ {k:'boil',ic:'♨️',t:'Boil it 3 minutes',d:'Stove, lid off',fuel:1},
+ {k:'distill',ic:'⚗️',t:'Distill it',d:'Pot + lid + tubing + bowl in the snow',fuel:3},
+ {k:'solar',ic:'☀️',t:'Solar still',d:'Glass bowl + plastic wrap in the sun',fuel:0}];
+$('#acts').innerHTML=ACT.map(a=>`<button class="act" data-a="${a.k}"><span class="ic" aria-hidden="true">${a.ic}</span><span>${a.t}<small>${a.d}${a.fuel?` · ${a.fuel} fuel`:''}</small></span></button>`).join('');
+function say(cls,html){$('#wMsg').innerHTML=`<p class="msg ${cls}">${html}</p>`;LK.say($('#wMsg').textContent)}
+function logStep(name,chg,heat){st.log.push({name,chg,heat});
+  $('#log').innerHTML=st.log.map((s,i)=>`<li><b>${s.name}</b><span class="chg">${s.chg}</span>${s.heat?`<span class="heat">🌡️ ${s.heat}</span>`:''}</li>`).join('')}
+let busy=false;
+function act(k){if(busy||st.over)return;const a=ACT.find(x=>x.k===k);
+  const needLiquid=['strain','coffee','towel','neut','boil','distill','solar'];
+  if(needLiquid.includes(k)&&st.phase==='ice'){say('no',`You can’t ${k==='solar'?'set up a still':'pour or treat'} a block of ice. What has to happen to it first?`);return}
+  if(k==='melt'&&st.phase!=='ice'){say('info','It’s already liquid.');return}
+  if(a.fuel>st.fuel){say('no',`Not enough fuel: this needs ${a.fuel} and you have ${st.fuel}. Is there a way that doesn’t use the stove?`);return}
+  st.fuel-=a.fuel;busy=true;const done=()=>{busy=false;meter();loop()};
+  if(k==='melt'){st.phase='liquid';st.hours+=.5;build();
+    logStep('Melt the ice on the stove','The ice became liquid water. Every particle is still in the bucket: the dirt, the germs and the chemical just float loose now.','Thermal energy flows IN from the flame. The water molecules vibrate faster until they break out of their fixed spots in the ice.');
+    say('ok','Melted. Now the particles can move, and you can pour it.');done();return}
+  if(k==='strain'){const n=st.L;st.hours+=.25;
+    if(!n){logStep('Pour through a strainer','Nothing was caught. The holes are bigger than everything left in the water.','None.');say('info','Nothing caught: everything left is smaller than the holes.');done();return}
+    fly(['L'],'tray',()=>{st.L=0;st.tray.push({where:'Strainer',items:[['L',n]]});
+      logStep('Pour through a strainer (or cloth mask)','The large dirt couldn’t fit through the holes and stayed in the strainer. Everything smaller went through.','None. Nothing changed state.');
+      say('ok','The large dirt is out. The water is still cloudy: the smaller particles went right through.');done()});return}
+  if(k==='coffee'){st.hours+=st.L?1.5:.5;
+    if(st.L){const lf=st.F,ll=st.L;st.cups=Math.max(1,st.cups-1);fly(['L','F'],'tray',()=>{st.L=0;st.F=0;build();st.tray.push({where:'Clogged filter',items:[['L',ll],['F',lf]]});
+      logStep('Pour through a coffee filter (it clogged)','The big chunks plugged the paper. It caught the dirt, but it took over an hour and you spilled about a cup getting it unstuck.','None.');
+      say('no','It worked, slowly. The big chunks clogged the filter and you lost a cup. <b>Tip:</b> use the big holes before the small ones.');done()});return}
+    const nf=st.F;if(!nf){logStep('Pour through a coffee filter','Nothing was caught. The germs and the chemical are smaller than the holes.','None.');say('info','Nothing caught. Germs and the chemical slip right through a coffee filter.');done();return}
+    fly(['F'],'tray',()=>{st.F=0;st.tray.push({where:'Coffee filter',items:[['F',nf]]});
+      logStep('Pour through a coffee filter','The fine dirt stayed on the paper. The water looks clear now, but the germs and the dissolved chemical went right through the tiny holes.','None. Nothing changed state.');
+      say('ok','Clear water! But clear isn’t the same as safe. Check the meter.');done()});return}
+  if(k==='towel'){if(st.cups<=2){say('no','There isn’t enough water left to soak up.');busy=false;st.fuel+=a.fuel;return}
+    const old=st.cups;st.cups-=2;st.hours+=.5;const keep=st.cups/old;const xf=Math.round(st.F/2),xx=st.X-Math.round(st.X*keep),xg=st.G-Math.round(st.G*keep),xw=8;
+    const take=(t,n)=>parts.filter(p=>!p.gone&&p.t===t).slice(0,n).forEach(p=>p.t2=1);
+    take('F',xf);take('X',xx);take('G',xg);take('W',xw);
+    const ps=parts.filter(p=>p.t2);ps.forEach(p=>{p.fly=true;p.k=-Math.random()*.3;p.x0=p.x;p.y0=p.y;p.x1=rnd(TR.x+20,TR.x+TR.w-20);p.y1=rnd(TR.y+40,TR.y+TR.h-20);p.arc=60});
+    const g=gen;setTimeout(()=>{if(g!==gen)return;st.F-=xf;st.X-=xx;st.G-=xg;build();st.tray.push({where:'Paper towels',items:[['W',4],['F',xf],['X',xx]]});
+      logStep('Soak with paper towels','The towels trapped some fine dirt, but they also soaked up 2 cups of water, with the chemical still mixed in it. The water left has just as much chemical in every sip as before.','None.');
+      say('no','You lost 2 cups, and what’s left is no safer: a towel soaks up the dissolved chemical along with the water, not instead of it.');done()},RM()?0:1700);return}
+  if(k==='neut'){if(!st.X||st.neut){say('info',st.neut?'You already added it.':'There’s no chemical left to grab.');busy=false;return}
+    st.neut=true;st.hours+=.5;build();
+    logStep('Add the neutralizer','Each green chemical particle joined a blue neutralizer particle. The pair is harmless. It’s still in the water, but it can’t hurt you now.','A little. Some reactions give off or take in heat, but this one is small.');
+    say('ok','The chemical is now harmless pairs (green + blue). That’s a chemical change: new pairs formed. The EPA treats Gold King mine water a similar way, with lime.');done();return}
+  if(k==='boil'){st.hours+=.5;const had=st.G&&!st.dead;st.dead=true;build();
+    logStep('Boil for 3 minutes','The germs died (gray). The dirt and the chemical are still there: boiling doesn’t remove them. A little water steamed away.','Thermal energy flows IN. The water gets hot enough to kill germs. At this height water boils below 100 °C, so you boil 3 minutes, not 1.');
+    say(had?'ok':'info',had?'Germs killed. But the CDC is clear: boiling does not remove chemicals.':'Nothing was alive to kill. Boiling used fuel for nothing new.');done();return}
+  if(k==='distill'||k==='solar'){const solar=k==='solar';const rest=[['L',st.L],['F',st.F],['X',st.X],['G',st.G]].filter(x=>x[1]);
+    st.hours+=solar?6:2;const out=solar?1:Math.max(1,st.cups-2);
+    fly(['W'],'up',()=>{fly(['L','F','X','G'],'tray',()=>{rest.length&&st.tray.push({where:solar?'Solar still bowl':'Bottom of the pot',items:rest});st.cups=out;st.L=st.F=st.X=st.G=0;st.neut=false;st.dead=false;build();
+      logStep(solar?'Solar still in the sun':'Distill it',`Only water molecules turned into vapor and left the ${solar?'bowl':'pot'}. The dirt, germs and chemical stayed behind. You collected ${out} cup${out>1?'s':''} of pure water.`,
+        solar?'Thermal energy flows IN from sunlight, so water evaporates. It flows OUT when the vapor touches the cool plastic wrap and condenses into drops. No fuel, but it took 6 hours for 1 cup.':'Thermal energy flows IN from the flame: liquid water becomes steam. It flows OUT into the cold bowl in the snow: steam condenses back into liquid water.');
+      say('ok',solar?'Pure water, and no fuel used. But only 1 cup in 6 hours.':`Pure water: only water molecules made it across. You kept ${out} cups.`);done()})});return}}
+$('#acts').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a)});
+$('#restart').addEventListener('click',()=>{gen++;cancelAnimationFrame(raf);busy=false;st=fresh();build();meter();loop();$('#log').innerHTML='<li class="muted" style="list-style:none;margin-left:-1.3em">No steps yet.</li>';$('#wMsg').innerHTML=''});
+$('#drink').addEventListener('click',()=>{if(busy)return;const s=status();
+  if(st.phase==='ice'){say('no','You can’t drink a block of ice, and eating snow or ice makes you colder. Make a plan first.');return}
+  if(!s.safe){const why=[!s.chem&&'the mine chemical is still toxic',!s.germs&&'there are live germs',!s.clear&&'it’s still full of grit'].filter(Boolean);
+    say('no',`Not safe yet: ${why.join(', and ')}. Try another step.`);return}
+  const other=st.log.some(l=>/Distill|Solar/.test(l.name))?'Another plan that also works: melt → strain → coffee filter → neutralizer → boil. It keeps more water and uses less fuel, but it depends on the neutralizer.':'Another plan that also works: melt → strain → coffee filter → distill. It removes the chemical instead of making it harmless, but costs more fuel.';
+  say('ok',`✓ Safe to drink: clear, no live germs, no toxic chemical. You have <b>${st.cups} cups</b>, ${st.fuel} fuel left, after ${st.hours} hours. ${other} Which plan is better, and why? That’s your explanation.`)});
+$('#copy').addEventListener('click',()=>{const t=st.log.map((s,i)=>`${i+1}. ${s.name}\n   What changed: ${s.chg}\n   Heat energy: ${s.heat||'None.'}`).join('\n');
+  const done=()=>{say('info','Copied. Paste it into your assignment and add your own explanation.')};
+  if(navigator.clipboard)navigator.clipboard.writeText(t||'No steps yet.').then(done,()=>say('no','Couldn’t copy. Select the plan and copy it by hand.'));else say('no','Couldn’t copy. Select the plan and copy it by hand.')});
+LK.confused('#cfLab',{where:'plan',part:'lab',
+  ask:'Pick steps in an order that gets rid of every harmful thing: the grit, the germs and the mine chemical.',
+  another:'Each tool only works on some particles. A strainer catches big things. A coffee filter catches smaller things. Neither stops anything as small as water. For those you need heat.',
+  start:'Start with the ice. You can’t pour ice through anything. Then go from the biggest particles to the smallest.'});
+build();meter();loop();
+
+/* ---------- world + test ---------- */
+LK.world('#world',{title:'How people clean water now',cards:[
+ {icon:'⛰️',title:'Cleaning up after Gold King',html:'Since October 2015 the EPA has run a treatment plant at Gladstone, above Silverton. It adds lime to the mine water. The lime neutralizes the acid, and the metals settle out as solid sludge. It treated about 800 million gallons by mid-2018.',source:'U.S. EPA, Gladstone Interim Water Treatment Plant'},
+ {icon:'♨️',title:'Boil-water notices',html:'When a city’s water might carry germs after a pipe break, health officials tell people to boil it: 1 minute, or 3 minutes above 6,500 feet. Boiling kills germs. It doesn’t remove chemicals.',source:'CDC, boil water advisory guidance'},
+ {icon:'☀️',title:'Water from sunlight',html:'A solar still uses only the sun and a sheet of plastic. It’s slow, but it needs no fuel. People use the same idea in survival kits and in places without clean water.',source:'Same physics as Part 3: evaporate, then condense'}]});
+LK.test('#testBox',{id:'water',questions:[
+ {q:'Your water is clear after a coffee filter. Is it safe to drink?',choices:['Yes, because clear water is always clean','Not yet: germs and chemicals get through','Only if it’s cold when you drink it','Yes, as long as you stir it first'],answer:1,hint:'Look at the sizes in Part 4.',why:'Germs and dissolved chemicals are far smaller than the filter’s holes.'},
+ {q:'Why does distilling remove the mine chemical when no filter can?',choices:['The chemical is too big to fit in steam','Water turns to steam, the chemical stays','The copper tubing catches the chemical on the way through','Heat destroys every chemical'],answer:1,hint:'What happens to each particle when you boil the pot?',why:'Distilling separates by boiling point, not by size.'},
+ {q:'When steam hits the cold bowl and turns back into water, thermal energy…',choices:['flows into the steam','flows out of the steam','stays exactly the same the whole time','turns into mass'],answer:1,hint:'The bowl sits in snow. Which way does heat move?',why:'Condensing releases energy into the cold bowl.'},
+ {q:'Why strain the big dirt before using a coffee filter?',choices:['The coffee filter would clog','The strainer kills the germs on the way through','It makes the water taste better','The coffee filter melts'],answer:0,hint:'Think about what happened when you skipped it.',why:'Coarse first, fine second, so the small holes don’t plug.'},
+ {q:'Why boil water for 3 minutes instead of 1 at 9,000 feet?',choices:['The air is colder up high','Water boils at a lower temperature up high','The pot is thinner','Germs grow bigger and tougher up in the mountains'],answer:1,hint:'Less air pressing down changes the boiling point.',why:'Lower air pressure means water boils below 100 °C, so it needs longer.'}]});
+})();
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each section (#part) counts as its own page. A visit through the school's Securly filter (?scrlybrkr) adds ?sd = school device. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

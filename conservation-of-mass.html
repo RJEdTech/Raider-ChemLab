@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conservation of Mass · Raider ChemLab</title>
+<meta name="description" content="Where does the mass go? Build reactions atom by atom, count them yourself, and watch a scale explain the law of conservation of mass.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="kit/lesson-kit.css?v=1">
+<style>
+:root{
+  --bg:#F2F6F7; --surface:#FFFFFF; --ink:#13222A; --muted:#55666E; --line:#D3DDE1;
+  --accent:#0B6E78; --accent-ink:#FFFFFF; --accent-soft:#DCEEF0;
+  --good:#1F7A3E; --good-soft:#E2F2E7; --warn:#8F5600; --warn-soft:#FBEFD9; --bad:#B3261E; --bad-soft:#FBE4E2;
+  --f-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --aH:#F4F4F4; --aO:#D9483B; --aC:#3A3F44; --aMg:#7FBF3F; --aFe:#B5622A; --aAg:#BFC4C9; --aK:#8F40D4; --aCl:#3CB043; --aNa:#AB5CF2;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#202325; --surface:#2A2E31; --ink:#E6ECEE; --muted:#A3B0B5; --line:#3C4448;
+  --accent:#4CC3CC; --accent-ink:#06282B; --accent-soft:#1E3B3E;
+  --good:#71D293; --good-soft:#1C3324; --warn:#F0B45A; --warn-soft:#3A2B12; --bad:#FF8A80; --bad-soft:#3D1B19; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0}
+h1{font-size:clamp(1.7rem,4vw,2.4rem)}h2{font-size:1.5rem}h3{font-size:1.12rem}
+p{margin:0;max-width:70ch}
+.eyebrow{font-family:var(--f-display);font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:700}
+.muted{color:var(--muted)}
+.rjband{background:#1d2124;color:#fff}
+.rjband .wrap{display:flex;align-items:center;gap:12px;padding-block:8px;flex-wrap:wrap}
+.rjband a{color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.05rem}
+.rjband img{height:30px;width:auto}
+.rjband .by{margin-left:auto;font-size:.88rem;color:#d6dbde}
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:20px 14px;display:flex;flex-direction:column;gap:10px}
+nav.parts{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav.parts ol{list-style:none;margin:0;padding:8px 0;display:flex;flex-wrap:wrap;gap:4px}
+nav.parts a{display:block;padding:6px 11px;border-radius:8px;color:var(--muted);text-decoration:none;font-family:var(--f-display);font-weight:500;font-size:.93rem}
+nav.parts a:hover{background:var(--bg);color:var(--ink)}
+@media (max-width:640px){nav.parts{position:static}nav.parts a{padding:4px 8px;font-size:.86rem}}
+main .wrap{padding-block:26px 60px;display:flex;flex-direction:column;gap:40px}
+section{display:flex;flex-direction:column;gap:16px;scroll-margin-top:60px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.btn{font:600 .95rem var(--f-body);border:1.5px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:8px 15px;cursor:pointer;min-height:40px}
+.btn.ghost{background:var(--surface);color:var(--accent)}.btn.small{padding:5px 11px;font-size:.88rem;min-height:34px}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,.tier:focus-visible,.pick:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.msg{border-radius:8px;padding:10px 12px;font-weight:600}
+.msg.ok{background:var(--good-soft);color:var(--good)}.msg.no{background:var(--warn-soft);color:var(--warn)}.msg.info{background:var(--accent-soft);color:var(--ink)}
+.eq{font:600 1.35rem var(--f-mono);letter-spacing:.01em}
+.eq .blank{display:inline-block;min-width:1.3em;border-bottom:2px solid var(--accent);text-align:center;color:var(--accent)}
+.credit-note{font-size:.88rem;color:var(--muted)}
+/* word cards */
+.word{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.word .w{font:700 1.6rem var(--f-display)}
+.word .mean{border-left:4px solid var(--line);padding:4px 0 4px 10px}
+.word .mean.sci{border-color:var(--accent)}
+.word .lbl{font:700 .74rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* scale demo */
+.demo svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto}
+.pick{display:block;width:100%;text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px 12px;cursor:pointer}
+.pick:hover{border-color:var(--accent)}
+.pick.ok{border-color:var(--good);background:var(--good-soft)}.pick.no{border-color:var(--warn);background:var(--warn-soft)}
+.picks{display:flex;flex-direction:column;gap:8px}
+.scaleTxt{font:700 34px var(--f-mono);fill:#7CFFB2}
+.cap{font:600 14px var(--f-body);fill:var(--ink)}
+.capm{font:500 13px var(--f-body);fill:var(--muted)}
+.lk-focus{stroke:#c8102e!important;stroke-width:3!important}
+/* builder */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tier{text-align:left;font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.tier b{font-family:var(--f-display);font-size:1.05rem}
+.tier[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.tier small{color:var(--muted)}
+.bsvg{width:100%;height:auto;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.bsvg .side{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.bsvg .sidelbl{font:700 14px var(--f-display);fill:var(--muted);text-anchor:middle;letter-spacing:.05em}
+.bsvg .arrow{font:700 34px var(--f-display);fill:var(--muted);text-anchor:middle}
+.bsvg .ghost{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:3 3;opacity:.6}
+.bsvg .alab{font:700 10px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.bsvg .empty{font:500 14px var(--f-body);fill:var(--muted);text-anchor:middle}
+.ctrls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.ctrls{grid-template-columns:1fr}}
+.ctrlside{display:flex;flex-direction:column;gap:6px}
+.ctrlside .lbl{font:700 .78rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sp .f{font:600 1.05rem var(--f-mono);min-width:5.5em}
+.sp button{width:38px;height:38px;border-radius:8px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);font:700 1.2rem var(--f-body);cursor:pointer}
+.sp button:disabled{opacity:.4;cursor:default}
+.sp .n{font:700 1.1rem var(--f-mono);min-width:1.6em;text-align:center}
+table.tally{border-collapse:collapse;font-size:.95rem}
+table.tally th,table.tally td{border:1px solid var(--line);padding:6px 10px;text-align:center}
+table.tally th{background:var(--bg);font-family:var(--f-display)}
+table.tally td.el{font:700 1rem var(--f-mono);text-align:left}
+table.tally input{width:4.2em;font:600 1rem var(--f-mono);padding:6px;border:1.5px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);color:var(--ink)}
+table.tally input.ok{border-color:var(--good);background:var(--good-soft)}
+table.tally input.no{border-color:var(--warn);background:var(--warn-soft)}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.9rem;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #555}
+.whycare{border-left:4px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0}
+.hands{border:1.5px dashed var(--line);border-radius:12px;padding:14px 16px;background:var(--surface)}
+footer.credit{border-top:1px solid var(--line);background:var(--surface)}
+footer.credit .wrap{padding-block:16px;font-size:.9rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+footer.credit a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="rjband"><div class="wrap"><a href="./" title="Raider ChemLab home"><img src="data:image/png;base64,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" alt="RJ">Raider ChemLab</a><span class="by">A Raider ChemLab lesson</span></div></div>
+<header class="top"><div class="wrap">
+  <div class="eyebrow">Chemistry · Reactions</div>
+  <h1>Where Does the Mass Go?</h1>
+  <p>Conservation of mass: in a reaction, atoms swap partners. None are made and none disappear.</p>
+  <div id="sup"></div>
+</div></header>
+<nav class="parts" aria-label="Lesson parts"><div class="wrap"><ol>
+  <li><a href="#words">1 · Words</a></li><li><a href="#scale">2 · The scale</a></li><li><a href="#build">3 · Build it</a></li><li><a href="#why">4 · Why care</a></li><li><a href="#test">5 · Test yourself</a></li>
+</ol></div></nav>
+
+<main><div class="wrap">
+
+<!-- 1. WORDS -->
+<section id="words">
+  <div><div class="eyebrow">Part 1</div><h2>Three words you already use</h2></div>
+  <p>Each word means something outside class. Think of that first, then see what it means in chemistry.</p>
+  <div class="grid3" id="wordCards"></div>
+</section>
+
+<!-- 2. THE SCALE -->
+<section id="scale">
+  <div><div class="eyebrow">Part 2</div><h2>Wait, that’s not right</h2></div>
+  <div class="card demo">
+    <p><b>The setup:</b> a cup of vinegar sits on a scale with 5.00 g of baking soda in a paper boat beside it. Total on the scale: <b>145.0 g</b>. You tip the baking soda in. It fizzes.</p>
+    <div id="demoPredict" class="stack">
+      <p><b>Predict first:</b> when the fizzing stops, what will the scale read?</p>
+      <div class="picks" id="predPicks"></div>
+    </div>
+    <svg id="demoSvg" viewBox="0 0 640 360" role="img" aria-label="A digital scale with a container of vinegar and baking soda. Carbon dioxide gas bubbles form."></svg>
+    <div class="row">
+      <button class="btn" id="runOpen">▶ Tip it in: open cup</button>
+      <button class="btn ghost" id="runClosed" hidden>▶ Try again: capped bottle</button>
+      <button class="btn ghost small" id="demoReset">⟲ Reset</button>
+      <span class="muted" id="demoStage" aria-live="polite"></span>
+    </div>
+    <div id="whyBox" hidden class="stack">
+      <p><b>The scale dropped about 2.5 g. Why did the mass go down?</b></p>
+      <div class="picks" id="whyPicks"></div>
+    </div>
+    <div id="demoEnd" hidden class="msg ok"></div>
+    <div id="cfScale"></div>
+  </div>
+</section>
+
+<!-- 3. BUILD IT -->
+<section id="build">
+  <div><div class="eyebrow">Part 3</div><h2>Build it first, then count it</h2></div>
+  <p>Draw the reaction with atoms before you look at any answer. Then count every atom on each side yourself. Pick how you want to start:</p>
+  <div class="tiers" id="tiers"></div>
+  <div class="card" id="builder">
+    <div id="bTask"></div>
+    <div class="key" id="bKey"></div>
+    <svg class="bsvg" id="bSvg" viewBox="0 0 760 300" role="img" aria-label="Reactants on the left, products on the right"></svg>
+    <div class="ctrls" id="bCtrls"></div>
+    <div>
+      <p><b>Count it yourself.</b> How many atoms of each element did you draw on each side?</p>
+      <div style="overflow-x:auto"><table class="tally" id="bTally"></table></div>
+    </div>
+    <div class="row"><button class="btn" id="bCheck">Check my count</button><button class="btn ghost" id="bWatch" hidden>▶ Watch the atoms swap partners</button><button class="btn ghost small" id="bShow">Show me how to count</button></div>
+    <div id="bMsg" aria-live="polite"></div>
+    <div id="cfBuild"></div>
+  </div>
+  <div class="hands"><b>Do it with your hands (optional).</b> Use clay, paper circles or candy in two colors. Build 2 H₂ and 1 O₂ on your desk, then pull them apart and make 2 H₂O. Use every piece and don’t add any.</div>
+</section>
+
+<!-- 4. WHY CARE -->
+<section id="why">
+  <div><div class="eyebrow">Part 4</div><h2>Why care?</h2></div>
+  <div class="whycare"><b>Your soda goes flat because mass leaves the bottle.</b> The fizz is CO₂ dissolved in the drink. Open it and the gas escapes into the room, so the can really does get lighter. It’s the same reason the scale dropped in Part 2. When bread or pancakes rise, CO₂ from baking soda or yeast puffs them up.</div>
+  <div id="world"></div>
+</section>
+
+<!-- 5. TEST -->
+<section id="test">
+  <div><div class="eyebrow">Part 5</div><h2>Test yourself</h2></div>
+  <div id="testBox"></div>
+</section>
+
+</div></main>
+
+<footer class="credit"><div class="wrap">
+  <span><b>Where Does the Mass Go?</b> RJ Ed Tech, built from Paul Stearman’s conservation of mass lessons: his open-cup demo, draw-it-first practice, atom tally tables and three-level choices. Teachers: please check the content and tell us what to change. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
+  <span>© 2026 Jason Beyer, RJ Ed Tech · CC BY-NC 4.0</span>
+</div></footer>
+
+<script src="kit/lesson-kit.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+LK.setup({site:'ChemLab',page:'conservation-of-mass',key:'chemlab-conservation-of-mass-v1'});
+LK.supports('#sup');
+const $=s=>document.querySelector(s), esc=LK.esc, RM=LK.reducedMotion;
+const NS='http://www.w3.org/2000/svg';
+
+/* ---------- Part 1: words ---------- */
+const WORDS=[
+ {w:'Conserve',every:'To save something and not waste it, like conserving water or your phone battery.',sci:'The amount <b>stays the same</b>. In a reaction the atoms are all still there afterward, so the total mass is the same before and after.'},
+ {w:'Mass',every:'At RJ, you might think of Mass in the chapel first. Or you might think “weight.”',sci:'How much stuff something is made of. We measure it in grams on a scale. More atoms, or heavier atoms, means more mass.'},
+ {w:'React',every:'How you respond to something, like reacting to a text or a bad call in a game.',sci:'Atoms <b>let go of their partners and grab new ones</b>, making new substances. Hydrogen and oxygen react to make water.'}];
+$('#wordCards').innerHTML=WORDS.map((x,i)=>`<div class="word"><div class="w">${x.w}</div>
+  <button class="btn ghost small" data-wd="${i}" data-k="e">What does it mean outside class?</button><div class="mean" id="we${i}" hidden><div class="lbl">Outside class</div>${x.every}</div>
+  <button class="btn ghost small" data-wd="${i}" data-k="s" hidden>And in chemistry?</button><div class="mean sci" id="ws${i}" hidden><div class="lbl">In chemistry</div>${x.sci}</div></div>`).join('');
+$('#wordCards').addEventListener('click',e=>{const b=e.target.closest('[data-wd]');if(!b)return;const i=b.dataset.wd;
+  if(b.dataset.k==='e'){$('#we'+i).hidden=false;b.hidden=true;b.parentNode.querySelector('[data-k=s]').hidden=false;LK.say(LK.text($('#we'+i)))}
+  else{$('#ws'+i).hidden=false;b.hidden=true;LK.say(LK.text($('#ws'+i)))}});
+
+/* ---------- Part 2: the scale ---------- */
+const svg=$('#demoSvg');
+const START=145.0, LOST=2.5;
+let mode='open', running=false, raf=0, ran={open:false,closed:false};
+function drawDemo(m){mode=m;svg.innerHTML=`
+  <defs><linearGradient id="vin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3e6b8"/><stop offset="1" stop-color="#e4cf8a"/></linearGradient></defs>
+  <rect x="150" y="300" width="340" height="40" rx="8" fill="#2d3236"/>
+  <rect x="230" y="306" width="180" height="30" rx="4" fill="#0e1a12"/>
+  <text id="scaleRead" x="320" y="331" text-anchor="middle" class="scaleTxt" style="font-size:24px">${START.toFixed(1)} g</text>
+  <rect x="170" y="290" width="300" height="12" rx="4" fill="#9aa3a8"/>
+  ${m==='open'?`
+  <path d="M250 150 L262 290 L378 290 L390 150 Z" fill="rgba(200,225,235,.35)" stroke="#7b8a91" stroke-width="2.5"/>
+  <path id="liq" d="M255 210 L262 288 L378 288 L385 210 Z" fill="url(#vin)" opacity=".9"/>
+  <text x="320" y="140" text-anchor="middle" class="capm">open cup: nothing on top</text>`:`
+  <path d="M268 120 L268 104 L372 104 L372 120 Z" fill="#c8102e"/>
+  <path d="M262 120 Q262 150 250 165 L250 288 L390 288 L390 165 Q378 150 378 120 Z" fill="rgba(200,225,235,.35)" stroke="#7b8a91" stroke-width="2.5"/>
+  <path id="liq" d="M252 210 L252 286 L388 286 L388 210 Z" fill="url(#vin)" opacity=".9"/>
+  <text x="320" y="92" text-anchor="middle" class="capm">capped bottle: the cap is screwed on</text>`}
+  <g id="soda"><path d="M410 270 L470 270 L460 288 L420 288 Z" fill="#e9ecee" stroke="#7b8a91"/><circle cx="430" cy="266" r="5" fill="#fff" stroke="#bbb"/><circle cx="442" cy="263" r="6" fill="#fff" stroke="#bbb"/><circle cx="452" cy="267" r="5" fill="#fff" stroke="#bbb"/></g>
+  <text x="440" y="255" text-anchor="middle" class="capm" id="sodaLbl">5.00 g baking soda</text>
+  <g id="gas"></g>
+  <g id="zoom" opacity="0"><rect x="490" y="40" width="140" height="92" rx="10" fill="var(--surface)" stroke="#c8102e" stroke-width="2"/>
+    <text x="560" y="60" text-anchor="middle" class="cap" style="font-size:12px">Zoom in on a bubble</text>
+    <circle cx="534" cy="96" r="13" fill="var(--aO)" stroke="#333"/><circle cx="560" cy="96" r="14" fill="var(--aC)" stroke="#333"/><circle cx="586" cy="96" r="13" fill="var(--aO)" stroke="#333"/>
+    <text x="560" y="124" text-anchor="middle" class="cap" style="font-size:12px">CO₂: carbon dioxide</text></g>
+  <text x="20" y="30" class="cap" id="demoCap"></text>`;}
+drawDemo('open');
+const PRED=[['up','It will read more than 145.0 g'],['down','It will read less than 145.0 g'],['same','It will still read 145.0 g']];
+let pred=null;
+$('#predPicks').innerHTML=PRED.map(([k,t])=>`<button class="pick" data-p="${k}">${t}</button>`).join('');
+$('#predPicks').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;pred=b.dataset.p;[...$('#predPicks').children].forEach(x=>x.style.borderColor=x===b?'var(--accent)':'');
+  $('#demoStage').textContent='Prediction saved. Now tip it in.'});
+function run(m){if(running)return;drawDemo(m);running=true;$('#runOpen').disabled=true;$('#runClosed').disabled=true;
+  const gas=svg.querySelector('#gas'),read=svg.querySelector('#scaleRead'),soda=svg.querySelector('#soda'),zoom=svg.querySelector('#zoom'),cap=svg.querySelector('#demoCap');
+  svg.querySelector('#sodaLbl').textContent='';
+  /* bubbles: CO2 molecules (C between two O), drawn at a visible size; real ones are far too small to see */
+  const N=14, mol=[];
+  for(let i=0;i<N;i++){const g=document.createElementNS(NS,'g');g.innerHTML='<circle cx="-7" cy="0" r="4.2" fill="var(--aO)" stroke="#333" stroke-width=".6"/><circle cx="0" cy="0" r="4.6" fill="var(--aC)" stroke="#333" stroke-width=".6"/><circle cx="7" cy="0" r="4.2" fill="var(--aO)" stroke="#333" stroke-width=".6"/>';
+    gas.appendChild(g);mol.push({g,x:270+Math.random()*100,y:280-Math.random()*20,t0:Math.random()*.45,vx:(Math.random()-.5)*60,ph:Math.random()*6.28,gx:(i%5)/4,gy:Math.floor(i/5)/2})}
+  const T=RM()?1:6500, t0=performance.now();
+  cap.textContent=m==='open'?'Fizzing… CO₂ gas forms and rises out of the open cup.':'Fizzing… CO₂ gas forms but the cap holds it in.';
+  $('#demoStage').textContent=cap.textContent;LK.say(cap.textContent);
+  function frame(now){const t=Math.min(1,(now-t0)/T);
+    soda.setAttribute('opacity',String(Math.max(0,1-t*4)));zoom.setAttribute('opacity',String(Math.min(1,t*3)));
+    mol.forEach(p=>{const u=Math.max(0,(t-p.t0)/(1-p.t0));let x,y;
+      if(m==='open'){y=280-u*300;x=p.x+Math.sin(u*8+p.ph)*8+p.vx*u*1.5}
+      else{const goal=135+p.gy*62,yy=280-u*170;y=Math.max(goal,yy)+Math.sin(u*14+p.ph)*4;x=262+p.gx*116+Math.sin(u*9+p.ph)*6}
+      p.g.setAttribute('transform',`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(u*200+p.ph*30)%360})`);p.g.setAttribute('opacity',u<=0?'0':(m==='open'&&y<0?'0':'1'))});
+    if(m==='open')read.textContent=(START-LOST*Math.max(0,(t-.15)/.85)).toFixed(1)+' g';
+    if(t<1)raf=requestAnimationFrame(frame);else done(m)}
+  raf=requestAnimationFrame(frame)}
+function done(m){running=false;ran[m]=true;$('#runOpen').disabled=false;$('#runClosed').disabled=false;const read=svg.querySelector('#scaleRead');
+  if(m==='open'){read.textContent=(START-LOST).toFixed(1)+' g';const r=pred==='down'?'You predicted it: the scale dropped.':(pred?'Not what you predicted: the scale dropped.':'The scale dropped.');
+    $('#demoStage').textContent=r+' 145.0 g → 142.5 g.';LK.say($('#demoStage').textContent);$('#whyBox').hidden=false;$('#runOpen').hidden=true}
+  else{read.textContent=START.toFixed(1)+' g';$('#demoStage').textContent='Capped bottle: 145.0 g before, 145.0 g after.';
+    $('#demoEnd').hidden=false;$('#demoEnd').innerHTML='Same reaction, same atoms. In the open cup the CO₂ <b>left</b>, and its mass went with it. With the cap on, the CO₂ stays on the scale, so the mass stays at 145.0 g. <b>Mass is never destroyed. Sometimes it just escapes where the scale can’t weigh it.</b>';LK.say(LK.text($('#demoEnd')))}}
+const WHY=[['wind','The wind blew some of the baking soda away.','Not that one. The air in the room was still, and the baking soda was all in the cup. Look at the zoom box: what is leaving?'],
+  ['gas','The reaction made CO₂ gas, and it floated out of the cup.','Right. The bubbles are carbon dioxide gas. Gas rises out of an open cup and the scale can’t weigh it anymore. Now prove it: try the same reaction with the cap on.'],
+  ['boil','Some of the water boiled off.','Not that one. Nothing was heated, so the water didn’t boil. Look at the zoom box: what is in the bubbles?']];
+$('#whyPicks').innerHTML=WHY.map(([k,t])=>`<button class="pick" data-w="${k}">${t}</button>`).join('')+'<p id="whyMsg" class="msg" hidden></p>';
+$('#whyPicks').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const w=WHY.find(x=>x[0]===b.dataset.w);const ok=w[0]==='gas';
+  [...$('#whyPicks').querySelectorAll('.pick')].forEach(x=>x.classList.remove('ok','no'));b.classList.add(ok?'ok':'no');
+  const m=$('#whyMsg');m.hidden=false;m.className='msg '+(ok?'ok':'no');m.textContent=w[2];LK.say(w[2]);if(ok){$('#runClosed').hidden=false}});
+$('#runOpen').addEventListener('click',()=>run('open'));
+$('#runClosed').addEventListener('click',()=>run('closed'));
+$('#demoReset').addEventListener('click',()=>{cancelAnimationFrame(raf);running=false;drawDemo('open');$('#runOpen').hidden=false;$('#runOpen').disabled=false;$('#runClosed').hidden=true;$('#whyBox').hidden=true;$('#demoEnd').hidden=true;$('#demoStage').textContent='';const m=$('#whyMsg');if(m)m.hidden=true;[...document.querySelectorAll('#whyPicks .pick')].forEach(x=>x.classList.remove('ok','no'))});
+LK.confused('#cfScale',{where:'scale',part:'scale',
+  ask:'Why the number on the scale changed, even though no atoms were destroyed.',
+  another:'Think of a bag of chips on a scale. Open it and let the air out: the scale reads a tiny bit less, but the air still exists. It just isn’t in the bag anymore.',
+  start:'Look at the zoom box. The bubbles are CO₂ molecules. Follow them: do they stay on the scale?'});
+
+/* ---------- Part 3: build it ---------- */
+/* Atom colors follow the usual chemistry model-kit colors; sizes follow each atom's real size (covalent radius), scaled up. */
+const EL={H:{c:'var(--aH)',r:9,t:'#333',n:'Hydrogen'},O:{c:'var(--aO)',r:13,t:'#fff',n:'Oxygen'},C:{c:'var(--aC)',r:14,t:'#fff',n:'Carbon'},Mg:{c:'var(--aMg)',r:19,t:'#13222a',n:'Magnesium'},Fe:{c:'var(--aFe)',r:18,t:'#fff',n:'Iron'},Ag:{c:'var(--aAg)',r:19,t:'#13222a',n:'Silver'},K:{c:'var(--aK)',r:23,t:'#fff',n:'Potassium'}};
+/* Molecule shapes: offsets of each atom from the molecule's centre */
+function shape(f){const d=(a,b)=>(EL[a].r+EL[b].r)*.78;
+  switch(f){
+  case 'H2':return [['H',-d('H','H')/2,0],['H',d('H','H')/2,0]];
+  case 'O2':return [['O',-d('O','O')/2,0],['O',d('O','O')/2,0]];
+  case 'H2O':{const k=d('O','H');return [['O',0,-4],['H',-k*Math.sin(.91),-4+k*Math.cos(.91)],['H',k*Math.sin(.91),-4+k*Math.cos(.91)]]}
+  case 'CH4':{const k=d('C','H')*.9;return [['C',0,0],['H',-k,-k*.7],['H',k,-k*.7],['H',-k,k*.7],['H',k,k*.7]]}
+  case 'CO2':{const k=d('C','O');return [['O',-k,0],['C',0,0],['O',k,0]]}
+  case 'Mg':return [['Mg',0,0]];case 'Fe':return [['Fe',0,0]];case 'Ag':return [['Ag',0,0]];case 'K':return [['K',0,0]];
+  case 'MgO':{const k=d('Mg','O')/2;return [['Mg',-k,0],['O',k,0]]}
+  case 'Ag2O':{const k=d('Ag','O');return [['Ag',-k,4],['O',0,-4],['Ag',k,4]]}
+  case 'K2O':{const k=d('K','O');return [['K',-k,4],['O',0,-6],['K',k,4]]}
+  case 'Fe2O3':{const k=d('Fe','O');return [['Fe',-k*.55,-k*.45],['Fe',k*.55,-k*.45],['O',-k*1.05,k*.5],['O',0,k*.5],['O',k*1.05,k*.5]]}
+  }}
+const SUBN={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+const pretty=f=>f.replace(/\d/g,c=>SUBN[c]);
+const count=f=>{const o={};shape(f).forEach(([e])=>o[e]=(o[e]||0)+1);return o};
+const RX={
+  water:{label:'Burning hydrogen',sides:[['H2','O2'],['H2O']],target:[[2,1],[2]],why:'Hydrogen fuel-cell cars and the space shuttle’s main engines made water this way.'},
+  methane:{label:'A gas stove’s blue flame',sides:[['CH4','O2'],['CO2','H2O']],target:[[1,2],[1,2]],why:'This is the reaction in the blue flame of a gas stove or water heater.'},
+  mg:{label:'Magnesium burns bright white',sides:[['Mg','O2'],['MgO']],target:null,why:'Road flares and some fireworks use burning magnesium for their white light.'},
+  rust:{label:'Iron rusts',sides:[['Fe','O2'],['Fe2O3']],target:null,why:'This is the rust on a bike chain left out in the snow.'},
+  ag:{label:'Silver oxide breaks apart',sides:[['Ag2O'],['Ag','O2']],target:null,why:'Heat silver oxide and shiny silver metal is left behind while oxygen gas leaves.'},
+  k:{label:'Potassium meets oxygen',sides:[['K','O2'],['K2O']],target:null,why:'Potassium reacts with air so fast that it’s stored under oil.'}};
+const TIERS=[{k:'easy',t:'Easy',d:'The equation is already balanced. Build exactly what it says, then count.',rx:['water']},
+  {k:'guided',t:'Guided',d:'A bigger one, still balanced for you. More atoms to keep track of.',rx:['methane']},
+  {k:'own',t:'On your own',d:'The big numbers are blank. Add molecules until both sides match.',rx:['mg','rust','ag','k']}];
+const S=LK.state();S.build=S.build||{tier:'easy',rx:'water'};
+let cur=null,coef=null,shown=false;
+$('#tiers').innerHTML=TIERS.map(t=>`<button class="tier" data-t="${t.k}" aria-pressed="false"><b>${t.t}</b><small>${t.d}</small></button>`).join('');
+$('#tiers').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=TIERS.find(x=>x.k===b.dataset.t);S.build={tier:t.k,rx:t.rx[0]};LK.save();load()});
+function els(){const o=[];cur.sides.flat().forEach(f=>Object.keys(count(f)).forEach(e=>{if(!o.includes(e))o.push(e)}));return o}
+function totals(side){const o={};cur.sides[side].forEach((f,i)=>{const c=count(f);for(const e in c)o[e]=(o[e]||0)+c[e]*coef[side][i]});return o}
+function eqHTML(){const own=!cur.target;return cur.sides.map((side,s)=>side.map((f,i)=>{const n=own?(coef[s][i]||''):cur.target[s][i];return (own?`<span class="blank">${n}</span>`:(n>1?n:''))+pretty(f)}).join(' + ')).join(' → ')}
+function load(){const t=TIERS.find(x=>x.k===S.build.tier)||TIERS[0];if(!t.rx.includes(S.build.rx))S.build.rx=t.rx[0];cur=RX[S.build.rx];
+  coef=cur.sides.map(s=>s.map(()=>0));shown=false;
+  [...$('#tiers').children].forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t.k)));
+  const pickRx=t.rx.length>1?`<div class="row"><span class="muted">Pick a reaction:</span>${t.rx.map(k=>`<button class="btn ${k===S.build.rx?'':'ghost'} small" data-rx="${k}">${RX[k].label}</button>`).join('')}</div>`:'';
+  $('#bTask').innerHTML=`<div class="eyebrow">${t.t} · ${cur.label}</div>${pickRx}<p class="eq" id="bEq"></p><p>${cur.target?'<b>Step 1:</b> use the + buttons to build what the equation says. The big number in front tells you how many molecules.':'<b>Step 1:</b> add molecules to each side. Keep going until the atoms on both sides match. You can’t change the small numbers: they are what each molecule is made of.'}</p><p class="muted">${cur.why}</p>`;
+  $('#bKey').innerHTML=els().map(e=>`<span><i style="background:${EL[e].c}"></i>${EL[e].n} (${e})</span>`).join('')+'<span>Atom sizes compare like the real ones: a hydrogen atom is smaller than an oxygen atom. Real atoms are about 100 million times smaller.</span>';
+  $('#bCtrls').innerHTML=cur.sides.map((side,s)=>`<div class="ctrlside"><span class="lbl">${s?'Products (after)':'Reactants (before)'}</span>${side.map((f,i)=>`<div class="sp"><button data-s="${s}" data-i="${i}" data-d="-1" aria-label="Remove one ${pretty(f)}">−</button><span class="n" id="n${s}${i}">0</span><button data-s="${s}" data-i="${i}" data-d="1" aria-label="Add one ${pretty(f)}">+</button><span class="f">${pretty(f)}</span></div>`).join('')}</div>`).join('');
+  $('#bTally').innerHTML=`<tr><th>Element</th><th>Atoms before (left)</th><th>Atoms after (right)</th></tr>`+els().map(e=>`<tr><td class="el">${e}</td><td><input data-e="${e}" data-s="0" ${LK.numAttrs} aria-label="${EL[e].n} atoms on the left"></td><td><input data-e="${e}" data-s="1" ${LK.numAttrs} aria-label="${EL[e].n} atoms on the right"></td></tr>`).join('');
+  $('#bMsg').innerHTML='';$('#bWatch').hidden=true;draw()}
+$('#bTask').addEventListener('click',e=>{const b=e.target.closest('[data-rx]');if(!b)return;S.build.rx=b.dataset.rx;LK.save();load()});
+$('#bCtrls').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;const s=+b.dataset.s,i=+b.dataset.i;const n=coef[s][i]+ +b.dataset.d;
+  const tot=coef[s].reduce((a,x)=>a+x,0)+ +b.dataset.d;if(n<0||n>8||tot>10)return;coef[s][i]=n;shown=false;$('#bWatch').hidden=true;$('#bMsg').innerHTML='';
+  document.querySelectorAll('#bTally input').forEach(x=>x.classList.remove('ok','no'));draw()});
+/* lay out molecules in a grid inside each side box; returns [{f,cx,cy,atoms:[[e,x,y]]}] */
+const WIDE=[{x:14,y:34,w:340,h:252},{x:406,y:34,w:340,h:252}],TALL=[{x:12,y:34,w:356,h:250},{x:12,y:346,w:356,h:250}];
+let BOX=WIDE,narrow=false;
+function fit(){narrow=(document.getElementById('bSvg').clientWidth||760)<560;BOX=narrow?TALL:WIDE;document.getElementById('bSvg').setAttribute('viewBox',narrow?'0 0 380 600':'0 0 760 300')}
+window.addEventListener('resize',()=>{const was=narrow;fit();if(was!==narrow&&cur){shown=false;draw()}});
+let SC=1.5;
+function setScale(){const n=Math.max(coef[0].reduce((a,x)=>a+x,0),coef[1].reduce((a,x)=>a+x,0));SC=n<=4?1.6:n<=6?1.3:1.05}
+function layout(side){const list=[];cur.sides[side].forEach((f,i)=>{for(let k=0;k<coef[side][i];k++)list.push(f)});
+  const n=list.length,b=BOX[side];if(!n)return [];const cols=n<=1?1:n<=4?2:n<=6?3:4,rows=Math.ceil(n/cols);const cw=b.w/cols,ch=b.h/rows;
+  return list.map((f,k)=>{const cx=b.x+cw*(k%cols+.5),cy=b.y+ch*(Math.floor(k/cols)+.5);return {f,cx,cy,atoms:shape(f).map(([e,x,y])=>[e,cx+x*SC,cy+y*SC])}})}
+function atomSVG(e,x,y,id,cls){const a=EL[e];return `<g ${id?`id="${id}"`:''} class="${cls||''}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="${(a.r*SC).toFixed(1)}" fill="${a.c}" stroke="#333" stroke-width="1"/><text class="alab" fill="${a.t}" style="font-size:${Math.round((a.r>12?11:9)*Math.min(SC,1.4))}px">${e}</text></g>`}
+function draw(){fit();setScale();$('#bEq').innerHTML=eqHTML();cur.sides.forEach((side,s)=>side.forEach((f,i)=>{$('#n'+s+i).textContent=coef[s][i]}));
+  const L=layout(0),R=layout(1);
+  let h=`<rect class="side" x="${BOX[0].x}" y="${BOX[0].y}" width="${BOX[0].w}" height="${BOX[0].h}" rx="10"/><rect class="side" x="${BOX[1].x}" y="${BOX[1].y}" width="${BOX[1].w}" height="${BOX[1].h}" rx="10"/>
+    <text class="sidelbl" x="${BOX[0].x+BOX[0].w/2}" y="${BOX[0].y-12}">BEFORE · REACTANTS</text><text class="sidelbl" x="${BOX[1].x+BOX[1].w/2}" y="${BOX[1].y-12}">AFTER · PRODUCTS</text>${narrow?'<text class="arrow" x="360" y="318" style="font-size:26px">↓</text>':'<text class="arrow" x="380" y="172">→</text>'}`;
+  if(!L.length)h+=`<text class="empty" x="${BOX[0].x+BOX[0].w/2}" y="${BOX[0].y+BOX[0].h/2}">Press + to add molecules</text>`;
+  if(!R.length)h+=`<text class="empty" x="${BOX[1].x+BOX[1].w/2}" y="${BOX[1].y+BOX[1].h/2}">Press + to add molecules</text>`;
+  if(shown){R.forEach(m=>m.atoms.forEach(([e,x,y])=>{h+=`<circle class="ghost" cx="${x}" cy="${y}" r="${(EL[e].r*SC).toFixed(1)}"/>`}))}
+  else R.forEach(m=>m.atoms.forEach(([e,x,y])=>{h+=atomSVG(e,x,y)}));
+  L.forEach((m,k)=>m.atoms.forEach(([e,x,y],j)=>{h+=atomSVG(e,x,y,'L'+k+'_'+j)}));
+  $('#bSvg').innerHTML=h}
+function check(){const tl=[totals(0),totals(1)],E=els();let allRight=true,blank=false;
+  document.querySelectorAll('#bTally input').forEach(inp=>{const want=tl[+inp.dataset.s][inp.dataset.e]||0;const r=LK.check(inp.value,want,{rel:0,abs:0});
+    inp.classList.remove('ok','no');if(r==='empty'){blank=true;allRight=false;return}inp.classList.add(r==='ok'?'ok':'no');if(r!=='ok')allRight=false});
+  const M=$('#bMsg');const L=coef[0].reduce((a,x)=>a+x,0),R=coef[1].reduce((a,x)=>a+x,0);
+  if(!L||!R){M.innerHTML='<p class="msg no">Build both sides first: use the + buttons under each box.</p>';return}
+  if(blank){M.innerHTML='<p class="msg no">Fill in every box in the table. Count the circles of each color on each side.</p>';return}
+  if(!allRight){M.innerHTML='<p class="msg no">Some counts don’t match your picture (the orange boxes). Count those circles again, one color at a time.</p>';LK.say(LK.text(M));return}
+  const bal=E.every(e=>(tl[0][e]||0)===(tl[1][e]||0));
+  if(cur.target){const match=cur.target.every((t,s)=>t.every((n,i)=>coef[s][i]===n));
+    if(!match){M.innerHTML=`<p class="msg no">Your counting is right. But your picture isn’t what the equation says yet. Read the big numbers in ${eqHTML()} again and match them.</p>`;return}
+    M.innerHTML=`<p class="msg ok">✓ Your counts are right, and both sides have ${E.map(e=>`${tl[0][e]} ${e}`).join(', ')}. The same atoms are before and after, so the mass is the same. Watch them swap partners.</p>`;$('#bWatch').hidden=false}
+  else if(!bal){const off=E.filter(e=>(tl[0][e]||0)!==(tl[1][e]||0)).map(e=>`${e}: ${tl[0][e]||0} before, ${tl[1][e]||0} after`).join('; ');
+    M.innerHTML=`<p class="msg no">Your counts are right, and they show the sides don’t match yet (${off}). Atoms can’t appear or vanish, so add a molecule to the side that’s short.</p>`}
+  else{const g=coef.flat().reduce((a,b)=>{while(b){[a,b]=[b,a%b]}return a});
+    M.innerHTML=`<p class="msg ok">✓ Balanced: ${eqHTML().replace(/<[^>]+>/g,'')}. Both sides have ${E.map(e=>`${tl[0][e]} ${e}`).join(', ')}.${g>1?` It works, but every number can be divided by ${g}. Chemists use the smallest whole numbers.`:''}</p>`;$('#bWatch').hidden=false}
+  LK.say(LK.text(M))}
+$('#bCheck').addEventListener('click',check);
+$('#bShow').addEventListener('click',()=>{const E=els(),e=E[0];$('#bMsg').innerHTML=`<p class="msg info"><b>How to count ${EL[e].n}:</b> look only at the ${EL[e].n.toLowerCase()} circles in the left box and count them. That number goes in the first column. Then do the same in the right box. Repeat for each color. Count the circles you drew, not the numbers in the equation.</p>`;LK.say(LK.text($('#bMsg')))});
+/* the swap: each left atom flies to a matching empty spot on the right */
+$('#bWatch').addEventListener('click',()=>{const L=layout(0),R=layout(1);shown=true;draw();$('#bWatch').disabled=true;
+  const spots={};R.forEach(m=>m.atoms.forEach(([e,x,y])=>{(spots[e]=spots[e]||[]).push([x,y])}));
+  const moves=[];L.forEach((m,k)=>m.atoms.forEach(([e,x,y],j)=>{const s=(spots[e]||[]).shift();if(s)moves.push({n:document.getElementById('L'+k+'_'+j),x0:x,y0:y,x1:s[0],y1:s[1],d:Math.random()*.25})}));
+  const T=RM()?1:2600,t0=performance.now();const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  (function f(now){const t=Math.min(1,(now-t0)/T);moves.forEach(m=>{const u=ease(Math.max(0,Math.min(1,(t-m.d)/(1-m.d))));const x=m.x0+(m.x1-m.x0)*u,y=m.y0+(m.y1-m.y0)*u-Math.sin(u*Math.PI)*40;m.n.setAttribute('transform',`translate(${x.toFixed(1)} ${y.toFixed(1)})`)});
+    if(t<1)requestAnimationFrame(f);else{$('#bWatch').disabled=false;const M=$('#bMsg');M.insertAdjacentHTML('beforeend','<p class="msg info">Every atom from the left filled a spot on the right. None were left over and none were missing. <b>New partners, same atoms, same mass.</b></p>');LK.say('Every atom from the left filled a spot on the right. New partners, same atoms, same mass.')}})(t0)});
+LK.confused('#cfBuild',{where:'build',part:'build',
+  ask:'Two jobs: build the molecules the equation names, then count the atoms of each color on each side.',
+  another:'A big number in front is how many molecules: 2H₂O means two water molecules. A small number is part of the molecule: the ₂ in H₂O means each water has two H atoms. So 2H₂O has 4 H atoms in all.',
+  start:'Start with the left box. Press + next to each molecule until the count matches the big number in the equation.',
+  actions:[{label:'Show me how to count',run:()=>$('#bShow').click()}]});
+load();
+
+/* ---------- Part 4: world ---------- */
+LK.world('#world',{title:'How this changed the world',cards:[
+ {icon:'⚖️',title:'Lavoisier capped the bottle',html:'In the 1770s Antoine Lavoisier weighed reactions inside sealed glass, like the capped bottle in Part 2. The mass never changed. That showed chemists that burning joins things with oxygen. Before that, they thought burning released a substance they called “phlogiston.”',source:'Lavoisier, <i>Elements of Chemistry</i> (1789)'},
+ {icon:'🌳',title:'A tree is built mostly from air',html:'In the 1600s Jan Baptist van Helmont grew a willow in a weighed pot of soil for five years. The tree gained about 164 pounds; the soil lost about 2 ounces. Where did the mass come from? Today we know: mostly CO₂ from the air, joined with water, using sunlight.',source:'van Helmont, <i>Ortus Medicinae</i> (1648)'},
+ {icon:'🔥',title:'Where does a campfire go?',html:'A log burns down to a handful of ash. The rest didn’t vanish. Its carbon and hydrogen joined oxygen from the air and left as CO₂ and water vapor you can’t see. Those gases weigh more than the wood, because they carry the oxygen too.',source:'Conservation of mass; same idea as Part 2'}]});
+
+/* ---------- Part 5: test ---------- */
+LK.test('#testBox',{id:'com',questions:[
+ {q:'A sealed bag of popcorn kernels weighs 100 g. You microwave it without opening it. What does it weigh after?',choices:['Less than 100 g','About 100 g','More than 100 g'],answer:1,hint:'Is anything able to leave the bag?',why:'The bag is sealed, so the steam stays in. Same atoms, same mass.'},
+ {q:'Why did the open cup in Part 2 get lighter?',choices:['A gas formed and left the cup','Some atoms were destroyed','Baking soda weighs nothing','The scale stopped working'],answer:0,hint:'Look at what the bubbles were made of.',why:'CO₂ gas escaped, taking its mass with it. No atoms were destroyed.'},
+ {q:'How many hydrogen atoms are in 2H₂O?',choices:['2','3','4','6'],answer:2,hint:'The big 2 counts molecules. The small ₂ counts H atoms in one molecule.',why:'2 molecules × 2 H each = 4 H atoms.'},
+ {q:'Which equation is balanced?',choices:['Mg + O₂ → MgO','2Mg + O₂ → 2MgO','Mg + 2O₂ → MgO','2Mg + 2O₂ → MgO'],answer:1,hint:'Count Mg and O on each side for each choice.',why:'2 Mg and 2 O on each side.'},
+ {q:'To balance an equation, what are you allowed to change?',choices:['The small numbers inside a formula','The big numbers in front','The element symbols','Both sides’ arrows'],answer:1,hint:'Changing a small number changes what the substance is.',why:'Big numbers count molecules. Changing H₂O to H₂O₂ would make a different chemical.'},
+ {q:'A log burns to a small pile of ash. Where did most of its mass go?',choices:['It was destroyed by the heat','Into the air as gases','Into the ground','It turned into light'],answer:1,hint:'Think of the open cup in Part 2.',why:'The carbon and hydrogen left as CO₂ and water vapor.'}]});
+})();
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents.
+     Each section (#part) counts as its own page. A visit through the school's Securly filter (?scrlybrkr) adds ?sd = school device. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var last=null,tries=0;
+function route(){var h=(location.hash||'').slice(1).split(/[=@?&]/)[0].replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);return location.pathname+(h?'#'+h:'')+(/scrlybrkr/.test(location.search)?'?sd':'');}
+function go(){var p=route();if(p===last)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}last=p;try{g.count({path:p});}catch(e){}}
+window.addEventListener('hashchange',go);if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
