@@ -221,6 +221,28 @@ footer.credit a{color:var(--accent)}
 .lvl{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden}
 .lvl button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.85rem;padding:6px 12px;border:0;background:transparent;color:var(--accent);cursor:pointer}
 .lvl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.ffig{display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}
+.ffpick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem}
+.ffrow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.ffcard{flex:1 1 200px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.ffcard.mol{flex:2 1 260px}
+.ffcard .ffk{font:700 .74rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ffcard .fff{font:700 1.35rem var(--f-mono);color:var(--ink)}
+.ffcard svg{height:auto;max-width:100%}
+.ffcard .ffc{font-size:.88rem;color:var(--muted)}
+.ffx{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 1.1rem var(--f-mono);color:var(--accent);min-width:56px}
+.ffx b{font-size:1.6rem;line-height:1}
+.ffkey{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;color:var(--muted);justify-content:center}
+.ffkey i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:4px;border:1.5px solid var(--ink)}
+.at-C{fill:#4a4a4a;stroke:var(--ink);stroke-width:1.5}.at-H{fill:#f4f4f4;stroke:#7a8794;stroke-width:1.5}.at-O{fill:#d9483b;stroke:var(--ink);stroke-width:1.5}.at-N{fill:#3b6fd9;stroke:var(--ink);stroke-width:1.5}
+.at-t{font:700 11px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}.at-tC{fill:#fff}.at-tH{fill:#333}.at-tO{fill:#fff}
+.ffgrp{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
+@media (max-width:560px){.ffx{flex-basis:100%;flex-direction:row;gap:8px;min-width:0}.ffx b{transform:rotate(90deg)}}
+.mcwrap{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.wc-h{font:700 17px var(--f-display);fill:var(--muted)}.wc-l{font:700 22px var(--f-mono);fill:var(--ink);text-anchor:middle}.wc-v{font:700 17px var(--f-mono);fill:var(--ink)}.wc-c{font:700 19px var(--f-mono);fill:var(--ink);text-anchor:middle}
+#wcScene .lk-stage svg{max-width:540px}
+.wc-bH{fill:#cfe3ff;stroke:#2f6fd6;stroke-width:2}.wc-bO{fill:#f2b8b1;stroke:#d9483b;stroke-width:2}
+#wcScene .lk-btn{font-family:var(--f-body)}
 .mc{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
 .mc h4{margin:0 0 6px;font-family:var(--f-display);font-size:.95rem}
 .mcrow{display:grid;grid-template-columns:2.3em minmax(60px,1fr) auto;gap:8px;align-items:center;margin:5px 0}.mcrow .lb{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
@@ -281,6 +303,26 @@ html.easy p{max-width:62ch}
 .rxwbar .wH{background:#cfe3ff;color:#123}.rxwbar .wO{background:#f2b8b1;color:#311}.rxwbar .wW{background:linear-gradient(90deg,#cfe3ff 0 11.2%,#f2b8b1 11.2% 100%);color:#123}
 .rxwnote{font-size:.92rem;margin:0}
 .whycare{border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;max-width:76ch}
+.ffig{display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}
+.ffpick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem}
+.ffrow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.ffcard{flex:1 1 150px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.ffcard .ffk{font:700 .74rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ffcard .fff{font:700 1.2rem var(--f-mono);color:var(--ink)}
+.ffcard svg{height:auto;max-width:100%}
+.ffcard .ffc{font-size:.86rem;color:var(--muted)}
+.ffop{flex:0 0 auto;display:flex;align-items:center;justify-content:center;font:700 1.6rem var(--f-mono);color:var(--accent);min-width:24px}
+.fftally{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.92rem;justify-content:center}
+.ffkey{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;color:var(--muted);justify-content:center}
+.ffkey i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:4px;border:1.5px solid var(--ink)}
+.at-C{fill:#4a4a4a;stroke:var(--ink);stroke-width:1.5}.at-H{fill:#f4f4f4;stroke:#7a8794;stroke-width:1.5}.at-O{fill:#d9483b;stroke:var(--ink);stroke-width:1.5}.at-N{fill:#3b6fd9;stroke:var(--ink);stroke-width:1.5}
+.at-t{font:700 10px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}.at-tH{fill:#333}.at-tO,.at-tC,.at-tN{fill:#fff}
+.mwbar{width:100%;height:12px;border-radius:6px;background:var(--line);overflow:hidden}.mwbar i{display:block;height:100%;background:var(--warn)}
+.dozen{border-top:1px dashed var(--line);padding-top:8px}.opn{display:none}
+#moleFig .ffcard{flex-basis:90px;padding:8px}
+.dzrow{display:grid;grid-template-columns:7.2em 1fr 3.4em;grid-template-areas:"l i w" "l b w";gap:2px 8px;align-items:center}
+.dzl{grid-area:l;font-weight:700;font-size:.9rem}.dzi{grid-area:i;font-size:.95rem;letter-spacing:-1px;white-space:nowrap;overflow:hidden}.dzbar{grid-area:b;height:10px;border-radius:5px;background:var(--line);overflow:hidden}.dzbar i{display:block;height:100%;min-width:3px;background:var(--warn)}.dzw{grid-area:w;font:700 .9rem var(--f-mono);text-align:right}
+@media (max-width:560px){.ffop{flex-basis:100%;min-width:0;font-size:1.3rem}.opw{display:none}.opn{display:inline}}
 .rstrip{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
 .rs{flex:1 1 88px;min-width:84px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:8px;border:1.5px dashed var(--line);background:var(--surface);text-align:center}
 .rs.c{background:var(--accent-soft)}.rs.got{border-style:solid;border-color:var(--good)}.rs.now{border:2.5px solid var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
@@ -330,6 +372,7 @@ html.easy p{max-width:62ch}
     <div class="eyebrow">Definition</div>
     <p><b>Stoichiometry</b> answers one question: <b>if you start with this much of one chemical, how much of another do you get?</b></p>
     <p class="muted">Example: burn 4.00 g of hydrogen. How much water do you get? The equation tells you which particles go together: 2H₂ + O₂ → 2H₂O.</p>
+    <div class="ffig" id="recipeFig" aria-live="polite"></div>
     <button class="xbtn" id="defX" aria-expanded="false" aria-controls="defXp">🤔 What does this mean?</button>
     <div class="expl" id="defXp" hidden>
       <p><b>A balanced equation is a recipe that counts.</b> A s’more takes 2 graham crackers and 1 marshmallow. That recipe tells you that 10 crackers need 5 marshmallows, no matter how much each one weighs.</p>
@@ -339,14 +382,7 @@ html.easy p{max-width:62ch}
   <div class="card stack">
     <div class="eyebrow">Quick reminder from the last unit</div>
     <p>Molecules are far too small and too many to count one by one, so <b>chemists count them by weighing</b>, the way a bank counts pennies. They count in groups called <b>moles</b>: 6.022 × 10²³ molecules in each, like a very big dozen. <b>Molar mass</b> is how much one mole weighs, in grams. You add it up from the periodic table: H₂O is 2(1.008) + 16.00 = 18.02 g per mole.</p>
-    <div class="tablewrap"><table class="mtable">
-      <thead><tr><th>One mole of…</th><th>How many molecules</th><th>Weighs</th></tr></thead>
-      <tbody>
-        <tr><td>hydrogen, H₂</td><td>6.022 × 10²³</td><td>2.02 g</td></tr>
-        <tr><td>oxygen, O₂</td><td>6.022 × 10²³</td><td>32.00 g</td></tr>
-        <tr><td>water, H₂O</td><td>6.022 × 10²³</td><td>18.02 g</td></tr>
-      </tbody>
-    </table></div>
+    <div class="ffrow" id="moleFig"></div>
     <p class="muted">Same number of molecules every time, different weight, like a dozen eggs and a dozen bowling balls.</p>
   </div>
   <div class="card stack">
@@ -381,6 +417,7 @@ html.easy p{max-width:62ch}
     <div class="card stack">
       <h3>Why moles, not grams?</h3>
       <p>A dozen eggs and a dozen bowling balls are both 12, but they weigh very different amounts. The equation counts like that: <b>2 H₂ for every 1 O₂</b>, not 2 grams for every 1 gram. So we change grams into a count (moles) first.</p>
+      <div class="ffrow dozen" id="dozenFig" role="img" aria-label="12 large eggs weigh about 1.5 pounds. 12 twelve-pound bowling balls weigh 144 pounds. Same count, about 100 times the weight."></div>
     </div>
   </div>
   <div class="card">
@@ -990,6 +1027,29 @@ function drawPath(){const el=document.getElementById('pathCard'),pth=S.path;
 document.getElementById('pathCard').addEventListener('click',e=>{const b=e.target.closest('[data-path]');if(!b)return;S.path=b.dataset.path;save();drawPath();if(S.path==='case')say(txt(document.getElementById('pathCard')))});
 document.querySelector('[data-sec="lab"]').addEventListener('click',e=>{const a=e.target.closest('[data-sim]');if(!a)return;S.sims=S.sims||{};S.sims[a.dataset.sim]=1;save();refresh();gcSend('sim/ChemLab/stoichiometry/'+a.dataset.sim,'Opened simulation')});
 syncSup();drawPath();
+
+/* ---------- Definitions as pictures (Nov 19, Jason: "visualize it, not text it") ---------- */
+const ATR={H:9,O:13,C:13,N:13};
+const atom=(a,x,y)=>`<circle class="at-${a}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${ATR[a]}"/><text class="at-t at-t${a}" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${a}</text>`;
+/* small molecules, drawn the way they are made: H2 two H, O2 two O, H2O an O with two H */
+const MOL={'H₂':(x,y)=>atom('H',x-8,y)+atom('H',x+8,y),'O₂':(x,y)=>atom('O',x-11,y)+atom('O',x+11,y),'H₂O':(x,y)=>atom('H',x-15,y+9)+atom('H',x+15,y+9)+atom('O',x,y-2)};
+function molBox(f,n,cols){const cw=56,ch=44,c=Math.min(cols||2,n),r=Math.ceil(n/c),W=c*cw,H=r*ch;let s='';for(let i=0;i<n;i++)s+=MOL[f](cw/2+(i%c)*cw,ch/2+Math.floor(i/c)*ch);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:${W*1.05}px" role="img" aria-label="${n} ${f} molecule${n>1?'s':''}">${s}</svg>`}
+(function(){const host=document.getElementById('recipeFig');if(!host)return;let k=1;
+  function draw(){const t=[[2*k,'H₂'],[k,'O₂'],[2*k,'H₂O']],card=(n,f)=>`<div class="ffcard"><span class="fff">${n} ${f}</span>${molBox(f,n,2)}<span class="ffc">${n} molecule${n>1?'s':''}</span></div>`;
+    host.innerHTML=`<div class="ffpick"><span>Make</span>${[1,2,3].map(x=>`<button type="button" class="chip${x===k?' sel':''}" data-k="${x}" aria-pressed="${x===k}">${x===1?'one batch':x===2?'a double batch':'a triple batch'}</button>`).join('')}</div>
+      <div class="ffrow">${card(t[0][0],'H₂')}<div class="ffop" aria-hidden="true">+</div>${card(t[1][0],'O₂')}<div class="ffop" aria-hidden="true"><span class="opw">→</span><span class="opn">↓</span></div>${card(t[2][0],'H₂O')}</div>
+      <div class="fftally"><span>Recipe: <b>${2*k} : ${k} : ${2*k}</b>, always the same as 2 : 1 : 2</span><span>Atoms: <b>${4*k} H, ${2*k} O</b> on both sides</span></div>
+      <div class="ffkey"><span><i style="background:#f4f4f4"></i>H hydrogen</span><span><i style="background:#d9483b"></i>O oxygen</span><span>The big numbers in the equation count these molecules.</span></div>`}
+  host.addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;k=+b.dataset.k;draw()});draw()})();
+(function(){const host=document.getElementById('dozenFig');if(!host)return;
+  let eg='',bb='';for(let i=0;i<12;i++){const x=12+(i%6)*24,y=12+Math.floor(i/6)*24;eg+=`<ellipse cx="${x}" cy="${y}" rx="4" ry="5.5" fill="#f3e3c3" stroke="#a88a5a" stroke-width="1"/>`;
+    bb+=`<circle cx="${x}" cy="${y}" r="11" fill="#2f4a7a" stroke="#16202a" stroke-width="1"/><circle cx="${x-3}" cy="${y-4}" r="1.6" fill="#0d1520"/><circle cx="${x+2}" cy="${y-5}" r="1.6" fill="#0d1520"/><circle cx="${x}" cy="${y+1}" r="1.8" fill="#0d1520"/>`}
+  const c=(k,s,w,lb)=>`<div class="ffcard"><span class="ffk">${k}</span><svg viewBox="0 0 144 48" style="width:150px" aria-hidden="true">${s}</svg><span class="ffc">Count: 12</span><div class="mwbar"><i style="width:${w}%"></i></div><span><b>${lb}</b></span></div>`;
+  host.innerHTML=c('12 large eggs',eg,1.5,'1.5 lb')+c('12 bowling balls',bb,100,'144 lb')+'<p class="muted" style="margin:0;flex-basis:100%">Same count, about 100 times the weight. (Large eggs weigh 1.5 lb a dozen; these are 12-lb balls.)</p>'})();
+(function(){const host=document.getElementById('moleFig');if(!host)return;
+  const R=[['hydrogen','H₂',2.02],['oxygen','O₂',32.00],['water','H₂O',18.02]];
+  host.innerHTML=R.map(([n,f,m])=>`<div class="ffcard"><span class="ffk">One mole of ${n}</span>${molBox(f,1)}<span class="fff">${f}</span><span class="ffc">6.022 × 10²³ molecules</span><div class="mwbar" aria-hidden="true"><i style="width:${(m/32*100).toFixed(1)}%"></i></div><span><b>${m.toFixed(2)} g</b></span></div>`).join('')})();
 
 /* ---------- boot ---------- */
 drawQuiz();drawRhyme();
