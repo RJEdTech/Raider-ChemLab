@@ -60,7 +60,8 @@ header.top .wrap{padding-block:22px 16px;display:flex;flex-direction:column;gap:
 
 nav.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
 nav.steps .scroller{overflow-x:auto}
-nav.steps ol{list-style:none;margin:0;padding-block:8px;display:flex;gap:4px;min-width:max-content}
+nav.steps ol{list-style:none;margin:0;padding-block:8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+nav.steps li.sep{font-family:var(--f-display);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:0 4px 0 10px;border-left:1.5px solid var(--line);margin-left:4px}
 nav.steps a{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-family:var(--f-display);font-weight:500;font-size:.95rem;white-space:nowrap}
 nav.steps a:hover{background:var(--bg);color:var(--ink)}
 nav.steps a[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
@@ -425,15 +426,20 @@ html.easy p{max-width:62ch}
     </div>
   </div>
   <div class="card stack"><h3>Work record preview</h3><pre class="report" id="report" tabindex="0"></pre></div>
-  <div class="footnav"><button class="btn ghost" data-go="molecular">← Molecular formula</button><button class="btn ghost" data-go="use">Optional extras: use it, test yourself →</button></div>
+  <div class="footnav"><button class="btn ghost" data-go="molecular">← Molecular formula</button><button class="btn" data-go="use">Next: why it matters →</button></div>
 </section>
 
 <!-- 6. USE IT (RJ Ed Tech) -->
 <section class="sec" data-sec="use" hidden>
-  <div><div class="eyebrow">Extra · after you submit</div><h2>Use it</h2>
-  <p class="lead">Optional. See where this shows up in real life: fertilizer bags, supplement labels, and your own MgO lab.</p></div>
+  <div><div class="eyebrow">Part 7 · after you submit</div><h2>Why it matters</h2>
+  <p class="lead">You just learned how chemists answer one of science’s first questions about any new substance: <b>what is it made of?</b></p></div>
+  <div class="card stack">
+    <div class="eyebrow">Why this is important</div>
+    <p>When a lab makes a new medicine, finds a strange powder, or digs up a rock, nobody can see the atoms. What they <b>can</b> do is measure mass. Percent composition turns those masses into an atom ratio (the empirical formula), and the molar mass turns that ratio into the real molecule. It is the same four moves you just practiced.</p>
+    <p>It also works the other way: once you know a formula, you know what share of it is the part you care about, like the nitrogen in fertilizer or the calcium in a supplement.</p>
+  </div>
   <div class="card stack" id="usesCard">
-    <div class="eyebrow">How chemists use this</div>
+    <div class="eyebrow">How people use it</div>
     <h3>Real people do this math every day</h3>
     <div class="uses">
       <div class="use"><span class="ic" aria-hidden="true">🌱</span><h4>Fertilizer bags</h4><p>The first number on a bag is percent nitrogen. Urea is sold as 46-0-0. A gardener uses it to know how much to spread.</p><div class="m">10.0 kg × 0.467 = 4.67 kg N</div></div>
@@ -474,8 +480,8 @@ html.easy p{max-width:62ch}
 
 <!-- 7. TEST YOURSELF (RJ Ed Tech) -->
 <section class="sec" data-sec="test" hidden>
-  <div><div class="eyebrow">Extra · after you submit</div><h2>Test yourself</h2>
-  <p class="lead">Optional. Ten quiz-style questions to study for the test. Get a new set any time.</p></div>
+  <div><div class="eyebrow">Part 8 · after you submit</div><h2>Test yourself</h2>
+  <p class="lead">Ten quiz-style questions to study for the test. Get a new set any time.</p></div>
   <div class="card" id="testHost"></div>
   <div class="footnav"><button class="btn ghost" data-go="use">← Use it</button><span></span></div>
 </section>
@@ -903,7 +909,7 @@ function sayTest(){const h=document.getElementById('testHost');const p=h.querySe
 const testBest=()=>(S.test&&S.test.best)||0;
 
 /* ---------- progress + routing ---------- */
-const SECS=[['learn','Definition'],['rhyme','The rhyme'],['examples','Worked examples'],['practice','Practice'],['molecular','Molecular formula'],['summary','Summary'],['use','Extra: Use it'],['test','Extra: Test yourself']];
+const SECS=[['learn','Definition'],['rhyme','The rhyme'],['examples','Worked examples'],['practice','Practice'],['molecular','Molecular formula'],['summary','Summary'],['use','Why it matters'],['test','Test yourself']];
 const pracSolved=()=>PR.filter(p=>S.work[p.id]&&S.work[p.id].solved).length;
 const molCount=()=>MP.filter(molSolved).length;
 const SQ=[
@@ -927,7 +933,7 @@ function refresh(){
   const st=status(),cur=current();
   document.getElementById('stepnav').innerHTML=SECS.map(([k,l],i)=>{
     const extra=k==='practice'?` (${pracSolved()}/3)`:k==='molecular'?(pracSolved()<3?' 🔒':` (${molCount()}/3)`):'';
-    return `<li><a href="#${k}" class="${st[k]?'done':''}${k==='molecular'&&pracSolved()<3?' locked':''}" ${cur===k?'aria-current="page"':''}><span class="dot">${st[k]?'✓':i+1}</span>${l}${extra}</a></li>`}).join('');
+    return (k==='use'?'<li class="sep" aria-hidden="true">After you submit</li>':'')+`<li><a href="#${k}" class="${st[k]?'done':''}${k==='molecular'&&pracSolved()<3?' locked':''}" ${cur===k?'aria-current="page"':''}><span class="dot">${st[k]?'✓':i+1}</span>${l}${extra}</a></li>`}).join('');
   // rhyme bar: highlight the step currently active in the visible solver
   const bar=[...document.querySelectorAll('#rhymebar span')];bar.forEach(s=>s.classList.remove('on'));
   // lock state
