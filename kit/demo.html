@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raider Labs Lesson Kit · every piece, working</title>
+<link rel="stylesheet" href="lesson-kit.css?v=1">
+<style>
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:#16202a;background:#f5f7f9}
+main{max-width:860px;margin:0 auto;padding:18px 16px 60px;display:flex;flex-direction:column;gap:18px}
+h1{font-size:1.6rem;margin:0}h2{font-size:1.2rem;margin:18px 0 0}
+.what{font-size:.9rem;color:#5b6773;margin:0}
+code{font-size:.85em;background:#e9eef2;padding:1px 5px;border-radius:4px}
+.atom-H1{fill:#cfe3ff;stroke:#2f6fd6;stroke-width:2.5}.atom-H2{fill:#d4f2d9;stroke:#1f8a3e;stroke-width:2.5}.atom-O{fill:#d9483b;stroke:#16202a;stroke-width:1.6}
+.bond{stroke:#5b6773;stroke-width:4;stroke-linecap:round}.cap{font:700 17px ui-monospace,Menlo,monospace;fill:#16202a;text-anchor:middle}
+.solve{display:flex;flex-direction:column;gap:10px}.solve label{font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Raider Labs Lesson Kit</h1>
+  <p class="what">Every piece of the lesson model, working on one page, for whoever builds the next lesson. Two subjects are mixed on purpose (chemistry and physics) to show the pieces aren't tied to one lab. How to use it: <code>kit/README.md</code>.</p>
+  <div id="sup"></div>
+</header>
+
+<h2>1. Pick a way in · <code>LK.path</code></h2>
+<p class="what">A mystery the lesson solves, or just the lesson the way the teacher teaches it. The choice is saved.</p>
+<div id="path"></div>
+
+<h2>2. Show change as motion · <code>LK.stepper</code> + <code>LK.bars</code></h2>
+<p class="what">Each step changes the picture and highlights what changed. Play runs it; Next step goes one at a time (and is all that shows with reduced motion). The weight bars appear on the last step.</p>
+<div id="rx"></div>
+<div id="rxBars"></div>
+<div id="rxWhy"></div>
+
+<h2>3. Road map strip on a real problem · <code>LK.strip</code> + number-only boxes + <code>LK.confused</code></h2>
+<p class="what">The problem's own numbers fill in as each step is solved. Answer boxes take numbers only. "This confused me" helps first, then asks why.</p>
+<div class="lk-card solve" id="run">
+  <p><b>You ran 400 m around the track in 80 s. How fast is that in km/h?</b></p>
+  <div id="runStrip"></div>
+  <div id="runStep"></div>
+  <div id="runCf"></div>
+</div>
+<div class="lk-card"><div class="lk-eyebrow">The same strip in chemistry</div><div id="chemStrip"></div></div>
+
+<h2>4. How this changes the world · <code>LK.world</code></h2>
+<div id="world"></div>
+
+<h2>5. Test yourself · <code>LK.test</code></h2>
+<p class="what">One question at a time. A hint and help come before any answer is shown. The best score is saved.</p>
+<div id="test"></div>
+</main>
+
+<script src="lesson-kit.js?v=1"></script>
+<script>
+LK.setup({site:'Kit',page:'demo',key:'lesson-kit-demo-v1'});
+LK.supports('#sup');
+
+LK.path('#path',{mystery:{title:'The case',html:'<p><b>A car crashes. In 30 milliseconds a bag bursts out of the steering wheel and fills with gas</b> made from a small amount of powder. Will 108 g of powder make enough gas? You find out at the end.</p>'},lessonNote:'Just the lesson, step by step.'});
+
+/* --- the reaction, built with the kit's stepper: 2 H2 + O2 -> 2 H2O --- */
+const P={h1a:[[110,62],[150,52],[446,86]],h1b:[[136,62],[180,78],[494,86]],h2a:[[110,132],[150,140],[556,138]],h2b:[[136,132],[182,116],[604,138]],o1:[[230,97],[300,70],[470,70]],o2:[[268,97],[312,128],[580,122]]};
+const OLD=[['h1a','h1b'],['h2a','h2b'],['o1','o2']],NEW=[['o1','h1a'],['o1','h1b'],['o2','h2a'],['o2','h2b']];
+const cls={h1a:'atom-H1',h1b:'atom-H1',h2a:'atom-H2',h2b:'atom-H2',o1:'atom-O',o2:'atom-O'};
+const bondId=(a,b)=>'b-'+a+'-'+b;
+const svg=`<svg viewBox="0 0 660 190" role="img" aria-label="Two hydrogen molecules and one oxygen molecule come apart and regroup into two water molecules. Four H and two O atoms before and after.">
+  ${[...OLD,...NEW].map(([a,b])=>`<line class="bond" id="${bondId(a,b)}"/>`).join('')}
+  ${Object.keys(P).map(k=>`<circle id="${k}" class="${cls[k]}" r="${k[0]==='o'?20:13}"/>`).join('')}
+  <text x="330" y="178" class="cap" data-lk-caption>2 H₂ + 1 O₂</text></svg>`;
+function frame(i,showOld,showNew){const s={};Object.keys(P).forEach(k=>s[k]={cx:P[k][i][0],cy:P[k][i][1]});
+  OLD.forEach(([a,b])=>s[bondId(a,b)]={x1:P[a][i][0],y1:P[a][i][1],x2:P[b][i][0],y2:P[b][i][1],opacity:showOld?1:0});
+  NEW.forEach(([a,b])=>s[bondId(a,b)]={x1:P[a][i][0],y1:P[a][i][1],x2:P[b][i][0],y2:P[b][i][1],opacity:showNew?1:0});return s}
+const bars=LK.bars('#rxBars',{unit:'g',format:v=>v.toFixed(2),rows:[{label:'Before',parts:[{label:'H₂',value:4.04,color:'#cfe3ff'},{label:'O₂',value:32.00,color:'#f2b8b1'}]},{label:'After',hidden:true,parts:[{label:'H₂O',value:36.04,color:'#d8c6f0'}]}],note:'Weights for 2 mol H₂ and 1 mol O₂. Watch what happens to them.'});
+LK.stepper('#rx',{svg,playLabel:'▶ Play the reaction',steps:[
+  {label:'two H₂ molecules and one O₂ molecule.',caption:'2 H₂ + 1 O₂',tally:{Atoms:'4 H, 2 O (never changes)',Molecules:3},set:frame(0,true,false)},
+  {label:'the bonds break. The atoms come apart.',caption:'4 H + 2 O (loose atoms)',tally:{Atoms:'4 H, 2 O (never changes)',Molecules:0},set:frame(1,false,false),focus:['o1','o2']},
+  {label:'the atoms join new partners. Two water molecules.',caption:'2 H₂O',tally:{Atoms:'4 H, 2 O (never changes)',Molecules:2},set:frame(2,false,true),focus:['o1','o2']}],
+  onStep:i=>{bars.show(1,i===2);bars.note(i===2?'<b>Same total: 36.04 g before and after.</b> But the water weighs about <b>9 times</b> as much as the hydrogen it came from, because the oxygen joined it.':'Weights for 2 mol H₂ and 1 mol O₂. Watch what happens to them.')}});
+LK.whyCare('#rxWhy','This is why one gallon of gasoline, about 6 pounds, turns into about 20 pounds of CO₂: oxygen from the air joins it.');
+
+/* --- a tiny physics problem with the strip, number-only boxes and help-first confused --- */
+const RUN={d:400,t:80,v:5,k:18};const S=LK.state();S.run=S.run||{stage:0,v:'',k:'',msg:''};
+function drawRun(){const R=S.run;
+  LK.strip('#runStrip',{now:R.stage+1,arrows:['÷ 80 s','× 3.6'],stations:[{icon:'📏',value:'400',unit:'m in 80 s',kind:'w'},{icon:'⏱️',value:R.stage>=1?R.v:'',unit:'m/s',kind:'c'},{icon:'🚗',value:R.stage>=2?R.k:'',unit:'km/h',kind:'c'}],
+    note:R.stage>=2?'<b>Distance</b> is how far. <b>Speed</b> is how far <i>each second</i>. 400 m and 18 km/h describe the same run.':''});
+  const st=document.getElementById('runStep');
+  if(R.stage===0)st.innerHTML=`<label for="rv">Step 1: speed in meters per second. Divide the distance by the time.</label><div class="lk-row"><input id="rv" class="lk-num" ${LK.numAttrs} value="${LK.esc(R.v)}"> m/s <button class="lk-btn small" data-go>Check</button></div><p>${R.msg}</p>`;
+  else if(R.stage===1)st.innerHTML=`<label for="rk">Step 2: change m/s into km/h. Multiply by 3.6 (3,600 s in an hour ÷ 1,000 m in a km).</label><div class="lk-row"><input id="rk" class="lk-num" ${LK.numAttrs} value="${LK.esc(R.k)}"> km/h <button class="lk-btn small" data-go>Check</button></div><p>${R.msg}</p>`;
+  else st.innerHTML=`<p><b>✓ 18 km/h.</b> About how fast a fast bike ride feels. <button class="lk-link" data-reset>Do it again</button></p>`;
+  if(R.stage>=2){document.getElementById('runCf').innerHTML='';return}
+  LK.confused('#runCf',R.stage===0?{where:'run/step1',part:'strip',ask:'How many meters did you cover in each second?',another:'If you ran 10 m in 2 s, that is 5 m each second. Same idea with 400 m and 80 s.',start:'Divide 400 by 80.',actions:[{label:'Show me this step',run:()=>{R.v='5';R.msg='';R.stage=1;LK.save();drawRun()}}]}
+    :{where:'run/step2',part:'strip',ask:'The same speed, counted per hour in kilometers instead of per second in meters.',another:'Each hour has 3,600 seconds, so you go 3,600 times as far. A kilometer is 1,000 m, so divide by 1,000. 3,600 ÷ 1,000 = 3.6.',start:'Multiply your m/s by 3.6.'})}
+document.getElementById('run').addEventListener('click',e=>{const R=S.run;
+  if(e.target.closest('[data-reset]')){S.run={stage:0,v:'',k:'',msg:''};LK.save();drawRun();return}
+  if(!e.target.closest('[data-go]'))return;
+  if(R.stage===0){R.v=document.getElementById('rv').value;const c=LK.check(R.v,RUN.v);R.msg=c==='ok'?'':LK.checkMsg[c];if(c==='ok')R.stage=1}
+  else if(R.stage===1){R.k=document.getElementById('rk').value;const c=LK.check(R.k,RUN.k);R.msg=c==='ok'?'':LK.checkMsg[c];if(c==='ok')R.stage=2}
+  LK.save();drawRun()});
+drawRun();
+LK.strip('#chemStrip',{now:4,arrows:['÷ 2.02','× 2/2','× 18.02'],stations:[{icon:'⚖️',value:'4.00',unit:'g H₂',kind:'w',bar:4/35.68},{icon:'🔢',value:'1.980',unit:'mol H₂',kind:'c'},{icon:'🔢',value:'1.980',unit:'mol H₂O',kind:'c'},{icon:'⚖️',value:'35.68',unit:'g H₂O',kind:'w',bar:1}],note:'<b>Count</b> stays 1.980 mol, by the recipe. <b>Weight</b> goes 4.00 → 35.68 g, because one mole of water weighs more than one mole of hydrogen.'});
+
+LK.world('#world',{cards:[
+  {icon:'🌾',title:'Feeding the world',html:'Fritz Haber (Nobel 1918) and Carl Bosch (Nobel 1931) worked out how to make ammonia, N₂ + 3H₂ → 2NH₃, by the ton. Fertilizer from it helps grow food for about half the people on Earth.'},
+  {icon:'🚗',title:'Airbags',html:'Engineers size the powder so the bag fills in time. NHTSA estimates frontal airbags saved 70,059 lives in the U.S. through 2019.',source:'IIHS, citing NHTSA (Kahane & Simons, 2024)'}]});
+
+LK.test('#test',{id:'demo',questions:[
+  {q:'2H₂ + O₂ → 2H₂O. How many water molecules form from 2 hydrogen molecules?',choices:['1','2','4','6'],answer:1,hint:'Read the big numbers as a recipe: 2 H₂ make ? H₂O.',why:'The recipe says 2 H₂ make 2 H₂O.'},
+  {q:'You ran 400 m in 80 s. What was your speed?',choices:['5 m/s','32,000 m/s','0.2 m/s','480 m/s'],answer:0,hint:'Speed is distance ÷ time.',why:'400 ÷ 80 = 5 m each second.',ask:'How many meters each second?',another:'10 m in 2 s is 5 m each second.',start:'Divide 400 by 80.'},
+  {q:'Water forms from hydrogen and oxygen. Why does the water weigh more than the hydrogen alone?',choices:['The atoms got bigger','Oxygen joined it','The scale was wrong','Moles weigh nothing'],answer:1,hint:'Count the atoms before and after. What was added to the hydrogen?',why:'The oxygen atoms are now part of the water.'}]});
+</script>
+<!-- Anonymous page-view count (GoatCounter): no cookies, no personal data, no form contents. -->
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
