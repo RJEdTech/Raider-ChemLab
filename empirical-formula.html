@@ -68,6 +68,7 @@ nav.steps a[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
 nav.steps .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:.75rem;font-family:var(--f-mono)}
 nav.steps a.done .dot{background:var(--good);border-color:var(--good);color:var(--surface)}
 nav.steps a.locked{opacity:.6}
+@media (max-width:640px){nav.steps{position:static}nav.steps ol{padding-inline:0;gap:2px 4px}nav.steps a{padding:5px 8px;font-size:.88rem;gap:6px}nav.steps .dot{width:19px;height:19px;font-size:.7rem}nav.steps li.sep{flex-basis:100%;border-left:0;margin:2px 0 0;padding:4px 4px 0}}
 
 main .wrap{padding-block:28px 64px}
 section.sec{display:flex;flex-direction:column;gap:22px}
@@ -284,6 +285,10 @@ html.easy p{max-width:62ch}
 <!-- 1. DEFINITION -->
 <section class="sec" data-sec="learn">
   <div><div class="eyebrow">Part 1</div><h2>What is an empirical formula?</h2></div>
+  <div class="card stack">
+    <div class="eyebrow">Why learn this?</div>
+    <p><b>How do we know water is H₂O?</b> No one has ever looked at a water molecule and counted its atoms. Chemists measured that water is 11.2% hydrogen and 88.8% oxygen by mass, then used the method in this lesson to turn those percents into a formula. By the end, you can check it yourself.</p>
+  </div>
   <div class="defbox">
     <div class="eyebrow">Definition</div>
     <p>An <b>empirical formula</b> shows the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
@@ -432,11 +437,17 @@ html.easy p{max-width:62ch}
 <!-- 6. USE IT (RJ Ed Tech) -->
 <section class="sec" data-sec="use" hidden>
   <div><div class="eyebrow">Part 7 · after you submit</div><h2>Why it matters</h2>
-  <p class="lead">You just learned how chemists answer one of science’s first questions about any new substance: <b>what is it made of?</b></p></div>
+  <p class="lead">Why this is worth learning, and where people use it.</p></div>
   <div class="card stack">
-    <div class="eyebrow">Why this is important</div>
-    <p>When a lab makes a new medicine, finds a strange powder, or digs up a rock, nobody can see the atoms. What they <b>can</b> do is measure mass. Percent composition turns those masses into an atom ratio (the empirical formula), and the molar mass turns that ratio into the real molecule. It is the same four moves you just practiced.</p>
-    <p>It also works the other way: once you know a formula, you know what share of it is the part you care about, like the nitrogen in fertilizer or the calcium in a supplement.</p>
+    <div class="eyebrow">Now check it yourself</div>
+    <h3>How do we know water is H₂O?</h3>
+    <p>Part 1 asked this. Chemists in the 1800s did what you just did: water is 11.2% hydrogen and 88.8% oxygen by mass, so:</p>
+    <div class="eq">11.2 g H ÷ 1.008 = 11.1 mol &nbsp;·&nbsp; 88.8 g O ÷ 16.00 = 5.55 mol &nbsp;→&nbsp; 2 : 1 &nbsp;→&nbsp; <b>H₂O</b></div>
+    <p>John Dalton, who gave us the modern idea of atoms, first guessed water was HO. Better measurements and this math showed it was H₂O. <b>Every formula in your textbook was first found this way.</b></p>
+  </div>
+  <div class="grid2">
+    <div class="card stack"><h3>You’ll use it all year</h3><p>Grams → moles is the move behind every reaction problem in the next unit: how much product a reaction makes, or how much of one chemical you need for another.</p></div>
+    <div class="card stack"><h3>It still answers “what is this?”</h3><p>When a lab makes a new medicine or finds an unknown powder, the first test reports the percent of each element. The same four moves turn it into a formula.</p></div>
   </div>
   <div class="card stack" id="usesCard">
     <div class="eyebrow">How people use it</div>
