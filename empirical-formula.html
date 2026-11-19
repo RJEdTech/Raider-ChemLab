@@ -222,6 +222,23 @@ footer.credit a{color:var(--accent)}
 .lvl{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden}
 .lvl button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.85rem;padding:6px 12px;border:0;background:transparent;color:var(--accent);cursor:pointer}
 .lvl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.ffig{display:flex;flex-direction:column;gap:8px;margin:4px 0 6px}
+.ffpick{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem}
+.ffrow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.ffcard{flex:1 1 200px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.ffcard.mol{flex:2 1 260px}
+.ffcard .ffk{font:700 .74rem var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ffcard .fff{font:700 1.35rem var(--f-mono);color:var(--ink)}
+.ffcard svg{height:auto;max-width:100%}
+.ffcard .ffc{font-size:.88rem;color:var(--muted)}
+.ffx{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 1.1rem var(--f-mono);color:var(--accent);min-width:56px}
+.ffx b{font-size:1.6rem;line-height:1}
+.ffkey{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;color:var(--muted);justify-content:center}
+.ffkey i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:4px;border:1.5px solid var(--ink)}
+.at-C{fill:#4a4a4a;stroke:var(--ink);stroke-width:1.5}.at-H{fill:#f4f4f4;stroke:#7a8794;stroke-width:1.5}.at-O{fill:#d9483b;stroke:var(--ink);stroke-width:1.5}.at-N{fill:#3b6fd9;stroke:var(--ink);stroke-width:1.5}
+.at-t{font:700 11px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}.at-tC{fill:#fff}.at-tH{fill:#333}.at-tO{fill:#fff}
+.ffgrp{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3}
+@media (max-width:560px){.ffx{flex-basis:100%;flex-direction:row;gap:8px;min-width:0}.ffx b{transform:rotate(90deg)}}
 .mcwrap{display:flex;flex-direction:column;gap:6px;margin:10px 0}
 .wc-h{font:700 17px var(--f-display);fill:var(--muted)}.wc-l{font:700 22px var(--f-mono);fill:var(--ink);text-anchor:middle}.wc-v{font:700 17px var(--f-mono);fill:var(--ink)}.wc-c{font:700 19px var(--f-mono);fill:var(--ink);text-anchor:middle}
 #wcScene .lk-stage svg{max-width:540px}
@@ -301,6 +318,7 @@ html.easy p{max-width:62ch}
     <div class="eyebrow">Definition</div>
     <p>An <b>empirical formula</b> shows the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
     <p class="muted">A <b>molecular formula</b> shows the <b>actual number</b> of atoms of each element in one molecule. The molecular formula is always a whole-number multiple (<i>n</i>) of the empirical formula.</p>
+    <div class="ffig" id="ffig" aria-live="polite"></div>
     <button class="xbtn" id="defX" aria-expanded="false" aria-controls="defXp">🤔 What does this mean?</button>
     <div class="expl" id="defXp" hidden>
       <p><b>Think of a recipe.</b> Pancakes take 1 cup of mix, 2 eggs and 1 cup of milk. A double batch is 2 : 4 : 2 and a triple batch is 3 : 6 : 3, but the ratio is always <b>1 : 2 : 1</b>.</p>
@@ -1203,6 +1221,37 @@ mount(document.getElementById('exB'),'emp',EX.exB,'exB',{demo:true});
 mount(document.getElementById('m1'),'mol',M1,'m1',{demo:true});
 showPractice();showMol();mountFull(document.getElementById('caseHost'),CASE);
 route();
+})();
+</script>
+<script>
+/* Definition picture (Nov 19, Jason: "show these side by side so students see what they are. Visualize it, not text it").
+   Left: one group of atoms in the simplest ratio (the empirical formula). Right: one real molecule's atoms, counted in
+   n copies of that group (the molecular formula). Atoms are drawn as counted groups, not the molecule's real shape. */
+(function(){const host=document.getElementById('ffig');if(!host)return;
+  const EX=[{name:'Glucose',emp:'CH₂O',mol:'C₆H₁₂O₆',grp:['C','H','H','O'],n:6},{name:'Hydrogen peroxide',emp:'HO',mol:'H₂O₂',grp:['O','H'],n:2},{name:'Benzene',emp:'CH',mol:'C₆H₆',grp:['C','H'],n:6},{name:'Water',emp:'H₂O',mol:'H₂O',grp:['O','H','H'],n:1}];
+  let cur=0;
+  /* one group: the first atom in the middle, the others around it */
+  function group(cx,cy,atoms){const R={C:13,O:13,N:13,H:9};let h='';const rest=atoms.slice(1),k=rest.length;
+    rest.forEach((a,i)=>{const ang=(-90+(k===1?90:(i*360/k)+(k===2?-45:k===3?-30:0)))*Math.PI/180,d=R[atoms[0]]+R[a]-3,x=cx+d*Math.cos(ang),y=cy+d*Math.sin(ang);h+=`<circle class="at-${a}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R[a]}"/><text class="at-t at-t${a}" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${a}</text>`});
+    h+=`<circle class="at-${atoms[0]}" cx="${cx}" cy="${cy}" r="${R[atoms[0]]}"/><text class="at-t at-t${atoms[0]}" x="${cx}" y="${cy}">${atoms[0]}</text>`;
+    return `<circle class="ffgrp" cx="${cx}" cy="${cy}" r="${R[atoms[0]]+2*R.H+4}"/>`+h}
+  const counts=g=>{const c={};g.forEach(a=>c[a]=(c[a]||0)+1);return c};
+  const list=(c,m)=>Object.entries(c).map(([a,v])=>`${v*m} ${a}`).join(', ');
+  function draw(){const e=EX[cur],n=e.n,c=counts(e.grp),cols=Math.min(n,3),rows=Math.ceil(n/3),cell=86,W=cols*cell,H=rows*cell;
+    let right='';for(let i=0;i<n;i++)right+=group(cell/2+(i%3)*cell,cell/2+Math.floor(i/3)*cell,e.grp);
+    host.innerHTML=`<div class="ffpick"><span>Example:</span>${EX.map((x,i)=>`<button type="button" class="chip${i===cur?' sel':''}" data-ff="${i}" aria-pressed="${i===cur}">${x.name}</button>`).join('')}</div>
+     <div class="ffrow">
+      <div class="ffcard"><span class="ffk">Empirical formula</span><span class="fff">${e.emp}</span>
+        <svg viewBox="0 0 ${cell} ${cell}" style="width:${cell*1.15}px" role="img" aria-label="One group: ${list(c,1)}">${group(cell/2,cell/2,e.grp)}</svg>
+        <span class="ffc">The simplest ratio: ${list(c,1)}</span></div>
+      <div class="ffx" aria-hidden="true"><b>→</b>× ${n}</div>
+      <div class="ffcard mol"><span class="ffk">Molecular formula</span><span class="fff">${e.mol}</span>
+        <svg viewBox="0 0 ${W} ${H}" style="width:${W*1.15}px" role="img" aria-label="${n} groups of ${e.emp}: ${list(c,n)} in one molecule">${right}</svg>
+        <span class="ffc">${n===1?`n = 1: the real molecule is already the simplest ratio, so both formulas are the same.`:`One real molecule = ${n} groups of ${e.emp}: ${list(c,n)}. n = ${n}.`}</span></div>
+     </div>
+     <div class="ffkey"><span><i style="background:#4a4a4a"></i>C carbon</span><span><i style="background:#f4f4f4"></i>H hydrogen</span><span><i style="background:#d9483b"></i>O oxygen</span><span>Atoms are drawn in counted groups, not in the molecule’s real shape.</span></div>`}
+  host.addEventListener('click',ev=>{const b=ev.target.closest('[data-ff]');if(!b)return;cur=+b.dataset.ff;draw()});
+  draw();
 })();
 </script>
 <script>
