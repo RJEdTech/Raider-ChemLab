@@ -538,8 +538,8 @@ html.easy p{max-width:62ch}
   <div class="grid2">
     <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
     <div class="card stack"><h3>Turn it in</h3>
-      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
-      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn">Save as .txt</button></div>
+      <p class="muted">Copy your work record and paste it into Canvas, or save it as a text file.</p>
+      <div class="row"><button class="btn" id="copyBtn">Copy for Canvas</button><button class="btn ghost" id="dlBtn">Save as .txt</button></div>
       <div class="toast" id="toast" aria-live="polite"></div>
     </div>
   </div>
@@ -921,7 +921,7 @@ function buildReport(){const st=S.student,L=[];L.push('STOICHIOMETRY — WORK RE
   if(S.path==='case')L.push(`  The case (airbag): ${S.work.case&&S.work.case.solved?'SOLVED, '+S.work.case.gB+' g NaN3':'not solved yet'}`);
   L.push(`  Lab simulations opened: ${S.sims?Object.keys(S.sims).join(', '):'none'}`);L.push(`  Why it matters, real problems solved: ${useOK()}/4`);{const R=labCalc();if(!R.msg)L.push(`  My Al + CuCl2 lab: ${R.al.toFixed(3)} g Al -> predicted ${R.pred.toFixed(3)} g Cu; collected ${R.cu.toFixed(3)} g (${R.pct.toFixed(1)}%)`)}
   L.push(`  Test yourself: best ${testBest()}/${TN} · sets taken: ${(S.test&&S.test.sets)||0}`);L.push('');L.push('PRACTICE');PR.forEach(p=>{L.push(...stReport(p,S.work[p.id]));L.push('')});L.push('LIMITING REACTANT');LP.forEach(p=>{L.push(...lReport(p,S.work[p.id]));L.push('')});return L.join('\n')}
-document.getElementById('copyBtn').addEventListener('click',()=>{const t=buildReport(),toast=document.getElementById('toast');const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('report'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. The record is selected: press Ctrl+C (or ⌘C) to copy.'};try{navigator.clipboard.writeText(t).then(()=>{toast.textContent='Copied. Paste it into your assignment.'},sel)}catch(e){sel()}});
+document.getElementById('copyBtn').addEventListener('click',()=>{const t=buildReport(),toast=document.getElementById('toast');const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('report'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. Your work record is selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.'};try{navigator.clipboard.writeText(t).then(()=>{toast.textContent='Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac).'},sel)}catch(e){sel()}});
 document.getElementById('dlBtn').addEventListener('click',()=>{const toast=document.getElementById('toast');const name=((S.student.name||'student').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')||'student');try{const blob=new Blob([buildReport()],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`stoichiometry-work-${name}.txt`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast.textContent='Saved to your downloads.'}catch(e){toast.textContent='Saving is blocked here. Use Copy instead.'}});
 
 /* ---------- Read aloud, Easier reading (shared rules) ---------- */

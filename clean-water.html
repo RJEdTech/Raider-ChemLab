@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
-<link rel="stylesheet" href="kit/lesson-kit.css?v=1">
+<link rel="stylesheet" href="kit/lesson-kit.css?v=2">
 <style>
 :root{
   --bg:#F2F6F7; --surface:#FFFFFF; --ink:#13222A; --muted:#55666E; --line:#D3DDE1;
@@ -196,7 +196,7 @@ ol.log .chg{display:block;font-size:.95rem}
   </div>
   <div id="wMsg" aria-live="polite"></div>
   <div class="card">
-    <div class="row" style="justify-content:space-between"><h3>My plan</h3><button class="btn ghost small" id="copy">Copy my plan</button></div>
+    <div class="row" style="justify-content:space-between"><h3>My plan</h3><button class="btn ghost small" id="copy">Copy for Canvas</button></div>
     <ol class="log" id="log"><li class="muted" style="list-style:none;margin-left:-1.3em">No steps yet.</li></ol>
   </div>
   <div id="cfLab"></div>
@@ -237,7 +237,7 @@ ol.log .chg{display:block;font-size:.95rem}
   <span>© 2026 Jason Beyer, RJ Ed Tech · CC BY-NC 4.0</span>
 </div></footer>
 
-<script src="kit/lesson-kit.js?v=1"></script>
+<script src="kit/lesson-kit.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -364,8 +364,9 @@ $('#drink').addEventListener('click',()=>{if(busy)return;const s=status();
   const other=st.log.some(l=>/Distill|Solar/.test(l.name))?'Another plan that also works: melt → strain → coffee filter → neutralizer → boil. It keeps more water and uses less fuel, but it depends on the neutralizer.':'Another plan that also works: melt → strain → coffee filter → distill. It removes the chemical instead of making it harmless, but costs more fuel.';
   say('ok',`✓ Safe to drink: clear, no live germs, no toxic chemical. You have <b>${st.cups} cups</b>, ${st.fuel} fuel left, after ${st.hours} hours. ${other} Which plan is better, and why? That’s your explanation.`)});
 $('#copy').addEventListener('click',()=>{const t=st.log.map((s,i)=>`${i+1}. ${s.name}\n   What changed: ${s.chg}\n   Heat energy: ${s.heat||'None.'}`).join('\n');
-  const done=()=>{say('info','Copied. Paste it into your assignment and add your own explanation.')};
-  if(navigator.clipboard)navigator.clipboard.writeText(t||'No steps yet.').then(done,()=>say('no','Couldn’t copy. Select the plan and copy it by hand.'));else say('no','Couldn’t copy. Select the plan and copy it by hand.')});
+  const done=()=>{say('info','Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac). Then add your own explanation.')};
+  const fb=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('log'));const s=getSelection();s.removeAllRanges();s.addRange(r);say('no','Copying is blocked here. Your plan is selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.')};
+  try{navigator.clipboard.writeText(t||'No steps yet.').then(done,fb)}catch(e){fb()}});
 LK.confused('#cfLab',{where:'plan',part:'lab',
   ask:'Pick steps in an order that gets rid of every harmful thing: the grit, the germs and the mine chemical.',
   another:'Each tool only works on some particles. A strainer catches big things. A coffee filter catches smaller things. Neither stops anything as small as water. For those you need heat.',

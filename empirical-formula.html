@@ -290,7 +290,7 @@ html.easy .eyebrow,html.easy th{text-transform:none;letter-spacing:.02em}
 html.easy i,html.easy em{font-style:normal;font-weight:700}
 html.easy p{max-width:62ch}
 </style>
-<link rel="stylesheet" href="kit/lesson-kit.css?v=1">
+<link rel="stylesheet" href="kit/lesson-kit.css?v=2">
 </head>
 <body>
 
@@ -465,8 +465,8 @@ html.easy p{max-width:62ch}
   <div class="grid2">
     <div class="card stack"><h3>Your progress</h3><ul class="checklist" id="checklist"></ul></div>
     <div class="card stack"><h3>Turn it in</h3>
-      <p class="muted">Copy the work record and paste it into your class assignment, or save it as a text file.</p>
-      <div class="row"><button class="btn" id="copyBtn">Copy work record</button><button class="btn ghost" id="dlBtn" hidden>Save as .txt</button></div>
+      <p class="muted">Copy your work record and paste it into Canvas, or save it as a text file.</p>
+      <div class="row"><button class="btn" id="copyBtn">Copy for Canvas</button><button class="btn ghost" id="dlBtn" hidden>Save as .txt</button></div>
       <div class="toast" id="toast" aria-live="polite"></div>
     </div>
   </div>
@@ -566,7 +566,7 @@ html.easy p{max-width:62ch}
   <span>RJ Ed Tech added the new-numbers practice, Show me this step, and Read aloud. <a href="./">More chemistry tools on Raider ChemLab</a>.</span>
 </div></footer>
 
-<script src="kit/lesson-kit.js?v=1"></script>
+<script src="kit/lesson-kit.js?v=2"></script>
 <script>
 (function(){
 const KEY='ef-lab-v2';
@@ -1116,9 +1116,9 @@ function buildReport(){
 }
 document.getElementById('copyBtn').addEventListener('click',()=>{
   const txt=buildReport(),toast=document.getElementById('toast');
-  gcSend(['done','ChemLab','empirical-formula','copied-record',gcPeriod()].join('/'),'Copied work record');
-  const sel=()=>{const r=document.createRange();const pre=document.getElementById('report');r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. The record is selected: press Ctrl+C (or ⌘C) to copy.'};
-  try{navigator.clipboard.writeText(txt).then(()=>{toast.textContent='Copied. Paste it into your assignment.'},sel)}catch(e){sel()}
+  gcSend(['done','ChemLab','empirical-formula','copied-record',gcPeriod()].join('/'),'Copied for Canvas');
+  const sel=()=>{const r=document.createRange();const pre=document.getElementById('report');r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast.textContent='Copying is blocked here. Your work record is selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.'};
+  try{navigator.clipboard.writeText(txt).then(()=>{toast.textContent='Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac).'},sel)}catch(e){sel()}
 });
 let downloads=null;
 document.getElementById('dlBtn').hidden=false;

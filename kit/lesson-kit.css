@@ -54,3 +54,4 @@ html.lk-easy body{letter-spacing:.02em;word-spacing:.08em;line-height:1.75}html.
 .lk-choice.ok{border-color:var(--lk-good);background:#e7f4ea}.lk-choice.no{border-color:var(--lk-bad);background:#fbeaea}.lk-choice:disabled{cursor:default}
 .lk-msg.ok{color:var(--lk-good)}.lk-msg.no{color:var(--lk-bad)}.lk-hint{border-left:3px solid var(--lk-warm);padding-left:10px}
 @media (prefers-reduced-motion:reduce){.lk-bfill{transition:none}}
+.lk-cvh{margin:10px 0 4px}.lk-cvn{display:flex;gap:8px;align-items:center;font-weight:600}.lk-cvn input{font:inherit;padding:4px 8px;border:1px solid var(--line,#ccc);border-radius:6px;background:transparent;color:inherit}.lk-cmsg{margin:6px 0 0;font-size:14px}

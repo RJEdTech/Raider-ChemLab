@@ -171,8 +171,19 @@ LK.world=function(host,o){host=el(host);host.classList.add('lk-card');
 LK.balance=qs=>qs.map((q,i)=>{const L=q.choices.map(c=>String(c).replace(/<[^>]+>/g,'').length);const m=Math.max(...L);return L[q.answer]===m&&L.filter(x=>x===m).length===1?i:-1}).filter(i=>i>=0);
 LK.test=function(host,o){host=el(host);const qs=o.questions,T=(S.test=S.test||{})[o.id]=Object.assign({best:0},(S.test||{})[o.id]);
   const bad=LK.balance(qs);if(bad.length>qs.length/4&&window.console)console.warn('Lesson kit: the right answer is the longest choice in',bad.length,'of',qs.length,'questions:',bad.map(i=>i+1).join(', '));
-  let i=0,score=0,picked=null,tries=0,hint=false,done=false;
-  function draw(){if(done){host.innerHTML=`<div class="lk-card"><h3>You got ${score} of ${qs.length} on the first try.</h3><p>Best so far: <b>${T.best} of ${qs.length}</b>.</p><button class="lk-btn" data-t="again">Try again</button></div>`;return}
+  let i=0,score=0,picked=null,tries=0,hint=false,done=false,res=[];
+  /* Copy for Canvas (Nov 19, 2026): the score screen copies a summary to paste into a Canvas assignment. Same wording as the Raider Labs tools. */
+  let nm='';try{nm=localStorage.getItem('raider-labs-name')||'';}catch(e){}
+  const plain=h=>{const d=document.createElement('div');d.innerHTML=h||'';return (d.textContent||'').replace(/\s+/g,' ').trim();};
+  const summary=()=>[document.title.split(' · ').reverse().join(': '),'Name: '+(nm.trim()||'(add your name)'),'Date: '+new Date().toLocaleString(),'',
+    'Test yourself: '+score+' of '+qs.length+' right on the first try (best so far: '+T.best+' of '+qs.length+')']
+    .concat(qs.map((q,k)=>'  '+(res[k]===true?'✓':res[k]===false?'✗':'–')+' '+(k+1)+'. '+plain(q.q))).join('\n');
+  function draw(){if(done){host.innerHTML=`<div class="lk-card"><h3>You got ${score} of ${qs.length} on the first try.</h3><p>Best so far: <b>${T.best} of ${qs.length}</b>.</p>
+      <p class="lk-cvh">Teacher assigned this lesson? Copy your result and paste it into Canvas.</p>
+      <div class="lk-row"><label class="lk-cvn">Your name <input class="lk-name" autocomplete="name" value="${LK.esc(nm)}"></label></div>
+      <div class="lk-row"><button class="lk-btn" data-t="copy">Copy for Canvas</button><button class="lk-btn ghost" data-t="again">Try again</button></div>
+      <p class="lk-cmsg" role="status"></p><textarea class="lk-out" rows="8" readonly hidden aria-label="Your result, ready to paste into Canvas" style="width:100%;box-sizing:border-box;font:13px ui-monospace,Consolas,monospace;margin-top:6px"></textarea></div>`;
+      const ni=$('.lk-name',host);if(ni)ni.addEventListener('input',()=>{nm=ni.value;try{localStorage.setItem('raider-labs-name',nm);}catch(e){}});return}
     const q=qs[i],right=picked===q.answer;
     host.innerHTML=`<div class="lk-card lk-test"><div class="lk-eyebrow">Question ${i+1} of ${qs.length}</div><p class="lk-q">${q.q}</p>
       <div class="lk-choices">${q.choices.map((c,k)=>`<button class="lk-choice${picked===k?(k===q.answer?' ok':' no'):''}" data-c="${k}"${right?' disabled':''}>${c}</button>`).join('')}</div>
@@ -181,10 +192,13 @@ LK.test=function(host,o){host=el(host);const qs=o.questions,T=(S.test=S.test||{}
       ${hint&&!right?`<p class="lk-hint">${q.hint}</p>`:''}<div class="lk-cfslot"></div></div>`;
     if(!right&&(q.ask||q.another||q.start))LK.confused($('.lk-cfslot',host),{where:'test/q'+(i+1),part:'test',ask:q.ask,another:q.another,start:q.start})}
   host.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),t=e.target.closest('[data-t]');
-    if(c){picked=+c.dataset.c;tries++;if(picked===qs[i].answer&&tries===1)score++;draw();LK.say(LK.text($('.lk-msg',host)));return}
+    if(c){picked=+c.dataset.c;tries++;if(picked===qs[i].answer&&tries===1)score++;if(picked===qs[i].answer&&res[i]===undefined)res[i]=tries===1;draw();LK.say(LK.text($('.lk-msg',host)));return}
     if(!t)return;const k=t.dataset.t;
     if(k==='hint'){hint=!hint;draw();if(hint)LK.say(LK.text($('.lk-hint',host)))}
     else if(k==='next'){i++;picked=null;tries=0;hint=false;if(i>=qs.length){done=true;T.best=Math.max(T.best,score);LK.save();o.onDone&&o.onDone(score)}draw()}
-    else if(k==='again'){i=0;score=0;picked=null;tries=0;hint=false;done=false;draw()}});
+    else if(k==='copy'){const t=summary(),out=$('.lk-out',host),m=$('.lk-cmsg',host),say=x=>{if(m)m.textContent=x};
+      const fb=()=>{if(out){out.value=t;out.hidden=false;out.focus();out.select()}say('It’s in the box below and already selected: press Ctrl+C (Cmd+C on a Mac), then paste it into Canvas.')};
+      try{navigator.clipboard.writeText(t).then(()=>{if(out)out.hidden=true;say('Copied! In Canvas, click the answer box and press Ctrl+V (Cmd+V on a Mac).')},fb)}catch(err){fb()}}
+    else if(k==='again'){i=0;score=0;picked=null;tries=0;hint=false;done=false;res=[];draw()}});
   draw()};
 })();
