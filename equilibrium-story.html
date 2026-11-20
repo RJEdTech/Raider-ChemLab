@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium: the hatch that stayed shut · Raider ChemLab</title>
+<meta name="description" content="Equilibrium as one story: why a propellant with no color shows up as a brown, toxic gas. A story version of the Raider ChemLab equilibrium tool. RJ Ed Tech.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f3f3f1;--card:#fff;--card2:#f7f7f5;--fg:#1c1c1f;--muted:#5d5d63;--line:#d8d8d3;--rj:#C11430;--rj-ink:#a8102a;--think:#a8178f;--good:#1b8a4a;--bad:#b3261e;--split:#c96a00;--join:#0f8b8d;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#15161a;--card:#1d1f24;--card2:#24272d;--fg:#ececef;--muted:#a2a2aa;--line:#353840;--rj-ink:#ed516a;--think:#ec74da;--good:#5cc27f;--bad:#ff8a80;--split:#f2a13c;--join:#4cc9c0;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.5}
+body.easy{font-size:19px;line-height:1.75;letter-spacing:.03em;word-spacing:.1em}
+.mast{background:#26262a;border-bottom:4px solid var(--rj);color:#fff}
+.mast .in{max-width:1480px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px}
+.mast img{height:34px;width:auto;display:block}
+.mast h1{font-size:19px;margin:0;line-height:1.15;color:#fff}.mast small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#c9c9cf}
+.mast a{margin-left:auto;color:#f2f2f2;font-size:14px}
+.wrap{max-width:1480px;margin:0 auto;padding:8px 16px 40px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 18px;margin-bottom:8px}
+.eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--rj-ink)}
+.sup{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.btn{font:inherit;font-size:15px;font-weight:600;padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:38px}
+.btn:hover:not(:disabled){border-color:var(--muted)}.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.sm{font-size:13.5px;padding:5px 10px;min-height:32px}
+.btn:focus-visible,.slot:focus-visible,.cardb:focus-visible,#parts button:focus-visible{outline:3px solid var(--think);outline-offset:2px}
+#parts{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 8px;max-width:1100px}
+#parts button{font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:3px solid var(--line);padding:4px 10px 5px 4px;cursor:pointer;display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0;white-space:nowrap}
+#parts button span{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:12px}
+#parts button.on{color:var(--fg);border-color:var(--rj)}#parts button.on span{background:var(--rj);color:#fff}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1040px){.main{grid-template-columns:1fr}}
+.stagewrap{display:flex;justify-content:center}
+.side{min-width:0}
+#stage{display:block;width:min(100%,max(600px,calc((100vh - 122px)*1.7857)));aspect-ratio:1000/560;border:1px solid var(--line);border-radius:14px;background:var(--card2);touch-action:pan-y}
+.rot{display:none;margin:0 0 8px;padding:8px 12px;border-radius:9px;background:var(--card);border:1px solid var(--line);font-size:15px}
+@media (max-width:640px) and (orientation:portrait){.rot{display:block}#stage{width:100%}}
+#stepno{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{margin:1px 0 3px;font-size:1.3rem;line-height:1.2}
+#cap{margin:0;max-width:68ch;font-size:1.04em}
+#alt{margin:8px 0 0;max-width:68ch;padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0}
+.nav{display:flex;gap:8px;margin-top:14px}.nav #back{flex:0 0 auto}.nav #next{flex:1;font-size:17px;min-height:44px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#ctlw{margin-top:6px}
+.pulse{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(193,20,48,.22)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none;box-shadow:0 0 0 4px rgba(193,20,48,.3)}}
+#ctl{margin-top:9px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.lab{font-size:15px;font-weight:600;color:var(--muted)}
+.q{margin:0 0 2px;font-weight:600;max-width:68ch}.note{margin:4px 0 0;color:var(--muted);font-size:15px}
+.pick{padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0;margin-bottom:6px}
+.pick .opt.on{background:var(--think);border-color:var(--think);color:#fff}.pick .opt.right{box-shadow:0 0 0 3px var(--good)}
+.chip{display:inline-block;font-size:.82em;font-weight:700;padding:1px 9px;border-radius:99px;border:2px solid var(--think);color:var(--think);white-space:nowrap}
+.chip.ok{border-color:var(--good);color:var(--good)}.chip.no{border-color:var(--muted);color:var(--muted)}
+.bath.b0.on{background:#2d6bd2;border-color:#2d6bd2;color:#fff}.bath.b60.on{background:#c5471f;border-color:#c5471f;color:#fff}
+.term{margin-top:8px;max-width:68ch;padding:10px 14px;border:1px solid var(--line);border-left:4px solid var(--rj);background:var(--card);border-radius:0 9px 9px 0}
+.sl label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}.sl input{width:150px;accent-color:var(--rj)}.sl output{min-width:2ch;font-variant-numeric:tabular-nums}
+.tell h3{margin:16px 0 2px;font-size:1.05rem}
+.slots,.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0;max-width:860px}
+@media (max-width:700px){.slots,.cards{grid-template-columns:repeat(2,1fr)}}
+.slot,.cardb{font:inherit;font-size:14.5px;font-weight:600;text-align:left;color:var(--fg);min-height:86px;padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.slot{border:2px dashed var(--line);background:transparent;position:relative}.slot.full{border-style:solid;background:var(--card)}.slot:disabled{cursor:default;color:var(--muted)}
+.slot .n{position:absolute;top:6px;right:9px;font-size:13px;color:var(--muted)}
+.cardb{border:1px solid var(--line);background:var(--card);box-shadow:0 1px 0 var(--line)}.cardb:hover{border-color:var(--muted)}
+.slot svg,.cardb svg{width:60px;height:42px;color:var(--bad)}
+.fb{min-height:1.4em;margin:2px 0;font-weight:600}.fb.ok{color:var(--good)}.fb.no{color:var(--rj-ink)}
+textarea,#nm,#ans{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+textarea{width:100%;max-width:860px;display:block}.nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}#nm{width:190px}
+.world{margin-top:18px;max-width:860px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.world h3{margin-top:0}.world p{margin:6px 0}
+.src{font-size:14px;color:var(--muted)}
+details{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 16px}
+details summary{cursor:pointer;font-weight:700;padding:11px 0}details[open]{padding-bottom:12px}
+details dt{font-weight:700;margin-top:9px}details dd{margin:0;max-width:72ch}details p,details li{max-width:74ch}
+.more{margin-top:26px}
+footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}footer a,details a,.world a{color:var(--rj-ink)}
+
+.tellmode .stagewrap{justify-content:flex-start}.tellmode #stage{width:min(100%,calc(42vh*1.7857))}
+.tellmode .main{grid-template-columns:auto minmax(0,1fr)}
+@media (max-width:1040px){.tellmode .main{grid-template-columns:1fr}}
+#ans{width:96px}
+
+</style>
+</head>
+<body>
+<header class="mast"><div class="in">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD8AAABQCAYAAACu/a1QAAAKKElEQVR4nO2cWWxcVx3Gf9+513ZiJ21ju7S0LxAKgkSN3QXK0hIHRCshqvahtlTEIkqliPIAqhAPLHIskBAgeOOl9AUkNlssLyxKqsROQ9VCI7JAkEqJgtSmbRJnT7zM3PPxcGcS2xlPxvb1IiWfdDQz955zz/nO8l/O+d/RcEf3HuNWicjywjYtwfpTU+uqgQ+/9uKY6U3EULZYFYbFevA8IIkJBz9SGhv/2XD7Xe8TQ5khGLQYFa4k8gACn7W8UfIvhju6Py2IAg9CUnRlK408oAR03tjC20Y6un+068aum/ogG6S30A5YgeQBnCBilE9F/LBS/Xpn+6b7+gpe/yuUPAASSiROSr4thPDsSEfX1lfuuKOlKBmwkslXkUYYN3HM0reOnl7z8VwGLHwJpOBMcgYzVZ2u9nCDC1GPRlKdgRAEoXKEC4ndXESdAKnROplWTSHvXOefr9te04zUUkQjAsQI5+t1gLEwwchF1AmQytoWQ2wKyMIysqNvCQpfsK4cWeMIWgPsCJE/RocQFOc3A2whOQbfF6zPRvm00JItxbTn5D9+N/PiC+1dt5fgiVnKWKZZgf9sPr5/e0Ht2D7c0TWB9aTF6XozoEikUwXHKQ6HdayPZf51I9RdWnZ0S6VsAsxbBfUCQ0DP6NAPhju7V4EfNz63FDMgnao7+8Fb2Rv36M7sqmyE+xjKBullofp3kN7EoN0OeyLZZyQKW9f1sGJUncBR5VYVKNCuhhVDHkCEJfUsVxT5pcaKIb9Ybms9rAjyN3NMAgMWXrJOSOdd0qiq6gbpnfdjTnE4bGGkNNJ5z9sj5S8BYyyRoTNf8nLQREXFLdTNzPZ03HVb5vJPJdZbnFsyI2euBYSC4aIi94/c3L3WdpAUnXsnl9RU9bc9fS1X89j58Fq4HP0RiXcCZ1S3TXKhtv08ykhiQmYD0XcLcibAVNOk+vuKBezL9135bRhz7tjUIx6BJhfp1c2znCwmwGNFNKJiytbz6DLBWqQjq1K/nPfp0IJtgvkLPFADPv+CUSHeJsKxJGRPfuitg0cMVe2wIKwIVTc7LhMPIXvygWMHDw9CUgRxWELyAldTg/kjVxDvTfoWrl0uYSHTvi5sNFXYTZV9BoKIdaw622qydMyJn9j81sEjOfFid28XZORUjRGBY37BVFRZ9fhLlY2+3FtzdeRTm0Ad19U4yJo8G9Jj/RB6CxBwMzFn8s5PUNqQ/haI3yvZSpTEJqXRmnSqEMeBdDKNAONAM+OOCm4huBTSGGK2LopnZLcishozQMjjmDvWlrJHBuBXG+lNWO6RV77XFwznPnriwCvzrPeNkY6uEaPHIJ6upTUCkqVxmUcMvylCtc3EvKe9cdKfC8zAFdveV2JbRdANsznpYSTbrfhbSB4Rqmmy5QeU8SLSpl3tm97/sZMHXip63c+bvJAHIPYDAw2QH7j0baRs0M4TB/d9rKPrgKVNwhddQ/MoP7ZOQtBjwEu9bCh0lycYVE0bK5+NupVTy1RTI+WG6A0DEC3+gN0S8SyklCg3eze/0N51Owy40kkqIoWp+rcPMoEVYrkR7tPKzEGHVyW3S2wHXpdDM7OUtVy2WVcSj+bPtyt5F5z0YvsHbqhWNJZNhNVJSyyFsXdHJ886P8aaAWXCNxiGm1etfvpc6WJY29R6adp/6LUXxxvphOr6He7s+qbM5y2fmsVczk+H4KjLPL72THrhMGNaz+oFLwENd3bvmnYBbDtBtM1ayggxiXWW3Pl2xAnSxESITzz01oFjV7O/DUEQd7d3b8jkX0tMMMuyUd4BiaXjmMnZ8s0VqcxNNauj1qhful0ZDd9qV71SEvB4zCYbcnZEbuHp5L5DIx3dL4M/ONt5nUGIzPatFLjXl1qebX3XryS3ziYrmWyTCCZXKTQ8HYfoDTCUGf3e9v2S68lMSUw2+uxGUE9yNoJpZTTHUakKvok02ynxP6wW6suLQqR8NS2rS1sNMnjorQMXsP8CtLmgM/9GsOz+/L8YMkAWmv4gdE5LsEFSxbKTr1iJ4ePH9/4X+UWgra6wLRAhr2ihiWpoy7wavZFeAYSo38kkzsVpY6kxuLI5YuVeaRTEVNa6+TR4OmQgsTReitmcZ1NfLvh0S/v554+ebjsk6x1IEw2a2Vc1q2VarNyanZo3FXx9ZuZY6dFQ2WyIRkF46vXqtbyEK7vXytasXncKKoZJ4zDAe159dWLH2vd+sbVt9ZryxGSE1bMWiLGUhFDOYki/GqRPmni2poVoFJV8Q5Rfz3CIU9pVmMGwXNjV0bVN6HFUe18Ao0nCww+O/uPozFtp0SGdC/W3DdrWwKDcxj3JUfZmxomull1uM4RhCD1T3O+06E3BhUKXva66GGS9trI3DjdwfJUoiarsPWyZQn7ZVd1y4jr5axXXyV+ruE7+WsV18tcqrpO/VnGd/LWKa5p8oTE5Bg2zOTnO2zwzGneIPMC4h5GoBo60lwKFks998ZFGTnhXBAohb/qDGIjPd959TznGBxW4aDxtSQlFR1pJ+fuWY/ue66c/DDCwrDOgoJE/JIBIuVvS08AJefqzJZcRHbKeAZ7bWCmznCg2Ds8aR5wwPoWmv+8uyCRZ5qJBQwVU159Hlsz77YRCpb3yw4YUSISmJUOCacrkksDrObygum/mmAYgyvVfAKyHJQw/lSxNyN60p+PDa+9lb6n6Pt1c0y42p1sYKe/q6HpU4iHkc7NEddTFkpHPQ8t8EXR3pou/2N3evaGPoWnxPI2mLYyUd9/c/ZjE9+Klx88dixZ7WwuVCJbzxusd9PPdHV3fzcoMp0SNh+arSv5VcTKsDs3xQih/KtrfBs5X3tyoE9Ewu01ROHmjWH8glIAuYJotf0cpo1GJm2uccVZZVT9jknCBDJtO8lfc6xIHZ4a2xLXPDwsmb0msieikLkd91MqXIMpACXRjrSi8akHP+KzcHK90Sj1BX8bqQPw1deubtQKkClrzQ9GglsmWPwG/TEwHrh5/zwoZAnK5VvIs18ljiOqezBpnNm+z2H62KX3q/tEXzl26NbUBCyd+JYY7u/oEX4uwRnCWpZMtzkPpWAc82zO6//uQ2wMDNfyJQsn7cmBS3NG56T3N1oDhXolTlfuLqV2q639NUPhJqRx3JknSnpRK/3zgzMFTizjtc1RUURykN/nEiQOvtI2mnxM8E2GNTYsXKdzEECuhcK1B+lbZ8XAa6ImUb8uaQu8LN2xov9zEy1iUkehjKOuHcC97S5tH9/8wNU8hncRaV3S8TeXlhxZBYvPl1nKyI1FYFUVzINwq4svl5uY7Z0ZlwCJOw8oa0yC9yQOj+4dDSh/wZ6Ebrla2UQhigFUyZ0BP9ozu33UuHVsNcW0aOSL53ya5tUyo+c8vi23hVf9aIvnom/uObxnd/xXBj+cQSFT32babDMftsLVndN/fX+aepi3HD70JfsMJNzmqM+Dbt5x4177Kmp8m9P4PGALmSB+aZc8AAAAASUVORK5CYII=" alt="Regis Jesuit">
+  <div><h1>The hatch that stayed shut</h1><small>Raider ChemLab · Equilibrium · story version (pilot)</small></div>
+  <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#equilibrium">Open the current tool</a>
+</div></header>
+
+<main class="wrap">
+  <nav id="parts" aria-label="Parts of the story"></nav>
+  <p class="rot">This page is built for a laptop. On a phone, turn it sideways.</p>
+  <div class="main">
+    <div class="stagewrap"><canvas id="stage" role="img" aria-label=""></canvas></div>
+    <section class="side" aria-label="This step">
+      <p id="stepno"></p>
+      <h2 id="ttl"></h2>
+      <p id="cap" aria-live="polite"></p>
+      <div id="ctl"></div>
+      <div id="alt" hidden></div>
+      <div class="nav"><button type="button" class="btn" id="back">Back</button><button type="button" class="btn primary" id="next">Next</button></div>
+      <div class="tools"><button type="button" class="btn sm" id="pause" hidden>Pause</button><button type="button" class="btn sm" id="conf">😕 This confused me</button><button type="button" class="btn sm" id="ra" aria-pressed="false">🔊 Read aloud</button><button type="button" class="btn sm" id="er" aria-pressed="false">Aa Easier reading</button></div>
+    </section>
+  </div>
+  <div id="ctlw"></div>
+
+  <div class="more">
+  <details>
+    <summary>Key words, in plain language first</summary>
+    <dl>
+      <dt>Reversible reaction</dt><dd>A reaction that runs both ways. N₂O₄ splits into two NO₂, and two NO₂ join back into N₂O₄. The double arrow ⇌ shows both directions.</dd>
+      <dt>Equilibrium</dt><dd>From the Latin for “equal balance.” Splits and joins happen equally often, so the amounts stop changing.</dd>
+      <dt>Dynamic equilibrium</dt><dd>“Dynamic” means still moving. The amounts hold steady, but single molecules keep splitting and joining.</dd>
+      <dt>Shifts right, shifts left</dt><dd>A new balance with more of what is on the right of the arrow (here, NO₂) is a shift right. More N₂O₄ is a shift left.</dd>
+      <dt>Le Châtelier’s principle</dt><dd>Disturb a balanced reaction and it shifts to partly undo the change. Named for Henry Le Châtelier, who described the pattern in 1884. The cause is the two rates, as you saw.</dd>
+      <dt>Endothermic and exothermic</dt><dd>Splitting N₂O₄ takes energy in (<i>endo</i>, “into”). Joining two NO₂ gives energy off (<i>exo</i>, “out of”). That is why heat helps splitting.</dd>
+      <dt>Concentration, written [ ]</dt><dd>How crowded a substance is: moles in each liter. [NO₂] is read “the concentration of NO₂.”</dd>
+      <dt>Equilibrium constant, K</dt><dd>The number you get from [NO₂]² ÷ [N₂O₄] once the mixture is balanced. Every mixture at the same temperature ends at the same K. The K comes from the German word <i>Konstante</i>.</dd>
+    </dl>
+  </details>
+  <details>
+    <summary>About this model</summary>
+    <p><b>Data.</b> N₂O₄(g) ⇌ 2 NO₂(g), K<sub>c</sub> = 4.6 × 10⁻³ at 25 °C and ΔH° = +57.2 kJ/mol. These are the same textbook values the current ChemLab equilibrium tool uses, so the numbers agree: 0.050 mol/L of N₂O₄ settles at 0.0430 M N₂O₄ and 0.0141 M NO₂ at 25 °C. K at other temperatures comes from the van ’t Hoff equation.</p>
+    <p><b>Rates.</b> Splits each second = k<sub>split</sub> × N₂O₄. Joins each second = k<sub>join</sub> × NO₂² ÷ room. Joining is given no energy barrier, so k<sub>join</sub> stays the same at every temperature and k<sub>split</sub> = k<sub>join</sub> × K carries all of the temperature change. That is close to the real reaction, where the energy needed to split is about the same as ΔH.</p>
+    <p><b>The box.</b> It shows about 60 to 90 molecules, drawn to their real shapes (N–N 1.78 Å, N–O about 1.2 Å). The amounts follow the rate laws, and each split or join in the box is one of those events. A split is shown at a collision. A join is shown when two NO₂ touch.</p>
+    <p><b>Simplified.</b> The real reaction settles in a tiny fraction of a second, so time here is slowed down enormously. The gas is treated as ideal. Splitting is treated as depending only on the amount of N₂O₄, which holds at ordinary pressures. Molecules are drawn larger, compared with the space between them, than they really are, so you can see their shapes. The brown glow around each NO₂ is a marker so you can find them. The tube color follows Beer’s law, with its strength set to match the classroom demonstration.</p>
+  </details>
+  <details>
+    <summary>For teachers: what this is</summary>
+    <p>This is a pilot. I built it to try one idea: teach equilibrium as a single story in which the picture carries the cause, and the words only caption it. It sits beside the <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#equilibrium">current equilibrium tool</a> and changes nothing there. It supports your lesson and does not replace it. Use it before, during or after you teach the topic.</p>
+    <ul>
+      <li><b>One molecule first, then the crowd.</b> Students snap one bond with a hard hit, then watch sixty molecules do the same thing by chance.</li>
+      <li><b>Students commit first.</b> They guess the color change, draw the NO₂ curve before it runs, and predict which rate falls when the gas spreads out.</li>
+      <li><b>Le Châtelier with a cause.</b> Heat and extra room are shown through the two rates: one jumps or drops, a gap opens, and the other catches up.</li>
+      <li><b>K as a picture.</b> Joins are a square (NO₂ × NO₂). Splits are a strip (N₂O₄ long, K high). Balance is where the areas match, so [NO₂]² = K × [N₂O₄].</li>
+      <li><b>Turn it in.</b> The last step has students order the causal chain, explain it in their own words, and copy their work for Canvas.</li>
+    </ul>
+    <p><b>The story is real.</b> On August 2, 2020, the Crew Dragon <i>Endeavour</i> splashed down with Bob Behnken and Doug Hurley. Once the capsule was on the recovery ship, opening the hatch was delayed about half an hour while the team purged leftover nitrogen tetroxide vapor. Sources: NASA Commercial Crew blog, “Astronauts Doing Well Inside Crew Dragon Spacecraft,” Aug. 2, 2020; SpaceNews, Aug. 2, 2020; NASA, “45 Years Ago: Apollo Returns Home to End ASTP,” for the 1975 exposure.</p>
+    <p>Nothing here needs a login, and nothing a student types leaves the browser. Page visits are counted without names.</p>
+  </details>
+  </div>
+
+
+  <footer>
+    <p>RJ Ed Tech · Raider ChemLab · Simplified models for instruction<br>
+    <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u&amp;rc59cb41123d3497584d2ca10cb9e1c54=%22Raider%20ChemLab%22" target="_blank" rel="noopener">Report a bug or request a feature</a> (Microsoft Form, RJ sign-in)<br>
+    © 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>: free to share and adapt for non-commercial use, with credit.</p>
+  </footer>
+</main>
+
+<script>
+'use strict';
+/* ============================================================
+   Equilibrium story pilot · Raider ChemLab · RJ Ed Tech
+   Part 1 of 2: the model, the molecule box and the drawing kit.
+   Model (same data as the current ChemLab equilibrium tool):
+     N2O4(g) <=> 2 NO2(g)   Kc = 4.6e-3 at 25 C   dH = +57.2 kJ/mol
+     splits per second = kf(T) x N2O4      joins per second = kr x NO2^2 / room
+     kr is held constant (joining needs no hard hit); kf = kr x Kc(T).
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2;
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v)}
+
+/* ---------- chemistry ---------- */
+const GAS_R=8.314, KREF=4.6e-3, TREF=298.15, DH=57200, KR=13, NB=1200; // NB = molecules in the box per (mol/L) at room 1
+const TK=c=>c+273.15;
+const Kc=T=>KREF*Math.exp(-DH/GAS_R*(1/T-1/TREF));
+const kf=T=>KR*Kc(T);
+// equilibrium for ntot "N2O4 if nothing had split" molecules in room V (1 = the tube)
+function eqSplit(T,V,ntot){const c0=ntot/NB/V,K=Kc(T),a=(-K+Math.sqrt(K*K+16*c0*K))/(8*c0);return{a,n4:ntot*(1-a),n2:2*ntot*a}}
+// equilibrium reached from any starting mixture (n4, n2 molecules)
+function eqFrom(T,V,n4,n2){return eqSplit(T,V,n4+n2/2)}
+const molar=n=>n/NB;                          // molecules in the box -> mol/L when the room is 1
+const EPS=14.7;                               // Beer's law strength, set so the three baths look like the real demo
+const brownAlpha=c=>1-Math.pow(10,-EPS*c);
+
+/* ---------- colors (light and dark) ---------- */
+const DARKQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):{matches:false};
+let PAL={};
+function setPal(){const d=DARKQ.matches;PAL=d?{dark:true,bg:'#191b20',card:'#1d1f24',card2:'#24272d',ink:'#ececef',soft:'#a2a2aa',line:'#353840',
+    N:'#5b8cff',O:'#f0556a',brown:[214,140,62],split:'#f2a13c',join:'#4cc9c0',think:'#ec74da',good:'#5cc27f',bad:'#ff8a80',rj:'#ed516a',
+    glass:'rgba(190,215,235,.55)',water:'rgba(92,155,255,.20)',box:'#14161a',sky1:'#16233a',sky2:'#2a3550',sea:'#12304a',deck:'#3a3d45',hull:'#e9ecef'}
+  :{dark:false,bg:'#f7f8f6',card:'#ffffff',card2:'#f3f3f0',ink:'#1c1c1f',soft:'#5d5d63',line:'#d8d8d3',
+    N:'#2f62d6',O:'#d92f45',brown:[150,82,24],split:'#c96a00',join:'#0f8b8d',think:'#a8178f',good:'#1b8a4a',bad:'#b3261e',rj:'#C11430',
+    glass:'rgba(110,140,165,.55)',water:'rgba(45,107,210,.13)',box:'#fbfcfb',sky1:'#cfe4f5',sky2:'#f6e9d6',sea:'#3d7fa8',deck:'#8b8f98',hull:'#ffffff'};
+  SPR.clear()}
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* ---------- text and shapes ---------- */
+const FONT='system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+function txt(ctx,s,x,y,o={}){ctx.font=`${o.w||500} ${o.s||16}px ${FONT}`;ctx.fillStyle=o.c||PAL.ink;ctx.textAlign=o.a||'left';ctx.textBaseline=o.b||'alphabetic';
+  if(o.max&&ctx.measureText(s).width>o.max){ctx.font=`${o.w||500} ${Math.max(11,(o.s||16)*o.max/ctx.measureText(s).width)}px ${FONT}`}
+  ctx.fillText(s,x,y);return ctx.measureText(s).width}
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function card(ctx,r,title){rr(ctx,r.x,r.y,r.w,r.h,12);ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;ctx.stroke();
+  if(title)txt(ctx,title.toUpperCase(),r.x+14,r.y+24,{s:12.5,w:700,c:PAL.soft})}
+function pill(ctx,s,x,y,bg,fg,size=14,align='left'){ctx.font=`700 ${size}px ${FONT}`;const w=ctx.measureText(s).width+size*1.3,h=size*1.75;
+  const x0=align==='center'?x-w/2:align==='right'?x-w:x;rr(ctx,x0,y-h/2,w,h,h/2);ctx.fillStyle=bg;ctx.fill();
+  ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x0+size*.65,y+.5);return w}
+function arrow(ctx,x0,y0,x1,y1,w,c){const a=Math.atan2(y1-y0,x1-x0),h=Math.max(7,w*2.6);ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=w;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1-Math.cos(a)*h*.8,y1-Math.sin(a)*h*.8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-Math.cos(a-.42)*h,y1-Math.sin(a-.42)*h);ctx.lineTo(x1-Math.cos(a+.42)*h,y1-Math.sin(a+.42)*h);ctx.closePath();ctx.fill()}
+
+/* ---------- molecules, drawn to shape (positions in angstroms) ----------
+   N2O4 is flat: N-N 1.78 A (long and weak), N-O 1.19 A, O-N-O 135 degrees.
+   NO2 is bent: N-O 1.20 A, O-N-O 134 degrees. */
+const GEO={4:{at:[['N',-.89,0],['N',.89,0],['O',-1.345,-1.10],['O',-1.345,1.10],['O',1.345,-1.10],['O',1.345,1.10]],bd:[[0,1,1],[0,2],[0,3],[1,4],[1,5]]},
+           2:{at:[['N',-.313,0],['O',.157,-1.10],['O',.157,1.10]],bd:[[0,1],[0,2]]}};
+const RAD={N:.60,O:.56};
+GEO.N={at:[['N',-.55,0],['N',.55,0]],bd:[[0,1]]};GEO.O={at:[['O',-.605,0],['O',.605,0]],bd:[[0,1]]};   // N2 (1.10 A) and O2 (1.21 A)
+const SP={4:{r:1.95,m:92},2:{r:1.35,m:46},N:{r:1.2,m:28},O:{r:1.2,m:32}};
+function ball(ctx,x,y,r,col){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.28,col);g.addColorStop(1,shade(col,-.38));
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill()}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.round(clamp(amt<0?v*(1+amt):v+(255-v)*amt,0,255));return`rgb(${f(r)},${f(g)},${f(b)})`}
+/* o: {halo:0..1 brown glow, stretch: extra N-N length in A (N2O4 only), tagN: index of the tagged N atom, bonds:true, weak:0..1 highlight on the N-N bond} */
+function drawMol(ctx,type,x,y,ang,sc,o={}){const G=GEO[type];ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+  const st=(o.stretch||0)/2,px=a=>(a[1]+(type===4?Math.sign(a[1])*st:0))*sc,py=a=>a[2]*sc;
+  if(o.halo){const R=2.5*sc,g=ctx.createRadialGradient(0,0,sc*.3,0,0,R);g.addColorStop(0,rgba(PAL.brown,.5*o.halo));g.addColorStop(1,rgba(PAL.brown,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill()}
+  if(o.bonds){ctx.lineCap='round';G.bd.forEach(b=>{const A=G.at[b[0]],B=G.at[b[1]];ctx.strokeStyle=b[2]?(o.weak?PAL.think:PAL.soft):PAL.soft;ctx.lineWidth=b[2]?sc*.13:sc*.2;
+    if(b[2]&&o.snap)return;ctx.beginPath();ctx.moveTo(px(A),py(A));ctx.lineTo(px(B),py(B));ctx.stroke()})}
+  G.at.forEach((a,i)=>{const col=a[0]==='N'?(o.tagN===i?PAL.think:PAL.N):PAL.O;ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
+  ctx.restore();
+  if(o.label){const cs=Math.cos(ang),sn=Math.sin(ang);G.at.forEach(a=>{const ax=px(a),ay=py(a);txt(ctx,a[0],x+ax*cs-ay*sn,y+ax*sn+ay*cs+1,{s:sc*.5,w:700,c:'#fff',a:'center',b:'middle'})})}}
+// cached pictures of the small molecules in the box
+const SPR=new Map();
+function sprite(type,sc){const key=type+'|'+sc;let s=SPR.get(key);if(s)return s;const R=Math.ceil(2.7*sc)+2,c=document.createElement('canvas'),d=2;c.width=c.height=R*2*d;
+  const x=c.getContext('2d');x.scale(d,d);drawMol(x,type,R,R,0,sc,{halo:type===2?1:0});s={c,R};SPR.set(key,s);return s}
+
+/* ---------- the molecule box ---------- */
+const V0=62;                                   // typical N2O4 speed at 25 C, px per second
+class World{
+  constructor(){this.ps=[];this.fl=[];this.hist=[];this.marks=[];this.nid=1;this.t=0}
+  /* o: {n4,n2,T(kelvin),V,Vmax,box:{x,y,w,h},sc,react,speed} ; box.w is the width when room = Vmax */
+  setup(o){Object.assign(this,{T:o.T,V:o.V||1,Vt:o.V||1,Vmax:o.Vmax||1,box:o.box,sc:o.sc||5,react:o.react!==false,speed:o.speed||1,
+      m4:o.n4,m2:o.n2,accS:0,accJ:0,thrS:1,thrJ:1,pendS:0,pendJ:0,waitS:0,waitJ:0,t:0,hT:0,sync:0,nS:0,nJ:0,tag:null,tagHist:[]});
+    this.ps=[];this.fl=[];this.hist=[];this.marks=[];
+    const p4=Math.round(o.n4),p2=Math.max(0,Math.round(2*o.n4+o.n2-2*p4));   // whole molecules, same number of atoms
+    for(let i=0;i<p4;i++)this.add(4);for(let i=0;i<p2;i++)this.add(2);this.push();return this}
+  get x1(){return this.box.x+this.box.w*this.V/this.Vmax}
+  get r4(){return this.sc*1.95} get r2(){return this.sc*1.35}
+  rad(t){return this.sc*SP[t].r}
+  vth(type){return V0*Math.sqrt(this.T/TREF)*Math.sqrt(92/SP[type].m)*(this.vk||1)}
+  add(type,x,y,vx,vy,ang,ns){const b=this.box,r=this.rad(type),s=this.vth(type)/1.25;
+    const p={id:this.nid++,type,x:x!==undefined?x:b.x+r+Math.random()*(this.x1-b.x-2*r),y:y!==undefined?y:b.y+r+Math.random()*(b.h-2*r),
+      vx:vx!==undefined?vx:gauss()*s,vy:vy!==undefined?vy:gauss()*s,ang:ang!==undefined?ang:Math.random()*TAU,spin:(Math.random()-.5)*3,
+      ns:ns||(type===2?[this.nid++]:[this.nid++,this.nid++]),born:this.t,home:0};this.ps.push(p);return p}
+  count(type){let n=0;for(const p of this.ps)if(p.type===type)n++;return n}
+  rates(){return{S:kf(this.T)*this.m4,J:KR/NB*this.m2*this.m2/this.V}}
+  setT(T,label){if(T===this.T)return;const f=Math.sqrt(T/this.T);for(const p of this.ps){p.vx*=f;p.vy*=f}this.T=T;if(label)this.marks.push({t:this.t,label})}
+  setV(V,label){this.Vt=V;if(label)this.marks.push({t:this.t,label})}
+  push(){const r=this.rates();this.hist.push({t:this.t,m2:this.m2,m4:this.m4,S:r.S,J:r.J});if(this.hist.length>900)this.hist.shift();
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));this.tagHist.push(p?p.type:4);if(this.tagHist.length>400)this.tagHist.shift()}}
+  flash(kind,x,y){this.fl.push({kind,x,y,t:this.t});if(kind==='s')this.nS++;else if(kind==='j')this.nJ++}
+  split(p,hx,hy){const i=this.ps.indexOf(p);if(i<0)return;this.ps.splice(i,1);const c=Math.cos(p.ang),s=Math.sin(p.ang),d=.9*this.sc,u=this.vth(2)*.6;
+    const a=this.add(2,p.x-c*d,p.y-s*d,p.vx-c*u,p.vy-s*u,p.ang+Math.PI,[p.ns[0]]),b=this.add(2,p.x+c*d,p.y+s*d,p.vx+c*u,p.vy+s*u,p.ang,[p.ns[1]]);
+    a.spin=p.spin;b.spin=p.spin;this.flash('s',hx!==undefined?hx:p.x,hy!==undefined?hy:p.y);this.pendS--;this.waitS=0}
+  join(a,b){const i=this.ps.indexOf(a);if(i>=0)this.ps.splice(i,1);const j=this.ps.indexOf(b);if(j>=0)this.ps.splice(j,1);
+    const x=(a.x+b.x)/2,y=(a.y+b.y)/2;let vx=(a.vx+b.vx)/2,vy=(a.vy+b.vy)/2;const sp=Math.hypot(vx,vy)||1,want=this.vth(4)*(.6+Math.random()*.8);vx*=want/sp;vy*=want/sp;
+    this.add(4,x,y,vx,vy,Math.atan2(b.y-a.y,b.x-a.x),[a.ns[0],b.ns[0]]);this.flash('j',x,y)}
+  step(dtReal){let dt=Math.min(dtReal,.05)*this.speed;if(dt<=0)return;
+    // room (the wall slides)
+    if(this.V!==this.Vt){const dv=1.1*Math.min(dtReal,.05);const V1=Math.abs(this.Vt-this.V)<=dv?this.Vt:this.V+Math.sign(this.Vt-this.V)*dv,f=V1/this.V;for(const p of this.ps)p.x=this.box.x+(p.x-this.box.x)*f;this.V=V1}   // the gas spreads with the wall
+    // amounts, by the rate laws
+    if(this.react){const n=Math.ceil(dt/.004),h=dt/n,k=kf(this.T),q=KR/NB/this.V;for(let i=0;i<n;i++){const S=k*this.m4,J=q*this.m2*this.m2;
+        this.m4+=(J-S)*h;this.m2+=2*(S-J)*h;if(this.m4<0)this.m4=0;if(this.m2<0)this.m2=0;this.accS+=S*h;this.accJ+=J*h}
+      this.fast=k*this.m4+q*this.m2*this.m2>10;                                              // busy: do due events at once
+      while(this.accS>=this.thrS){this.accS-=1;this.thrS=.55+Math.random()*.9;this.pendS++}
+      while(this.accJ>=this.thrJ){this.accJ-=1;this.thrJ=.55+Math.random()*.9;this.pendJ++}
+      this.sync+=dt;if(this.sync>.35){this.sync=0;const hom=this.ps.filter(p=>p.home).length/2,err=this.count(4)+hom+this.pendJ-this.pendS-this.m4;
+        if(err>1.2)this.pendS++;else if(err<-1.2)this.pendJ++}}
+    // molecules move, bounce, and react when they collide
+    const m=Math.ceil(dt/.03),h=dt/m;for(let i=0;i<m;i++)this.move(h);
+    this.t+=dt;this.hT+=dt;if(this.hT>=.1){this.hT=0;this.push()}
+    this.fl=this.fl.filter(f=>this.t-f.t<.6)}
+  move(h){const b=this.box,x1=this.x1,ps=this.ps,young=.22;
+    for(const p of ps){if(p.home){const q=ps.find(z=>z.id===p.home);if(!q){p.home=0}else{const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1,v=this.vth(2)*2.4;p.vx=lerp(p.vx,dx/d*v,.3);p.vy=lerp(p.vy,dy/d*v,.3)}}
+      p.x+=p.vx*h;p.y+=p.vy*h;p.ang+=p.spin*h;const r=this.rad(p.type);
+      if(p.x<b.x+r){p.x=b.x+r;p.vx=Math.abs(p.vx);this.hitL&&this.hitL(p)}
+      if(p.x>x1-r){if(p.leave){if(p.x>x1+24)p.dead=true}else{p.x=x1-r;p.vx=-Math.abs(p.vx);this.hitR&&this.hitR(p)}}
+      if(p.y<b.y+r){p.y=b.y+r;p.vy=Math.abs(p.vy)}if(p.y>b.y+b.h-r){p.y=b.y+b.h-r;p.vy=-Math.abs(p.vy)}
+      const sp=Math.hypot(p.vx,p.vy),vt=this.vth(p.type);if(sp>2.6*vt){p.vx*=.9;p.vy*=.9}else if(sp<.25*vt){p.vx=p.vx*1.1+gauss()*2;p.vy=p.vy*1.1+gauss()*2}}
+    for(let i=0;i<ps.length;i++){const a=ps[i];for(let j=i+1;j<ps.length;j++){const c=ps[j],dx=c.x-a.x,dy=c.y-a.y,R=this.rad(a.type)+this.rad(c.type);
+        if(dx*dx+dy*dy>R*R)continue;const d=Math.hypot(dx,dy)||.01,nx=dx/d,ny=dy/d,rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;
+        if(a.home&&a.home===c.id){this.join(a,c);i--;break}
+        if(rv>0)continue;
+        if(this.react&&this.pendJ>0&&a.type===2&&c.type===2&&!a.home&&!c.home&&this.t-a.born>young&&this.t-c.born>young){this.pendJ--;this.waitJ=0;this.join(a,c);i--;break}
+        if(this.react&&this.pendS>0&&(a.type===4||c.type===4)){const p=a.type===4&&this.t-a.born>young?a:(c.type===4&&this.t-c.born>young?c:null);
+          if(p){this.flash('h',a.x+nx*this.rad(a.type),a.y+ny*this.rad(a.type));this.split(p);i--;break}}
+        const ma=SP[a.type].m,mc=SP[c.type].m,imp=2*rv/(ma+mc);a.vx+=imp*mc*nx;a.vy+=imp*mc*ny;c.vx-=imp*ma*nx;c.vy-=imp*ma*ny;
+        const ov=(R-d)/2;a.x-=nx*ov;a.y-=ny*ov;c.x+=nx*ov;c.y+=ny*ov}}
+    if(ps.some(p=>p.dead))this.ps=ps.filter(p=>!p.dead);
+    if(!this.react)return;
+    // events that are due but found no collision yet
+    if(this.pendS>0){this.waitS+=h;let guard=8;while(this.pendS>0&&(this.fast||this.waitS>.18||this.pendS>2)&&guard--){const c=ps.filter(p=>p.type===4);if(!c.length){this.pendS=0;break}
+        this.split(c[Math.floor(Math.random()*c.length)])}}
+    if(this.pendJ>0){this.waitJ+=h;let guard=8;while(this.pendJ>0&&(this.fast||this.waitJ>.12||this.pendJ>2)&&guard--){const f=ps.filter(p=>p.type===2&&!p.home&&this.t-p.born>young*.5);
+        if(f.length<2){if(ps.filter(p=>p.type===2).length<2)this.pendJ=0;break}
+        let best=1e9,A=null,B=null;for(let i=0;i<f.length;i++)for(let j=i+1;j<f.length;j++){const d=(f[i].x-f[j].x)**2+(f[i].y-f[j].y)**2;if(d<best){best=d;A=f[i];B=f[j]}}
+        this.pendJ--;this.waitJ=0;if(this.fast||this.pendJ>1||best<(this.r2*4)**2)this.join(A,B);else{A.home=B.id;B.home=A.id}}}
+  }
+  /* draw the box. o: {tagRing:true, dim:0..1, frozen:true} */
+  draw(ctx,o={}){const b=this.box,x1=this.x1,full=b.x+b.w;
+    if(!o.noFrame){rr(ctx,b.x,b.y,b.w,b.h,8);ctx.fillStyle=PAL.card2;ctx.fill()}
+    ctx.save();rr(ctx,b.x,b.y,x1-b.x+(o.noFrame?30:0),b.h,8);if(!o.noFrame){ctx.fillStyle=PAL.box;ctx.fill()}ctx.clip();
+    const rt=this.rates(),busy=clamp((rt.S+rt.J)/16,0,1),fk=(1-.55*busy)*this.sc/6;                // smaller rings when a lot is happening
+    for(const f of this.fl){const u=(this.t-f.t)/(.6-.25*busy);if(u<0||u>1)continue;ctx.lineWidth=2.5;
+      if(f.kind==='s'){ctx.strokeStyle=PAL.split;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:6+26*u)*fk,0,TAU);ctx.stroke()}
+      else if(f.kind==='j'){ctx.strokeStyle=PAL.join;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:30-22*u)*fk,0,TAU);ctx.stroke()}
+      else{ctx.strokeStyle=f.col||PAL.split;ctx.globalAlpha=1-u;const n=6;for(let i=0;i<n;i++){const a=i*TAU/n+.3;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*4,f.y+Math.sin(a)*4);ctx.lineTo(f.x+Math.cos(a)*(8+10*u),f.y+Math.sin(a)*(8+10*u));ctx.stroke()}}
+      ctx.globalAlpha=1}
+    for(const p of this.ps){const s=sprite(p.type,this.sc),pop=RM?1:Math.min(1,.55+(this.t-p.born)*3);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);if(pop<1)ctx.scale(pop,pop);ctx.drawImage(s.c,-s.R,-s.R,s.R*2,s.R*2);ctx.restore()}
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));if(p){const i=p.ns.indexOf(this.tag);drawMol(ctx,p.type,p.x,p.y,p.ang,this.sc,{tagN:p.type===4?i:0,halo:p.type===2?1:0});
+        ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(p.x,p.y,this.rad(p.type)+9,0,TAU);ctx.stroke();ctx.setLineDash([])}}
+    ctx.restore();if(o.noFrame)return;
+    rr(ctx,b.x,b.y,x1-b.x,b.h,8);ctx.strokeStyle=PAL.dark?'#5d6370':'#8a94a0';ctx.lineWidth=2;ctx.stroke();
+    if(this.Vmax>1){ // the sliding wall, with its handle
+      ctx.fillStyle=PAL.dark?'#7b8290':'#6f7783';rr(ctx,x1-3,b.y-6,8,b.h+12,3);ctx.fill();
+      if(x1<full-12){ctx.setLineDash([5,5]);ctx.strokeStyle=PAL.line;ctx.lineWidth=1.5;rr(ctx,x1+6,b.y,full-x1-6,b.h,8);ctx.stroke();ctx.setLineDash([]);
+        if(full-x1>120)txt(ctx,'empty room',(x1+full)/2+3,b.y+b.h/2,{s:15,c:PAL.soft,a:'center',b:'middle'})}}
+  }
+}
+
+/* ---------- shared pictures ---------- */
+// two rate bars; each bar is one half of the equation
+function drawRates(ctx,r,S,J,max,o={}){card(ctx,r,o.title||'Each second, in the box');
+  const x=r.x+14,w=r.w-28,rowH=(r.h-78)/2,row=(y,name,eq,v,col,ic)=>{
+    txt(ctx,name,x+26,y+17,{s:17,w:700});txt(ctx,eq,x+w,y+17,{s:14.5,c:PAL.soft,a:'right'});
+    // icon: one dot becomes two, or two become one
+    ctx.fillStyle=col;if(ic==='s'){ctx.beginPath();ctx.arc(x+9,y+11,6,0,TAU);ctx.fill()}else{ctx.beginPath();ctx.arc(x+5,y+11,4.4,0,TAU);ctx.arc(x+15,y+11,4.4,0,TAU);ctx.fill()}
+    const bw=w-64,by=y+27,bh=Math.max(14,rowH-40);rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();
+    const f=clamp(v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=col;ctx.fill()}
+    txt(ctx,v>=9.95?v.toFixed(0):v.toFixed(1),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});return{by,bh,bw,f}};
+  const a=row(r.y+36,'Splits','N₂O₄ → 2 NO₂',S,PAL.split,'s'),b=row(r.y+36+rowH,'Joins','2 NO₂ → N₂O₄',J,PAL.join,'j');
+  const big=Math.max(S,J),d=big>0?(S-J)/big:0,yy=r.y+r.h-17;
+  if(o.status!==false){if(big<.05)txt(ctx,'Nothing is reacting yet',x,yy,{s:15,c:PAL.soft,w:600,max:w});
+    else if(d>.07){txt(ctx,'More splits than joins: NO₂ builds up',x,yy,{s:15,c:PAL.split,w:700,max:w})}
+    else if(d<-.07){txt(ctx,'More joins than splits: NO₂ runs down',x,yy,{s:15,c:PAL.join,w:700,max:w})}
+    else txt(ctx,'Balanced: splits = joins',x,yy,{s:15,c:PAL.good,w:700,max:w})}
+  if(Math.abs(d)>.07&&big>.05){ // hatch the part of the longer bar that is ahead: the gap
+    const A=S>J?a:b,lo=x+a.bw*Math.min(a.f,b.f),hi=x+a.bw*Math.max(a.f,b.f);if(hi-lo>8){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore();
+      if(hi-lo>70){ctx.font=`700 13px ${FONT}`;const tw=ctx.measureText('ahead').width+14;rr(ctx,(lo+hi)/2-tw/2,A.by+A.bh/2-10,tw,20,10);ctx.fillStyle=PAL.card;ctx.fill();txt(ctx,'ahead',(lo+hi)/2,A.by+A.bh/2+1,{s:13,w:700,a:'center',b:'middle'})}}}}
+
+// NO2 count against time. o: {ymax,span,sketch:[{t,v}],sketching,title}
+function drawGraph(ctx,r,w,o={}){card(ctx,r,o.title||'NO₂ in the box');
+  const L=r.x+44,T=r.y+38,W=r.w-60,H=r.h-72,ymax=o.ymax||40,span=o.span||12,t1=Math.max(span,w.t),t0=t1-span,X=t=>L+(t-t0)/span*W,Y=v=>T+H-clamp(v/ymax,0,1.04)*H;
+  ctx.strokeStyle=PAL.line;ctx.lineWidth=1;for(let i=0;i<=4;i++){const y=T+H-i*H/4;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+W,y);ctx.stroke();txt(ctx,String(Math.round(ymax*i/4)),L-7,y,{s:13,c:PAL.soft,a:'right',b:'middle'})}
+  txt(ctx,'time →',L+W,T+H+21,{s:13,c:PAL.soft,a:'right'});
+  ctx.save();ctx.beginPath();ctx.rect(L-1,T-6,W+2,H+12);ctx.clip();
+  for(const m of w.marks){if(m.t<t0)continue;const x=X(m.t);ctx.strokeStyle=PAL.soft;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.setLineDash([]);
+    txt(ctx,m.label,Math.min(x+5,L+W-80),T+13,{s:12.5,c:PAL.soft,w:600})}
+  if(o.sketch&&o.sketch.length>1){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.lineJoin='round';ctx.beginPath();o.sketch.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.setLineDash([])}
+  if(w.hist.length>1){ctx.strokeStyle=rgba(PAL.brown,1);ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.beginPath();let st=false;for(const p of w.hist){if(p.t<t0-.2)continue;const x=X(p.t),y=Y(p.m2);st?ctx.lineTo(x,y):ctx.moveTo(x,y);st=true}ctx.stroke();
+    const p=w.hist[w.hist.length-1];ctx.fillStyle=rgba(PAL.brown,1);ctx.beginPath();ctx.arc(X(p.t),Y(p.m2),5,0,TAU);ctx.fill()}
+  ctx.restore();
+  if(o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=2;ctx.setLineDash([6,5]);rr(ctx,L-2,T-4,W+4,H+8,6);ctx.stroke();ctx.setLineDash([]);
+    if(!(o.sketch&&o.sketch.length>1))txt(ctx,'Draw your line here',L+W/2,T+H/2,{s:17,w:700,c:PAL.think,a:'center',b:'middle'})}
+  if(o.sketch&&o.sketch.length>1&&!o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.beginPath();ctx.moveTo(r.x+r.w-150,r.y+19);ctx.lineTo(r.x+r.w-122,r.y+19);ctx.stroke();ctx.setLineDash([]);txt(ctx,'your guess',r.x+r.w-116,r.y+24,{s:13,c:PAL.think,w:700})}
+  return{L,T,W,H,ymax,span,t0}}
+
+// the sealed tube in its bath. bathC: 0, 25 or 60; cNO2 in mol/L; lift: 0..1 (tube raised while it changes bath)
+function drawTube(ctx,r,bathC,cNO2,lift,t){card(ctx,r,'What you see');
+  const cx=r.x+r.w/2,bw=r.w-44,bx=cx-bw/2,btop=r.y+r.h*.50,bbot=r.y+r.h-66,wl=btop+26;
+  // beaker
+  const hot=bathC>=45,ice=bathC<=5;ctx.fillStyle=hot?(PAL.dark?'rgba(255,150,110,.16)':'rgba(240,120,80,.14)'):PAL.water;rr(ctx,bx+3,wl,bw-6,bbot-wl-3,6);ctx.fill();
+  if(ice){ctx.fillStyle=PAL.dark?'rgba(210,235,255,.5)':'rgba(255,255,255,.95)';ctx.strokeStyle=PAL.dark?'rgba(210,235,255,.7)':'rgba(120,160,200,.8)';ctx.lineWidth=1.2;
+    [[.14,10,.2],[.52,4,-.3],[.74,14,.5],[.3,40,-.15],[.66,46,.25],[.1,66,.1]].forEach(([fx,dy,a])=>{ctx.save();ctx.translate(bx+10+fx*(bw-40)+10,wl+dy+8);ctx.rotate(a);rr(ctx,-10,-9,21,18,4);ctx.fill();ctx.stroke();ctx.restore()})}
+  if(hot&&!RM){ctx.strokeStyle=PAL.dark?'rgba(255,255,255,.28)':'rgba(120,120,130,.4)';ctx.lineWidth=2;ctx.lineCap='round';for(let i=0;i<3;i++){const x=bx+bw*.2+i*bw*.28,ph=(t*.7+i*.37)%1;ctx.globalAlpha=1-ph;ctx.beginPath();
+      for(let s=0;s<=10;s++){const y=wl-4-ph*26-s*3.2,xx=x+Math.sin(s*.8+t*2+i)*4;s?ctx.lineTo(xx,y):ctx.moveTo(xx,y)}ctx.stroke()}ctx.globalAlpha=1}
+  // tube
+  const tw=44,th=r.h*.56,ty=wl-th*.52-lift*46,tx=cx-tw/2-10;
+  ctx.fillStyle=PAL.box;rr(ctx,tx,ty,tw,th,tw/2);ctx.fill();const al=brownAlpha(cNO2);ctx.fillStyle=rgba(PAL.brown,clamp(al*1.05,0,.96));rr(ctx,tx+2,ty+2,tw-4,th-4,tw/2-2);ctx.fill();
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=2.5;rr(ctx,tx,ty,tw,th,tw/2);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx+10,ty+24);ctx.lineTo(tx+10,ty+th-28);ctx.stroke();
+  txt(ctx,'sealed',tx+tw/2,ty-8,{s:12.5,c:PAL.soft,a:'center'});
+  // beaker glass on top, thermometer
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=3;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(bx,btop);ctx.lineTo(bx,bbot-8);ctx.quadraticCurveTo(bx,bbot,bx+8,bbot);ctx.lineTo(bx+bw-8,bbot);ctx.quadraticCurveTo(bx+bw,bbot,bx+bw,bbot-8);ctx.lineTo(bx+bw,btop);ctx.stroke();
+  const mx=bx+bw-24,my0=btop-52,my1=bbot-22;ctx.strokeStyle=PAL.glass;ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(mx,my0);ctx.lineTo(mx,my1);ctx.stroke();
+  const lv=lerp(my1-10,my0+6,clamp(bathC/100,0,1));ctx.strokeStyle='#d92f45';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(mx,my1);ctx.lineTo(mx,lv);ctx.stroke();ctx.fillStyle='#d92f45';ctx.beginPath();ctx.arc(mx,my1+2,6,0,TAU);ctx.fill();
+  const name=ice?'Ice water':hot?'Hot water':'Room';pill(ctx,`${name} · ${bathC} °C`,cx,bbot+24,ice?'#2d6bd2':hot?'#c5471f':PAL.soft,'#fff',14,'center');
+  const shade=al<.05?'none':al<.25?'very pale':al<.5?'light brown':al<.68?'brown':'dark brown';txt(ctx,'Gas color: '+shade,cx,bbot+52,{s:14.5,w:600,a:'center',max:r.w-16});
+  return{tx:tx+tw,ty:ty+th*.3}}
+
+/* two bars that compete. rows: [{name,sub,v,col},{...}] ; o: {title,max,unit,dec,status:{more0,more1,bal}} */
+function drawPair(ctx,r,rows,o={}){card(ctx,r,o.title);const x=r.x+14,w=r.w-28,rowH=(r.h-80)/2,max=o.max||100,out=[];
+  rows.forEach((q,i)=>{const y=r.y+36+i*rowH;ctx.fillStyle=q.col;ctx.beginPath();ctx.arc(x+8,y+11,6,0,TAU);ctx.fill();txt(ctx,q.name,x+22,y+17,{s:16.5,w:700,max:w-22});
+    const bw=w-66,by=y+27,bh=Math.max(14,Math.min(34,rowH-42));rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();const f=clamp(q.v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=q.col;ctx.fill()}
+    txt(ctx,q.v.toFixed(o.dec===undefined?0:o.dec),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});if(q.sub)txt(ctx,q.sub,x,by+bh+16,{s:13,c:PAL.soft,max:w});out.push({by,bh,bw,f})});
+  const a=rows[0].v,b=rows[1].v,big=Math.max(a,b,1e-9),d=(a-b)/big,yy=r.y+r.h-16,s=o.status||{};
+  if(Math.abs(d)>.03){const A=a>b?out[0]:out[1],lo=x+A.bw*Math.min(out[0].f,out[1].f),hi=x+A.bw*Math.max(out[0].f,out[1].f);if(hi-lo>6){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore()}
+    txt(ctx,d>0?s.more0:s.more1,x,yy,{s:14.5,w:700,c:d>0?rows[0].col:rows[1].col,max:w})}
+  else if(s.bal)txt(ctx,s.bal,x,yy,{s:14.5,w:700,c:PAL.good,max:w});
+  if(o.unit)txt(ctx,o.unit,r.x+r.w-14,r.y+24,{s:12.5,c:PAL.soft,a:'right'})}
+
+</script>
+<script>
+/* ============================================================
+   Part 2 of 2: the scenes, the 13 steps and the page controls.
+   ============================================================ */
+const SITE='ChemLab',PAGE='equilibrium-story',KEY='rjchemlab-eqstory-v1',EVB='equilibrium',EVT='Equilibrium story';
+const NOWORLD=i=>i<4||i===12,PAUSEOK=i=>i>=4&&i<=11;
+const LW=1000,LH=560;
+const cv=$('#stage'),ctx=cv.getContext('2d');let PX=1;
+const W=new World();
+let S={guess:{},sketch:[],mixes:[],order:[],tries:0,text:'',name:'',seen:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+try{S.name=localStorage.getItem('raider-labs-name')||S.name||''}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let cur=0,st={},paused=false,lastCap='';
+const ROOM=TK(25),HOT=TK(60),ICE=TK(0);
+
+/* ---------- layout ---------- */
+const R_TUBE={x:14,y:14,w:178,h:532},R_BOXC={x:204,y:14,w:404,h:532},BOX={x:216,y:48,w:380,h:424},R_RATE={x:620,y:14,w:366,h:216},R_GRAPH={x:620,y:242,w:366,h:304};
+function eqWorld(T,o={}){const e=eqSplit(T,o.V||1,60);return W.setup(Object.assign({n4:e.n4,n2:e.n2,T,box:BOX,sc:SCB},o))}
+const SCB=6;
+function fixCounts(){W.m4=eqSplit(W.T,W.V,60).n4;W.m2=2*(60-W.m4)}
+
+/* ---------- story pictures ---------- */
+function capsule(ctx,x,y,s,open){ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  // cradle
+  ctx.fillStyle=PAL.dark?'#565b66':'#5f6570';rr(ctx,-150,118,300,20,6);ctx.fill();ctx.fillRect(-120,136,16,34);ctx.fillRect(104,136,16,34);
+  // body
+  ctx.beginPath();ctx.moveTo(-128,118);ctx.bezierCurveTo(-120,20,-80,-96,-44,-128);ctx.quadraticCurveTo(0,-150,44,-128);ctx.bezierCurveTo(80,-96,120,20,128,118);ctx.closePath();
+  const g=ctx.createLinearGradient(-128,0,128,0);g.addColorStop(0,shade('#ffffff',PAL.dark?-.3:-.12));g.addColorStop(.45,PAL.dark?'#dfe3e8':'#ffffff');g.addColorStop(1,shade('#ffffff',PAL.dark?-.42:-.2));ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle=PAL.dark?'#0e1014':'#7d8794';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.fillStyle='#2b2f36';rr(ctx,-130,100,260,20,8);ctx.fill();                                   // heat shield
+  [[-58,-52],[58,-52]].forEach(([wx,wy])=>{ctx.fillStyle='#1d2530';rr(ctx,wx-17,wy-13,34,26,8);ctx.fill();ctx.strokeStyle='#8f99a6';ctx.lineWidth=2;ctx.stroke()});
+  [[-96,56],[96,56]].forEach(([tx,ty])=>{ctx.fillStyle='#3a3f48';ctx.beginPath();ctx.ellipse(tx,ty,13,24,tx<0?-.2:.2,0,TAU);ctx.fill();ctx.fillStyle='#14171c';ctx.beginPath();ctx.arc(tx,ty-8,4,0,TAU);ctx.arc(tx,ty+8,4,0,TAU);ctx.fill()});
+  // hatch
+  if(open){ctx.fillStyle='#14171c';rr(ctx,-30,-18,60,84,12);ctx.fill();ctx.fillStyle=PAL.dark?'#c9ced6':'#e9edf1';ctx.strokeStyle='#7d8794';ctx.save();ctx.translate(34,-18);ctx.transform(.42,-.1,0,1,0,0);rr(ctx,0,0,60,84,12);ctx.fill();ctx.stroke();ctx.restore()}
+  else{ctx.strokeStyle=PAL.dark?'#30343c':'#7d8794';ctx.lineWidth=3;rr(ctx,-30,-18,60,84,12);ctx.stroke();ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.arc(18,26,4.5,0,TAU);ctx.fill()}
+  ctx.restore()}
+function person(ctx,x,y,s,col,arm){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=col;ctx.strokeStyle=PAL.dark?'#0e1014':'#5b6470';ctx.lineWidth=2;
+  rr(ctx,-13,-52,26,54,10);ctx.fill();ctx.stroke();ctx.fillRect(-11,0,9,34);ctx.fillRect(2,0,9,34);ctx.strokeRect(-11,0,9,34);ctx.strokeRect(2,0,9,34);
+  ctx.beginPath();ctx.arc(0,-66,13,0,TAU);ctx.fill();ctx.stroke();
+  ctx.lineWidth=8;ctx.lineCap='round';ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(10,-42);ctx.lineTo(10+Math.cos(arm)*30,-42+Math.sin(arm)*30);ctx.stroke();ctx.restore()}
+function sceneDeck(open,t){const g=ctx.createLinearGradient(0,0,0,330);g.addColorStop(0,PAL.sky1);g.addColorStop(1,PAL.sky2);ctx.fillStyle=g;ctx.fillRect(0,0,LW,340);
+  ctx.fillStyle=PAL.dark?'#f4d58a':'#fff3c4';ctx.beginPath();ctx.arc(820,150,34,0,TAU);ctx.fill();
+  ctx.fillStyle=PAL.sea;ctx.fillRect(0,300,LW,120);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;for(let i=0;i<7;i++){const y=312+i*13,ph=RM?0:t*.5;ctx.beginPath();for(let x=0;x<=LW;x+=20){const yy=y+Math.sin(x*.02+i*1.7+ph)*2.5;x?ctx.lineTo(x,yy):ctx.moveTo(x,yy)}ctx.stroke()}
+  ctx.fillStyle=PAL.deck;ctx.fillRect(0,400,LW,160);ctx.fillStyle=PAL.dark?'#2c2f36':'#767b85';ctx.fillRect(0,400,LW,8);
+  ctx.strokeStyle=PAL.dark?'#6a707c':'#e6e8ec';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,366);ctx.lineTo(LW,366);ctx.stroke();for(let x=30;x<LW;x+=90){ctx.beginPath();ctx.moveTo(x,366);ctx.lineTo(x,402);ctx.stroke()}
+  capsule(ctx,470,310,1.02,open);
+  pill(ctx,'Gulf of Mexico · August 2, 2020',20,30,PAL.dark?'rgba(0,0,0,.55)':'rgba(255,255,255,.9)',PAL.ink,15);
+  // the technician with the gas sensor
+  person(ctx,238,470,1.05,'#e8a23a',-.35);ctx.fillStyle='#22262d';rr(ctx,268,418,30,20,4);ctx.fill();
+  const blink=open?1:(RM?1:.55+.45*Math.sin(t*5));
+  const bx=40,by=196,bw=262,bh=open?86:108;rr(ctx,bx,by,bw,bh,12);ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=open?PAL.good:PAL.bad;ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(226,by+bh-2);ctx.lineTo(282,412);ctx.lineTo(270,by+bh-2);ctx.closePath();ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=open?PAL.good:PAL.bad;ctx.beginPath();ctx.moveTo(226,by+bh);ctx.lineTo(282,412);ctx.lineTo(270,by+bh);ctx.stroke();
+  txt(ctx,'GAS SENSOR',bx+16,by+26,{s:12.5,w:700,c:PAL.soft});
+  if(open){ctx.fillStyle=PAL.good;ctx.beginPath();ctx.arc(bx+26,by+54,9,0,TAU);ctx.fill();txt(ctx,'Reads zero. All clear.',bx+44,by+60,{s:18,w:700})}
+  else{ctx.globalAlpha=blink;ctx.fillStyle=PAL.bad;ctx.beginPath();ctx.arc(bx+26,by+54,9,0,TAU);ctx.fill();ctx.globalAlpha=1;txt(ctx,'Toxic gas found',bx+44,by+60,{s:18,w:700});txt(ctx,'near the thrusters',bx+44,by+86,{s:16,c:PAL.soft})}
+  if(open){person(ctx,640,470,1.05,'#f4f6f8',-1.1+(RM?0:Math.sin(t*4)*.25));person(ctx,712,474,1.05,'#f4f6f8',-.5);pill(ctx,'Hatch open · both astronauts out safely',600,214,PAL.good,'#fff',16)}
+  else{pill(ctx,'Hatch: closed',470,186,PAL.bad,'#fff',16,'center');txt(ctx,'thrusters',640,452,{s:15,c:'#fff',w:700});ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(634,446);ctx.lineTo(580,384);ctx.stroke()}}
+
+function bigTube(ctx,x,y,w,h,alpha){ctx.fillStyle=PAL.box;rr(ctx,x,y,w,h,w/2);ctx.fill();ctx.fillStyle=rgba(PAL.brown,alpha);rr(ctx,x+3,y+3,w-6,h-6,w/2-3);ctx.fill();ctx.strokeStyle=PAL.glass;ctx.lineWidth=3;rr(ctx,x,y,w,h,w/2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x+w*.24,y+h*.12);ctx.lineTo(x+w*.24,y+h*.82);ctx.stroke()}
+function sceneTwo(t){const A={x:40,y:30,w:440,h:500},B={x:520,y:30,w:440,h:500};card(ctx,A);card(ctx,B);
+  bigTube(ctx,A.x+50,A.y+70,70,330,0);bigTube(ctx,B.x+50,B.y+70,70,330,.86);
+  drawMol(ctx,4,A.x+290,A.y+200,RM?0:Math.sin(t*.6)*.12,46,{bonds:true,label:true});drawMol(ctx,2,B.x+290,B.y+200,RM?0:Math.sin(t*.6+1)*.15,46,{bonds:true,label:true,halo:1});
+  txt(ctx,'N₂O₄',A.x+290,A.y+330,{s:34,w:700,a:'center'});txt(ctx,'nitrogen tetroxide',A.x+290,A.y+360,{s:16,c:PAL.soft,a:'center'});pill(ctx,'no color',A.x+290,A.y+396,PAL.card2,PAL.ink,17,'center');
+  txt(ctx,'NO₂',B.x+290,B.y+330,{s:34,w:700,a:'center'});txt(ctx,'nitrogen dioxide',B.x+290,B.y+360,{s:16,c:PAL.soft,a:'center'});pill(ctx,'brown · burns lungs',B.x+290,B.y+396,rgba(PAL.brown,1),'#fff',17,'center');
+  txt(ctx,'a tube of only N₂O₄',A.x+85,A.y+432,{s:15,c:PAL.soft,a:'center'});txt(ctx,'a tube of only NO₂',B.x+85,B.y+432,{s:15,c:PAL.soft,a:'center'});
+  ctx.fillStyle=PAL.N;ctx.beginPath();ctx.arc(A.x+214,A.y+470,8,0,TAU);ctx.fill();txt(ctx,'nitrogen',A.x+228,A.y+475,{s:14,c:PAL.soft});ctx.fillStyle=PAL.O;ctx.beginPath();ctx.arc(A.x+304,A.y+470,8,0,TAU);ctx.fill();txt(ctx,'oxygen',A.x+318,A.y+475,{s:14,c:PAL.soft});
+  rr(ctx,474,250,52,52,26);ctx.fillStyle=PAL.think;ctx.fill();txt(ctx,'?',500,277,{s:30,w:800,c:'#fff',a:'center',b:'middle'})}
+
+/* ---------- one molecule: hit it, then let two meet ---------- */
+function gauge(ctx,frac,note,good){const x=846,y=96,w=52,h=330,thr=.62;card(ctx,{x:770,y:30,w:204,h:500},'Energy of the hit');
+  rr(ctx,x,y,w,h,8);ctx.fillStyle=PAL.card2;ctx.fill();const f=clamp(frac*thr,0,1);if(f>0){rr(ctx,x,y+h*(1-f),w,h*f,8);ctx.fillStyle=frac>=1?PAL.split:(PAL.dark?'#7b8290':'#9aa3ae');ctx.fill()}
+  const ly=y+h*(1-thr);ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(x-34,ly);ctx.lineTo(x+w+34,ly);ctx.stroke();ctx.setLineDash([]);
+  rr(ctx,816,ly-40,112,34,6);ctx.fillStyle=PAL.card;ctx.globalAlpha=.9;ctx.fill();ctx.globalAlpha=1;txt(ctx,'needed to snap',872,ly-24,{s:14,c:PAL.think,w:700,a:'center'});txt(ctx,'the weak bond',872,ly-9,{s:14,c:PAL.think,w:700,a:'center'});
+  if(note){const l=note.split('|');l.forEach((s,i)=>txt(ctx,s,872,462+i*20,{s:15.5,w:700,c:good?PAL.good:PAL.ink,a:'center',max:190}))}}
+const CX=400,CY=250,BIG=60;
+function sceneOne(t){const o=st,E=o.ph==='soft'?.38:o.ph==='hard'||o.ph==='split'?1.28:0;let stretch=0,snap=false,sep=0,bx=-200,gf=0,note='';
+  if(o.ph==='idle'){bx=-200}
+  else{const u=t-o.t0,fly=o.ph==='soft'?1.0:.42,hitX=CX-198;
+    if(o.ph==='split'){snap=true;sep=1;gf=E;bx=-200}
+    else if(u<fly){bx=lerp(-140,hitX,u/fly)}
+    else{const v=u-fly;gf=E*ease(v/.25);bx=hitX-v*(o.ph==='soft'?70:150);
+      if(o.ph==='soft'){stretch=.42*Math.sin(v*13)*Math.exp(-v*1.9);if(v>1.9&&!o.done){o.done=true;o.soft=true;cap(CAP.oneSoft)}}
+      else{if(v<.5)stretch=1.5*ease(v/.5)+.2*Math.sin(v*30);else{snap=true;sep=ease((v-.5)/1.2);if(!o.done){o.done=true;o.hard=true;cap(CAP.oneHard);markDone();renderCtl()}if(v>2.2)o.ph='split'}}}}
+  note=o.ph==='soft'&&gf>.3?'Too soft.|The bond holds.':snap?'Hard enough.|The bond snaps.':'';
+  if(o.ph!=='idle'&&o.ph!=='split'&&bx>-190)drawMol(ctx,4,bx,CY+6,Math.PI/2,BIG*.9,{bonds:true});
+  if(!snap){drawMol(ctx,4,CX,CY,0,BIG,{bonds:true,label:true,stretch,weak:o.ph==='idle'});
+    if(o.ph==='idle'){ctx.strokeStyle=PAL.think;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CX,CY-12);ctx.lineTo(CX,CY-124);ctx.stroke();pill(ctx,'the weak bond: long and thin',CX,CY-140,PAL.think,'#fff',15,'center')}
+    txt(ctx,'N₂O₄',CX,CY+150,{s:30,w:700,a:'center'});txt(ctx,'no color',CX,CY+176,{s:16,c:PAL.soft,a:'center'})}
+  else{const d=1.953*BIG+sep*105,rot=sep*.5;drawMol(ctx,2,CX-d,CY,Math.PI-rot,BIG,{bonds:true,label:true,halo:ease(sep*1.6)});drawMol(ctx,2,CX+d,CY,rot,BIG,{bonds:true,label:true,halo:ease(sep*1.6)});
+    if(sep<.5&&!RM){ctx.strokeStyle=PAL.split;ctx.lineWidth=4;ctx.globalAlpha=1-sep*2;for(let i=0;i<8;i++){const a=i*TAU/8+.2;ctx.beginPath();ctx.moveTo(CX+Math.cos(a)*14,CY+Math.sin(a)*14);ctx.lineTo(CX+Math.cos(a)*(30+sep*90),CY+Math.sin(a)*(30+sep*90));ctx.stroke()}ctx.globalAlpha=1}
+    if(sep>.6){ctx.globalAlpha=ease((sep-.6)/.4);txt(ctx,'NO₂',CX-d,CY+150,{s:30,w:700,a:'center'});txt(ctx,'NO₂',CX+d,CY+150,{s:30,w:700,a:'center'});txt(ctx,'brown',CX-d,CY+176,{s:16,c:rgba(PAL.brown,1),w:700,a:'center'});txt(ctx,'brown',CX+d,CY+176,{s:16,c:rgba(PAL.brown,1),w:700,a:'center'});
+      eqLine(1,0);ctx.globalAlpha=1}}
+  gauge(ctx,gf,note,snap)}
+function eqLine(fw,bk){const y=500;txt(ctx,'N₂O₄',CX-128,y,{s:30,w:700,a:'center',b:'middle'});txt(ctx,'2 NO₂',CX+128,y,{s:30,w:700,a:'center',b:'middle'});
+  if(fw)arrow(ctx,CX-52,y-(bk?9:0),CX+52,y-(bk?9:0),4,PAL.split);if(bk)arrow(ctx,CX+52,y+9,CX-52,y+9,4,PAL.join)}
+function sceneBack(t){const o=st;let d=230,joined=false,u=0;
+  if(o.ph==='go'){u=(t-o.t0)/1.5;d=lerp(230,.89*BIG,ease(u));if(u>=1){joined=true;if(!o.done){o.done=true;cap(CAP.backDone);markDone();renderCtl()}}}
+  if(o.ph==='done'){joined=true;u=9}
+  if(!joined){const bob=RM?0:Math.sin(t*1.3)*8;drawMol(ctx,2,CX-d-.313*BIG,CY+bob*(1-ease(u)),Math.PI,BIG,{bonds:true,label:true,halo:1});drawMol(ctx,2,CX+d+.313*BIG,CY-bob*(1-ease(u)),0,BIG,{bonds:true,label:true,halo:1});
+    txt(ctx,'NO₂',CX-d,CY+150,{s:30,w:700,a:'center'});txt(ctx,'NO₂',CX+d,CY+150,{s:30,w:700,a:'center'})}
+  else{const v=(t-o.t0)-1.5,k=o.ph==='done'?1:ease(v/.9);
+    if(k<1&&!RM){ctx.strokeStyle=PAL.dark?'#f4d58a':'#e0a500';ctx.lineWidth=4;ctx.globalAlpha=1-k;for(let i=0;i<10;i++){const a=i*TAU/10;ctx.beginPath();ctx.moveTo(CX+Math.cos(a)*(20+k*40),CY+Math.sin(a)*(20+k*40));ctx.lineTo(CX+Math.cos(a)*(44+k*110),CY+Math.sin(a)*(44+k*110));ctx.stroke()}ctx.globalAlpha=1;
+      pill(ctx,'energy given off',CX,CY-150,PAL.dark?'#f4d58a':'#e0a500','#1c1c1f',15,'center')}
+    drawMol(ctx,4,CX,CY,0,BIG,{bonds:true,label:true,halo:1-k});txt(ctx,'N₂O₄',CX,CY+150,{s:30,w:700,a:'center'});txt(ctx,'no color again',CX,CY+176,{s:16,c:PAL.soft,a:'center'});
+    ctx.globalAlpha=k;eqLine(1,1);txt(ctx,'splits',CX,476,{s:13.5,c:PAL.split,w:700,a:'center'});txt(ctx,'joins',CX,534,{s:13.5,c:PAL.join,w:700,a:'center'});ctx.globalAlpha=1}
+  gauge(ctx,joined?.1:0,joined?'No hard hit needed.|They only had to meet.':'',joined)}
+
+/* ---------- the crowd: tube, box, rates, graph ---------- */
+function countsRow(){const y=510,b=R_BOXC,s4=sprite(4,SCB),s2=sprite(2,SCB);ctx.drawImage(s4.c,b.x+40-s4.R,y-s4.R,s4.R*2,s4.R*2);txt(ctx,'N₂O₄',b.x+60,y+1,{s:16,c:PAL.soft,b:'middle'});txt(ctx,String(W.count(4)),b.x+116,y+1,{s:22,w:700,b:'middle'});
+  ctx.drawImage(s2.c,b.x+228-s2.R,y-s2.R,s2.R*2,s2.R*2);txt(ctx,'NO₂',b.x+246,y+1,{s:16,c:PAL.soft,b:'middle'});txt(ctx,String(W.count(2)),b.x+290,y+1,{s:22,w:700,b:'middle'});
+  if(W.speed>1)pill(ctx,W.speed+'× speed',b.x+b.w-12,b.y+19,PAL.card2,PAL.ink,13,'right');else if(W.speed<1)pill(ctx,'slow motion',b.x+b.w-12,b.y+19,PAL.think,'#fff',13,'right')}
+function sceneCrowd(o){const r=W.rates(),c2=molar(W.m2)/W.V,tp=drawTube(ctx,R_TUBE,o.bath,c2,o.lift||0,st.t||0);
+  card(ctx,R_BOXC,'Zoomed in: a sample of the gas');
+  ctx.strokeStyle=PAL.line;ctx.lineWidth=1.5;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(tp.tx,tp.ty-30);ctx.lineTo(BOX.x,BOX.y);ctx.moveTo(tp.tx,tp.ty+30);ctx.lineTo(BOX.x,BOX.y+BOX.h);ctx.stroke();ctx.setLineDash([]);
+  W.draw(ctx);countsRow();
+  if(!W.react&&cur===4)pill(ctx,'reactions not started',BOX.x+BOX.w/2,BOX.y+26,PAL.ink,PAL.card,14,'center');
+  drawRates(ctx,R_RATE,W.react?r.S:0,W.react?r.J:0,o.rmax||4);
+  if(o.tagStrip)tagStrip();else st.g=drawGraph(ctx,R_GRAPH,W,{ymax:o.ymax||40,span:o.span||12,sketch:o.sketch?S.sketch:null,sketching:o.sketching})}
+function tagStrip(){const r=R_GRAPH;card(ctx,r,'The pink atom, moment by moment');const L=r.x+16,Wd=r.w-32,y=r.y+70,h=56,H=W.tagHist,n=300,cw=Wd/n;
+  rr(ctx,L,y,Wd,h,8);ctx.fillStyle=PAL.card2;ctx.fill();ctx.save();rr(ctx,L,y,Wd,h,8);ctx.clip();const a=H.slice(-n);a.forEach((v,i)=>{ctx.fillStyle=v===2?rgba(PAL.brown,1):(PAL.dark?'#3d4250':'#cfd6de');ctx.fillRect(L+(n-a.length+i)*cw,y,cw+.6,h)});ctx.restore();
+  txt(ctx,'now',L+Wd,y+h+18,{s:13,c:PAL.soft,a:'right'});txt(ctx,'earlier',L,y+h+18,{s:13,c:PAL.soft});
+  const ly=y+h+56;ctx.fillStyle=PAL.dark?'#3d4250':'#cfd6de';rr(ctx,L,ly-12,22,16,4);ctx.fill();txt(ctx,'inside an N₂O₄',L+30,ly+1,{s:15.5});ctx.fillStyle=rgba(PAL.brown,1);rr(ctx,L,ly+16,22,16,4);ctx.fill();txt(ctx,'a free NO₂',L+30,ly+29,{s:15.5});
+  let sw=0;for(let i=1;i<H.length;i++)if(H[i]!==H[i-1])sw++;txt(ctx,'Switched '+sw+' time'+(sw===1?'':'s')+' so far',L,ly+72,{s:17,w:700,c:PAL.think})}
+
+/* ---------- the leak: same molecules, more room ---------- */
+const R_BIG={x:14,y:14,w:972,h:336},BOX2={x:28,y:50,w:944,h:286},R_RATE2={x:14,y:360,w:480,h:186},R_SHARE={x:506,y:360,w:480,h:186};
+function sceneRoom(){const r=W.rates();card(ctx,R_BIG,'Zoomed in: same molecules, more room');W.draw(ctx);
+  const far=st.room>2;if(far){const b=BOX2;ctx.fillStyle=PAL.dark?'rgba(25,27,32,.82)':'rgba(255,255,255,.84)';rr(ctx,b.x+b.w*.25,b.y+b.h/2-44,b.w*.5,88,12);ctx.fill();ctx.strokeStyle=PAL.line;ctx.stroke();
+    txt(ctx,st.room.toLocaleString()+'× the room is too big to draw.',b.x+b.w/2,b.y+b.h/2-8,{s:18,w:700,a:'center'});txt(ctx,'The bar below shows where the balance ends up.',b.x+b.w/2,b.y+b.h/2+20,{s:15.5,c:PAL.soft,a:'center'})}
+  const pw=pill(ctx,'N₂O₄ '+W.count(4)+'  ·  NO₂ '+W.count(2),R_BIG.x+R_BIG.w-14,R_BIG.y+20,PAL.card2,PAL.ink,14,'right');if(W.speed<1)pill(ctx,'slow motion',R_BIG.x+R_BIG.w-22-pw,R_BIG.y+20,PAL.think,'#fff',13,'right');
+  drawRates(ctx,R_RATE2,r.S,r.J,4,{title:far?'Each second, in the 2× box above':'Each second, in the whole box'});
+  const sh=far?eqSplit(W.T,st.room,60).a:W.m2/(W.m2+2*W.m4),q=R_SHARE;card(ctx,q,'Of every 100 nitrogen atoms');const x=q.x+14,w=q.w-28,y=q.y+48,h=48;
+  rr(ctx,x,y,w,h,8);ctx.fillStyle=PAL.dark?'#3d4250':'#cfd6de';ctx.fill();ctx.save();rr(ctx,x,y,w,h,8);ctx.clip();ctx.fillStyle=rgba(PAL.brown,1);ctx.fillRect(x,y,w*sh,h);ctx.restore();
+  const n=Math.round(sh*100);txt(ctx,n+' in brown NO₂',x,y+h+24,{s:17,w:700,c:rgba(PAL.brown,1)});txt(ctx,(100-n)+' in N₂O₄',x+w,y+h+24,{s:17,w:700,c:PAL.soft,a:'right'});
+  txt(ctx,'Room: '+(far?st.room.toLocaleString():(Math.round(W.V*10)/10))+'×'+(far?' (where it settles)':''),x,y+h+52,{s:15,c:PAL.soft})}
+
+/* ---------- the balance as a picture: a strip and a square ---------- */
+const R_AREA={x:14,y:14,w:606,h:532},R_MIX={x:632,y:14,w:354,h:532},BOX3={x:646,y:48,w:326,h:210};
+function sceneArea(){const P=cur===10?5:3.3,n4=W.m4,n2=W.m2,Kh=Kc(W.T)*NB,r=W.rates(),A=R_AREA;card(ctx,A,'The two rates, drawn as areas');
+  const base=A.y+336,x0=A.x+26,x2=A.x+372;st.kh=st.kh===undefined?Kh:lerp(st.kh,Kh,.12);const hh=Math.max(2,st.kh*P),len=n4*P,side=Math.min(n2*P,232);
+  // strip = splits
+  ctx.fillStyle=PAL.split;ctx.globalAlpha=.85;ctx.fillRect(x0,base-hh,len,hh);ctx.globalAlpha=1;ctx.strokeStyle=PAL.split;ctx.lineWidth=2;ctx.strokeRect(x0,base-hh,Math.max(len,1),hh);
+  txt(ctx,'Splits: a strip',x0,A.y+52,{s:18,w:700,c:PAL.split});txt(ctx,'each N₂O₄ splits on its own',x0,A.y+72,{s:14.5,c:PAL.soft});
+  ctx.strokeStyle=PAL.soft;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,base+10);ctx.lineTo(x0+len,base+10);ctx.moveTo(x0,base+5);ctx.lineTo(x0,base+15);ctx.moveTo(x0+len,base+5);ctx.lineTo(x0+len,base+15);ctx.stroke();
+  txt(ctx,'length = N₂O₄: '+Math.round(n4),x0,base+33,{s:15,w:600});
+  txt(ctx,'height = K, set by the temperature',x0,base-hh-9,{s:14.5,w:600,c:PAL.split});
+  // square = joins
+  ctx.fillStyle=PAL.join;ctx.globalAlpha=.85;ctx.fillRect(x2,base-side,side,side);ctx.globalAlpha=1;ctx.strokeStyle=PAL.join;ctx.lineWidth=2;ctx.strokeRect(x2,base-side,Math.max(side,1),Math.max(side,1));
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;for(let i=5;i<n2;i+=5){ctx.beginPath();ctx.moveTo(x2+i*P,base-side);ctx.lineTo(x2+i*P,base);ctx.moveTo(x2,base-i*P);ctx.lineTo(x2+side,base-i*P);ctx.stroke()}
+  ctx.fillStyle=rgba(PAL.brown,1);for(let i=0;i<Math.round(n2)&&(i+.5)*P<side;i++){ctx.beginPath();ctx.arc(x2+(i+.5)*P,base-side-7,Math.min(2.2,P*.4),0,TAU);ctx.arc(x2-7,base-(i+.5)*P,Math.min(2.2,P*.4),0,TAU);ctx.fill()}
+  txt(ctx,'Joins: a square',x2,A.y+52,{s:18,w:700,c:PAL.join});txt(ctx,'every NO₂ can meet every other',x2,A.y+72,{s:14.5,c:PAL.soft});
+  ctx.strokeStyle=PAL.soft;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x2,base+10);ctx.lineTo(x2+side,base+10);ctx.moveTo(x2,base+5);ctx.lineTo(x2,base+15);ctx.moveTo(x2+side,base+5);ctx.lineTo(x2+side,base+15);ctx.stroke();
+  txt(ctx,'side = NO₂: '+Math.round(n2),x2,base+33,{s:15,w:600});
+  // the same thing in symbols, with a live sign between the two sides
+  {const r0=W.rates(),bg=Math.max(r0.S,r0.J,.01),dd=(r0.S-r0.J)/bg,sg=Math.abs(dd)<.012?'=':dd>0?'>':'<';txt(ctx,'K × [N₂O₄]',x0,A.y+100,{s:21,w:700,c:PAL.split});txt(ctx,'[NO₂] × [NO₂]',x2,A.y+100,{s:21,w:700,c:PAL.join});
+   txt(ctx,sg,x2-52,A.y+101,{s:30,w:800,c:sg==='='?PAL.good:PAL.ink,a:'center'})}
+  // the scale
+  const cx=A.x+A.w/2,by=A.y+432,big=Math.max(r.S,r.J,.01),d=clamp((r.S-r.J)/big,-1,1),ang=-d*.16,bal=Math.abs(d)<.012;
+  ctx.fillStyle=PAL.soft;ctx.beginPath();ctx.moveTo(cx,by);ctx.lineTo(cx-14,by+30);ctx.lineTo(cx+14,by+30);ctx.closePath();ctx.fill();
+  ctx.save();ctx.translate(cx,by);ctx.rotate(ang);ctx.strokeStyle=bal?PAL.good:PAL.ink;ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-200,0);ctx.lineTo(200,0);ctx.stroke();
+  ctx.fillStyle=PAL.split;rr(ctx,-216,-13,32,26,6);ctx.fill();ctx.fillStyle=PAL.join;rr(ctx,184,-13,32,26,6);ctx.fill();ctx.restore();
+  txt(ctx,'splits '+r.S.toFixed(1)+' a second',cx-110,by+62,{s:16,w:700,c:PAL.split,a:'center'});txt(ctx,'joins '+r.J.toFixed(1)+' a second',cx+110,by+62,{s:16,w:700,c:PAL.join,a:'center'});
+  txt(ctx,bal?'Areas match: balanced':d>0?'Strip is bigger: NO₂ will build up':'Square is bigger: NO₂ will run down',cx,by+90,{s:16,w:700,c:bal?PAL.good:PAL.ink,a:'center'});
+  // right side: the sample and the number
+  const M=R_MIX;card(ctx,M,'This mixture · '+Math.round(W.T-273.15)+' °C'+(W.speed>1?' · '+W.speed+'× speed':''));W.draw(ctx);
+  const c4=molar(n4),c2=molar(n2),q=c4>1e-6?c2*c2/c4:0,y=M.y+292;
+  txt(ctx,'square ÷ strip length',M.x+16,y,{s:14.5,c:PAL.soft});
+  txt(ctx,'[NO₂]² ÷ [N₂O₄]',M.x+16,y+28,{s:19,w:700});
+  txt(ctx,'('+c2.toFixed(4)+')² ÷ '+c4.toFixed(4),M.x+16,y+54,{s:15.5,c:PAL.soft});
+  txt(ctx,'= '+(c4>1e-6?q.toPrecision(2):'—'),M.x+16,y+86,{s:26,w:700,c:bal?PAL.good:PAL.ink});
+  if(bal)pill(ctx,'= K at '+Math.round(W.T-273.15)+' °C',M.x+150,y+78,PAL.good,'#fff',14);
+  const list=S.mixes.slice(-3);if(st.log&&list.length){txt(ctx,'MIXTURES THAT SETTLED',M.x+16,y+126,{s:12.5,w:700,c:PAL.soft});
+    list.forEach((m,i)=>txt(ctx,`${m.n4} N₂O₄ + ${m.n2} NO₂  →  ${m.q}`,M.x+16,y+150+i*24,{s:15.5,w:600,max:M.w-32}))}}
+
+/* ---------- captions ---------- */
+const CAP={
+ oneIdle:'One N₂O₄, drawn to its real shape. The long bond in the middle is its weak spot. Other molecules bump it all the time. <b>Give it a soft hit, then a hard one.</b>',
+ oneSoft:'A soft hit. The weak bond stretches, wobbles, and holds. Most hits are like this one. <b>Now hit it hard.</b>',
+ oneHard:'A hard hit. The weak bond snaps. One N₂O₄ with no color is now two brown NO₂. Chemists write it N₂O₄ → 2 NO₂.',
+ backIdle:'Two NO₂ drift near each other. <b>Let them meet.</b>',
+ backDone:'No hard hit needed. Two NO₂ only have to meet, and they snap together. A reaction that runs both ways is <b>reversible</b>. The double arrow ⇌ means both directions.',
+ runA:'Only splits so far. There is almost no NO₂ yet, so there is nothing to join. Watch the brown line and the tube.',
+ runB:'More NO₂ now, so more of them meet. Joins are catching up with splits.',
+ runC:'Splits and joins now match. While one N₂O₄ splits, two NO₂ join somewhere else. The amounts stop changing, and the tube holds its color.',
+ stopQ:'The color has stopped changing. <b>Have the molecules stopped reacting?</b>',
+ stopA:'Follow the pink nitrogen atom. It is inside an N₂O₄, then a free NO₂, then joined again. Nothing stopped. This is <b>dynamic equilibrium</b>: still moving, in equal balance.',
+ heat0:'Now test your guess. <b>Move the tube into hot water.</b>',
+ heatGap:'Hot water makes every hit harder. Splitting needs a hard hit, so <b>splits jump</b>. Joining only needs a meeting, so joins have not changed yet.',
+ heatCatch:'The extra splits pile up NO₂. More NO₂ means more meetings, so joins climb.',
+ heatBal:'Balanced again, with more NO₂ than before. The tube is <b>browner</b>.',
+ cool0:'<b>Now move the tube into ice water.</b>',
+ coolGap:'In ice, hard hits are rare, so splits almost stop. Joins keep going and use up the brown NO₂.',
+ coolBal:'Balanced again, with very little NO₂. The tube is pale. Same tube, same atoms: each temperature has its own balance point.',
+ roomBal:'Balanced at room temperature.',
+ room0:'Back to the capsule. Leaked gas does not stay packed in a tank. It spreads into open air. Here the same molecules get <b>twice the room</b>. Guess first, then open it up.',
+ roomGap:'Each N₂O₄ still gets hit as before, so <b>splits hold steady</b>. But the NO₂ are farther apart and meet half as often, so <b>joins drop</b>.',
+ roomOpen:'The wall slides back. Same molecules, twice the room. Watch them spread out.',
+ roomCatch:'Splits stay ahead, so NO₂ builds up. More NO₂ means more meetings, and joins climb back.',
+ roomBack:'Squeezed together again, the NO₂ meet more often, so joins lead until it balances.',
+ roomBal2:'Balanced again, with more of the nitrogen as NO₂. <b>Now try even more room.</b>',
+ roomFar:'Spread thin in open air, nearly all of it becomes brown, toxic NO₂. That is the gas the sensor found beside a capsule whose propellant has no color.',
+ area0:'Every NO₂ can meet every other NO₂, so joins grow like a <b>square</b>: NO₂ × NO₂. Each N₂O₄ splits on its own, so splits grow like a <b>strip</b>. <b>Build a mixture, then let it react.</b>',
+ area1:'It stopped where the two areas match. <b>Build a different mixture and try again.</b>',
+ area2:'Different mixtures, same ending: square ÷ strip length is the same number. That number is <b>K</b>, the equilibrium constant. In symbols, K = [NO₂]² / [N₂O₄]. Brackets mean moles in each liter.',
+ temp0:'The strip’s height is K: how easily one N₂O₄ splits. <b>Change the temperature.</b>',
+ temp1:'Hot makes the strip taller, so the square must grow to match it. Cold shrinks both. Adding gas or room never changes K. Only temperature does.',
+};
+const heatLine=()=>{const g=S.guess.heat;return g===undefined?'':` <span class="chip ${g===0?'ok':'no'}">Your guess: ${['browner','no change','paler'][g]} ${g===0?'✓':'✗'}</span>`};
+
+/* ---------- the steps ---------- */
+const PARTS=['The hatch','One molecule','A crowd','Heat','Room','The rule','Your turn'];
+function picks(key,q,opts,right,after){const g=S.guess[key];if(after&&g!==undefined)return `<p class="note">Your guess: <b>${opts[g].toLowerCase()}</b> <span class="chip ${g===right?'ok':'no'}">${g===right?'✓ matched':'✗ not this time'}</span></p>`;return `<div class="pick" data-key="${key}"><p class="q">${q}</p><div class="row">${opts.map((o,i)=>`<button type="button" class="btn opt${g===i?' on':''}${g!==undefined&&after&&i===right?' right':''}" data-i="${i}" aria-pressed="${g===i}">${o}</button>`).join('')}</div></div>`}
+function bindPicks(root,fn){$$('.pick .opt',root).forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.pick').dataset.key;S.guess[k]=+b.dataset.i;save();ev('guess-'+k+'-'+b.dataset.i);fn&&fn(k,+b.dataset.i);renderCtl()}))}
+function settled(){const r=W.rates(),big=Math.max(r.S,r.J);return big>0&&Math.abs(r.S-r.J)/big<.05}
+function gapUp(){const r=W.rates(),big=Math.max(r.S,r.J);return big>0?(r.S-r.J)/big:0}
+function bathBtns(){return `<div class="row baths"><span class="lab">Move the tube into:</span>${[[0,'Ice water · 0 °C'],[25,'Room · 25 °C'],[60,'Hot water · 60 °C']].map(([c,l])=>`<button type="button" class="btn bath b${c}${st.bath===c?' on':''}" data-c="${c}" aria-pressed="${st.bath===c}">${l}</button>`).join('')}</div>`}
+function bindBaths(root){bindBeat(root);$$('.bath',root).forEach(b=>b.addEventListener('click',()=>{const c=+b.dataset.c;if(c===st.bath)return;st.bath=c;st.moveT=st.t;st.moved=(st.moved||0)+1;st.pendC=c;st.phase='';renderCtl()}))}
+function heatTick(){ // lift the tube, swap the bath, hold the first moment in slow motion, then narrate by what the rates are doing
+  if(st.pendC!==undefined){const u=(st.t-st.moveT)/.9;st.lift=u<.5?ease(u*2):ease((1-u)*2);if(u>=.5&&st.shown!==st.pendC){st.shown=st.pendC;W.setT(TK(st.pendC),st.pendC===0?'ice':st.pendC===60?'hot water':'room');
+      st.beat=st.pendC===60?1:0;st.beatT=st.t;W.speed=st.beat?.035:1;renderCtl()}
+    if(u>=1){st.lift=0;st.pendC=undefined}return}
+  if(!st.moved)return;const c=st.shown,g=gapUp(),ok=settled()&&st.t-st.beatT>2.2;
+  if(st.beat===1){cap(CAP.heatGap);if(st.t-st.beatT>16)beatGo();return}
+  W.speed=ok?1:c===60?.3:c===0&&st.t-st.beatT>3?2:1;
+  if(c===60)cap(ok?CAP.heatBal+heatLine():CAP.heatCatch);
+  else if(c===0)cap(ok?CAP.coolBal:CAP.coolGap);else cap(ok?CAP.roomBal:(g>0?CAP.heatCatch:CAP.coolGap));
+  if(ok&&(cur===7?c===60:c===0))markDone()}
+function beatGo(){st.beat=2;renderCtl()}
+const beatBtn=()=>st.beat===1?'<div class="row"><button type="button" class="btn primary act pulse" data-beat="1">See what happens next ▶</button></div>':'';
+function bindBeat(r){const b=$('[data-beat]',r);b&&b.addEventListener('click',beatGo)}
+
+const STEPS=[
+ {part:0,title:'The hatch stays shut',
+  cap:'<b>August 2, 2020.</b> Bob Behnken and Doug Hurley are back from two months in space. Their capsule is lifted onto the recovery ship. But nobody opens the hatch. A sensor has found a toxic gas outside.',
+  alt:'Nothing is wrong with the crew. The team outside tests the air first, the way firefighters check for gas before they open a door. This time the test found something.',
+  aria:'A space capsule sits on the deck of a recovery ship with its hatch closed. A technician holds a gas sensor that reads: toxic gas found near the thrusters.',
+  draw(){sceneDeck(false,st.t)}},
+ {part:0,title:'Two gases, the same atoms',
+  cap:'The thrusters use nitrogen tetroxide, <b>N₂O₄</b>. It has no color. The gas that burns lungs is <b>NO₂</b>, and it is brown. Both are made of only nitrogen and oxygen. So where does the brown gas come from?',
+  alt:'Look at the two molecules. N₂O₄ looks like two NO₂ stuck together. Keep that picture in mind for the next step.',
+  aria:'Two sealed tubes. The tube of N2O4 has no color. The tube of NO2 is brown. Beside each is its molecule: N2O4 looks like two NO2 joined together.',
+  draw(){sceneTwo(st.t)},
+  ctl(){return picks('heat','Guess now, test it later: a sealed tube of this gas goes from ice water into hot water. Nothing gets in or out. The color will…',['get browner','stay the same','get paler'])+(S.guess.heat!==undefined?'<p class="note">Locked in. You will test it in Part 4.</p>':'')},bind(r){bindPicks(r)}},
+ {part:1,title:'Follow one molecule',cap:CAP.oneIdle,
+  alt:'Picture two magnets stuck together. A light tap does nothing. A hard knock pulls them apart. The bond between the two nitrogen atoms is the place where the magnets touch.',
+  aria:'One large N2O4 molecule with its long, weak nitrogen to nitrogen bond marked. A gauge shows the energy of each hit against the energy needed to snap that bond.',
+  enter(){st.ph='idle'},draw(){sceneOne(st.t)},
+  ctl(){return `<div class="row"><button type="button" class="btn act" data-h="soft">Soft hit</button><button type="button" class="btn act primary" data-h="hard">Hard hit</button>${st.hard?'<button type="button" class="btn" data-h="idle">Put it back together</button>':''}</div>`},
+  bind(r){$$('[data-h]',r).forEach(b=>b.addEventListener('click',()=>{st.ph=b.dataset.h;st.t0=st.t;st.done=false;if(st.ph==='idle'){st.hard=false;cap(CAP.oneIdle)}renderCtl()}))}},
+ {part:1,title:'Can it go back?',cap:CAP.backIdle,
+  alt:'The same magnets: pulling them apart takes a hard knock, but bring them close and they snap together on their own. Joining gives energy off. Splitting takes energy in.',
+  aria:'Two brown NO2 molecules drift toward each other and join into one N2O4 with no color. The equation shows a double arrow: N2O4 splits into 2 NO2, and 2 NO2 join into N2O4.',
+  enter(){st.ph='wait'},draw(){sceneBack(st.t)},
+  ctl(){return `<div class="row"><button type="button" class="btn act primary" data-m="go">Let them meet</button>${st.done?'<button type="button" class="btn" data-m="wait">Pull them apart again</button>':''}</div>`},
+  bind(r){$$('[data-m]',r).forEach(b=>b.addEventListener('click',()=>{st.ph=b.dataset.m;st.t0=st.t;st.done=false;if(st.ph==='wait')cap(CAP.backIdle);renderCtl()}))}},
+ {part:2,title:'Now a crowd',
+  cap:'Sixty N₂O₄ at room temperature: a tiny sample of the gas in the sealed tube. When the reactions start, some will split. <b>First, draw the line you think the brown NO₂ will follow.</b>',
+  alt:'You are guessing how the number of brown NO₂ changes as time goes by. Does it keep climbing? Level off? Come back down? Any guess is fine. You will see the real line next.',
+  aria:'A sealed tube with no color sits at room temperature. A zoomed in box shows sixty N2O4 molecules. An empty graph waits for your prediction of how the amount of NO2 will change.',
+  enter(){W.setup({n4:60,n2:0,T:ROOM,box:BOX,sc:SCB,react:false});st.sketching=true},
+  draw(){sceneCrowd({bath:25,sketching:true,sketch:true})},
+  ctl(){return `<div class="row"><span class="lab">Draw on the graph, or pick a shape:</span><button type="button" class="btn" data-sk="up">keeps climbing</button><button type="button" class="btn" data-sk="flat">climbs, then levels off</button><button type="button" class="btn" data-sk="hump">climbs, then falls back</button><button type="button" class="btn" data-sk="clear">Clear</button></div><div class="row"><button type="button" class="btn primary act" data-go="1">Start the reactions</button></div>`},
+  bind(r){$$('[data-sk]',r).forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.sk,f={up:t=>3.2*t,flat:t=>24*(1-Math.exp(-t/2.2)),hump:t=>30*Math.exp(-((t-4.5)**2)/7)*(t<4.5?1:1)+0}[k];S.sketch=[];if(f)for(let t=0;t<=12;t+=.5)S.sketch.push({t,v:clamp(f(t),0,40)});S.guess.shape=k;save()}));
+    $('[data-go]',r).addEventListener('click',()=>go(cur+1))}},
+ {part:2,title:'Watch both directions',cap:CAP.runA,
+  alt:'Orange rings are splits. Teal rings are joins. Early on you see only orange, so brown NO₂ builds up. Later you see both about equally often, so the amount stays put.',
+  aria:'The reactions run. Orange rings mark N2O4 molecules splitting and teal rings mark NO2 molecules joining. Two bars compare splits and joins each second, and a brown line shows the amount of NO2 rising and then leveling off as the tube turns light brown.',
+  enter(from){if(from!==4||W.react||W.t>60)W.setup({n4:60,n2:0,T:ROOM,box:BOX,sc:SCB});else{W.react=true;W.t=0;W.hist=[];W.hT=0;W.push()}},
+  tick(){const r=W.rates(),f=r.S>0?r.J/r.S:0;const ph=f<.3?'A':(f<.93||W.t<5)?'B':'C';if(ph!==st.phase){st.phase=ph;cap(CAP['run'+ph]);if(ph==='C')markDone()}},
+  draw(){sceneCrowd({bath:25,sketch:true})},
+  ctl(){return `<div class="row"><button type="button" class="btn" data-re="1">↻ Run it again</button></div>`},bind(r){$('[data-re]',r).addEventListener('click',()=>{W.setup({n4:60,n2:0,T:ROOM,box:BOX,sc:SCB});st.phase=''})}},
+ {part:2,title:'Did it stop?',cap:CAP.stopQ,
+  alt:'Think of a store where one person walks in for every person who walks out. The number inside stays the same, but the people keep changing. The tube is like that.',
+  aria:'The tube has stopped changing color. In the zoomed in box, one nitrogen atom is tagged pink. A strip shows the tagged atom switching between being inside an N2O4 and being a free NO2.',
+  enter(from){if(!(from===5&&W.react&&settled()))eqWorld(ROOM);st.reveal=false;if(S.guess.stop!==undefined)this.reveal()},
+  reveal(){st.reveal=true;W.speed=4;const p=W.ps.find(q=>q.type===2)||W.ps[0];W.tag=p.ns[0];W.tagHist=[];cap(CAP.stopA);markDone()},
+  draw(){sceneCrowd({bath:25,tagStrip:st.reveal})},
+  ctl(){return picks('stop','Your guess:',['Yes, they have stopped','No, they keep going'],1,st.reveal)},bind(r){bindPicks(r,()=>{STEPS[6].reveal()})}},
+ {part:3,title:'Into hot water',cap:CAP.heat0,
+  alt:'Heat does not push the reaction anywhere. It makes hard hits common, and only splitting needs a hard hit. So splitting gets ahead until joining catches up.',
+  aria:'The sealed tube moves from room temperature into hot water. In the box, splits jump far ahead of joins, the amount of NO2 climbs, joins catch up, and the tube settles at a darker brown.',
+  enter(){eqWorld(ROOM);st.bath=25;st.shown=25;st.lift=0;cap(CAP.heat0+(S.guess.heat===undefined?'':` <span class="chip">Your guess: ${['browner','no change','paler'][S.guess.heat]}</span>`))},
+  tick:heatTick,draw(){sceneCrowd({bath:st.shown,lift:st.lift,rmax:40,ymax:60,span:14})},ctl(){return bathBtns()+beatBtn()},bind:bindBaths},
+ {part:3,title:'Back into ice',cap:CAP.cool0,
+  alt:'Cold is hot in reverse. Fewer hard hits means fewer splits. Joining does not need a hard hit, so it carries on and uses up the brown NO₂.',
+  aria:'The tube moves into ice water. Splits almost stop while joins continue, the amount of NO2 falls, and the tube turns pale.',
+  enter(from){if(!(from===7&&st0.shown===60&&st0.pendC===undefined))eqWorld(HOT);st.bath=60;st.shown=60;st.lift=0},
+  tick:heatTick,draw(){sceneCrowd({bath:st.shown,lift:st.lift,rmax:40,ymax:60,span:14})},
+  ctl(){return bathBtns()+beatBtn()+(st.moved?`<div class="term"><b>Le Châtelier’s principle</b> (say “luh SHAH-tuh-lyay”): disturb a balanced reaction and it shifts to partly undo the change. A French chemist described the pattern in 1884. You just saw why it happens. Nothing decides to shift. The two rates do it.</div>`:'')},bind:bindBaths},
+ {part:4,title:'The leak spreads out',cap:CAP.room0,
+  alt:'Splitting is a solo act. Joining needs a partner. Spread a crowd across a bigger field and solo acts go on as before, but partners find each other less often.',
+  aria:'A box of gas with a sliding wall. When the wall opens to give twice the room, splits stay the same and joins drop to half, so more NO2 builds up. A bar shows the share of nitrogen atoms in brown NO2 growing as the room grows.',
+  enter(){const e=eqSplit(ROOM,1,60);W.setup({n4:e.n4,n2:e.n2,T:ROOM,V:1,Vmax:2,box:BOX2,sc:5.6});st.room=1},
+  tick(){if(st.room>2){W.react=true;W.speed=1;cap(CAP.roomFar);markDone();return}
+    if(st.room===1){W.react=true;W.speed=1;if(st.opened)cap(settled()&&W.V===1?CAP.roomBal:CAP.roomBack);return}
+    if(st.beat===0){W.react=false;W.speed=1;if(W.V===2&&st.t-st.moveT>1.3){st.beat=1;st.beatT=st.t;W.react=true;W.speed=.05;renderCtl()}return}
+    if(st.beat===1){cap(CAP.roomGap);if(st.t-st.beatT>16)beatGo();return}
+    const ok=settled();W.speed=ok?1:.5;cap(ok?CAP.roomBal2:CAP.roomCatch)},
+  draw(){sceneRoom()},
+  ctl(){return picks('room','Twice the room, same molecules. Which will drop?',['Splits each second','Joins each second','Neither'],1,st.opened)+`<div class="row"><span class="lab">Room:</span>${[1,2,10,100,1000].map(v=>`<button type="button" class="btn rm${st.room===v?' on':''}" data-v="${v}" aria-pressed="${st.room===v}" ${v>2&&!st.opened?'disabled':''}>${v.toLocaleString()}×</button>`).join('')}</div>`+beatBtn()},
+  bind(r){bindPicks(r);bindBeat(r);$$('.rm',r).forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.v;if(v===2&&st.room!==2&&W.V!==2){st.beat=0;cap(CAP.roomOpen)}else if(v!==2)st.beat=2;st.room=v;st.moveT=st.t;if(v>=2)st.opened=true;W.setV(v<=2?v:2);renderCtl()}))}},
+ {part:5,title:'The balance as a picture',cap:CAP.area0,
+  alt:'Double the NO₂ and each one has twice as many partners, and twice as many are looking. That is four times the meetings. A square does the same: double the side, four times the area. That is the small ² in the formula.',
+  aria:'An orange strip stands for splits and a teal square stands for joins. A scale tips toward the bigger area. When the mixture reacts, the strip shortens and the square grows until the two areas match.',
+  enter(){st.a4=40;st.a2=4;st.log=true;this.build()},
+  build(){W.setup({n4:st.a4,n2:st.a2,T:ROOM,box:BOX3,sc:4.6,react:false});st.run=false;st.logged=false},
+  tick(){const rr0=W.rates(),bg=Math.max(rr0.S,rr0.J,1e-6);if(st.run&&!st.logged&&Math.abs(rr0.S-rr0.J)/bg<.008&&W.t>1.5){st.logged=true;const c4=molar(W.m4),c2=molar(W.m2);S.mixes.push({n4:st.a4,n2:st.a2,q:(c2*c2/c4).toPrecision(2)});save();st.n=(st.n||0)+1;cap(st.n>=2?CAP.area2:CAP.area1);if(st.n>=2)markDone();renderCtl()}},
+  draw(){sceneArea()},
+  ctl(){const dis=st.run&&!st.logged?'disabled':'';return `<div class="row sl"><label>N₂O₄ to start <input type="range" min="0" max="60" step="1" value="${st.a4}" data-s="a4" ${dis}><output>${st.a4}</output></label><label>NO₂ to start <input type="range" min="0" max="40" step="1" value="${st.a2}" data-s="a2" ${dis}><output>${st.a2}</output></label><button type="button" class="btn primary act" data-run="1" ${st.run?'disabled':''}>Let it react</button>${st.logged?'<button type="button" class="btn" data-new="1">Build another</button>':''}</div>`},
+  bind(r){$$('input[type=range]',r).forEach(i=>i.addEventListener('input',()=>{st[i.dataset.s]=+i.value;i.nextElementSibling.textContent=i.value;if(st.a4+st.a2<2){st.a4=Math.max(st.a4,2)}STEPS[10].build();const b=$('[data-run]',r);if(b)b.disabled=false}));
+    const b=$('[data-run]',r);b&&b.addEventListener('click',()=>{W.react=true;W.t=0;W.speed=2;st.run=true;st.logged=false;renderCtl()});const n=$('[data-new]',r);n&&n.addEventListener('click',()=>{st.a4=10+Math.floor(Math.random()*20);st.a2=20+Math.floor(Math.random()*18);STEPS[10].build();renderCtl()})}},
+ {part:5,title:'Heat changes the rule',cap:CAP.temp0,
+  alt:'Adding gas or giving it more room changes the amounts, and the mixture slides back to the same K. Changing the temperature changes K itself. That is why the hot tube and the cold tube settle at different colors.',
+  aria:'The same strip and square. Choosing hot water makes the strip much taller, and the square grows to match it. Choosing ice water shrinks both. The value of K changes with temperature.',
+  enter(){eqWorld(ROOM,{box:BOX3,sc:4.6});st.tc=25;st.log=false},
+  tick(){if(st.changed&&settled())markDone()},draw(){sceneArea()},
+  ctl(){return `<div class="row baths"><span class="lab">Temperature:</span>${[[0,'Ice water · 0 °C'],[25,'Room · 25 °C'],[60,'Hot water · 60 °C']].map(([c,l])=>`<button type="button" class="btn bath b${c}${st.tc===c?' on':''}" data-c="${c}" aria-pressed="${st.tc===c}">${l}</button>`).join('')}</div>`},
+  bind(r){$$('.bath',r).forEach(b=>b.addEventListener('click',()=>{st.tc=+b.dataset.c;st.changed=true;W.setT(TK(st.tc));W.speed=st.tc===0?2:1;cap(CAP.temp1);renderCtl()}))}},
+ {part:6,title:'The hatch opens. Now tell it back.',
+  cap:'The team kept clearing the leftover vapor until the sensors read zero. About half an hour later the hatch opened, and both astronauts climbed out. <b>Now you explain what happened.</b>',
+  alt:'Start with what the propellant is (N₂O₄, no color). Then say what happens to it when it warms up and spreads out. Use the words split, join and balance.',
+  aria:'The capsule on the ship deck with its hatch open. Two astronauts stand beside it and the gas sensor reads zero.',
+  draw(){sceneDeck(true,st.t)},wide:true,ctl:tellHTML,bind:tellBind},
+];
+
+/* ---------- your turn: order the story, write it, copy it ---------- */
+const CARDS=[['Hot water: every hit gets harder','<circle cx="20" cy="20" r="9" fill="currentColor"/><path d="M36 20h18M45 11l9 9-9 9" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>'],
+ ['Splits jump ahead of joins','<rect x="6" y="8" width="48" height="10" rx="3" fill="#c96a00"/><rect x="6" y="24" width="14" height="10" rx="3" fill="#0f8b8d"/>'],
+ ['NO₂ piles up, so joins climb','<rect x="6" y="8" width="48" height="10" rx="3" fill="#c96a00"/><rect x="6" y="24" width="34" height="10" rx="3" fill="#0f8b8d"/>'],
+ ['Splits = joins again: a browner tube','<rect x="6" y="8" width="48" height="10" rx="3" fill="#c96a00"/><rect x="6" y="24" width="48" height="10" rx="3" fill="#0f8b8d"/>']];
+const SHUF=[2,0,3,1];
+function tellHTML(){const o=S.order,done=o.length===4,right=done&&o.every((v,i)=>v===i);
+  return `<div class="tell"><h3>1. Build the story</h3><p class="q">The tube goes into hot water. Tap the four cards in the order things happen.</p>
+  <div class="slots">${[0,1,2,3].map(i=>`<button type="button" class="slot${o[i]!==undefined?' full':''}" data-slot="${i}" ${o[i]===undefined?'disabled':''} aria-label="Spot ${i+1}${o[i]!==undefined?': '+CARDS[o[i]][0]+'. Tap to remove.':', empty'}"><span class="n">${i+1}</span>${o[i]!==undefined?`<svg viewBox="0 0 60 42" aria-hidden="true">${CARDS[o[i]][1]}</svg><span>${CARDS[o[i]][0]}</span>`:''}</button>`).join('')}</div>
+  <div class="cards">${SHUF.filter(c=>!o.includes(c)).map(c=>`<button type="button" class="cardb" data-card="${c}"><svg viewBox="0 0 60 42" aria-hidden="true">${CARDS[c][1]}</svg><span>${CARDS[c][0]}</span></button>`).join('')}</div>
+  <p class="fb ${right?'ok':done?'no':''}" role="status">${right?'That is the chain: a cause, a gap, a catch-up, a new balance.':done?'Not quite. Ask what has to happen first: what does heat change directly? Tap a card to take it back.':''}</p>
+  <h3>2. Say it in your own words</h3><p class="q">Why did a propellant with no color show up as a brown, toxic gas? Use the words <b>split</b>, <b>join</b> and <b>balance</b>.</p>
+  <textarea id="tx" rows="4" placeholder="Type your explanation here.">${esc(S.text)}</textarea>
+  <h3>3. Turn it in</h3><p class="q">If your teacher assigned this, copy your work and paste it into the Canvas text box.</p>
+  <div class="row"><label class="nm">Name <input id="nm" type="text" value="${esc(S.name)}" autocomplete="name"></label><button type="button" class="btn primary" id="copy">Copy for Canvas</button><span id="cmsg" role="status"></span></div>
+  <div class="world"><h3>Why crews wait</h3><p>In 1975 an Apollo crew breathed this same gas while landing and spent days in the hospital. All three recovered. Today a recovery boat tests the air around the capsule before anyone opens the hatch. Knowing the chemistry is what keeps the next crew safe.</p>
+  <p class="src">Sources: NASA Commercial Crew blog and SpaceNews, Aug. 2, 2020; NASA, “45 Years Ago: Apollo Returns Home to End ASTP.”</p>
+  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#equilibrium">Try other reactions in the full equilibrium lab</a>, including the one that makes fertilizer for half the world’s food.</p></div></div>`}
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function tellBind(r){$$('[data-card]',r).forEach(b=>b.addEventListener('click',()=>{S.order.push(+b.dataset.card);if(S.order.length===4){S.tries++;ev('order-'+(S.order.every((v,i)=>v===i)?'right':'wrong'))}save();renderCtl()}));
+  $$('[data-slot]',r).forEach(b=>b.addEventListener('click',()=>{S.order.splice(+b.dataset.slot,1);save();renderCtl()}));
+  const tx=$('#tx',r),nm=$('#nm',r);tx.addEventListener('input',()=>{S.text=tx.value;save()});nm.addEventListener('input',()=>{S.name=nm.value;try{localStorage.setItem('raider-labs-name',nm.value)}catch(e){}save()});
+  $('#copy',r).addEventListener('click',()=>{const g=S.guess,L=['Raider ChemLab · Equilibrium story: The hatch that stayed shut','Name: '+(S.name||'(not given)'),'',
+      'Guess 1, tube into hot water: '+(g.heat===undefined?'no guess':['browner','no change','paler'][g.heat]+(g.heat===0?' (matched)':' (the tube got browner)')),
+      'Guess 2, did the molecules stop: '+(g.stop===undefined?'no guess':['yes, stopped','no, they keep going'][g.stop]+(g.stop===1?' (matched)':' (they keep going)')),
+      'Guess 3, twice the room: '+(g.room===undefined?'no guess':['splits drop','joins drop','neither'][g.room]+(g.room===1?' (matched)':' (joins dropped)')),
+      'Mixtures I built: '+(S.mixes.length?S.mixes.slice(-4).map(m=>`${m.n4} N2O4 + ${m.n2} NO2 settled at [NO2]^2/[N2O4] = ${m.q}`).join('; '):'none'),
+      'Story order: '+(S.order.length===4?(S.order.every((v,i)=>v===i)?'correct':'not yet correct')+' after '+S.tries+' tr'+(S.tries===1?'y':'ies'):'not finished'),'','In my own words:',S.text||'(nothing written)'].join('\n');
+    const ok=()=>{$('#cmsg').textContent='Copied. Paste it into Canvas.'},fb=()=>{const t=document.createElement('textarea');t.value=L;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){$('#cmsg').textContent='Could not copy. Select your text and copy it by hand.'}t.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(L).then(ok,fb);else fb();ev('copy')})}
+
+/* ---------- page controls ---------- */
+let st0={};
+function ev(name){try{const g=window.goatcounter;if(g&&g.count)g.count({path:`story/${SITE}/${EVB}/${name}`,title:EVT,event:true})}catch(e){}}
+function cap(html){if(html===lastCap)return;lastCap=html;$('#cap').innerHTML=html;speak()}
+function markDone(){$('#next').classList.add('pulse')}
+function renderCtl(){const s=STEPS[cur],c=$(s.wide?'#ctlw':'#ctl'),o=$(s.wide?'#ctl':'#ctlw');o.innerHTML='';c.innerHTML=s.ctl?s.ctl.call(s):'';if(s.bind)s.bind.call(s,c)}
+function go(i,quiet){i=clamp(i,0,STEPS.length-1);const from=cur;st0=st;st={t:0};cur=i;const s=STEPS[i];lastCap='';paused=false;W.speed=1;
+  if(NOWORLD(i)){W.ps=[];W.fl=[]}
+  $('#stepno').textContent=`Part ${s.part+1} of ${PARTS.length} · Step ${i+1} of ${STEPS.length}`;$('#ttl').textContent=s.title;cv.setAttribute('aria-label',s.aria||'');
+  $('#alt').hidden=true;$('#alt').textContent='';$('#next').classList.remove('pulse');$('#back').disabled=i===0;$('#next').hidden=i===STEPS.length-1;
+  $('#pause').textContent='Pause';$('#pause').hidden=!PAUSEOK(i);
+  if(s.enter)s.enter.call(s,from);if(s.cap&&!lastCap)cap(s.cap);renderCtl();
+  $$('#parts button').forEach((b,k)=>{b.classList.toggle('on',k===s.part);b.setAttribute('aria-current',k===s.part?'step':'false')});
+  if(!quiet){try{history.replaceState(null,'','#s'+(i+1))}catch(e){}}
+  if(!S.seen[i]){S.seen[i]=1;save();ev('step-'+String(i+1).padStart(2,'0'))}
+  document.body.classList.toggle('tellmode',!!s.wide);fit();
+  if(!s.ctl)markDone()}
+function fit(){const w=cv.clientWidth||LW,d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(w*LH/LW*d);PX=cv.width/LW}
+let lastT=0;
+function frame(ts){const dt=Math.min(.05,(ts-lastT)/1000||0);lastT=ts;const s=STEPS[cur];
+  if(!paused){st.t+=dt;if(W.ps.length)W.step(dt);if(s.tick)s.tick.call(s,dt)}
+  ctx.setTransform(PX,0,0,PX,0,0);ctx.fillStyle=PAL.bg;ctx.fillRect(0,0,LW,LH);s.draw.call(s);requestAnimationFrame(frame)}
+
+// draw a prediction on the graph (step 5)
+function pt(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*LW,y:(e.clientY-r.top)/r.height*LH}}
+let drawing=false;
+cv.addEventListener('pointerdown',e=>{if(cur!==4||!st.g)return;const p=pt(e),g=st.g;if(p.x<g.L-10||p.x>g.L+g.W+10||p.y<g.T-10||p.y>g.T+g.H+10)return;drawing=true;S.sketch=[];S.guess.shape='drawn';cv.setPointerCapture(e.pointerId);addPt(p);e.preventDefault()});
+cv.addEventListener('pointermove',e=>{if(drawing)addPt(pt(e))});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{if(drawing){drawing=false;save()}}));
+function addPt(p){const g=st.g,t=clamp((p.x-g.L)/g.W,0,1)*g.span,v=clamp((g.T+g.H-p.y)/g.H,0,1)*g.ymax,a=S.sketch;if(a.length&&t<=a[a.length-1].t+.05)return;a.push({t,v})}
+
+// reading supports (shared across Raider Labs)
+const SS=window.speechSynthesis,CAN=!!(SS&&typeof SpeechSynthesisUtterance!=='undefined');
+const gk=k=>{try{return localStorage.getItem(k)==='on'}catch(e){return false}},pk=(k,v)=>{try{localStorage.setItem(k,v?'on':'off')}catch(e){}};
+let raOn=CAN&&gk('raider-labs-readaloud'),easy=gk('raider-labs-easyread');
+function speak(){if(!raOn||!CAN)return;try{SS.cancel();const u=new SpeechSynthesisUtterance($('#ttl').textContent+'. '+$('#cap').textContent.replace(/₂/g,'2').replace(/₄/g,'4').replace(/⇌/g,' both ways ').replace(/→/g,' makes '));u.rate=.95;SS.speak(u)}catch(e){}}
+function syncSup(){const a=$('#ra'),b=$('#er');a.textContent=raOn?'🔊 Read aloud: on':'🔊 Read aloud';a.setAttribute('aria-pressed',raOn);a.hidden=!CAN;b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',easy);document.body.classList.toggle('easy',easy)}
+
+function boot(){setPal();if(DARKQ.addEventListener)DARKQ.addEventListener('change',setPal);
+  $('#parts').innerHTML=PARTS.map((p,i)=>`<button type="button" data-p="${i}"><span>${i+1}</span>${p}</button>`).join('');
+  $$('#parts button').forEach(b=>b.addEventListener('click',()=>go(STEPS.findIndex(s=>s.part===+b.dataset.p))));
+  $('#back').addEventListener('click',()=>go(cur-1));$('#next').addEventListener('click',()=>go(cur+1));
+  $('#pause').addEventListener('click',()=>{paused=!paused;$('#pause').textContent=paused?'Play':'Pause'});
+  $('#conf').addEventListener('click',()=>{const a=$('#alt');a.hidden=false;a.innerHTML='<b>Another way to see it.</b> '+STEPS[cur].alt;ev('confused-step-'+String(cur+1).padStart(2,'0'));try{const g=window.goatcounter;g&&g.count&&g.count({path:`confused/${SITE}/${PAGE}/step-${String(cur+1).padStart(2,'0')}`,event:true})}catch(e){}});
+  $('#ra').addEventListener('click',()=>{raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn)speak();else if(CAN)SS.cancel()});
+  $('#er').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});syncSup();
+  document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')go(cur+1);else if(e.key==='ArrowLeft')go(cur-1)});
+  window.addEventListener('resize',fit);if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);fit();
+  const m=/^#s(\d+)/.exec(location.hash);go(m?+m[1]-1:0,true);requestAnimationFrame(frame)}
+window.EQ={go,W,get st(){return st},get cur(){return cur},S,STEPS,settled,Kc,kf,eqSplit,molar};
+boot();
+
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var done=false,tries=0;function go(){if(done)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}done=true;try{g.count({path:location.pathname+(/scrlybrkr/.test(location.search)?'?sd':'')});}catch(e){}}
+if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
