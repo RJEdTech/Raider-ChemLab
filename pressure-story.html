@@ -767,11 +767,11 @@ function send(path,title){(function go(n){const g=window.goatcounter;if(g&&typeo
 function mount(cfg){
   mounted.push(cfg);
   const root=typeof cfg.el==='string'?document.querySelector(cfg.el):cfg.el;if(!root)return;
-  const Q=cfg.questions,st=Q.map(()=>({first:null,done:false,tries:0,last:''})),base='story/'+cfg.lab+'/'+cfg.id+'/test-';let doneSent=false;
+  const Q=cfg.questions,mc=(()=>{let k=0;return Q.map(q=>q.choices?k++:-1);})(),st=Q.map(()=>({first:null,done:false,tries:0,last:''})),base='story/'+cfg.lab+'/'+cfg.id+'/test-';let doneSent=false;
   root.classList.add('ty');
   root.innerHTML=`<h2>Test yourself</h2><p class="ty-lead">${Q.length} new situations, no picture this time. If you get stuck, <b>Show me in the picture</b> takes you back to the step that shows it.</p>
     <ol class="ty-list">${Q.map((q,i)=>`<li class="ty-q" id="ty-q${i}"><fieldset><legend><span class="ty-n">${i+1}.</span> ${q.q}</legend>${q.choices?
-      `<div class="ty-ch">${order(q.choices.length,cfg.lab+'/'+cfg.id+'/'+i,q.answer,i,cfg.lab+'/'+cfg.id).map(j=>`<label><input type="radio" name="ty${i}" value="${j}"> <span>${q.choices[j]}</span></label>`).join('')}</div>`:
+      `<div class="ty-ch">${order(q.choices.length,cfg.lab+'/'+cfg.id+'/'+i,q.answer,mc[i],cfg.lab+'/'+cfg.id).map(j=>`<label><input type="radio" name="ty${i}" value="${j}"> <span>${q.choices[j]}</span></label>`).join('')}</div>`:
       `<div class="ty-num"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer${q.unit?' in '+esc(q.unit):''}" id="ty-in${i}">${q.unit?`<span>${q.unit}</span>`:''}</div>`}
       <div class="ty-acts"><button type="button" class="ty-btn ty-pri" data-check="${i}">Check</button></div>
       <div class="ty-fb" id="ty-fb${i}" aria-live="polite"></div></fieldset></li>`).join('')}</ol>
