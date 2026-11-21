@@ -1,0 +1,28 @@
+const {chromium}=require('playwright');
+const out=[],fail=[];const ok=(name,cond,info)=>{(cond?out:fail).push(name+(info!==undefined?' ['+info+']':''))};
+(async()=>{
+const b=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
+const ctx=await b.newContext({viewport:{width:+(process.env.VW||1366),height:+(process.env.VH||700)},deviceScaleFactor:1,colorScheme:process.env.DARK?'dark':'light'});
+await ctx.grantPermissions(['clipboard-read','clipboard-write']);
+const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e).slice(0,300)));await p.route('**/gc.zgo.at/**',r=>r.abort());
+const tag=process.env.TAG||'m',shot=n=>p.screenshot({path:`/home/claude/shots/mass-${tag}-${n}.png`});
+const E=f=>p.evaluate(f),wait=ms=>p.waitForTimeout(ms),capt=()=>p.textContent('#cap'),near=(a,b,t)=>Math.abs(a-b)<=t;
+const setR=(sel,v)=>p.$eval(sel,(el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))},v);
+await p.goto('http://localhost:8766/atomic-mass-story.html');await p.evaluate(()=>localStorage.clear());await p.reload();await wait(800);await shot('01');
+ok('model averages',await E(()=>[AVG.Ne.toFixed(2),AVG.Cl.toFixed(2),AVG.B.toFixed(2)].join())==='20.18,35.45,10.81',await E(()=>[AVG.Ne,AVG.Cl,AVG.B].join()));
+await p.click('.pick .opt >> nth=0');await p.click('#next');await wait(300);await p.click('[data-fire="10"]');await wait(1200);await shot('02');await wait(1800);
+const c1=await E(()=>EQ.st.cnt);ok('ten atoms land at whole masses only',c1[20]+c1[21]+c1[22]===10,JSON.stringify(c1));ok('caption: none at 20.2',(await capt()).includes('None lands at 20.2'));
+await p.click('#next');await wait(300);await p.click('[data-fire="1000"]');await wait(500);const c2=await E(()=>EQ.st.cnt),tot=c2[20]+c2[21]+c2[22];
+ok('crowd keeps the 10 and adds 1,000',tot===1010,tot);ok('shares near 90% and 9%',near(c2[20]/tot,.905,.04)&&near(c2[22]/tot,.0925,.035),JSON.stringify(c2));ok('isotopes named + guess checked',(await capt()).includes('isotopes')&&(await capt()).includes('✗'));await shot('03');
+await p.click('#next');await wait(300);await setR('[data-f]','21.4');await wait(700);await shot('04a');ok('wrong pivot: not balanced',!(await E(()=>EQ.st.B.level)));
+await setR('[data-f]','20.18');await wait(900);ok('balances at 20.18',await E(()=>EQ.st.B.level)&&(await capt()).includes('average atomic mass'));await shot('04b');
+await p.click('#next');await wait(300);await setR('[data-f]','35.3');await p.fill('#ans','36');await p.click('#chk');await wait(200);ok('36 gets the halfway hint',(await p.textContent('#afb')).includes('halfway'));
+await p.fill('#ans','35.45');await p.click('#chk');await wait(700);ok('35.45 accepted',(await capt()).includes('35.45'));await shot('05');
+await p.click('#next');await wait(300);await setR('[data-share]','60');await wait(500);ok('60% boron-11 tips',!(await E(()=>EQ.st.B.level)));await setR('[data-share]','80');await wait(700);ok('80% boron-11 balances at 10.81',await E(()=>EQ.st.B.level)&&(await capt()).includes('80%'));await shot('06');
+await p.click('#next');await wait(300);await p.click('[data-s="0"][data-v="1"]');await wait(100);ok('wrong sort flagged',(await p.textContent('#ctl')).includes('try the other one'));
+for(const [i,v] of [[0,0],[1,1],[2,0],[3,1]])await p.click(`[data-s="${i}"][data-v="${v}"]`);await wait(200);ok('sorted',(await capt()).includes('always whole'));await shot('07');
+await p.click('#next');await wait(400);await p.fill('#tx','Neon has isotopes. Each has a share, and the table shows the average.');await p.fill('#nm','Test Student');await p.click('#copy');await wait(300);
+const clip=await p.evaluate(()=>navigator.clipboard.readText());ok('copy for Canvas',clip.includes('Test Student')&&clip.includes('35.45')&&clip.includes('4 of 4'),clip.length);
+const ov=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ok('no sideways scroll',ov<=0,ov);
+console.log('PASS',out.length,'FAIL',fail.length,'\n  '+fail.join('\n  '));console.log('errors',JSON.stringify(errs));
+await b.close();})();

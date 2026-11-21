@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Average atomic mass: the number no atom has · Raider ChemLab</title>
+<meta name="description" content="Average atomic mass as one story: the table says neon is 20.18, but neon atoms land at 20 and 22. A story version of the Raider ChemLab average atomic mass tool. RJ Ed Tech.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f3f3f1;--card:#fff;--card2:#f7f7f5;--fg:#1c1c1f;--muted:#5d5d63;--line:#d8d8d3;--rj:#C11430;--rj-ink:#a8102a;--think:#a8178f;--good:#1b8a4a;--bad:#b3261e;--split:#c96a00;--join:#0f8b8d;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#15161a;--card:#1d1f24;--card2:#24272d;--fg:#ececef;--muted:#a2a2aa;--line:#353840;--rj-ink:#ed516a;--think:#ec74da;--good:#5cc27f;--bad:#ff8a80;--split:#f2a13c;--join:#4cc9c0;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.5}
+body.easy{font-size:19px;line-height:1.75;letter-spacing:.03em;word-spacing:.1em}
+.mast{background:#26262a;border-bottom:4px solid var(--rj);color:#fff}
+.mast .in{max-width:1480px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px}
+.mast img{height:34px;width:auto;display:block}
+.mast h1{font-size:19px;margin:0;line-height:1.15;color:#fff}.mast small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#c9c9cf}
+.mast a{margin-left:auto;color:#f2f2f2;font-size:14px}
+.wrap{max-width:1480px;margin:0 auto;padding:8px 16px 40px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 18px;margin-bottom:8px}
+.eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--rj-ink)}
+.sup{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.btn{font:inherit;font-size:15px;font-weight:600;padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:38px}
+.btn:hover:not(:disabled){border-color:var(--muted)}.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.sm{font-size:13.5px;padding:5px 10px;min-height:32px}
+.btn:focus-visible,.slot:focus-visible,.cardb:focus-visible,#parts button:focus-visible{outline:3px solid var(--think);outline-offset:2px}
+#parts{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 8px;max-width:1100px}
+#parts button{font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:3px solid var(--line);padding:4px 10px 5px 4px;cursor:pointer;display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0;white-space:nowrap}
+#parts button span{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:12px}
+#parts button.on{color:var(--fg);border-color:var(--rj)}#parts button.on span{background:var(--rj);color:#fff}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1040px){.main{grid-template-columns:1fr}}
+.stagewrap{display:flex;justify-content:center}
+.side{min-width:0}
+#stage{display:block;width:min(100%,max(600px,calc((100vh - 122px)*1.7857)));aspect-ratio:1000/560;border:1px solid var(--line);border-radius:14px;background:var(--card2);touch-action:pan-y}
+.rot{display:none;margin:0 0 8px;padding:8px 12px;border-radius:9px;background:var(--card);border:1px solid var(--line);font-size:15px}
+@media (max-width:640px) and (orientation:portrait){.rot{display:block}#stage{width:100%}}
+#stepno{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{margin:1px 0 3px;font-size:1.3rem;line-height:1.2}
+#cap{margin:0;max-width:68ch;font-size:1.04em}
+#alt{margin:8px 0 0;max-width:68ch;padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0}
+.nav{display:flex;gap:8px;margin-top:14px}.nav #back{flex:0 0 auto}.nav #next{flex:1;font-size:17px;min-height:44px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#ctlw{margin-top:6px}
+.pulse{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(193,20,48,.22)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none;box-shadow:0 0 0 4px rgba(193,20,48,.3)}}
+#ctl{margin-top:9px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.lab{font-size:15px;font-weight:600;color:var(--muted)}
+.q{margin:0 0 2px;font-weight:600;max-width:68ch}.note{margin:4px 0 0;color:var(--muted);font-size:15px}
+.pick{padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0;margin-bottom:6px}
+.pick .opt.on{background:var(--think);border-color:var(--think);color:#fff}.pick .opt.right{box-shadow:0 0 0 3px var(--good)}
+.chip{display:inline-block;font-size:.82em;font-weight:700;padding:1px 9px;border-radius:99px;border:2px solid var(--think);color:var(--think);white-space:nowrap}
+.chip.ok{border-color:var(--good);color:var(--good)}.chip.no{border-color:var(--muted);color:var(--muted)}
+.bath.b0.on{background:#2d6bd2;border-color:#2d6bd2;color:#fff}.bath.b60.on{background:#c5471f;border-color:#c5471f;color:#fff}
+.term{margin-top:8px;max-width:68ch;padding:10px 14px;border:1px solid var(--line);border-left:4px solid var(--rj);background:var(--card);border-radius:0 9px 9px 0}
+.sl label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}.sl input{width:150px;accent-color:var(--rj)}.sl output{min-width:2ch;font-variant-numeric:tabular-nums}
+.tell h3{margin:16px 0 2px;font-size:1.05rem}
+.slots,.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0;max-width:860px}
+@media (max-width:700px){.slots,.cards{grid-template-columns:repeat(2,1fr)}}
+.slot,.cardb{font:inherit;font-size:14.5px;font-weight:600;text-align:left;color:var(--fg);min-height:86px;padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.slot{border:2px dashed var(--line);background:transparent;position:relative}.slot.full{border-style:solid;background:var(--card)}.slot:disabled{cursor:default;color:var(--muted)}
+.slot .n{position:absolute;top:6px;right:9px;font-size:13px;color:var(--muted)}
+.cardb{border:1px solid var(--line);background:var(--card);box-shadow:0 1px 0 var(--line)}.cardb:hover{border-color:var(--muted)}
+.slot svg,.cardb svg{width:60px;height:42px;color:var(--bad)}
+.fb{min-height:1.4em;margin:2px 0;font-weight:600}.fb.ok{color:var(--good)}.fb.no{color:var(--rj-ink)}
+textarea,#nm,#ans{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+textarea{width:100%;max-width:860px;display:block}.nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}#nm{width:190px}
+.world{margin-top:18px;max-width:860px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.world h3{margin-top:0}.world p{margin:6px 0}
+.src{font-size:14px;color:var(--muted)}
+details{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 16px}
+details summary{cursor:pointer;font-weight:700;padding:11px 0}details[open]{padding-bottom:12px}
+details dt{font-weight:700;margin-top:9px}details dd{margin:0;max-width:72ch}details p,details li{max-width:74ch}
+.more{margin-top:26px}
+footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}footer a,details a,.world a{color:var(--rj-ink)}
+
+.tellmode .stagewrap{justify-content:flex-start}.tellmode #stage{width:min(100%,calc(42vh*1.7857))}
+.tellmode .main{grid-template-columns:auto minmax(0,1fr)}
+@media (max-width:1040px){.tellmode .main{grid-template-columns:1fr}}
+#ans{width:96px}
+.pm b{min-width:92px;text-align:center;font-variant-numeric:tabular-nums}.pm .btn{min-width:44px;font-size:21px;line-height:1;padding:4px 10px}
+.tiles .tile{font-size:16px}
+.sortrow{margin:6px 0;padding:7px 11px;background:var(--card);border:1px solid var(--line);border-radius:9px}.sortrow p{margin:0 0 4px;font-weight:600}.sortrow .row{margin:2px 0}
+
+</style>
+</head>
+<body>
+<header class="mast"><div class="in">
+  <img src="data:image/png;base64,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" alt="Regis Jesuit">
+  <div><h1>The number no atom has</h1><small>Raider ChemLab · Average atomic mass · story version (pilot)</small></div>
+  <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#avgmass">Open the current tool</a>
+</div></header>
+
+<main class="wrap">
+  <nav id="parts" aria-label="Parts of the story"></nav>
+  <p class="rot">This page is built for a laptop. On a phone, turn it sideways.</p>
+  <div class="main">
+    <div class="stagewrap"><canvas id="stage" role="img" aria-label=""></canvas></div>
+    <section class="side" aria-label="This step">
+      <p id="stepno"></p>
+      <h2 id="ttl"></h2>
+      <p id="cap" aria-live="polite"></p>
+      <div id="ctl"></div>
+      <div id="alt" hidden></div>
+      <div class="nav"><button type="button" class="btn" id="back">Back</button><button type="button" class="btn primary" id="next">Next</button></div>
+      <div class="tools"><button type="button" class="btn sm" id="pause" hidden>Pause</button><button type="button" class="btn sm" id="conf">😕 This confused me</button><button type="button" class="btn sm" id="ra" aria-pressed="false">🔊 Read aloud</button><button type="button" class="btn sm" id="er" aria-pressed="false">Aa Easier reading</button></div>
+    </section>
+  </div>
+  <div id="ctlw"></div>
+
+  <div class="more">
+  <details>
+    <summary>Key words, in plain language first</summary>
+    <dl>
+      <dt>Isotopes</dt><dd>Atoms of the same element with different masses. They have the same number of protons and different numbers of neutrons. The word means “same place”: they share one square on the periodic table.</dd>
+      <dt>Mass number</dt><dd>Protons plus neutrons in one atom. Always a whole number. Neon-20 has mass number 20.</dd>
+      <dt>Abundance</dt><dd>How common an isotope is: its share of all the atoms of that element, as a percent.</dd>
+      <dt>Average atomic mass</dt><dd>The balance point of all the atoms of an element: each isotope’s mass times its share, added up. It is the decimal number on the periodic table.</dd>
+      <dt>Atomic mass unit, u</dt><dd>The unit for the mass of one atom. One proton or one neutron is about 1 u.</dd>
+      <dt>Mass spectrometer</dt><dd>A machine that sorts charged atoms by mass, using a magnet to turn them.</dd>
+    </dl>
+  </details>
+  <details>
+    <summary>About these pictures</summary>
+    <p><b>Data.</b> Neon-20 19.992 u, 90.48%; neon-21 20.994 u, 0.27%; neon-22 21.991 u, 9.25%; average 20.18. Chlorine-35 34.969 u, 75.76%; chlorine-37 36.966 u, 24.24%; average 35.45. Boron-10 10.013 u, 19.9%; boron-11 11.009 u, 80.1%; average 10.81.</p>
+    <p><b>The machine.</b> Each atom you fire is chosen by chance with those odds, so your counts will differ a little from a classmate’s, and a bigger crowd lands closer to the true shares. The landing spot is drawn in proportion to the mass, as in a real instrument where all the ions enter at one speed.</p>
+    <p><b>Simplified.</b> Thomson’s 1913 apparatus spread the atoms into curved lines on a photographic plate. The half-circle design shown here came a few years later. Nuclei show the right number of protons and neutrons, drawn flat. Neon-21 is real but rare: about 1 atom in 370.</p>
+  </details>
+  <details>
+    <summary>For teachers: what this is</summary>
+    <p>This is a pilot of a “story version” page for average atomic mass, built like the other three ChemLab stories. It sits beside the current <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#avgmass">average atomic mass tool</a> and changes nothing there. It supports your lesson and does not replace it.</p>
+    <ul>
+      <li><b>Students weigh the atoms first.</b> They fire neon through a mass spectrometer and see two piles before the word isotope appears.</li>
+      <li><b>The weighted average is a balance point.</b> The crowd stands on a beam, and the student drags the pivot until it is level at 20.18.</li>
+      <li><b>Both directions of the classic problem:</b> shares to average (chlorine, typed answer, with a specific hint for 36), and average to shares (boron).</li>
+      <li><b>The usual mix-up is the target:</b> mass number (one atom, whole) against average atomic mass (the crowd, decimal).</li>
+    </ul>
+    <p>The story is real: J. J. Thomson found two kinds of neon in 1913, and Francis Aston won the 1922 Nobel Prize in Chemistry for the mass spectrograph and the isotopes it revealed.</p>
+    <p>Nothing here needs a login, and nothing a student types leaves the browser. Page visits are counted without names.</p>
+  </details>
+  </div>
+
+
+  <footer>
+    <p>RJ Ed Tech · Raider ChemLab · Simplified models for instruction<br>
+    <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u&amp;rc59cb41123d3497584d2ca10cb9e1c54=%22Raider%20ChemLab%22" target="_blank" rel="noopener">Report a bug or request a feature</a> (Microsoft Form, RJ sign-in)<br>
+    © 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>: free to share and adapt for non-commercial use, with credit.</p>
+  </footer>
+</main>
+
+<script>
+'use strict';
+/* ============================================================
+   Equilibrium story pilot · Raider ChemLab · RJ Ed Tech
+   Part 1 of 2: the model, the molecule box and the drawing kit.
+   Model (same data as the current ChemLab equilibrium tool):
+     N2O4(g) <=> 2 NO2(g)   Kc = 4.6e-3 at 25 C   dH = +57.2 kJ/mol
+     splits per second = kf(T) x N2O4      joins per second = kr x NO2^2 / room
+     kr is held constant (joining needs no hard hit); kf = kr x Kc(T).
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2;
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v)}
+
+/* ---------- chemistry ---------- */
+const GAS_R=8.314, KREF=4.6e-3, TREF=298.15, DH=57200, KR=13, NB=1200; // NB = molecules in the box per (mol/L) at room 1
+const TK=c=>c+273.15;
+const Kc=T=>KREF*Math.exp(-DH/GAS_R*(1/T-1/TREF));
+const kf=T=>KR*Kc(T);
+// equilibrium for ntot "N2O4 if nothing had split" molecules in room V (1 = the tube)
+function eqSplit(T,V,ntot){const c0=ntot/NB/V,K=Kc(T),a=(-K+Math.sqrt(K*K+16*c0*K))/(8*c0);return{a,n4:ntot*(1-a),n2:2*ntot*a}}
+// equilibrium reached from any starting mixture (n4, n2 molecules)
+function eqFrom(T,V,n4,n2){return eqSplit(T,V,n4+n2/2)}
+const molar=n=>n/NB;                          // molecules in the box -> mol/L when the room is 1
+const EPS=14.7;                               // Beer's law strength, set so the three baths look like the real demo
+const brownAlpha=c=>1-Math.pow(10,-EPS*c);
+
+/* ---------- colors (light and dark) ---------- */
+const DARKQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):{matches:false};
+let PAL={};
+function setPal(){const d=DARKQ.matches;PAL=d?{dark:true,bg:'#191b20',card:'#1d1f24',card2:'#24272d',ink:'#ececef',soft:'#a2a2aa',line:'#353840',
+    N:'#5b8cff',O:'#f0556a',brown:[214,140,62],split:'#f2a13c',join:'#4cc9c0',think:'#ec74da',good:'#5cc27f',bad:'#ff8a80',rj:'#ed516a',
+    glass:'rgba(190,215,235,.55)',water:'rgba(92,155,255,.20)',box:'#14161a',sky1:'#16233a',sky2:'#2a3550',sea:'#12304a',deck:'#3a3d45',hull:'#e9ecef'}
+  :{dark:false,bg:'#f7f8f6',card:'#ffffff',card2:'#f3f3f0',ink:'#1c1c1f',soft:'#5d5d63',line:'#d8d8d3',
+    N:'#2f62d6',O:'#d92f45',brown:[150,82,24],split:'#c96a00',join:'#0f8b8d',think:'#a8178f',good:'#1b8a4a',bad:'#b3261e',rj:'#C11430',
+    glass:'rgba(110,140,165,.55)',water:'rgba(45,107,210,.13)',box:'#fbfcfb',sky1:'#cfe4f5',sky2:'#f6e9d6',sea:'#3d7fa8',deck:'#8b8f98',hull:'#ffffff'};
+  SPR.clear()}
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* ---------- text and shapes ---------- */
+const FONT='system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+function txt(ctx,s,x,y,o={}){ctx.font=`${o.w||500} ${o.s||16}px ${FONT}`;ctx.fillStyle=o.c||PAL.ink;ctx.textAlign=o.a||'left';ctx.textBaseline=o.b||'alphabetic';
+  if(o.max&&ctx.measureText(s).width>o.max){ctx.font=`${o.w||500} ${Math.max(11,(o.s||16)*o.max/ctx.measureText(s).width)}px ${FONT}`}
+  ctx.fillText(s,x,y);return ctx.measureText(s).width}
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function card(ctx,r,title){rr(ctx,r.x,r.y,r.w,r.h,12);ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;ctx.stroke();
+  if(title)txt(ctx,title.toUpperCase(),r.x+14,r.y+24,{s:12.5,w:700,c:PAL.soft})}
+function pill(ctx,s,x,y,bg,fg,size=14,align='left'){ctx.font=`700 ${size}px ${FONT}`;const w=ctx.measureText(s).width+size*1.3,h=size*1.75;
+  const x0=align==='center'?x-w/2:align==='right'?x-w:x;rr(ctx,x0,y-h/2,w,h,h/2);ctx.fillStyle=bg;ctx.fill();
+  ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x0+size*.65,y+.5);return w}
+function arrow(ctx,x0,y0,x1,y1,w,c){const a=Math.atan2(y1-y0,x1-x0),h=Math.max(7,w*2.6);ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=w;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1-Math.cos(a)*h*.8,y1-Math.sin(a)*h*.8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-Math.cos(a-.42)*h,y1-Math.sin(a-.42)*h);ctx.lineTo(x1-Math.cos(a+.42)*h,y1-Math.sin(a+.42)*h);ctx.closePath();ctx.fill()}
+
+/* ---------- molecules, drawn to shape (positions in angstroms) ----------
+   N2O4 is flat: N-N 1.78 A (long and weak), N-O 1.19 A, O-N-O 135 degrees.
+   NO2 is bent: N-O 1.20 A, O-N-O 134 degrees. */
+const GEO={4:{at:[['N',-.89,0],['N',.89,0],['O',-1.345,-1.10],['O',-1.345,1.10],['O',1.345,-1.10],['O',1.345,1.10]],bd:[[0,1,1],[0,2],[0,3],[1,4],[1,5]]},
+           2:{at:[['N',-.313,0],['O',.157,-1.10],['O',.157,1.10]],bd:[[0,1],[0,2]]}};
+const RAD={N:.60,O:.56,S:.72,H:.36,C:.62},ACOL=e=>e==='N'?PAL.N:e==='O'?PAL.O:e==='S'?'#c79a00':e==='H'?'#98a1ab':'#4f555e';
+GEO.N={at:[['N',-.55,0],['N',.55,0]],bd:[[0,1]]};GEO.O={at:[['O',-.605,0],['O',.605,0]],bd:[[0,1]]};   // N2 (1.10 A) and O2 (1.21 A)
+const SP={4:{r:1.95,m:92},2:{r:1.35,m:46},N:{r:1.2,m:28},O:{r:1.2,m:32}};
+function ball(ctx,x,y,r,col){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.28,col);g.addColorStop(1,shade(col,-.38));
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill()}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.round(clamp(amt<0?v*(1+amt):v+(255-v)*amt,0,255));return`rgb(${f(r)},${f(g)},${f(b)})`}
+/* o: {halo:0..1 brown glow, stretch: extra N-N length in A (N2O4 only), tagN: index of the tagged N atom, bonds:true, weak:0..1 highlight on the N-N bond} */
+function drawMol(ctx,type,x,y,ang,sc,o={}){const G=GEO[type];ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+  const st=(o.stretch||0)/2,px=a=>(a[1]+(type===4?Math.sign(a[1])*st:0))*sc,py=a=>a[2]*sc;
+  if(o.halo){const R=2.5*sc,g=ctx.createRadialGradient(0,0,sc*.3,0,0,R);g.addColorStop(0,rgba(PAL.brown,.5*o.halo));g.addColorStop(1,rgba(PAL.brown,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill()}
+  if(o.bonds){ctx.lineCap='round';G.bd.forEach(b=>{const A=G.at[b[0]],B=G.at[b[1]];ctx.strokeStyle=b[2]?(o.weak?PAL.think:PAL.soft):PAL.soft;ctx.lineWidth=b[2]?sc*.13:sc*.2;
+    if(b[2]&&o.snap)return;ctx.beginPath();ctx.moveTo(px(A),py(A));ctx.lineTo(px(B),py(B));ctx.stroke()})}
+  G.at.forEach((a,i)=>{const col=a[0]==='N'&&o.tagN===i?PAL.think:ACOL(a[0]);ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
+  ctx.restore();
+  if(o.label){const cs=Math.cos(ang),sn=Math.sin(ang);G.at.forEach(a=>{const ax=px(a),ay=py(a);txt(ctx,a[0],x+ax*cs-ay*sn,y+ax*sn+ay*cs+1,{s:sc*.5,w:700,c:'#fff',a:'center',b:'middle'})})}}
+// cached pictures of the small molecules in the box
+const SPR=new Map();
+function sprite(type,sc){const key=type+'|'+sc;let s=SPR.get(key);if(s)return s;const R=Math.ceil(2.7*sc)+2,c=document.createElement('canvas'),d=2;c.width=c.height=R*2*d;
+  const x=c.getContext('2d');x.scale(d,d);drawMol(x,type,R,R,0,sc,{halo:type===2?1:0});s={c,R};SPR.set(key,s);return s}
+
+/* ---------- the molecule box ---------- */
+const V0=62;                                   // typical N2O4 speed at 25 C, px per second
+class World{
+  constructor(){this.ps=[];this.fl=[];this.hist=[];this.marks=[];this.nid=1;this.t=0}
+  /* o: {n4,n2,T(kelvin),V,Vmax,box:{x,y,w,h},sc,react,speed} ; box.w is the width when room = Vmax */
+  setup(o){Object.assign(this,{T:o.T,V:o.V||1,Vt:o.V||1,Vmax:o.Vmax||1,box:o.box,sc:o.sc||5,react:o.react!==false,speed:o.speed||1,
+      m4:o.n4,m2:o.n2,accS:0,accJ:0,thrS:1,thrJ:1,pendS:0,pendJ:0,waitS:0,waitJ:0,t:0,hT:0,sync:0,nS:0,nJ:0,tag:null,tagHist:[]});
+    this.ps=[];this.fl=[];this.hist=[];this.marks=[];
+    const p4=Math.round(o.n4),p2=Math.max(0,Math.round(2*o.n4+o.n2-2*p4));   // whole molecules, same number of atoms
+    for(let i=0;i<p4;i++)this.add(4);for(let i=0;i<p2;i++)this.add(2);this.push();return this}
+  get x1(){return this.box.x+this.box.w*this.V/this.Vmax}
+  get r4(){return this.sc*1.95} get r2(){return this.sc*1.35}
+  rad(t){return this.sc*SP[t].r}
+  vth(type){return V0*Math.sqrt(this.T/TREF)*Math.sqrt(92/SP[type].m)*(this.vk||1)}
+  add(type,x,y,vx,vy,ang,ns){const b=this.box,r=this.rad(type),s=this.vth(type)/1.25;
+    const p={id:this.nid++,type,x:x!==undefined?x:b.x+r+Math.random()*(this.x1-b.x-2*r),y:y!==undefined?y:b.y+r+Math.random()*(b.h-2*r),
+      vx:vx!==undefined?vx:gauss()*s,vy:vy!==undefined?vy:gauss()*s,ang:ang!==undefined?ang:Math.random()*TAU,spin:(Math.random()-.5)*3,
+      ns:ns||(type===2?[this.nid++]:[this.nid++,this.nid++]),born:this.t,home:0};this.ps.push(p);return p}
+  count(type){let n=0;for(const p of this.ps)if(p.type===type)n++;return n}
+  rates(){return{S:kf(this.T)*this.m4,J:KR/NB*this.m2*this.m2/this.V}}
+  setT(T,label){if(T===this.T)return;const f=Math.sqrt(T/this.T);for(const p of this.ps){p.vx*=f;p.vy*=f}this.T=T;if(label)this.marks.push({t:this.t,label})}
+  setV(V,label){this.Vt=V;if(label)this.marks.push({t:this.t,label})}
+  push(){const r=this.rates();this.hist.push({t:this.t,m2:this.m2,m4:this.m4,S:r.S,J:r.J});if(this.hist.length>900)this.hist.shift();
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));this.tagHist.push(p?p.type:4);if(this.tagHist.length>400)this.tagHist.shift()}}
+  flash(kind,x,y){this.fl.push({kind,x,y,t:this.t});if(kind==='s')this.nS++;else if(kind==='j')this.nJ++}
+  split(p,hx,hy){const i=this.ps.indexOf(p);if(i<0)return;this.ps.splice(i,1);const c=Math.cos(p.ang),s=Math.sin(p.ang),d=.9*this.sc,u=this.vth(2)*.6;
+    const a=this.add(2,p.x-c*d,p.y-s*d,p.vx-c*u,p.vy-s*u,p.ang+Math.PI,[p.ns[0]]),b=this.add(2,p.x+c*d,p.y+s*d,p.vx+c*u,p.vy+s*u,p.ang,[p.ns[1]]);
+    a.spin=p.spin;b.spin=p.spin;this.flash('s',hx!==undefined?hx:p.x,hy!==undefined?hy:p.y);this.pendS--;this.waitS=0}
+  join(a,b){const i=this.ps.indexOf(a);if(i>=0)this.ps.splice(i,1);const j=this.ps.indexOf(b);if(j>=0)this.ps.splice(j,1);
+    const x=(a.x+b.x)/2,y=(a.y+b.y)/2;let vx=(a.vx+b.vx)/2,vy=(a.vy+b.vy)/2;const sp=Math.hypot(vx,vy)||1,want=this.vth(4)*(.6+Math.random()*.8);vx*=want/sp;vy*=want/sp;
+    this.add(4,x,y,vx,vy,Math.atan2(b.y-a.y,b.x-a.x),[a.ns[0],b.ns[0]]);this.flash('j',x,y)}
+  step(dtReal){let dt=Math.min(dtReal,.05)*this.speed;if(dt<=0)return;
+    // room (the wall slides)
+    if(this.V!==this.Vt){const dv=1.1*Math.min(dtReal,.05);const V1=Math.abs(this.Vt-this.V)<=dv?this.Vt:this.V+Math.sign(this.Vt-this.V)*dv,f=V1/this.V;for(const p of this.ps)p.x=this.box.x+(p.x-this.box.x)*f;this.V=V1}   // the gas spreads with the wall
+    // amounts, by the rate laws
+    if(this.react){const n=Math.ceil(dt/.004),h=dt/n,k=kf(this.T),q=KR/NB/this.V;for(let i=0;i<n;i++){const S=k*this.m4,J=q*this.m2*this.m2;
+        this.m4+=(J-S)*h;this.m2+=2*(S-J)*h;if(this.m4<0)this.m4=0;if(this.m2<0)this.m2=0;this.accS+=S*h;this.accJ+=J*h}
+      this.fast=k*this.m4+q*this.m2*this.m2>10;                                              // busy: do due events at once
+      while(this.accS>=this.thrS){this.accS-=1;this.thrS=.55+Math.random()*.9;this.pendS++}
+      while(this.accJ>=this.thrJ){this.accJ-=1;this.thrJ=.55+Math.random()*.9;this.pendJ++}
+      this.sync+=dt;if(this.sync>.35){this.sync=0;const hom=this.ps.filter(p=>p.home).length/2,err=this.count(4)+hom+this.pendJ-this.pendS-this.m4;
+        if(err>1.2)this.pendS++;else if(err<-1.2)this.pendJ++}}
+    // molecules move, bounce, and react when they collide
+    const m=Math.ceil(dt/.03),h=dt/m;for(let i=0;i<m;i++)this.move(h);
+    this.t+=dt;this.hT+=dt;if(this.hT>=.1){this.hT=0;this.push()}
+    this.fl=this.fl.filter(f=>this.t-f.t<.6)}
+  move(h){const b=this.box,x1=this.x1,ps=this.ps,young=.22;
+    for(const p of ps){if(p.home){const q=ps.find(z=>z.id===p.home);if(!q){p.home=0}else{const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1,v=this.vth(2)*2.4;p.vx=lerp(p.vx,dx/d*v,.3);p.vy=lerp(p.vy,dy/d*v,.3)}}
+      p.x+=p.vx*h;p.y+=p.vy*h;p.ang+=p.spin*h;const r=this.rad(p.type);
+      if(p.x<b.x+r){p.x=b.x+r;p.vx=Math.abs(p.vx);this.hitL&&this.hitL(p)}
+      if(p.x>x1-r){if(p.leave){if(p.x>x1+24)p.dead=true}else{p.x=x1-r;p.vx=-Math.abs(p.vx);this.hitR&&this.hitR(p)}}
+      if(p.y<b.y+r){p.y=b.y+r;p.vy=Math.abs(p.vy)}if(p.y>b.y+b.h-r){p.y=b.y+b.h-r;p.vy=-Math.abs(p.vy)}
+      const sp=Math.hypot(p.vx,p.vy),vt=this.vth(p.type);if(sp>2.6*vt){p.vx*=.9;p.vy*=.9}else if(sp<.25*vt){p.vx=p.vx*1.1+gauss()*2;p.vy=p.vy*1.1+gauss()*2}}
+    for(let i=0;i<ps.length;i++){const a=ps[i];for(let j=i+1;j<ps.length;j++){const c=ps[j],dx=c.x-a.x,dy=c.y-a.y,R=this.rad(a.type)+this.rad(c.type);
+        if(dx*dx+dy*dy>R*R)continue;const d=Math.hypot(dx,dy)||.01,nx=dx/d,ny=dy/d,rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;
+        if(a.home&&a.home===c.id){this.join(a,c);i--;break}
+        if(rv>0)continue;
+        if(this.react&&this.pendJ>0&&a.type===2&&c.type===2&&!a.home&&!c.home&&this.t-a.born>young&&this.t-c.born>young){this.pendJ--;this.waitJ=0;this.join(a,c);i--;break}
+        if(this.react&&this.pendS>0&&(a.type===4||c.type===4)){const p=a.type===4&&this.t-a.born>young?a:(c.type===4&&this.t-c.born>young?c:null);
+          if(p){this.flash('h',a.x+nx*this.rad(a.type),a.y+ny*this.rad(a.type));this.split(p);i--;break}}
+        const ma=SP[a.type].m,mc=SP[c.type].m,imp=2*rv/(ma+mc);a.vx+=imp*mc*nx;a.vy+=imp*mc*ny;c.vx-=imp*ma*nx;c.vy-=imp*ma*ny;
+        const ov=(R-d)/2;a.x-=nx*ov;a.y-=ny*ov;c.x+=nx*ov;c.y+=ny*ov}}
+    if(ps.some(p=>p.dead))this.ps=ps.filter(p=>!p.dead);
+    if(!this.react)return;
+    // events that are due but found no collision yet
+    if(this.pendS>0){this.waitS+=h;let guard=8;while(this.pendS>0&&(this.fast||this.waitS>.18||this.pendS>2)&&guard--){const c=ps.filter(p=>p.type===4);if(!c.length){this.pendS=0;break}
+        this.split(c[Math.floor(Math.random()*c.length)])}}
+    if(this.pendJ>0){this.waitJ+=h;let guard=8;while(this.pendJ>0&&(this.fast||this.waitJ>.12||this.pendJ>2)&&guard--){const f=ps.filter(p=>p.type===2&&!p.home&&this.t-p.born>young*.5);
+        if(f.length<2){if(ps.filter(p=>p.type===2).length<2)this.pendJ=0;break}
+        let best=1e9,A=null,B=null;for(let i=0;i<f.length;i++)for(let j=i+1;j<f.length;j++){const d=(f[i].x-f[j].x)**2+(f[i].y-f[j].y)**2;if(d<best){best=d;A=f[i];B=f[j]}}
+        this.pendJ--;this.waitJ=0;if(this.fast||this.pendJ>1||best<(this.r2*4)**2)this.join(A,B);else{A.home=B.id;B.home=A.id}}}
+  }
+  /* draw the box. o: {tagRing:true, dim:0..1, frozen:true} */
+  draw(ctx,o={}){const b=this.box,x1=this.x1,full=b.x+b.w;
+    if(!o.noFrame){rr(ctx,b.x,b.y,b.w,b.h,8);ctx.fillStyle=PAL.card2;ctx.fill()}
+    ctx.save();rr(ctx,b.x,b.y,x1-b.x+(o.noFrame?30:0),b.h,8);if(!o.noFrame){ctx.fillStyle=PAL.box;ctx.fill()}ctx.clip();
+    const rt=this.rates(),busy=clamp((rt.S+rt.J)/16,0,1),fk=(1-.55*busy)*this.sc/6;                // smaller rings when a lot is happening
+    for(const f of this.fl){const u=(this.t-f.t)/(.6-.25*busy);if(u<0||u>1)continue;ctx.lineWidth=2.5;
+      if(f.kind==='s'){ctx.strokeStyle=PAL.split;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:6+26*u)*fk,0,TAU);ctx.stroke()}
+      else if(f.kind==='j'){ctx.strokeStyle=PAL.join;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:30-22*u)*fk,0,TAU);ctx.stroke()}
+      else{ctx.strokeStyle=f.col||PAL.split;ctx.globalAlpha=1-u;const n=6;for(let i=0;i<n;i++){const a=i*TAU/n+.3;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*4,f.y+Math.sin(a)*4);ctx.lineTo(f.x+Math.cos(a)*(8+10*u),f.y+Math.sin(a)*(8+10*u));ctx.stroke()}}
+      ctx.globalAlpha=1}
+    for(const p of this.ps){const s=sprite(p.type,this.sc),pop=RM?1:Math.min(1,.55+(this.t-p.born)*3);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);if(pop<1)ctx.scale(pop,pop);ctx.drawImage(s.c,-s.R,-s.R,s.R*2,s.R*2);ctx.restore()}
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));if(p){const i=p.ns.indexOf(this.tag);drawMol(ctx,p.type,p.x,p.y,p.ang,this.sc,{tagN:p.type===4?i:0,halo:p.type===2?1:0});
+        ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(p.x,p.y,this.rad(p.type)+9,0,TAU);ctx.stroke();ctx.setLineDash([])}}
+    ctx.restore();if(o.noFrame)return;
+    rr(ctx,b.x,b.y,x1-b.x,b.h,8);ctx.strokeStyle=PAL.dark?'#5d6370':'#8a94a0';ctx.lineWidth=2;ctx.stroke();
+    if(this.Vmax>1){ // the sliding wall, with its handle
+      ctx.fillStyle=PAL.dark?'#7b8290':'#6f7783';rr(ctx,x1-3,b.y-6,8,b.h+12,3);ctx.fill();
+      if(x1<full-12){ctx.setLineDash([5,5]);ctx.strokeStyle=PAL.line;ctx.lineWidth=1.5;rr(ctx,x1+6,b.y,full-x1-6,b.h,8);ctx.stroke();ctx.setLineDash([]);
+        if(full-x1>120)txt(ctx,'empty room',(x1+full)/2+3,b.y+b.h/2,{s:15,c:PAL.soft,a:'center',b:'middle'})}}
+  }
+}
+
+/* ---------- shared pictures ---------- */
+// two rate bars; each bar is one half of the equation
+function drawRates(ctx,r,S,J,max,o={}){card(ctx,r,o.title||'Each second, in the box');
+  const x=r.x+14,w=r.w-28,rowH=(r.h-78)/2,row=(y,name,eq,v,col,ic)=>{
+    txt(ctx,name,x+26,y+17,{s:17,w:700});txt(ctx,eq,x+w,y+17,{s:14.5,c:PAL.soft,a:'right'});
+    // icon: one dot becomes two, or two become one
+    ctx.fillStyle=col;if(ic==='s'){ctx.beginPath();ctx.arc(x+9,y+11,6,0,TAU);ctx.fill()}else{ctx.beginPath();ctx.arc(x+5,y+11,4.4,0,TAU);ctx.arc(x+15,y+11,4.4,0,TAU);ctx.fill()}
+    const bw=w-64,by=y+27,bh=Math.max(14,rowH-40);rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();
+    const f=clamp(v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=col;ctx.fill()}
+    txt(ctx,v>=9.95?v.toFixed(0):v.toFixed(1),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});return{by,bh,bw,f}};
+  const a=row(r.y+36,'Splits','N₂O₄ → 2 NO₂',S,PAL.split,'s'),b=row(r.y+36+rowH,'Joins','2 NO₂ → N₂O₄',J,PAL.join,'j');
+  const big=Math.max(S,J),d=big>0?(S-J)/big:0,yy=r.y+r.h-17;
+  if(o.status!==false){if(big<.05)txt(ctx,'Nothing is reacting yet',x,yy,{s:15,c:PAL.soft,w:600,max:w});
+    else if(d>.07){txt(ctx,'More splits than joins: NO₂ builds up',x,yy,{s:15,c:PAL.split,w:700,max:w})}
+    else if(d<-.07){txt(ctx,'More joins than splits: NO₂ runs down',x,yy,{s:15,c:PAL.join,w:700,max:w})}
+    else txt(ctx,'Balanced: splits = joins',x,yy,{s:15,c:PAL.good,w:700,max:w})}
+  if(Math.abs(d)>.07&&big>.05){ // hatch the part of the longer bar that is ahead: the gap
+    const A=S>J?a:b,lo=x+a.bw*Math.min(a.f,b.f),hi=x+a.bw*Math.max(a.f,b.f);if(hi-lo>8){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore();
+      if(hi-lo>70){ctx.font=`700 13px ${FONT}`;const tw=ctx.measureText('ahead').width+14;rr(ctx,(lo+hi)/2-tw/2,A.by+A.bh/2-10,tw,20,10);ctx.fillStyle=PAL.card;ctx.fill();txt(ctx,'ahead',(lo+hi)/2,A.by+A.bh/2+1,{s:13,w:700,a:'center',b:'middle'})}}}}
+
+// NO2 count against time. o: {ymax,span,sketch:[{t,v}],sketching,title}
+function drawGraph(ctx,r,w,o={}){card(ctx,r,o.title||'NO₂ in the box');
+  const L=r.x+44,T=r.y+38,W=r.w-60,H=r.h-72,ymax=o.ymax||40,span=o.span||12,t1=Math.max(span,w.t),t0=t1-span,X=t=>L+(t-t0)/span*W,Y=v=>T+H-clamp(v/ymax,0,1.04)*H;
+  ctx.strokeStyle=PAL.line;ctx.lineWidth=1;for(let i=0;i<=4;i++){const y=T+H-i*H/4;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+W,y);ctx.stroke();txt(ctx,String(Math.round(ymax*i/4)),L-7,y,{s:13,c:PAL.soft,a:'right',b:'middle'})}
+  txt(ctx,'time →',L+W,T+H+21,{s:13,c:PAL.soft,a:'right'});
+  ctx.save();ctx.beginPath();ctx.rect(L-1,T-6,W+2,H+12);ctx.clip();
+  for(const m of w.marks){if(m.t<t0)continue;const x=X(m.t);ctx.strokeStyle=PAL.soft;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.setLineDash([]);
+    txt(ctx,m.label,Math.min(x+5,L+W-80),T+13,{s:12.5,c:PAL.soft,w:600})}
+  if(o.sketch&&o.sketch.length>1){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.lineJoin='round';ctx.beginPath();o.sketch.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.setLineDash([])}
+  if(w.hist.length>1){ctx.strokeStyle=rgba(PAL.brown,1);ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.beginPath();let st=false;for(const p of w.hist){if(p.t<t0-.2)continue;const x=X(p.t),y=Y(p.m2);st?ctx.lineTo(x,y):ctx.moveTo(x,y);st=true}ctx.stroke();
+    const p=w.hist[w.hist.length-1];ctx.fillStyle=rgba(PAL.brown,1);ctx.beginPath();ctx.arc(X(p.t),Y(p.m2),5,0,TAU);ctx.fill()}
+  ctx.restore();
+  if(o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=2;ctx.setLineDash([6,5]);rr(ctx,L-2,T-4,W+4,H+8,6);ctx.stroke();ctx.setLineDash([]);
+    if(!(o.sketch&&o.sketch.length>1))txt(ctx,'Draw your line here',L+W/2,T+H/2,{s:17,w:700,c:PAL.think,a:'center',b:'middle'})}
+  if(o.sketch&&o.sketch.length>1&&!o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.beginPath();ctx.moveTo(r.x+r.w-150,r.y+19);ctx.lineTo(r.x+r.w-122,r.y+19);ctx.stroke();ctx.setLineDash([]);txt(ctx,'your guess',r.x+r.w-116,r.y+24,{s:13,c:PAL.think,w:700})}
+  return{L,T,W,H,ymax,span,t0}}
+
+// the sealed tube in its bath. bathC: 0, 25 or 60; cNO2 in mol/L; lift: 0..1 (tube raised while it changes bath)
+function drawTube(ctx,r,bathC,cNO2,lift,t){card(ctx,r,'What you see');
+  const cx=r.x+r.w/2,bw=r.w-44,bx=cx-bw/2,btop=r.y+r.h*.50,bbot=r.y+r.h-66,wl=btop+26;
+  // beaker
+  const hot=bathC>=45,ice=bathC<=5;ctx.fillStyle=hot?(PAL.dark?'rgba(255,150,110,.16)':'rgba(240,120,80,.14)'):PAL.water;rr(ctx,bx+3,wl,bw-6,bbot-wl-3,6);ctx.fill();
+  if(ice){ctx.fillStyle=PAL.dark?'rgba(210,235,255,.5)':'rgba(255,255,255,.95)';ctx.strokeStyle=PAL.dark?'rgba(210,235,255,.7)':'rgba(120,160,200,.8)';ctx.lineWidth=1.2;
+    [[.14,10,.2],[.52,4,-.3],[.74,14,.5],[.3,40,-.15],[.66,46,.25],[.1,66,.1]].forEach(([fx,dy,a])=>{ctx.save();ctx.translate(bx+10+fx*(bw-40)+10,wl+dy+8);ctx.rotate(a);rr(ctx,-10,-9,21,18,4);ctx.fill();ctx.stroke();ctx.restore()})}
+  if(hot&&!RM){ctx.strokeStyle=PAL.dark?'rgba(255,255,255,.28)':'rgba(120,120,130,.4)';ctx.lineWidth=2;ctx.lineCap='round';for(let i=0;i<3;i++){const x=bx+bw*.2+i*bw*.28,ph=(t*.7+i*.37)%1;ctx.globalAlpha=1-ph;ctx.beginPath();
+      for(let s=0;s<=10;s++){const y=wl-4-ph*26-s*3.2,xx=x+Math.sin(s*.8+t*2+i)*4;s?ctx.lineTo(xx,y):ctx.moveTo(xx,y)}ctx.stroke()}ctx.globalAlpha=1}
+  // tube
+  const tw=44,th=r.h*.56,ty=wl-th*.52-lift*46,tx=cx-tw/2-10;
+  ctx.fillStyle=PAL.box;rr(ctx,tx,ty,tw,th,tw/2);ctx.fill();const al=brownAlpha(cNO2);ctx.fillStyle=rgba(PAL.brown,clamp(al*1.05,0,.96));rr(ctx,tx+2,ty+2,tw-4,th-4,tw/2-2);ctx.fill();
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=2.5;rr(ctx,tx,ty,tw,th,tw/2);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx+10,ty+24);ctx.lineTo(tx+10,ty+th-28);ctx.stroke();
+  txt(ctx,'sealed',tx+tw/2,ty-8,{s:12.5,c:PAL.soft,a:'center'});
+  // beaker glass on top, thermometer
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=3;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(bx,btop);ctx.lineTo(bx,bbot-8);ctx.quadraticCurveTo(bx,bbot,bx+8,bbot);ctx.lineTo(bx+bw-8,bbot);ctx.quadraticCurveTo(bx+bw,bbot,bx+bw,bbot-8);ctx.lineTo(bx+bw,btop);ctx.stroke();
+  const mx=bx+bw-24,my0=btop-52,my1=bbot-22;ctx.strokeStyle=PAL.glass;ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(mx,my0);ctx.lineTo(mx,my1);ctx.stroke();
+  const lv=lerp(my1-10,my0+6,clamp(bathC/100,0,1));ctx.strokeStyle='#d92f45';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(mx,my1);ctx.lineTo(mx,lv);ctx.stroke();ctx.fillStyle='#d92f45';ctx.beginPath();ctx.arc(mx,my1+2,6,0,TAU);ctx.fill();
+  const name=ice?'Ice water':hot?'Hot water':'Room';pill(ctx,`${name} · ${bathC} °C`,cx,bbot+24,ice?'#2d6bd2':hot?'#c5471f':PAL.soft,'#fff',14,'center');
+  const shade=al<.05?'none':al<.25?'very pale':al<.5?'light brown':al<.68?'brown':'dark brown';txt(ctx,'Gas color: '+shade,cx,bbot+52,{s:14.5,w:600,a:'center',max:r.w-16});
+  return{tx:tx+tw,ty:ty+th*.3}}
+
+/* two bars that compete. rows: [{name,sub,v,col},{...}] ; o: {title,max,unit,dec,status:{more0,more1,bal}} */
+function drawPair(ctx,r,rows,o={}){card(ctx,r,o.title);const x=r.x+14,w=r.w-28,rowH=(r.h-80)/2,max=o.max||100,out=[];
+  rows.forEach((q,i)=>{const y=r.y+36+i*rowH;ctx.fillStyle=q.col;ctx.beginPath();ctx.arc(x+8,y+11,6,0,TAU);ctx.fill();txt(ctx,q.name,x+22,y+17,{s:16.5,w:700,max:w-22});
+    const bw=w-66,by=y+27,bh=Math.max(14,Math.min(34,rowH-42));rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();const f=clamp(q.v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=q.col;ctx.fill()}
+    txt(ctx,q.v.toFixed(o.dec===undefined?0:o.dec),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});if(q.sub)txt(ctx,q.sub,x,by+bh+16,{s:13,c:PAL.soft,max:w});out.push({by,bh,bw,f})});
+  const a=rows[0].v,b=rows[1].v,big=Math.max(a,b,1e-9),d=(a-b)/big,yy=r.y+r.h-16,s=o.status||{};
+  if(Math.abs(d)>.03){const A=a>b?out[0]:out[1],lo=x+A.bw*Math.min(out[0].f,out[1].f),hi=x+A.bw*Math.max(out[0].f,out[1].f);if(hi-lo>6){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore()}
+    txt(ctx,d>0?s.more0:s.more1,x,yy,{s:14.5,w:700,c:d>0?rows[0].col:rows[1].col,max:w})}
+  else if(s.bal)txt(ctx,s.bal,x,yy,{s:14.5,w:700,c:PAL.good,max:w});
+  if(o.unit)txt(ctx,o.unit,r.x+r.w-14,r.y+24,{s:12.5,c:PAL.soft,a:'right'})}
+
+</script>
+<script>
+/* ============================================================
+   Average atomic mass story pilot · Raider ChemLab · RJ Ed Tech
+   "The number no atom has": neon, 1913. The table says 20.18,
+   but neon atoms land at 20 and 22 in a mass spectrometer.
+   Isotope data (mass in u, natural share):
+     Ne-20 19.992 90.48%   Ne-21 20.994 0.27%   Ne-22 21.991 9.25%  -> 20.180
+     Cl-35 34.969 75.76%   Cl-37 36.966 24.24%                      -> 35.453
+     B-10  10.013 19.9%    B-11  11.009 80.1%                       -> 10.811
+   ============================================================ */
+const SITE='ChemLab',PAGE='atomic-mass-story',KEY='rjchemlab-massstory-v1',EVB='avgmass',EVT='Average atomic mass story';
+const LW=1000,LH=560;
+const cv=$('#stage'),ctx=cv.getContext('2d');let PX=1;
+const W=new World();
+let S={guess:{},sketch:[],text:'',name:'',seen:{},cl:'',miss:0,sort:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+try{S.name=localStorage.getItem('raider-labs-name')||S.name||''}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let cur=0,st={},paused=false,lastCap='';
+const NOWORLD=()=>true,PAUSEOK=()=>false,settled=()=>true;
+const ISO={Ne:[{A:20,m:19.992,f:.9048,p:10},{A:21,m:20.994,f:.0027,p:10},{A:22,m:21.991,f:.0925,p:10}],Cl:[{A:35,m:34.969,f:.7576,p:17},{A:37,m:36.966,f:.2424,p:17}],B:[{A:10,m:10.013,f:.199,p:5},{A:11,m:11.009,f:.801,p:5}]};
+const mean=(iso,w)=>{let a=0,b=0;iso.forEach((q,i)=>{a+=q.m*w[i];b+=w[i]});return b?a/b:0};
+const AVG={Ne:mean(ISO.Ne,ISO.Ne.map(q=>q.f)),Cl:mean(ISO.Cl,ISO.Cl.map(q=>q.f)),B:mean(ISO.B,ISO.B.map(q=>q.f))};
+const NEON='#ff6a3d',PROT='#d92f45',NEUT='#8b95a1';
+
+/* ---------- pictures ---------- */
+function nucleus(x,y,p,n,sc){const N=p+n,c=sc||5.2,pts=[];for(let i=0;i<N;i++){const r=c*Math.sqrt(i+.5),a=i*2.39996;pts.push([x+r*Math.cos(a),y+r*Math.sin(a),(i*7)%N<p?1:0])}
+  let np=pts.filter(q=>q[2]).length;for(let i=0;i<N&&np!==p;i++){if(np<p&&!pts[i][2]){pts[i][2]=1;np++}else if(np>p&&pts[i][2]){pts[i][2]=0;np--}}
+  pts.forEach(q=>ball(ctx,q[0],q[1],c*.82,q[2]?PROT:NEUT))}
+function tableSquare(x,y,s,sym,num,mass,hide){rr(ctx,x,y,s,s*1.12,12);ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=PAL.ink;ctx.lineWidth=3;ctx.stroke();txt(ctx,String(num),x+14,y+30,{s:s*.14,w:700,c:PAL.soft});txt(ctx,sym,x+s/2,y+s*.62,{s:s*.42,w:700,a:'center'});
+  txt(ctx,hide?'?':mass,x+s/2,y+s*.95,{s:s*.2,w:700,a:'center',c:PAL.think})}
+function sceneHook(t){const A={x:14,y:14,w:480,h:532},B={x:506,y:14,w:480,h:532};card(ctx,A,'On every periodic table');tableSquare(A.x+140,A.y+90,200,'Ne',10,'20.18');txt(ctx,'neon',A.x+240,A.y+356,{s:24,w:700,a:'center'});
+  txt(ctx,'The number in pink is the mass of a neon atom,',A.x+240,A.y+400,{s:16,c:PAL.soft,a:'center',max:A.w-30});txt(ctx,'in atomic mass units. Or is it?',A.x+240,A.y+424,{s:16,c:PAL.soft,a:'center'});
+  card(ctx,B,'Cambridge, 1913');const gl=RM?1:.75+.25*Math.sin(t*3);ctx.save();ctx.shadowColor=NEON;ctx.shadowBlur=30*gl;ctx.strokeStyle=NEON;ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(B.x+110,B.y+250);ctx.lineTo(B.x+110,B.y+130);ctx.lineTo(B.x+190,B.y+250);ctx.lineTo(B.x+190,B.y+130);ctx.moveTo(B.x+320,B.y+130);ctx.lineTo(B.x+250,B.y+130);ctx.lineTo(B.x+250,B.y+250);ctx.lineTo(B.x+320,B.y+250);ctx.moveTo(B.x+250,B.y+190);ctx.lineTo(B.x+305,B.y+190);ctx.stroke();ctx.restore();
+  txt(ctx,'J. J. Thomson fires glowing neon atoms',B.x+240,B.y+330,{s:17,w:600,a:'center',max:B.w-30});txt(ctx,'past a magnet to weigh them.',B.x+240,B.y+354,{s:17,w:600,a:'center'});
+  txt(ctx,'If every neon atom weighs 20.2,',B.x+240,B.y+410,{s:16,c:PAL.soft,a:'center'});txt(ctx,'they should all land in one spot.',B.x+240,B.y+434,{s:16,c:PAL.soft,a:'center'})}
+
+/* ---------- the mass spectrometer ---------- */
+const X0=110,BASE=350,KPX=27,landX=m=>X0+KPX*m;
+function pickIso(){const r=Math.random();let a=0;for(const q of ISO.Ne){a+=q.f;if(r<a)return q.A}return 20}
+function fire(n){st.cnt=st.cnt||{20:0,21:0,22:0};st.fly=st.fly||[];if(n<=20){for(let i=0;i<n;i++)st.fly.push({A:pickIso(),t0:st.t+i*.14})}else{for(let i=0;i<n;i++)st.cnt[pickIso()]++;st.burst=st.t}st.fired=(st.fired||0)+n}
+const total=()=>st.cnt?st.cnt[20]+st.cnt[21]+st.cnt[22]:0;
+function sceneSpec(o={}){const R={x:14,y:14,w:772,h:532},Q={x:798,y:14,w:188,h:532};card(ctx,R,'A mass spectrometer: weighing atoms with a magnet');st.cnt=st.cnt||{20:0,21:0,22:0};st.fly=st.fly||[];
+  ctx.fillStyle=PAL.dark?'rgba(92,140,255,.07)':'rgba(47,98,214,.05)';rr(ctx,R.x+16,R.y+38,R.w-32,BASE-R.y-38,10);ctx.fill();ctx.fillStyle=PAL.dark?'rgba(140,170,255,.3)':'rgba(47,98,214,.22)';
+  for(let x=R.x+50;x<R.x+R.w-30;x+=62)for(let y=R.y+66;y<BASE-16;y+=58){ctx.fillRect(x-4,y-.75,8,1.5);ctx.fillRect(x-.75,y-4,1.5,8)}
+  txt(ctx,'magnet (its pull turns the moving atoms)',R.x+30,R.y+60,{s:13.5,c:PAL.soft});
+  [20,22].forEach(A=>{if(st.cnt[A]||o.paths){const d=KPX*A;ctx.strokeStyle=PAL.line;ctx.setLineDash([4,6]);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(X0+d/2,BASE,d/2,Math.PI,0);ctx.stroke();ctx.setLineDash([])}});
+  ctx.fillStyle=PAL.dark?'#565b66':'#5f6570';rr(ctx,X0-26,BASE,52,54,6);ctx.fill();txt(ctx,'neon',X0,BASE+24,{s:13,w:700,c:'#fff',a:'center'});txt(ctx,'in',X0,BASE+42,{s:13,w:700,c:'#fff',a:'center'});
+  ctx.fillStyle=PAL.ink;ctx.fillRect(landX(19)-10,BASE,KPX*4+20,5);txt(ctx,'detector',landX(19)-18,BASE+4,{s:13,c:PAL.soft,a:'right',b:'middle'});txt(ctx,'mass:',landX(19)-18,BASE+24,{s:13,c:PAL.soft,a:'right'});
+  [20,21,22].forEach(A=>{const x=landX(A);txt(ctx,String(A),x,BASE+24,{s:16,w:700,a:'center'});const n=st.cnt[A],tot=total();
+    if(tot<=140){for(let i=0;i<n;i++){ctx.fillStyle=NEON;ctx.beginPath();ctx.arc(x-7.5+(i%4)*5,BASE+36+Math.floor(i/4)*5,2.2,0,TAU);ctx.fill()}}
+    else{const h=150*n/tot;ctx.fillStyle=NEON;rr(ctx,x-10,BASE+32,20,Math.max(n?2:0,h),3);ctx.fill()}});
+  st.fly=st.fly.filter(q=>{const u=(st.t-q.t0)/.9;if(u<0)return true;if(u>=1){st.cnt[q.A]++;return false}const d=KPX*q.A,a=Math.PI*u,x=X0+d/2-d/2*Math.cos(a),y=BASE-d/2*Math.sin(a);
+    const g=ctx.createRadialGradient(x,y,1,x,y,11);g.addColorStop(0,NEON);g.addColorStop(1,'rgba(255,106,61,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,11,0,TAU);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,2.5,0,TAU);ctx.fill();return true});
+  if(o.nuclei){const y=BASE-120;[[20,10,10,270],[22,10,12,500]].forEach(([A,p,n,x])=>{nucleus(x,y,p,n,6);txt(ctx,'neon-'+A,x,y+52,{s:17,w:700,a:'center'});txt(ctx,p+' protons + '+n+' neutrons',x,y+74,{s:14,c:PAL.soft,a:'center'})});
+    ctx.fillStyle=PROT;ctx.beginPath();ctx.arc(330,BASE-206,6,0,TAU);ctx.fill();txt(ctx,'proton',342,BASE-201,{s:13.5,c:PAL.soft});ctx.fillStyle=NEUT;ctx.beginPath();ctx.arc(420,BASE-206,6,0,TAU);ctx.fill();txt(ctx,'neutron',432,BASE-201,{s:13.5,c:PAL.soft})}
+  card(ctx,Q,'Counted');const tot=total();[20,21,22].forEach((A,i)=>{const y=Q.y+70+i*62;txt(ctx,'mass '+A,Q.x+16,y,{s:15,c:PAL.soft});txt(ctx,st.cnt[A].toLocaleString(),Q.x+Q.w-16,y+4,{s:26,w:700,a:'right'});if(tot)txt(ctx,(100*st.cnt[A]/tot).toFixed(tot>=200?1:0)+'%',Q.x+Q.w-16,y+26,{s:14,c:PAL.soft,a:'right'})});
+  txt(ctx,'atoms fired',Q.x+16,Q.y+270,{s:15,c:PAL.soft});txt(ctx,tot.toLocaleString(),Q.x+Q.w-16,Q.y+274,{s:26,w:700,a:'right'});
+  txt(ctx,'landed at 20.2',Q.x+16,Q.y+330,{s:15,c:PAL.soft});txt(ctx,'0',Q.x+Q.w-16,Q.y+334,{s:26,w:700,a:'right',c:PAL.think})}
+
+/* ---------- the balance point ---------- */
+const BX0=110,BWP=780,BY=352;
+/* o: {iso, w:[weights], lo, hi, f, locked, label:[...], calc} ; returns {mean, level} */
+function sceneBeam(o){const R={x:14,y:14,w:972,h:532};card(ctx,R,o.title||'The whole crowd on a beam');const X=m=>BX0+(m-o.lo)/(o.hi-o.lo)*BWP,mu=mean(o.iso,o.w),tol=(o.hi-o.lo)*.004,level=Math.abs(mu-o.f)<=tol;
+  st.ang=lerp(st.ang||0,level?0:clamp((mu-o.f)/(o.hi-o.lo)*1.4,-.2,.2),.14);const px=X(o.f),sum=o.w.reduce((a,b)=>a+b,0)||1,hmax=200;
+  ctx.save();ctx.translate(px,BY);ctx.rotate(st.ang);ctx.fillStyle=level?PAL.good:(PAL.dark?'#aab2bd':'#4a4f58');rr(ctx,X(o.lo)-px-10,-7,BWP+20,14,7);ctx.fill();
+  for(let m=Math.ceil(o.lo);m<=Math.floor(o.hi);m++){const x=X(m)-px;ctx.fillStyle=PAL.card;ctx.fillRect(x-1,-7,2,14);txt(ctx,String(m),x,30,{s:15,w:600,a:'center',c:PAL.soft})}
+  o.iso.forEach((q,i)=>{const x=X(q.m)-px,h=hmax*o.w[i]/sum;if(h>.4){ctx.fillStyle=o.col||NEON;rr(ctx,x-22,-7-Math.max(h,3),44,Math.max(h,3),4);ctx.fill()}
+    txt(ctx,(o.sym||'')+'-'+q.A,x,-7-h-30,{s:16,w:700,a:'center'});txt(ctx,(100*o.w[i]/sum).toFixed(o.dec===undefined?1:o.dec)+'%',x,-7-h-10,{s:14.5,c:PAL.soft,a:'center'})});ctx.restore();
+  ctx.fillStyle=o.locked?PAL.soft:PAL.think;ctx.beginPath();ctx.moveTo(px,BY+9);ctx.lineTo(px-26,BY+58);ctx.lineTo(px+26,BY+58);ctx.closePath();ctx.fill();
+  pill(ctx,o.locked?'the table says '+o.f.toFixed(2):(level?mu:o.f).toFixed(2),px,BY+78,o.locked?PAL.soft:level?PAL.good:PAL.think,'#fff',17,'center');
+  if(!o.locked&&!level)txt(ctx,'↔ drag the balance point',px,BY+106,{s:13.5,c:PAL.think,w:700,a:'center'});
+  txt(ctx,level?'Balanced.':mu>o.f?'The right side is heavier. It tips right.':'The left side is heavier. It tips left.',R.x+22,R.y+62,{s:18,w:700,c:level?PAL.good:PAL.ink});
+  if(o.calc&&(level||o.calc===2)){const parts=o.iso.map((q,i)=>(o.w[i]/sum).toFixed(3)+' × '+q.m.toFixed(2)).join('  +  ');txt(ctx,'share × mass, added up:',R.x+22,R.y+478,{s:14.5,c:PAL.soft});txt(ctx,parts+'  =  '+mu.toFixed(2),R.x+22,R.y+506,{s:19,w:700,max:R.w-44})}
+  return{mu,level,X}}
+
+/* ---------- captions ---------- */
+const CAP={
+ one0:'A magnet turns a moving charged atom. A heavier atom is harder to turn, so it swings wider and lands farther along the detector. Where it lands tells you its mass. <b>Fire atoms one at a time.</b>',
+ one1:'Most land at 20. Now and then one lands at 22. None lands at 20.2. <b>Fire a bigger crowd.</b>',
+ crowd0:'<b>Fire 100, then 1,000.</b> Watch the piles grow under the detector.',
+ crowd1:'About 90 of every 100 land at 20, and about 9 at 22. Same element, different masses: these are <b>isotopes</b>. A neon atom always has 10 protons. The heavier one carries 2 extra neutrons.',
+ beam0:'Here is that crowd standing on a beam at their masses. <b>Drag the balance point until the beam is level.</b>',
+ beam1:'The beam balances at 20.18, the number on the periodic table. It is the balance point of the whole crowd: the <b>average atomic mass</b>. No single neon atom weighs that.',
+ cl0:'Now chlorine. About 76 of every 100 atoms are chlorine-35 and 24 are chlorine-37. <b>First drag the balance point to where you think it sits. Then type the average atomic mass.</b>',
+ cl1:'Yes: 35.45. The balance point sits closer to 35 because three of every four atoms are there. Each isotope pulls with its mass times its share.',
+ b0:'Run it backward. The table says boron is 10.81, and boron has two isotopes, 10 and 11. <b>Slide the share of boron-11 until the beam is level at 10.81.</b>',
+ b1:'About 80% boron-11 and 20% boron-10. The average tells you the mix. Chemists work out how common each isotope is this way.',
+ sort0:'Two numbers that are easy to mix up. <b>Send each statement to the number it describes.</b>',
+ sort1:'Mass number: one atom, counted, always whole. Average atomic mass: the whole crowd, balanced, almost never whole.'};
+const PARTS=['The table','The magnet','A crowd','The balance','Use it','Two numbers','Your turn'];
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function picks(key,q,opts,right,after){const g=S.guess[key];if(after&&g!==undefined)return `<p class="note">Your guess: <b>${opts[g].toLowerCase()}</b> <span class="chip ${g===right?'ok':'no'}">${g===right?'✓ matched':'✗ not this time'}</span></p>`;
+  return `<div class="pick" data-key="${key}"><p class="q">${q}</p><div class="row">${opts.map((o,i)=>`<button type="button" class="btn opt${g===i?' on':''}" data-i="${i}" aria-pressed="${g===i}">${o}</button>`).join('')}</div></div>`}
+function bindPicks(root,fn){$$('.pick .opt',root).forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.pick').dataset.key;S.guess[k]=+b.dataset.i;save();ev('guess-'+k+'-'+b.dataset.i);fn&&fn(k,+b.dataset.i);renderCtl()}))}
+const SAW=['One spot, at 20.2','Two spots, at 20 and 22','A smear from 20 to 22'];
+const fireBtns=l=>`<div class="row">${l.map(n=>`<button type="button" class="btn${n===l[0]?' primary':''}" data-fire="${n}">Fire ${n.toLocaleString()}</button>`).join('')}<button type="button" class="btn" data-clear="1">Clear</button></div>`;
+function bindFire(r){$$('[data-fire]',r).forEach(b=>b.addEventListener('click',()=>fire(+b.dataset.fire)));const c=$('[data-clear]',r);c&&c.addEventListener('click',()=>{st.cnt={20:0,21:0,22:0};st.fly=[]})}
+const fSlider=(lo,hi)=>`<div class="row sl"><label>Balance point <input type="range" min="${lo}" max="${hi}" step="0.01" value="${st.f}" data-f="1" aria-label="Balance point, in atomic mass units"><output>${(+st.f).toFixed(2)}</output></label></div>`;
+function bindF(r){const i=$('[data-f]',r);i&&i.addEventListener('input',()=>{st.f=+i.value;st.moved=true;i.nextElementSibling.textContent=st.f.toFixed(2)})}
+const STATE=[['Always a whole number',0],['The decimal number on the periodic table',1],['Protons plus neutrons in one atom',0],['Depends on how common each isotope is',1]];
+
+const STEPS=[
+ {part:0,title:'The number no atom has',
+  cap:'The periodic table says a neon atom has a mass of 20.18. In 1913 a physicist set out to weigh neon atoms with a magnet. What he saw did not match the table. <b>Guess what he saw.</b>',
+  alt:'If every atom of neon were identical, weighing them would give the same answer every time, and they would all land in one place.',
+  aria:'The periodic table square for neon, showing the mass 20.18, beside a glowing neon sign and a note that in 1913 J. J. Thomson fired neon atoms past a magnet to weigh them.',
+  draw(){sceneHook(st.t)},ctl(){return picks('saw','Where did the neon atoms land?',SAW)+(S.guess.saw!==undefined?'<p class="note">Locked in. You will fire the atoms yourself next.</p>':'')},bind(r){bindPicks(r,()=>markDone())}},
+ {part:1,title:'Weigh one atom',cap:CAP.one0,
+  alt:'Roll a bowling ball and a tennis ball past a fan. The light one is pushed off course more. Here the magnet is the fan, and the atoms are sorted by how far they swing.',
+  aria:'A mass spectrometer. Neon atoms leave a source, curve through a magnet in a half circle, and land on a detector marked 20, 21 and 22. Heavier atoms land farther along.',
+  enter(){st.cnt={20:0,21:0,22:0};st.fly=[]},tick(){if(!st.s1&&total()>=8){st.s1=true;cap(CAP.one1);markDone()}},
+  draw(){sceneSpec()},ctl(){return fireBtns([1,10])},bind:bindFire},
+ {part:2,title:'Weigh a crowd',cap:CAP.crowd0,
+  alt:'Think of two sizes of the same coin: every one is a nickel, but some were minted a little heavier. Sorting them by weight makes two piles, a big one and a small one.',
+  aria:'The mass spectrometer after a thousand atoms. A tall pile sits at mass 20 and a short pile at mass 22. Drawings show neon-20 with ten protons and ten neutrons and neon-22 with ten protons and twelve neutrons.',
+  enter(from){if(from!==1||!st0.cnt)st.cnt={20:0,21:0,22:0};else st.cnt=st0.cnt;st.fly=[]},
+  tick(){if(!st.s1&&total()>=500){st.s1=true;cap(CAP.crowd1+(S.guess.saw===undefined?'':` <span class="chip ${S.guess.saw===1?'ok':'no'}">You guessed: ${SAW[S.guess.saw].toLowerCase()} ${S.guess.saw===1?'✓':'✗'}</span>`));markDone()}},
+  draw(){sceneSpec({nuclei:st.s1,paths:true})},ctl(){return fireBtns([100,1000])},bind:bindFire},
+ {part:3,title:'Find the balance point',cap:CAP.beam0,
+  alt:'A seesaw with nine kids on one seat and one kid on the other does not balance in the middle. You have to slide the pivot toward the crowded seat. The average works the same way.',
+  aria:'A beam marked from 19.5 to 22.5 with a tall block at 20 and a short block at 22. A pivot under the beam can be dragged. The beam is level when the pivot is at 20.18.',
+  enter(){st.f=21;st.w=ISO.Ne.map(q=>q.f)},
+  tick(){const mu=AVG.Ne;if(!st.s1&&st.moved&&Math.abs(st.f-mu)<=.012){st.s1=true;st.f=mu;cap(CAP.beam1);markDone();renderCtl()}},
+  draw(){st.B=sceneBeam({iso:ISO.Ne,w:st.w,lo:19.5,hi:22.5,f:st.f,sym:'Ne',calc:1,dec:1})},ctl(){return fSlider(19.5,22.5)},bind:bindF},
+ {part:4,title:'Use it: chlorine',cap:CAP.cl0,
+  alt:'Halfway between 35 and 37 is 36. But the crowd is not split evenly: most of it stands at 35. So the balance point has to be nearer 35 than 37.',
+  aria:'A beam with a tall block at chlorine-35 and a shorter block at chlorine-37. Drag the pivot to predict the balance point, then type the average atomic mass.',
+  enter(){st.f=36.5;st.w=ISO.Cl.map(q=>q.f);st.ok=S.cl==='ok';if(st.ok){st.f=AVG.Cl;cap(CAP.cl1);markDone()}},
+  draw(){st.B=sceneBeam({iso:ISO.Cl,w:st.w,lo:34.5,hi:37.5,f:st.f,sym:'Cl',col:'#3aa655',calc:st.ok?2:0,dec:0,title:'Chlorine: 76 of every 100 at 35, 24 at 37'})},
+  ctl(){return st.ok?'':fSlider(34.5,37.5)+`<div class="row"><label class="nm">Average atomic mass <input id="ans" type="text" inputmode="decimal" size="6" autocomplete="off" aria-label="Average atomic mass of chlorine"></label><button type="button" class="btn primary" id="chk">Check</button>${S.miss>=2?'<button type="button" class="btn" id="show">Show me</button>':''}</div><p class="fb no" id="afb" role="status">${st.fb||''}</p>`},
+  bind(r){bindF(r);const chk=$('#chk',r);if(!chk)return;const go1=()=>{const v=parseFloat($('#ans',r).value.replace(',','.'));if(isNaN(v)){st.fb='Type a number, like 35.9.';renderCtl();return}
+      if(Math.abs(v-AVG.Cl)<=.06){S.cl='ok';save();ev('answer-right');st.ok=true;st.f=AVG.Cl;st.fb='';cap(CAP.cl1);markDone();renderCtl();return}
+      S.miss++;save();ev('answer-wrong');st.fb=Math.abs(v-36)<.06?'That is halfway between 35 and 37. But three of every four atoms are at 35, so the balance point sits closer to 35.':(Math.abs(v-35)<.1||Math.abs(v-37)<.1)?'That is the mass of one isotope. The average has to sit between the two, pulled toward the bigger crowd.':v<35||v>37?'An average of 35s and 37s has to land between 35 and 37.':'Close. Multiply each mass by its share and add: 0.76 × 34.97 + 0.24 × 36.97.';renderCtl()};
+    chk.addEventListener('click',go1);$('#ans',r).addEventListener('keydown',e=>{if(e.key==='Enter')go1()});const sh=$('#show',r);sh&&sh.addEventListener('click',()=>{st.fb='0.7576 × 34.97 + 0.2424 × 36.97 = 35.45. Type 35.45.';renderCtl()})}},
+ {part:4,title:'Run it backward: boron',cap:CAP.b0,
+  alt:'The pivot is stuck at 10.81, close to 11. So most of the crowd must be standing at 11. Keep moving atoms from 10 to 11 until the beam stops tipping left.',
+  aria:'A beam with its pivot fixed at 10.81 and blocks at boron-10 and boron-11. A slider changes how much of the boron is boron-11. The beam is level at about 80 percent.',
+  enter(){st.share=.5},tick(){const mu=mean(ISO.B,[1-st.share,st.share]);if(!st.s1&&st.moved&&Math.abs(mu-AVG.B)<=.008){st.s1=true;cap(CAP.b1);markDone()}},
+  draw(){st.B=sceneBeam({iso:ISO.B,w:[1-st.share,st.share],lo:9.5,hi:11.5,f:AVG.B,locked:true,sym:'B',col:'#8e5bd6',dec:0,calc:1,title:'Boron: what mix balances at 10.81?'})},
+  ctl(){return `<div class="row sl"><label>Share that is boron-11 <input type="range" min="0" max="100" step="1" value="${Math.round(st.share*100)}" data-share="1" aria-label="Percent of boron that is boron-11"><output>${Math.round(st.share*100)}%</output></label></div>`},
+  bind(r){const i=$('[data-share]',r);i.addEventListener('input',()=>{st.share=+i.value/100;st.moved=true;i.nextElementSibling.textContent=i.value+'%'})}},
+ {part:5,title:'Mass number or average atomic mass?',cap:CAP.sort0,
+  alt:'Mass number belongs to one atom: you get it by counting the particles in its nucleus. Average atomic mass belongs to the element as a whole: you get it by balancing the crowd.',
+  aria:'Neon-20 and neon-22 nuclei beside the neon square from the periodic table. One atom has a mass number, a whole number. The element has an average atomic mass, a decimal.',
+  draw(){const A={x:14,y:14,w:480,h:532},B={x:506,y:14,w:480,h:532};card(ctx,A,'One atom: mass number');nucleus(A.x+150,A.y+200,10,10,6.4);nucleus(A.x+340,A.y+200,10,12,6.4);txt(ctx,'20',A.x+150,A.y+310,{s:44,w:700,a:'center'});txt(ctx,'22',A.x+340,A.y+310,{s:44,w:700,a:'center'});
+    txt(ctx,'count the protons and neutrons',A.x+240,A.y+360,{s:16,c:PAL.soft,a:'center'});txt(ctx,'in that one nucleus',A.x+240,A.y+382,{s:16,c:PAL.soft,a:'center'});
+    card(ctx,B,'The whole element: average atomic mass');tableSquare(B.x+150,B.y+80,180,'Ne',10,'20.18');txt(ctx,'the balance point of all the',B.x+240,B.y+360,{s:16,c:PAL.soft,a:'center'});txt(ctx,'neon atoms there are',B.x+240,B.y+382,{s:16,c:PAL.soft,a:'center'})},
+  ctl(){const done=STATE.every((q,i)=>S.sort[i]===q[1]);return STATE.map((q,i)=>{const v=S.sort[i],ok=v===q[1];return `<div class="sortrow"><p>${q[0]}${v!==undefined?(ok?' <span class="chip ok">✓</span>':' <span class="chip no">try the other one</span>'):''}</p><div class="row"><button type="button" class="btn sm${v===0?' on':''}" data-s="${i}" data-v="0">mass number</button><button type="button" class="btn sm${v===1?' on':''}" data-s="${i}" data-v="1">average atomic mass</button></div></div>`}).join('')+(done?'':'')},
+  bind(r){$$('[data-s]',r).forEach(b=>b.addEventListener('click',()=>{S.sort[+b.dataset.s]=+b.dataset.v;save();if(STATE.every((q,i)=>S.sort[i]===q[1])){cap(CAP.sort1);markDone();ev('sort-done')}renderCtl()}))}},
+ {part:6,wide:true,title:'Now tell it back',
+  cap:'Thomson’s assistant Francis Aston built a better machine, found isotopes in element after element, and won the Nobel Prize in 1922. <b>Now you explain the number on the table.</b>',
+  alt:'Start with what Thomson expected and what he saw. Then say what the decimal on the periodic table really is.',
+  aria:'The periodic table square for neon beside the glowing neon sign.',
+  draw(){sceneHook(st.t)},
+  ctl(){return `<div class="tell"><h3>1. Say it in your own words</h3><p class="q">The table says neon is 20.18, but no neon atom has that mass. Explain why. Use the words <b>isotope</b>, <b>share</b> and <b>average</b>.</p>
+  <textarea id="tx" rows="4" placeholder="Type your explanation here.">${esc(S.text)}</textarea>
+  <h3>2. Turn it in</h3><p class="q">If your teacher assigned this, copy your work and paste it into the Canvas text box.</p>
+  <div class="row"><label class="nm">Name <input id="nm" type="text" value="${esc(S.name)}" autocomplete="name"></label><button type="button" class="btn primary" id="copy">Copy for Canvas</button><span id="cmsg" role="status"></span></div>
+  <div class="world"><h3>Where this machine works today</h3><p>Mass spectrometers now check athletes for banned drugs, test newborn babies for rare diseases from a few drops of blood, and ride on Mars rovers looking for the chemistry of life. They all sort atoms and molecules by mass, the way you just did.</p>
+  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#avgmass">Practice more in the average atomic mass tool.</a> More stories: <a href="https://rjedtech.github.io/Raider-ChemLab/naming-story.html">One letter apart</a>, <a href="https://rjedtech.github.io/Raider-ChemLab/pressure-story.html">The bag that swells</a>, <a href="https://rjedtech.github.io/Raider-ChemLab/equilibrium-story.html">The hatch that stayed shut</a>.</p></div></div>`},
+  bind(r){const tx=$('#tx',r),nm=$('#nm',r);tx.addEventListener('input',()=>{S.text=tx.value;save()});nm.addEventListener('input',()=>{S.name=nm.value;try{localStorage.setItem('raider-labs-name',nm.value)}catch(e){}save()});
+    $('#copy',r).addEventListener('click',()=>{const g=S.guess,L=['Raider ChemLab · Average atomic mass story: The number no atom has','Name: '+(S.name||'(not given)'),'',
+      'Guess, where the neon atoms land: '+(g.saw===undefined?'no guess':SAW[g.saw].toLowerCase()+(g.saw===1?' (matched)':' (they landed in two spots, at 20 and 22)')),
+      'Average atomic mass of chlorine: '+(S.cl==='ok'?'35.45, correct after '+S.miss+' miss'+(S.miss===1?'':'es'):'not answered yet'),
+      'Mass number vs average atomic mass: '+STATE.filter((q,i)=>S.sort[i]===q[1]).length+' of 4 sorted correctly','','In my own words:',S.text||'(nothing written)'].join('\n');
+    const ok=()=>{$('#cmsg').textContent='Copied. Paste it into Canvas.'},fb=()=>{const t=document.createElement('textarea');t.value=L;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){$('#cmsg').textContent='Could not copy. Select your text and copy it by hand.'}t.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(L).then(ok,fb);else fb();ev('copy')})}},
+];
+// drag the balance point on the picture
+let fDrag=false;
+cv.addEventListener('pointerdown',e=>{if((cur!==3&&cur!==4)||!st.B||st.ok)return;const p=pt(e);if(p.y>BY-20&&p.y<BY+120&&Math.abs(p.x-st.B.X(st.f))<46){fDrag=true;cv.setPointerCapture(e.pointerId);e.preventDefault()}});
+cv.addEventListener('pointermove',e=>{if(!fDrag)return;const lo=cur===3?19.5:34.5,hi=lo+3;st.f=clamp(lo+(pt(e).x-BX0)/BWP*3,lo,hi);st.moved=true;const i=$('#ctl [data-f]');if(i){i.value=st.f;i.nextElementSibling.textContent=st.f.toFixed(2)}});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{fDrag=false}));
+
+/* ---------- page controls ---------- */
+let st0={};
+function ev(name){try{const g=window.goatcounter;if(g&&g.count)g.count({path:`story/${SITE}/${EVB}/${name}`,title:EVT,event:true})}catch(e){}}
+function cap(html){if(html===lastCap)return;lastCap=html;$('#cap').innerHTML=html;speak()}
+function markDone(){$('#next').classList.add('pulse')}
+function renderCtl(){const s=STEPS[cur],c=$(s.wide?'#ctlw':'#ctl'),o=$(s.wide?'#ctl':'#ctlw');o.innerHTML='';c.innerHTML=s.ctl?s.ctl.call(s):'';if(s.bind)s.bind.call(s,c)}
+function go(i,quiet){i=clamp(i,0,STEPS.length-1);const from=cur;st0=st;st={t:0};cur=i;const s=STEPS[i];lastCap='';paused=false;W.speed=1;
+  if(NOWORLD(i)){W.ps=[];W.fl=[]}
+  $('#stepno').textContent=`Part ${s.part+1} of ${PARTS.length} · Step ${i+1} of ${STEPS.length}`;$('#ttl').textContent=s.title;cv.setAttribute('aria-label',s.aria||'');
+  $('#alt').hidden=true;$('#alt').textContent='';$('#next').classList.remove('pulse');$('#back').disabled=i===0;$('#next').hidden=i===STEPS.length-1;
+  $('#pause').textContent='Pause';$('#pause').hidden=!PAUSEOK(i);
+  if(s.enter)s.enter.call(s,from);if(s.cap&&!lastCap)cap(s.cap);renderCtl();
+  $$('#parts button').forEach((b,k)=>{b.classList.toggle('on',k===s.part);b.setAttribute('aria-current',k===s.part?'step':'false')});
+  if(!quiet){try{history.replaceState(null,'','#s'+(i+1))}catch(e){}}
+  if(!S.seen[i]){S.seen[i]=1;save();ev('step-'+String(i+1).padStart(2,'0'))}
+  document.body.classList.toggle('tellmode',!!s.wide);fit();
+  if(!s.ctl)markDone()}
+function fit(){const w=cv.clientWidth||LW,d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(w*LH/LW*d);PX=cv.width/LW}
+let lastT=0;
+function frame(ts){const dt=Math.min(.05,(ts-lastT)/1000||0);lastT=ts;const s=STEPS[cur];
+  if(!paused){st.t+=dt;if(W.ps.length)W.step(dt);if(s.tick)s.tick.call(s,dt)}
+  ctx.setTransform(PX,0,0,PX,0,0);ctx.fillStyle=PAL.bg;ctx.fillRect(0,0,LW,LH);s.draw.call(s);requestAnimationFrame(frame)}
+
+// draw a prediction on the graph (step 5)
+function pt(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*LW,y:(e.clientY-r.top)/r.height*LH}}
+let drawing=false;
+cv.addEventListener('pointerdown',e=>{if(cur!==4||!st.g)return;const p=pt(e),g=st.g;if(p.x<g.L-10||p.x>g.L+g.W+10||p.y<g.T-10||p.y>g.T+g.H+10)return;drawing=true;S.sketch=[];S.guess.shape='drawn';cv.setPointerCapture(e.pointerId);addPt(p);e.preventDefault()});
+cv.addEventListener('pointermove',e=>{if(drawing)addPt(pt(e))});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{if(drawing){drawing=false;save()}}));
+function addPt(p){const g=st.g,t=clamp((p.x-g.L)/g.W,0,1)*g.span,v=clamp((g.T+g.H-p.y)/g.H,0,1)*g.ymax,a=S.sketch;if(a.length&&t<=a[a.length-1].t+.05)return;a.push({t,v})}
+
+// reading supports (shared across Raider Labs)
+const SS=window.speechSynthesis,CAN=!!(SS&&typeof SpeechSynthesisUtterance!=='undefined');
+const gk=k=>{try{return localStorage.getItem(k)==='on'}catch(e){return false}},pk=(k,v)=>{try{localStorage.setItem(k,v?'on':'off')}catch(e){}};
+let raOn=CAN&&gk('raider-labs-readaloud'),easy=gk('raider-labs-easyread');
+function speak(){if(!raOn||!CAN)return;try{SS.cancel();const u=new SpeechSynthesisUtterance($('#ttl').textContent+'. '+$('#cap').textContent.replace(/₂/g,'2').replace(/₄/g,'4').replace(/⇌/g,' both ways ').replace(/→/g,' makes '));u.rate=.95;SS.speak(u)}catch(e){}}
+function syncSup(){const a=$('#ra'),b=$('#er');a.textContent=raOn?'🔊 Read aloud: on':'🔊 Read aloud';a.setAttribute('aria-pressed',raOn);a.hidden=!CAN;b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',easy);document.body.classList.toggle('easy',easy)}
+
+function boot(){setPal();if(DARKQ.addEventListener)DARKQ.addEventListener('change',setPal);
+  $('#parts').innerHTML=PARTS.map((p,i)=>`<button type="button" data-p="${i}"><span>${i+1}</span>${p}</button>`).join('');
+  $$('#parts button').forEach(b=>b.addEventListener('click',()=>go(STEPS.findIndex(s=>s.part===+b.dataset.p))));
+  $('#back').addEventListener('click',()=>go(cur-1));$('#next').addEventListener('click',()=>go(cur+1));
+  $('#pause').addEventListener('click',()=>{paused=!paused;$('#pause').textContent=paused?'Play':'Pause'});
+  $('#conf').addEventListener('click',()=>{const a=$('#alt');a.hidden=false;a.innerHTML='<b>Another way to see it.</b> '+STEPS[cur].alt;ev('confused-step-'+String(cur+1).padStart(2,'0'));try{const g=window.goatcounter;g&&g.count&&g.count({path:`confused/${SITE}/${PAGE}/step-${String(cur+1).padStart(2,'0')}`,event:true})}catch(e){}});
+  $('#ra').addEventListener('click',()=>{raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn)speak();else if(CAN)SS.cancel()});
+  $('#er').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});syncSup();
+  document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')go(cur+1);else if(e.key==='ArrowLeft')go(cur-1)});
+  window.addEventListener('resize',fit);if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);fit();
+  const m=/^#s(\d+)/.exec(location.hash);go(m?+m[1]-1:0,true);requestAnimationFrame(frame)}
+window.EQ={go,W,get st(){return st},get cur(){return cur},S,STEPS,settled,Kc,kf,eqSplit,molar};
+boot();
+
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var done=false,tries=0;function go(){if(done)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}done=true;try{g.count({path:location.pathname+(/scrlybrkr/.test(location.search)?'?sd':'')});}catch(e){}}
+if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+// drives the whole lesson like a student and checks the numbers against the model
+const {chromium}=require('playwright');
+const out=[],fail=[];const ok=(name,cond,info)=>{(cond?out:fail).push(name+(info!==undefined?' ['+info+']':''))};
+(async()=>{
+const b=await chromium.launch({channel:'chrome',args:['--no-sandbox']});
+const ctx=await b.newContext({viewport:{width:+(process.env.VW||1366),height:+(process.env.VH||700)},deviceScaleFactor:1,colorScheme:process.env.DARK?'dark':'light'});
+await ctx.grantPermissions(['clipboard-read','clipboard-write']);
+const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(String(e).slice(0,300)));
+await p.route('**/gc.zgo.at/**',r=>r.abort());
+const tag=process.env.TAG||'w',shot=n=>p.screenshot({path:`/home/claude/shots/eq-${tag}-${n}.png`});
+const E=f=>p.evaluate(f);const wait=ms=>p.waitForTimeout(ms);
+const near=(a,b,tol)=>Math.abs(a-b)<=tol;
+await p.goto('http://localhost:8766/equilibrium-story.html');await p.evaluate(()=>localStorage.clear());await p.reload();await wait(600);
+ok('starts on step 1',await E(()=>EQ.cur)===0);await shot('01');
+await p.click('#conf');ok('confused shows another way',await p.isVisible('#alt'));
+await p.click('#next');await wait(400);await p.click('.pick .opt >> nth=0');await wait(200);ok('guess stored',await E(()=>EQ.S.guess.heat)===0);await shot('02');
+await p.click('#next');await wait(300);await p.click('[data-h=soft]');await wait(3300);ok('soft caption',(await p.textContent('#cap')).includes('soft hit'));await shot('03soft');
+await p.click('[data-h=hard]');await wait(900);await shot('03mid');await wait(2600);ok('hard caption',(await p.textContent('#cap')).includes('snaps'));await shot('03hard');
+await p.click('#next');await wait(300);await p.click('[data-m=go]');await wait(1200);await shot('04mid');await wait(1800);ok('reversible named',(await p.textContent('#cap')).includes('reversible'));await shot('04');
+await p.click('#next');await wait(500);
+// draw a prediction on the graph
+const g=await E(()=>{const r=document.querySelector('#stage').getBoundingClientRect(),g=EQ.st.g,k=r.width/1000;return{x:r.left+g.L*k,y:r.top+g.T*k,w:g.W*k,h:g.H*k}});
+await p.mouse.move(g.x+2,g.y+g.h-2);await p.mouse.down();for(let i=1;i<=20;i++)await p.mouse.move(g.x+g.w*i/20,g.y+g.h-g.h*.7*(1-Math.exp(-i/5)));await p.mouse.up();
+ok('sketch recorded',await E(()=>EQ.S.sketch.length)>8,await E(()=>EQ.S.sketch.length));await shot('05');
+await p.click('[data-go]');await wait(1500);ok('reactions on',await E(()=>EQ.W.react&&EQ.cur===5));await shot('06a');
+await wait(9000);const s6=await E(()=>({m2:EQ.W.m2,m4:EQ.W.m4,n2:EQ.W.count(2),n4:EQ.W.count(4),r:EQ.W.rates(),cap:document.querySelector('#cap').textContent}));
+ok('25C settles near 17 NO2',near(s6.m2,16.9,.6),s6.m2.toFixed(2));ok('25C N2O4 near 51.5',near(s6.m4,51.5,.4),s6.m4.toFixed(2));ok('box matches amounts',near(s6.n2,s6.m2,3)&&near(s6.n4,s6.m4,2.5),s6.n4+'/'+s6.n2);
+ok('rates equal at balance',near(s6.r.S,s6.r.J,.12),s6.r.S.toFixed(2)+' vs '+s6.r.J.toFixed(2));ok('balance caption',s6.cap.includes('now match'));await shot('06b');
+const c=await E(()=>({c4:EQ.molar(EQ.W.m4),c2:EQ.molar(EQ.W.m2)}));ok('molarity matches current tool (0.0430, 0.0141)',near(c.c4,.0430,.0004)&&near(c.c2,.0141,.0004),c.c4.toFixed(4)+', '+c.c2.toFixed(4));
+await p.click('#next');await wait(400);await p.click('.pick .opt >> nth=1');await wait(7000);
+const sw=await E(()=>{let n=0;const h=EQ.W.tagHist;for(let i=1;i<h.length;i++)if(h[i]!==h[i-1])n++;return n});ok('tagged atom changes partners',sw>=1,sw);ok('dynamic equilibrium named',(await p.textContent('#cap')).includes('dynamic equilibrium'));await shot('07');
+await p.click('#next');await wait(500);await p.click('.bath.b60');await wait(1500);const h1=await E(()=>EQ.W.rates());ok('hot: splits jump, joins lag',h1.S>4*h1.J,h1.S.toFixed(1)+' vs '+h1.J.toFixed(1));ok('hot caption names the cause',(await p.textContent('#cap')).includes('splits jump'));await shot('08a');ok('slow-motion beat offered',await p.isVisible('[data-beat]'));await p.click('[data-beat]');await wait(1200);await shot('08m');
+await wait(9000);const h2=await E(()=>({m2:EQ.W.m2,n2:EQ.W.count(2),n4:EQ.W.count(4),m4:EQ.W.m4,cap:document.querySelector('#cap').textContent}));ok('60C settles near 47.5 NO2',near(h2.m2,47.5,1.2),h2.m2.toFixed(1));ok('60C box matches',near(h2.n2,h2.m2,4)&&near(h2.n4,h2.m4,3),h2.n4+'/'+h2.n2);ok('browner + guess check',h2.cap.includes('browner')&&h2.cap.includes('✓'));await shot('08b');
+await p.click('#next');await wait(400);ok('step 9 keeps the hot tube',await E(()=>EQ.W.m2>40));await p.click('.bath.b0');await wait(2500);await shot('09a');await wait(9000);
+const i1=await E(()=>({m2:EQ.W.m2,n2:EQ.W.count(2),cap:document.querySelector('#cap').textContent}));ok('0C settles near 6 NO2',near(i1.m2,6.2,1.3),i1.m2.toFixed(1));ok('ice box matches',near(i1.n2,i1.m2,3),i1.n2);ok('Le Chatelier taught',(await p.textContent('#ctl')).includes('Le Châtelier'));await shot('09b');
+await p.click('#next');await wait(500);await p.click('.pick .opt >> nth=1');await p.click('.rm[data-v="2"]');await wait(1200);await shot('10open');await wait(2400);const r1=await E(()=>EQ.W.rates());ok('2x room: splits hold, joins half',near(r1.S,3.08,.1)&&near(r1.J,1.54,.12),r1.S.toFixed(2)+' vs '+r1.J.toFixed(2));await shot('10a');await p.click('[data-beat]');await wait(12000);const r2=await E(()=>({m2:EQ.W.m2,n2:EQ.W.count(2)}));ok('2x room settles near 23 NO2',near(r2.m2,23.1,.8),r2.m2.toFixed(1));await shot('10b');
+await p.click('.rm[data-v="1000"]');await wait(600);ok('open air caption',(await p.textContent('#cap')).includes('nearly all'));await shot('10c');
+await p.click('#next');await wait(500);await shot('11a');await p.click('[data-run]');await wait(1500);await shot('11b');await wait(9000);
+ok('mixture 1 logged',await E(()=>EQ.S.mixes.length)===1,JSON.stringify(await E(()=>EQ.S.mixes)));await shot('11c');
+await p.click('[data-new]');await wait(300);await p.click('[data-run]');await wait(11000);const mx=await E(()=>EQ.S.mixes);ok('two mixtures, same K',mx.length===2&&mx.every(m=>Math.abs(+m.q-0.0046)<0.0004),JSON.stringify(mx));ok('K named',(await p.textContent('#cap')).includes('equilibrium constant'));await shot('11d');
+await p.click('#next');await wait(500);await p.click('.bath.b60');await wait(8000);const k60=await E(()=>{const c4=EQ.molar(EQ.W.m4),c2=EQ.molar(EQ.W.m2);return c2*c2/c4});ok('K at 60C near 0.052',near(k60,.052,.004),k60.toPrecision(3));await shot('12');
+await p.click('#next');await wait(600);for(const c of [0,1,2,3])await p.click(`[data-card="${c}"]`);ok('story order right',(await p.textContent('.fb')).includes('That is the chain'));
+await p.fill('#tx','N2O4 can split into NO2 and NO2 can join. Warm air and more room tip the balance to brown NO2.');await p.fill('#nm','Test Student');await p.click('#copy');await wait(300);
+const clip=await p.evaluate(()=>navigator.clipboard.readText());ok('copy for Canvas',clip.includes('Test Student')&&clip.includes('Guess 1')&&clip.includes('settled at'),clip.length);await shot('13');
+await p.keyboard.press('Tab');await p.evaluate(()=>document.activeElement.blur());await p.keyboard.press('ArrowLeft');await wait(300);ok('arrow keys move steps',await E(()=>EQ.cur)===11);
+const ov=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ok('no sideways scroll',ov<=0,ov);
+console.log('PASS',out.length,'\nFAIL',fail.length,fail.join('\n  '));console.log(out.join('\n'));console.log('errors',JSON.stringify(errs));console.log('CLIP\n'+clip);
+await b.close();})();
