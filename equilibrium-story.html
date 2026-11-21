@@ -85,6 +85,8 @@ footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}foote
 .tellmode .main{grid-template-columns:auto minmax(0,1fr)}
 @media (max-width:1040px){.tellmode .main{grid-template-columns:1fr}}
 #ans{width:96px}
+.pm b{min-width:92px;text-align:center;font-variant-numeric:tabular-nums}.pm .btn{min-width:44px;font-size:21px;line-height:1;padding:4px 10px}
+.tiles .tile{font-size:16px}
 
 </style>
 </head>
@@ -143,7 +145,7 @@ footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}foote
       <li><b>K as a picture.</b> Joins are a square (NO₂ × NO₂). Splits are a strip (N₂O₄ long, K high). Balance is where the areas match, so [NO₂]² = K × [N₂O₄].</li>
       <li><b>Turn it in.</b> The last step has students order the causal chain, explain it in their own words, and copy their work for Canvas.</li>
     </ul>
-    <p><b>The story is real.</b> On August 2, 2020, the Crew Dragon <i>Endeavour</i> splashed down with Bob Behnken and Doug Hurley. Once the capsule was on the recovery ship, opening the hatch was delayed about half an hour while the team purged leftover nitrogen tetroxide vapor. Sources: NASA Commercial Crew blog, “Astronauts Doing Well Inside Crew Dragon Spacecraft,” Aug. 2, 2020; SpaceNews, Aug. 2, 2020; NASA, “45 Years Ago: Apollo Returns Home to End ASTP,” for the 1975 exposure.</p>
+    <p><b>The story is real.</b> On August 2, 2020, the Crew Dragon <i>Endeavour</i> splashed down with Bob Behnken and Doug Hurley. Once the capsule was on the recovery ship, opening the hatch was delayed about half an hour while the team purged leftover dinitrogen tetroxide vapor (rocket crews call it nitrogen tetroxide, or NTO). Sources: NASA Commercial Crew blog, “Astronauts Doing Well Inside Crew Dragon Spacecraft,” Aug. 2, 2020; SpaceNews, Aug. 2, 2020; NASA, “45 Years Ago: Apollo Returns Home to End ASTP,” for the 1975 exposure.</p>
     <p>Nothing here needs a login, and nothing a student types leaves the browser. Page visits are counted without names.</p>
   </details>
   </div>
@@ -218,7 +220,7 @@ function arrow(ctx,x0,y0,x1,y1,w,c){const a=Math.atan2(y1-y0,x1-x0),h=Math.max(7
    NO2 is bent: N-O 1.20 A, O-N-O 134 degrees. */
 const GEO={4:{at:[['N',-.89,0],['N',.89,0],['O',-1.345,-1.10],['O',-1.345,1.10],['O',1.345,-1.10],['O',1.345,1.10]],bd:[[0,1,1],[0,2],[0,3],[1,4],[1,5]]},
            2:{at:[['N',-.313,0],['O',.157,-1.10],['O',.157,1.10]],bd:[[0,1],[0,2]]}};
-const RAD={N:.60,O:.56};
+const RAD={N:.60,O:.56,S:.72,H:.36,C:.62},ACOL=e=>e==='N'?PAL.N:e==='O'?PAL.O:e==='S'?'#c79a00':e==='H'?'#98a1ab':'#4f555e';
 GEO.N={at:[['N',-.55,0],['N',.55,0]],bd:[[0,1]]};GEO.O={at:[['O',-.605,0],['O',.605,0]],bd:[[0,1]]};   // N2 (1.10 A) and O2 (1.21 A)
 const SP={4:{r:1.95,m:92},2:{r:1.35,m:46},N:{r:1.2,m:28},O:{r:1.2,m:32}};
 function ball(ctx,x,y,r,col){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.28,col);g.addColorStop(1,shade(col,-.38));
@@ -230,7 +232,7 @@ function drawMol(ctx,type,x,y,ang,sc,o={}){const G=GEO[type];ctx.save();ctx.tran
   if(o.halo){const R=2.5*sc,g=ctx.createRadialGradient(0,0,sc*.3,0,0,R);g.addColorStop(0,rgba(PAL.brown,.5*o.halo));g.addColorStop(1,rgba(PAL.brown,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill()}
   if(o.bonds){ctx.lineCap='round';G.bd.forEach(b=>{const A=G.at[b[0]],B=G.at[b[1]];ctx.strokeStyle=b[2]?(o.weak?PAL.think:PAL.soft):PAL.soft;ctx.lineWidth=b[2]?sc*.13:sc*.2;
     if(b[2]&&o.snap)return;ctx.beginPath();ctx.moveTo(px(A),py(A));ctx.lineTo(px(B),py(B));ctx.stroke()})}
-  G.at.forEach((a,i)=>{const col=a[0]==='N'?(o.tagN===i?PAL.think:PAL.N):PAL.O;ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
+  G.at.forEach((a,i)=>{const col=a[0]==='N'&&o.tagN===i?PAL.think:ACOL(a[0]);ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
   ctx.restore();
   if(o.label){const cs=Math.cos(ang),sn=Math.sin(ang);G.at.forEach(a=>{const ax=px(a),ay=py(a);txt(ctx,a[0],x+ax*cs-ay*sn,y+ax*sn+ay*cs+1,{s:sc*.5,w:700,c:'#fff',a:'center',b:'middle'})})}}
 // cached pictures of the small molecules in the box
@@ -469,7 +471,7 @@ function bigTube(ctx,x,y,w,h,alpha){ctx.fillStyle=PAL.box;rr(ctx,x,y,w,h,w/2);ct
 function sceneTwo(t){const A={x:40,y:30,w:440,h:500},B={x:520,y:30,w:440,h:500};card(ctx,A);card(ctx,B);
   bigTube(ctx,A.x+50,A.y+70,70,330,0);bigTube(ctx,B.x+50,B.y+70,70,330,.86);
   drawMol(ctx,4,A.x+290,A.y+200,RM?0:Math.sin(t*.6)*.12,46,{bonds:true,label:true});drawMol(ctx,2,B.x+290,B.y+200,RM?0:Math.sin(t*.6+1)*.15,46,{bonds:true,label:true,halo:1});
-  txt(ctx,'N₂O₄',A.x+290,A.y+330,{s:34,w:700,a:'center'});txt(ctx,'nitrogen tetroxide',A.x+290,A.y+360,{s:16,c:PAL.soft,a:'center'});pill(ctx,'no color',A.x+290,A.y+396,PAL.card2,PAL.ink,17,'center');
+  txt(ctx,'N₂O₄',A.x+290,A.y+330,{s:34,w:700,a:'center'});txt(ctx,'dinitrogen tetroxide',A.x+290,A.y+360,{s:16,c:PAL.soft,a:'center'});pill(ctx,'no color',A.x+290,A.y+396,PAL.card2,PAL.ink,17,'center');
   txt(ctx,'NO₂',B.x+290,B.y+330,{s:34,w:700,a:'center'});txt(ctx,'nitrogen dioxide',B.x+290,B.y+360,{s:16,c:PAL.soft,a:'center'});pill(ctx,'brown · burns lungs',B.x+290,B.y+396,rgba(PAL.brown,1),'#fff',17,'center');
   txt(ctx,'a tube of only N₂O₄',A.x+85,A.y+432,{s:15,c:PAL.soft,a:'center'});txt(ctx,'a tube of only NO₂',B.x+85,B.y+432,{s:15,c:PAL.soft,a:'center'});
   ctx.fillStyle=PAL.N;ctx.beginPath();ctx.arc(A.x+214,A.y+470,8,0,TAU);ctx.fill();txt(ctx,'nitrogen',A.x+228,A.y+475,{s:14,c:PAL.soft});ctx.fillStyle=PAL.O;ctx.beginPath();ctx.arc(A.x+304,A.y+470,8,0,TAU);ctx.fill();txt(ctx,'oxygen',A.x+318,A.y+475,{s:14,c:PAL.soft});
@@ -645,7 +647,7 @@ const STEPS=[
   aria:'A space capsule sits on the deck of a recovery ship with its hatch closed. A technician holds a gas sensor that reads: toxic gas found near the thrusters.',
   draw(){sceneDeck(false,st.t)}},
  {part:0,title:'Two gases, the same atoms',
-  cap:'The thrusters use nitrogen tetroxide, <b>N₂O₄</b>. It has no color. The gas that burns lungs is <b>NO₂</b>, and it is brown. Both are made of only nitrogen and oxygen. So where does the brown gas come from?',
+  cap:'The thrusters use dinitrogen tetroxide, <b>N₂O₄</b>. It has no color. The gas that burns lungs is <b>NO₂</b>, and it is brown. Both are made of only nitrogen and oxygen. So where does the brown gas come from?',
   alt:'Look at the two molecules. N₂O₄ looks like two NO₂ stuck together. Keep that picture in mind for the next step.',
   aria:'Two sealed tubes. The tube of N2O4 has no color. The tube of NO2 is brown. Beside each is its molecule: N2O4 looks like two NO2 joined together.',
   draw(){sceneTwo(st.t)},
@@ -749,7 +751,7 @@ function tellHTML(){const o=S.order,done=o.length===4,right=done&&o.every((v,i)=
   <div class="row"><label class="nm">Name <input id="nm" type="text" value="${esc(S.name)}" autocomplete="name"></label><button type="button" class="btn primary" id="copy">Copy for Canvas</button><span id="cmsg" role="status"></span></div>
   <div class="world"><h3>Why crews wait</h3><p>In 1975 an Apollo crew breathed this same gas while landing and spent days in the hospital. All three recovered. Today a recovery boat tests the air around the capsule before anyone opens the hatch. Knowing the chemistry is what keeps the next crew safe.</p>
   <p class="src">Sources: NASA Commercial Crew blog and SpaceNews, Aug. 2, 2020; NASA, “45 Years Ago: Apollo Returns Home to End ASTP.”</p>
-  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#equilibrium">Try other reactions in the full equilibrium lab</a>, including the one that makes fertilizer for half the world’s food.</p></div></div>`}
+  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#equilibrium">Try other reactions in the full equilibrium lab</a>, including the one that makes fertilizer for half the world’s food. More stories: <a href="https://rjedtech.github.io/Raider-ChemLab/pressure-story.html">The bag that swells</a> (gas pressure) and <a href="https://rjedtech.github.io/Raider-ChemLab/naming-story.html">One letter apart</a> (how N₂O₄ gets its name).</p></div></div>`}
 const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function tellBind(r){$$('[data-card]',r).forEach(b=>b.addEventListener('click',()=>{S.order.push(+b.dataset.card);if(S.order.length===4){S.tries++;ev('order-'+(S.order.every((v,i)=>v===i)?'right':'wrong'))}save();renderCtl()}));
   $$('[data-slot]',r).forEach(b=>b.addEventListener('click',()=>{S.order.splice(+b.dataset.slot,1);save();renderCtl()}));

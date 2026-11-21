@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naming compounds: one letter apart · Raider ChemLab</title>
+<meta name="description" content="Naming compounds as one story: why dinitrogen monoxide counts its atoms and magnesium chloride does not. A story version of the Raider ChemLab naming trainer. RJ Ed Tech.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#f3f3f1;--card:#fff;--card2:#f7f7f5;--fg:#1c1c1f;--muted:#5d5d63;--line:#d8d8d3;--rj:#C11430;--rj-ink:#a8102a;--think:#a8178f;--good:#1b8a4a;--bad:#b3261e;--split:#c96a00;--join:#0f8b8d;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#15161a;--card:#1d1f24;--card2:#24272d;--fg:#ececef;--muted:#a2a2aa;--line:#353840;--rj-ink:#ed516a;--think:#ec74da;--good:#5cc27f;--bad:#ff8a80;--split:#f2a13c;--join:#4cc9c0;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.5}
+body.easy{font-size:19px;line-height:1.75;letter-spacing:.03em;word-spacing:.1em}
+.mast{background:#26262a;border-bottom:4px solid var(--rj);color:#fff}
+.mast .in{max-width:1480px;margin:0 auto;padding:9px 16px;display:flex;align-items:center;gap:12px}
+.mast img{height:34px;width:auto;display:block}
+.mast h1{font-size:19px;margin:0;line-height:1.15;color:#fff}.mast small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#c9c9cf}
+.mast a{margin-left:auto;color:#f2f2f2;font-size:14px}
+.wrap{max-width:1480px;margin:0 auto;padding:8px 16px 40px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 18px;margin-bottom:8px}
+.eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--rj-ink)}
+.sup{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.btn{font:inherit;font-size:15px;font-weight:600;padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;min-height:38px}
+.btn:hover:not(:disabled){border-color:var(--muted)}.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--rj);border-color:var(--rj);color:#fff}
+.btn.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.sm{font-size:13.5px;padding:5px 10px;min-height:32px}
+.btn:focus-visible,.slot:focus-visible,.cardb:focus-visible,#parts button:focus-visible{outline:3px solid var(--think);outline-offset:2px}
+#parts{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 8px;max-width:1100px}
+#parts button{font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:3px solid var(--line);padding:4px 10px 5px 4px;cursor:pointer;display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0;white-space:nowrap}
+#parts button span{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:12px}
+#parts button.on{color:var(--fg);border-color:var(--rj)}#parts button.on span{background:var(--rj);color:#fff}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:1040px){.main{grid-template-columns:1fr}}
+.stagewrap{display:flex;justify-content:center}
+.side{min-width:0}
+#stage{display:block;width:min(100%,max(600px,calc((100vh - 122px)*1.7857)));aspect-ratio:1000/560;border:1px solid var(--line);border-radius:14px;background:var(--card2);touch-action:pan-y}
+.rot{display:none;margin:0 0 8px;padding:8px 12px;border-radius:9px;background:var(--card);border:1px solid var(--line);font-size:15px}
+@media (max-width:640px) and (orientation:portrait){.rot{display:block}#stage{width:100%}}
+#stepno{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h2{margin:1px 0 3px;font-size:1.3rem;line-height:1.2}
+#cap{margin:0;max-width:68ch;font-size:1.04em}
+#alt{margin:8px 0 0;max-width:68ch;padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0}
+.nav{display:flex;gap:8px;margin-top:14px}.nav #back{flex:0 0 auto}.nav #next{flex:1;font-size:17px;min-height:44px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#ctlw{margin-top:6px}
+.pulse{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(193,20,48,.22)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none;box-shadow:0 0 0 4px rgba(193,20,48,.3)}}
+#ctl{margin-top:9px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.lab{font-size:15px;font-weight:600;color:var(--muted)}
+.q{margin:0 0 2px;font-weight:600;max-width:68ch}.note{margin:4px 0 0;color:var(--muted);font-size:15px}
+.pick{padding:9px 13px;border-left:4px solid var(--think);background:var(--card);border-radius:0 9px 9px 0;margin-bottom:6px}
+.pick .opt.on{background:var(--think);border-color:var(--think);color:#fff}.pick .opt.right{box-shadow:0 0 0 3px var(--good)}
+.chip{display:inline-block;font-size:.82em;font-weight:700;padding:1px 9px;border-radius:99px;border:2px solid var(--think);color:var(--think);white-space:nowrap}
+.chip.ok{border-color:var(--good);color:var(--good)}.chip.no{border-color:var(--muted);color:var(--muted)}
+.bath.b0.on{background:#2d6bd2;border-color:#2d6bd2;color:#fff}.bath.b60.on{background:#c5471f;border-color:#c5471f;color:#fff}
+.term{margin-top:8px;max-width:68ch;padding:10px 14px;border:1px solid var(--line);border-left:4px solid var(--rj);background:var(--card);border-radius:0 9px 9px 0}
+.sl label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}.sl input{width:150px;accent-color:var(--rj)}.sl output{min-width:2ch;font-variant-numeric:tabular-nums}
+.tell h3{margin:16px 0 2px;font-size:1.05rem}
+.slots,.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0;max-width:860px}
+@media (max-width:700px){.slots,.cards{grid-template-columns:repeat(2,1fr)}}
+.slot,.cardb{font:inherit;font-size:14.5px;font-weight:600;text-align:left;color:var(--fg);min-height:86px;padding:8px 10px;border-radius:10px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.slot{border:2px dashed var(--line);background:transparent;position:relative}.slot.full{border-style:solid;background:var(--card)}.slot:disabled{cursor:default;color:var(--muted)}
+.slot .n{position:absolute;top:6px;right:9px;font-size:13px;color:var(--muted)}
+.cardb{border:1px solid var(--line);background:var(--card);box-shadow:0 1px 0 var(--line)}.cardb:hover{border-color:var(--muted)}
+.slot svg,.cardb svg{width:60px;height:42px;color:var(--bad)}
+.fb{min-height:1.4em;margin:2px 0;font-weight:600}.fb.ok{color:var(--good)}.fb.no{color:var(--rj-ink)}
+textarea,#nm,#ans{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+textarea{width:100%;max-width:860px;display:block}.nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}#nm{width:190px}
+.world{margin-top:18px;max-width:860px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.world h3{margin-top:0}.world p{margin:6px 0}
+.src{font-size:14px;color:var(--muted)}
+details{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 16px}
+details summary{cursor:pointer;font-weight:700;padding:11px 0}details[open]{padding-bottom:12px}
+details dt{font-weight:700;margin-top:9px}details dd{margin:0;max-width:72ch}details p,details li{max-width:74ch}
+.more{margin-top:26px}
+footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}footer a,details a,.world a{color:var(--rj-ink)}
+
+.tellmode .stagewrap{justify-content:flex-start}.tellmode #stage{width:min(100%,calc(42vh*1.7857))}
+.tellmode .main{grid-template-columns:auto minmax(0,1fr)}
+@media (max-width:1040px){.tellmode .main{grid-template-columns:1fr}}
+#ans{width:96px}
+.pm b{min-width:92px;text-align:center;font-variant-numeric:tabular-nums}.pm .btn{min-width:44px;font-size:21px;line-height:1;padding:4px 10px}
+.tiles .tile{font-size:16px}
+
+</style>
+</head>
+<body>
+<header class="mast"><div class="in">
+  <img src="data:image/png;base64,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" alt="Regis Jesuit">
+  <div><h1>One letter apart</h1><small>Raider ChemLab · Naming compounds · story version (pilot)</small></div>
+  <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#naming">Open the current tool</a>
+</div></header>
+
+<main class="wrap">
+  <nav id="parts" aria-label="Parts of the story"></nav>
+  <p class="rot">This page is built for a laptop. On a phone, turn it sideways.</p>
+  <div class="main">
+    <div class="stagewrap"><canvas id="stage" role="img" aria-label=""></canvas></div>
+    <section class="side" aria-label="This step">
+      <p id="stepno"></p>
+      <h2 id="ttl"></h2>
+      <p id="cap" aria-live="polite"></p>
+      <div id="ctl"></div>
+      <div id="alt" hidden></div>
+      <div class="nav"><button type="button" class="btn" id="back">Back</button><button type="button" class="btn primary" id="next">Next</button></div>
+      <div class="tools"><button type="button" class="btn sm" id="pause" hidden>Pause</button><button type="button" class="btn sm" id="conf">😕 This confused me</button><button type="button" class="btn sm" id="ra" aria-pressed="false">🔊 Read aloud</button><button type="button" class="btn sm" id="er" aria-pressed="false">Aa Easier reading</button></div>
+    </section>
+  </div>
+  <div id="ctlw"></div>
+
+  <div class="more">
+  <details>
+    <summary>Key words, in plain language first</summary>
+    <dl>
+      <dt>Ion</dt><dd>An atom, or a team of atoms, with a charge, because it lost or gained electrons. A positive ion is a <i>cation</i>. A negative ion is an <i>anion</i>.</dd>
+      <dt>Ionic compound</dt><dd>Positive and negative ions held together because opposite charges attract. It usually has a metal in it. The charges must cancel, and that sets the formula.</dd>
+      <dt>Molecular compound</dt><dd>Nonmetal atoms that share electrons. Nothing forces one recipe, so the name counts the atoms with prefixes.</dd>
+      <dt>Polyatomic ion</dt><dd>“Poly” means many. A team of atoms that carries one charge and stays together, such as nitrate, NO₃⁻.</dd>
+      <dt>Roman numeral in a name</dt><dd>The charge of a metal that has more than one possible charge. Iron(III) means Fe³⁺.</dd>
+      <dt>Prefixes</dt><dd>mono 1, di 2, tri 3, tetra 4, penta 5. They come from Greek number words.</dd>
+      <dt>The -ide ending</dt><dd>The second element in a two-element compound changes its ending: chlorine becomes chloride, oxygen becomes oxide.</dd>
+    </dl>
+  </details>
+  <details>
+    <summary>About these pictures</summary>
+    <p><b>Ions are drawn to scale</b> with each other, from their measured ionic radii: Na⁺ 102 pm, Mg²⁺ 72, Al³⁺ 54, Ca²⁺ 100, Fe²⁺ 78, Fe³⁺ 65, Cl⁻ 181, O²⁻ 140. The colors only tell the ions apart.</p>
+    <p><b>Simplified.</b> A real ionic solid is a huge repeating crystal, so the picture of a few separate ions shows the ratio, not a molecule. The pieces in a team ion are drawn at the same scale with their real bond lengths. The shapes of N₂O, NO, NO₂ and N₂O₄ are real. For N₂O₃ and N₂O₅ the bonds are right and the angles are approximate. Sulfate is a tetrahedron, drawn here looking straight down one of its axes.</p>
+    <p><b>Left out on purpose.</b> Acids, hydrates, older names like ferric and ferrous, and metals other than iron that have a choice of charge. The naming trainer covers more.</p>
+  </details>
+  <details>
+    <summary>For teachers: what this is</summary>
+    <p>This is a pilot of a “story version” page for naming, built like <a href="https://rjedtech.github.io/Raider-ChemLab/equilibrium-story.html">the equilibrium story</a> and <a href="https://rjedtech.github.io/Raider-ChemLab/pressure-story.html">the gas pressure story</a>. It sits beside the current <a href="https://rjedtech.github.io/Raider-ChemLab/index.html#naming">naming trainer</a> and changes nothing there. It supports your lesson and does not replace it.</p>
+    <ul>
+      <li><b>One idea ties the rules together:</b> a name only has to say what you could not work out. Charges force an ionic recipe, so no prefixes. A metal with a choice needs its charge stated. Shared electrons force nothing, so the name counts.</li>
+      <li><b>Students build before they name.</b> They add ions until a plus bar and a minus bar are the same length, and the formula and name appear from what they built.</li>
+      <li><b>The usual mix-up is the target:</b> prefixes on ionic compounds, and a missing Roman numeral. Each wrong name gets a hint that says why.</li>
+      <li><b>Turn it in.</b> Four names from tiles, an explanation in their own words, and Copy for Canvas.</li>
+    </ul>
+    <p>Nothing here needs a login, and nothing a student types leaves the browser. Page visits are counted without names.</p>
+  </details>
+  </div>
+
+
+  <footer>
+    <p>RJ Ed Tech · Raider ChemLab · Simplified models for instruction<br>
+    <a href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=4SwuQZc-CEClZjjFdYLisQzihhIB-7hPp9L3AOSeJONUOVJaVTVMOE9YMFNSVVM3TUNOOFVQR1pYTi4u&amp;rc59cb41123d3497584d2ca10cb9e1c54=%22Raider%20ChemLab%22" target="_blank" rel="noopener">Report a bug or request a feature</a> (Microsoft Form, RJ sign-in)<br>
+    © 2026 Jason Beyer, RJ Ed Tech · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>: free to share and adapt for non-commercial use, with credit.</p>
+  </footer>
+</main>
+
+<script>
+'use strict';
+/* ============================================================
+   Equilibrium story pilot · Raider ChemLab · RJ Ed Tech
+   Part 1 of 2: the model, the molecule box and the drawing kit.
+   Model (same data as the current ChemLab equilibrium tool):
+     N2O4(g) <=> 2 NO2(g)   Kc = 4.6e-3 at 25 C   dH = +57.2 kJ/mol
+     splits per second = kf(T) x N2O4      joins per second = kr x NO2^2 / room
+     kr is held constant (joining needs no hard hit); kf = kr x Kc(T).
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2;
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(TAU*v)}
+
+/* ---------- chemistry ---------- */
+const GAS_R=8.314, KREF=4.6e-3, TREF=298.15, DH=57200, KR=13, NB=1200; // NB = molecules in the box per (mol/L) at room 1
+const TK=c=>c+273.15;
+const Kc=T=>KREF*Math.exp(-DH/GAS_R*(1/T-1/TREF));
+const kf=T=>KR*Kc(T);
+// equilibrium for ntot "N2O4 if nothing had split" molecules in room V (1 = the tube)
+function eqSplit(T,V,ntot){const c0=ntot/NB/V,K=Kc(T),a=(-K+Math.sqrt(K*K+16*c0*K))/(8*c0);return{a,n4:ntot*(1-a),n2:2*ntot*a}}
+// equilibrium reached from any starting mixture (n4, n2 molecules)
+function eqFrom(T,V,n4,n2){return eqSplit(T,V,n4+n2/2)}
+const molar=n=>n/NB;                          // molecules in the box -> mol/L when the room is 1
+const EPS=14.7;                               // Beer's law strength, set so the three baths look like the real demo
+const brownAlpha=c=>1-Math.pow(10,-EPS*c);
+
+/* ---------- colors (light and dark) ---------- */
+const DARKQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):{matches:false};
+let PAL={};
+function setPal(){const d=DARKQ.matches;PAL=d?{dark:true,bg:'#191b20',card:'#1d1f24',card2:'#24272d',ink:'#ececef',soft:'#a2a2aa',line:'#353840',
+    N:'#5b8cff',O:'#f0556a',brown:[214,140,62],split:'#f2a13c',join:'#4cc9c0',think:'#ec74da',good:'#5cc27f',bad:'#ff8a80',rj:'#ed516a',
+    glass:'rgba(190,215,235,.55)',water:'rgba(92,155,255,.20)',box:'#14161a',sky1:'#16233a',sky2:'#2a3550',sea:'#12304a',deck:'#3a3d45',hull:'#e9ecef'}
+  :{dark:false,bg:'#f7f8f6',card:'#ffffff',card2:'#f3f3f0',ink:'#1c1c1f',soft:'#5d5d63',line:'#d8d8d3',
+    N:'#2f62d6',O:'#d92f45',brown:[150,82,24],split:'#c96a00',join:'#0f8b8d',think:'#a8178f',good:'#1b8a4a',bad:'#b3261e',rj:'#C11430',
+    glass:'rgba(110,140,165,.55)',water:'rgba(45,107,210,.13)',box:'#fbfcfb',sky1:'#cfe4f5',sky2:'#f6e9d6',sea:'#3d7fa8',deck:'#8b8f98',hull:'#ffffff'};
+  SPR.clear()}
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* ---------- text and shapes ---------- */
+const FONT='system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+function txt(ctx,s,x,y,o={}){ctx.font=`${o.w||500} ${o.s||16}px ${FONT}`;ctx.fillStyle=o.c||PAL.ink;ctx.textAlign=o.a||'left';ctx.textBaseline=o.b||'alphabetic';
+  if(o.max&&ctx.measureText(s).width>o.max){ctx.font=`${o.w||500} ${Math.max(11,(o.s||16)*o.max/ctx.measureText(s).width)}px ${FONT}`}
+  ctx.fillText(s,x,y);return ctx.measureText(s).width}
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function card(ctx,r,title){rr(ctx,r.x,r.y,r.w,r.h,12);ctx.fillStyle=PAL.card;ctx.fill();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;ctx.stroke();
+  if(title)txt(ctx,title.toUpperCase(),r.x+14,r.y+24,{s:12.5,w:700,c:PAL.soft})}
+function pill(ctx,s,x,y,bg,fg,size=14,align='left'){ctx.font=`700 ${size}px ${FONT}`;const w=ctx.measureText(s).width+size*1.3,h=size*1.75;
+  const x0=align==='center'?x-w/2:align==='right'?x-w:x;rr(ctx,x0,y-h/2,w,h,h/2);ctx.fillStyle=bg;ctx.fill();
+  ctx.fillStyle=fg;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x0+size*.65,y+.5);return w}
+function arrow(ctx,x0,y0,x1,y1,w,c){const a=Math.atan2(y1-y0,x1-x0),h=Math.max(7,w*2.6);ctx.strokeStyle=c;ctx.fillStyle=c;ctx.lineWidth=w;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1-Math.cos(a)*h*.8,y1-Math.sin(a)*h*.8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-Math.cos(a-.42)*h,y1-Math.sin(a-.42)*h);ctx.lineTo(x1-Math.cos(a+.42)*h,y1-Math.sin(a+.42)*h);ctx.closePath();ctx.fill()}
+
+/* ---------- molecules, drawn to shape (positions in angstroms) ----------
+   N2O4 is flat: N-N 1.78 A (long and weak), N-O 1.19 A, O-N-O 135 degrees.
+   NO2 is bent: N-O 1.20 A, O-N-O 134 degrees. */
+const GEO={4:{at:[['N',-.89,0],['N',.89,0],['O',-1.345,-1.10],['O',-1.345,1.10],['O',1.345,-1.10],['O',1.345,1.10]],bd:[[0,1,1],[0,2],[0,3],[1,4],[1,5]]},
+           2:{at:[['N',-.313,0],['O',.157,-1.10],['O',.157,1.10]],bd:[[0,1],[0,2]]}};
+const RAD={N:.60,O:.56,S:.72,H:.36,C:.62},ACOL=e=>e==='N'?PAL.N:e==='O'?PAL.O:e==='S'?'#c79a00':e==='H'?'#98a1ab':'#4f555e';
+GEO.N={at:[['N',-.55,0],['N',.55,0]],bd:[[0,1]]};GEO.O={at:[['O',-.605,0],['O',.605,0]],bd:[[0,1]]};   // N2 (1.10 A) and O2 (1.21 A)
+const SP={4:{r:1.95,m:92},2:{r:1.35,m:46},N:{r:1.2,m:28},O:{r:1.2,m:32}};
+function ball(ctx,x,y,r,col){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.28,col);g.addColorStop(1,shade(col,-.38));
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill()}
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.round(clamp(amt<0?v*(1+amt):v+(255-v)*amt,0,255));return`rgb(${f(r)},${f(g)},${f(b)})`}
+/* o: {halo:0..1 brown glow, stretch: extra N-N length in A (N2O4 only), tagN: index of the tagged N atom, bonds:true, weak:0..1 highlight on the N-N bond} */
+function drawMol(ctx,type,x,y,ang,sc,o={}){const G=GEO[type];ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+  const st=(o.stretch||0)/2,px=a=>(a[1]+(type===4?Math.sign(a[1])*st:0))*sc,py=a=>a[2]*sc;
+  if(o.halo){const R=2.5*sc,g=ctx.createRadialGradient(0,0,sc*.3,0,0,R);g.addColorStop(0,rgba(PAL.brown,.5*o.halo));g.addColorStop(1,rgba(PAL.brown,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill()}
+  if(o.bonds){ctx.lineCap='round';G.bd.forEach(b=>{const A=G.at[b[0]],B=G.at[b[1]];ctx.strokeStyle=b[2]?(o.weak?PAL.think:PAL.soft):PAL.soft;ctx.lineWidth=b[2]?sc*.13:sc*.2;
+    if(b[2]&&o.snap)return;ctx.beginPath();ctx.moveTo(px(A),py(A));ctx.lineTo(px(B),py(B));ctx.stroke()})}
+  G.at.forEach((a,i)=>{const col=a[0]==='N'&&o.tagN===i?PAL.think:ACOL(a[0]);ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
+  ctx.restore();
+  if(o.label){const cs=Math.cos(ang),sn=Math.sin(ang);G.at.forEach(a=>{const ax=px(a),ay=py(a);txt(ctx,a[0],x+ax*cs-ay*sn,y+ax*sn+ay*cs+1,{s:sc*.5,w:700,c:'#fff',a:'center',b:'middle'})})}}
+// cached pictures of the small molecules in the box
+const SPR=new Map();
+function sprite(type,sc){const key=type+'|'+sc;let s=SPR.get(key);if(s)return s;const R=Math.ceil(2.7*sc)+2,c=document.createElement('canvas'),d=2;c.width=c.height=R*2*d;
+  const x=c.getContext('2d');x.scale(d,d);drawMol(x,type,R,R,0,sc,{halo:type===2?1:0});s={c,R};SPR.set(key,s);return s}
+
+/* ---------- the molecule box ---------- */
+const V0=62;                                   // typical N2O4 speed at 25 C, px per second
+class World{
+  constructor(){this.ps=[];this.fl=[];this.hist=[];this.marks=[];this.nid=1;this.t=0}
+  /* o: {n4,n2,T(kelvin),V,Vmax,box:{x,y,w,h},sc,react,speed} ; box.w is the width when room = Vmax */
+  setup(o){Object.assign(this,{T:o.T,V:o.V||1,Vt:o.V||1,Vmax:o.Vmax||1,box:o.box,sc:o.sc||5,react:o.react!==false,speed:o.speed||1,
+      m4:o.n4,m2:o.n2,accS:0,accJ:0,thrS:1,thrJ:1,pendS:0,pendJ:0,waitS:0,waitJ:0,t:0,hT:0,sync:0,nS:0,nJ:0,tag:null,tagHist:[]});
+    this.ps=[];this.fl=[];this.hist=[];this.marks=[];
+    const p4=Math.round(o.n4),p2=Math.max(0,Math.round(2*o.n4+o.n2-2*p4));   // whole molecules, same number of atoms
+    for(let i=0;i<p4;i++)this.add(4);for(let i=0;i<p2;i++)this.add(2);this.push();return this}
+  get x1(){return this.box.x+this.box.w*this.V/this.Vmax}
+  get r4(){return this.sc*1.95} get r2(){return this.sc*1.35}
+  rad(t){return this.sc*SP[t].r}
+  vth(type){return V0*Math.sqrt(this.T/TREF)*Math.sqrt(92/SP[type].m)*(this.vk||1)}
+  add(type,x,y,vx,vy,ang,ns){const b=this.box,r=this.rad(type),s=this.vth(type)/1.25;
+    const p={id:this.nid++,type,x:x!==undefined?x:b.x+r+Math.random()*(this.x1-b.x-2*r),y:y!==undefined?y:b.y+r+Math.random()*(b.h-2*r),
+      vx:vx!==undefined?vx:gauss()*s,vy:vy!==undefined?vy:gauss()*s,ang:ang!==undefined?ang:Math.random()*TAU,spin:(Math.random()-.5)*3,
+      ns:ns||(type===2?[this.nid++]:[this.nid++,this.nid++]),born:this.t,home:0};this.ps.push(p);return p}
+  count(type){let n=0;for(const p of this.ps)if(p.type===type)n++;return n}
+  rates(){return{S:kf(this.T)*this.m4,J:KR/NB*this.m2*this.m2/this.V}}
+  setT(T,label){if(T===this.T)return;const f=Math.sqrt(T/this.T);for(const p of this.ps){p.vx*=f;p.vy*=f}this.T=T;if(label)this.marks.push({t:this.t,label})}
+  setV(V,label){this.Vt=V;if(label)this.marks.push({t:this.t,label})}
+  push(){const r=this.rates();this.hist.push({t:this.t,m2:this.m2,m4:this.m4,S:r.S,J:r.J});if(this.hist.length>900)this.hist.shift();
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));this.tagHist.push(p?p.type:4);if(this.tagHist.length>400)this.tagHist.shift()}}
+  flash(kind,x,y){this.fl.push({kind,x,y,t:this.t});if(kind==='s')this.nS++;else if(kind==='j')this.nJ++}
+  split(p,hx,hy){const i=this.ps.indexOf(p);if(i<0)return;this.ps.splice(i,1);const c=Math.cos(p.ang),s=Math.sin(p.ang),d=.9*this.sc,u=this.vth(2)*.6;
+    const a=this.add(2,p.x-c*d,p.y-s*d,p.vx-c*u,p.vy-s*u,p.ang+Math.PI,[p.ns[0]]),b=this.add(2,p.x+c*d,p.y+s*d,p.vx+c*u,p.vy+s*u,p.ang,[p.ns[1]]);
+    a.spin=p.spin;b.spin=p.spin;this.flash('s',hx!==undefined?hx:p.x,hy!==undefined?hy:p.y);this.pendS--;this.waitS=0}
+  join(a,b){const i=this.ps.indexOf(a);if(i>=0)this.ps.splice(i,1);const j=this.ps.indexOf(b);if(j>=0)this.ps.splice(j,1);
+    const x=(a.x+b.x)/2,y=(a.y+b.y)/2;let vx=(a.vx+b.vx)/2,vy=(a.vy+b.vy)/2;const sp=Math.hypot(vx,vy)||1,want=this.vth(4)*(.6+Math.random()*.8);vx*=want/sp;vy*=want/sp;
+    this.add(4,x,y,vx,vy,Math.atan2(b.y-a.y,b.x-a.x),[a.ns[0],b.ns[0]]);this.flash('j',x,y)}
+  step(dtReal){let dt=Math.min(dtReal,.05)*this.speed;if(dt<=0)return;
+    // room (the wall slides)
+    if(this.V!==this.Vt){const dv=1.1*Math.min(dtReal,.05);const V1=Math.abs(this.Vt-this.V)<=dv?this.Vt:this.V+Math.sign(this.Vt-this.V)*dv,f=V1/this.V;for(const p of this.ps)p.x=this.box.x+(p.x-this.box.x)*f;this.V=V1}   // the gas spreads with the wall
+    // amounts, by the rate laws
+    if(this.react){const n=Math.ceil(dt/.004),h=dt/n,k=kf(this.T),q=KR/NB/this.V;for(let i=0;i<n;i++){const S=k*this.m4,J=q*this.m2*this.m2;
+        this.m4+=(J-S)*h;this.m2+=2*(S-J)*h;if(this.m4<0)this.m4=0;if(this.m2<0)this.m2=0;this.accS+=S*h;this.accJ+=J*h}
+      this.fast=k*this.m4+q*this.m2*this.m2>10;                                              // busy: do due events at once
+      while(this.accS>=this.thrS){this.accS-=1;this.thrS=.55+Math.random()*.9;this.pendS++}
+      while(this.accJ>=this.thrJ){this.accJ-=1;this.thrJ=.55+Math.random()*.9;this.pendJ++}
+      this.sync+=dt;if(this.sync>.35){this.sync=0;const hom=this.ps.filter(p=>p.home).length/2,err=this.count(4)+hom+this.pendJ-this.pendS-this.m4;
+        if(err>1.2)this.pendS++;else if(err<-1.2)this.pendJ++}}
+    // molecules move, bounce, and react when they collide
+    const m=Math.ceil(dt/.03),h=dt/m;for(let i=0;i<m;i++)this.move(h);
+    this.t+=dt;this.hT+=dt;if(this.hT>=.1){this.hT=0;this.push()}
+    this.fl=this.fl.filter(f=>this.t-f.t<.6)}
+  move(h){const b=this.box,x1=this.x1,ps=this.ps,young=.22;
+    for(const p of ps){if(p.home){const q=ps.find(z=>z.id===p.home);if(!q){p.home=0}else{const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1,v=this.vth(2)*2.4;p.vx=lerp(p.vx,dx/d*v,.3);p.vy=lerp(p.vy,dy/d*v,.3)}}
+      p.x+=p.vx*h;p.y+=p.vy*h;p.ang+=p.spin*h;const r=this.rad(p.type);
+      if(p.x<b.x+r){p.x=b.x+r;p.vx=Math.abs(p.vx);this.hitL&&this.hitL(p)}
+      if(p.x>x1-r){if(p.leave){if(p.x>x1+24)p.dead=true}else{p.x=x1-r;p.vx=-Math.abs(p.vx);this.hitR&&this.hitR(p)}}
+      if(p.y<b.y+r){p.y=b.y+r;p.vy=Math.abs(p.vy)}if(p.y>b.y+b.h-r){p.y=b.y+b.h-r;p.vy=-Math.abs(p.vy)}
+      const sp=Math.hypot(p.vx,p.vy),vt=this.vth(p.type);if(sp>2.6*vt){p.vx*=.9;p.vy*=.9}else if(sp<.25*vt){p.vx=p.vx*1.1+gauss()*2;p.vy=p.vy*1.1+gauss()*2}}
+    for(let i=0;i<ps.length;i++){const a=ps[i];for(let j=i+1;j<ps.length;j++){const c=ps[j],dx=c.x-a.x,dy=c.y-a.y,R=this.rad(a.type)+this.rad(c.type);
+        if(dx*dx+dy*dy>R*R)continue;const d=Math.hypot(dx,dy)||.01,nx=dx/d,ny=dy/d,rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;
+        if(a.home&&a.home===c.id){this.join(a,c);i--;break}
+        if(rv>0)continue;
+        if(this.react&&this.pendJ>0&&a.type===2&&c.type===2&&!a.home&&!c.home&&this.t-a.born>young&&this.t-c.born>young){this.pendJ--;this.waitJ=0;this.join(a,c);i--;break}
+        if(this.react&&this.pendS>0&&(a.type===4||c.type===4)){const p=a.type===4&&this.t-a.born>young?a:(c.type===4&&this.t-c.born>young?c:null);
+          if(p){this.flash('h',a.x+nx*this.rad(a.type),a.y+ny*this.rad(a.type));this.split(p);i--;break}}
+        const ma=SP[a.type].m,mc=SP[c.type].m,imp=2*rv/(ma+mc);a.vx+=imp*mc*nx;a.vy+=imp*mc*ny;c.vx-=imp*ma*nx;c.vy-=imp*ma*ny;
+        const ov=(R-d)/2;a.x-=nx*ov;a.y-=ny*ov;c.x+=nx*ov;c.y+=ny*ov}}
+    if(ps.some(p=>p.dead))this.ps=ps.filter(p=>!p.dead);
+    if(!this.react)return;
+    // events that are due but found no collision yet
+    if(this.pendS>0){this.waitS+=h;let guard=8;while(this.pendS>0&&(this.fast||this.waitS>.18||this.pendS>2)&&guard--){const c=ps.filter(p=>p.type===4);if(!c.length){this.pendS=0;break}
+        this.split(c[Math.floor(Math.random()*c.length)])}}
+    if(this.pendJ>0){this.waitJ+=h;let guard=8;while(this.pendJ>0&&(this.fast||this.waitJ>.12||this.pendJ>2)&&guard--){const f=ps.filter(p=>p.type===2&&!p.home&&this.t-p.born>young*.5);
+        if(f.length<2){if(ps.filter(p=>p.type===2).length<2)this.pendJ=0;break}
+        let best=1e9,A=null,B=null;for(let i=0;i<f.length;i++)for(let j=i+1;j<f.length;j++){const d=(f[i].x-f[j].x)**2+(f[i].y-f[j].y)**2;if(d<best){best=d;A=f[i];B=f[j]}}
+        this.pendJ--;this.waitJ=0;if(this.fast||this.pendJ>1||best<(this.r2*4)**2)this.join(A,B);else{A.home=B.id;B.home=A.id}}}
+  }
+  /* draw the box. o: {tagRing:true, dim:0..1, frozen:true} */
+  draw(ctx,o={}){const b=this.box,x1=this.x1,full=b.x+b.w;
+    if(!o.noFrame){rr(ctx,b.x,b.y,b.w,b.h,8);ctx.fillStyle=PAL.card2;ctx.fill()}
+    ctx.save();rr(ctx,b.x,b.y,x1-b.x+(o.noFrame?30:0),b.h,8);if(!o.noFrame){ctx.fillStyle=PAL.box;ctx.fill()}ctx.clip();
+    const rt=this.rates(),busy=clamp((rt.S+rt.J)/16,0,1),fk=(1-.55*busy)*this.sc/6;                // smaller rings when a lot is happening
+    for(const f of this.fl){const u=(this.t-f.t)/(.6-.25*busy);if(u<0||u>1)continue;ctx.lineWidth=2.5;
+      if(f.kind==='s'){ctx.strokeStyle=PAL.split;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:6+26*u)*fk,0,TAU);ctx.stroke()}
+      else if(f.kind==='j'){ctx.strokeStyle=PAL.join;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(f.x,f.y,(RM?14:30-22*u)*fk,0,TAU);ctx.stroke()}
+      else{ctx.strokeStyle=f.col||PAL.split;ctx.globalAlpha=1-u;const n=6;for(let i=0;i<n;i++){const a=i*TAU/n+.3;ctx.beginPath();ctx.moveTo(f.x+Math.cos(a)*4,f.y+Math.sin(a)*4);ctx.lineTo(f.x+Math.cos(a)*(8+10*u),f.y+Math.sin(a)*(8+10*u));ctx.stroke()}}
+      ctx.globalAlpha=1}
+    for(const p of this.ps){const s=sprite(p.type,this.sc),pop=RM?1:Math.min(1,.55+(this.t-p.born)*3);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);if(pop<1)ctx.scale(pop,pop);ctx.drawImage(s.c,-s.R,-s.R,s.R*2,s.R*2);ctx.restore()}
+    if(this.tag){const p=this.ps.find(q=>q.ns.includes(this.tag));if(p){const i=p.ns.indexOf(this.tag);drawMol(ctx,p.type,p.x,p.y,p.ang,this.sc,{tagN:p.type===4?i:0,halo:p.type===2?1:0});
+        ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(p.x,p.y,this.rad(p.type)+9,0,TAU);ctx.stroke();ctx.setLineDash([])}}
+    ctx.restore();if(o.noFrame)return;
+    rr(ctx,b.x,b.y,x1-b.x,b.h,8);ctx.strokeStyle=PAL.dark?'#5d6370':'#8a94a0';ctx.lineWidth=2;ctx.stroke();
+    if(this.Vmax>1){ // the sliding wall, with its handle
+      ctx.fillStyle=PAL.dark?'#7b8290':'#6f7783';rr(ctx,x1-3,b.y-6,8,b.h+12,3);ctx.fill();
+      if(x1<full-12){ctx.setLineDash([5,5]);ctx.strokeStyle=PAL.line;ctx.lineWidth=1.5;rr(ctx,x1+6,b.y,full-x1-6,b.h,8);ctx.stroke();ctx.setLineDash([]);
+        if(full-x1>120)txt(ctx,'empty room',(x1+full)/2+3,b.y+b.h/2,{s:15,c:PAL.soft,a:'center',b:'middle'})}}
+  }
+}
+
+/* ---------- shared pictures ---------- */
+// two rate bars; each bar is one half of the equation
+function drawRates(ctx,r,S,J,max,o={}){card(ctx,r,o.title||'Each second, in the box');
+  const x=r.x+14,w=r.w-28,rowH=(r.h-78)/2,row=(y,name,eq,v,col,ic)=>{
+    txt(ctx,name,x+26,y+17,{s:17,w:700});txt(ctx,eq,x+w,y+17,{s:14.5,c:PAL.soft,a:'right'});
+    // icon: one dot becomes two, or two become one
+    ctx.fillStyle=col;if(ic==='s'){ctx.beginPath();ctx.arc(x+9,y+11,6,0,TAU);ctx.fill()}else{ctx.beginPath();ctx.arc(x+5,y+11,4.4,0,TAU);ctx.arc(x+15,y+11,4.4,0,TAU);ctx.fill()}
+    const bw=w-64,by=y+27,bh=Math.max(14,rowH-40);rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();
+    const f=clamp(v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=col;ctx.fill()}
+    txt(ctx,v>=9.95?v.toFixed(0):v.toFixed(1),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});return{by,bh,bw,f}};
+  const a=row(r.y+36,'Splits','N₂O₄ → 2 NO₂',S,PAL.split,'s'),b=row(r.y+36+rowH,'Joins','2 NO₂ → N₂O₄',J,PAL.join,'j');
+  const big=Math.max(S,J),d=big>0?(S-J)/big:0,yy=r.y+r.h-17;
+  if(o.status!==false){if(big<.05)txt(ctx,'Nothing is reacting yet',x,yy,{s:15,c:PAL.soft,w:600,max:w});
+    else if(d>.07){txt(ctx,'More splits than joins: NO₂ builds up',x,yy,{s:15,c:PAL.split,w:700,max:w})}
+    else if(d<-.07){txt(ctx,'More joins than splits: NO₂ runs down',x,yy,{s:15,c:PAL.join,w:700,max:w})}
+    else txt(ctx,'Balanced: splits = joins',x,yy,{s:15,c:PAL.good,w:700,max:w})}
+  if(Math.abs(d)>.07&&big>.05){ // hatch the part of the longer bar that is ahead: the gap
+    const A=S>J?a:b,lo=x+a.bw*Math.min(a.f,b.f),hi=x+a.bw*Math.max(a.f,b.f);if(hi-lo>8){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore();
+      if(hi-lo>70){ctx.font=`700 13px ${FONT}`;const tw=ctx.measureText('ahead').width+14;rr(ctx,(lo+hi)/2-tw/2,A.by+A.bh/2-10,tw,20,10);ctx.fillStyle=PAL.card;ctx.fill();txt(ctx,'ahead',(lo+hi)/2,A.by+A.bh/2+1,{s:13,w:700,a:'center',b:'middle'})}}}}
+
+// NO2 count against time. o: {ymax,span,sketch:[{t,v}],sketching,title}
+function drawGraph(ctx,r,w,o={}){card(ctx,r,o.title||'NO₂ in the box');
+  const L=r.x+44,T=r.y+38,W=r.w-60,H=r.h-72,ymax=o.ymax||40,span=o.span||12,t1=Math.max(span,w.t),t0=t1-span,X=t=>L+(t-t0)/span*W,Y=v=>T+H-clamp(v/ymax,0,1.04)*H;
+  ctx.strokeStyle=PAL.line;ctx.lineWidth=1;for(let i=0;i<=4;i++){const y=T+H-i*H/4;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+W,y);ctx.stroke();txt(ctx,String(Math.round(ymax*i/4)),L-7,y,{s:13,c:PAL.soft,a:'right',b:'middle'})}
+  txt(ctx,'time →',L+W,T+H+21,{s:13,c:PAL.soft,a:'right'});
+  ctx.save();ctx.beginPath();ctx.rect(L-1,T-6,W+2,H+12);ctx.clip();
+  for(const m of w.marks){if(m.t<t0)continue;const x=X(m.t);ctx.strokeStyle=PAL.soft;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.setLineDash([]);
+    txt(ctx,m.label,Math.min(x+5,L+W-80),T+13,{s:12.5,c:PAL.soft,w:600})}
+  if(o.sketch&&o.sketch.length>1){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.lineJoin='round';ctx.beginPath();o.sketch.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.setLineDash([])}
+  if(w.hist.length>1){ctx.strokeStyle=rgba(PAL.brown,1);ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.beginPath();let st=false;for(const p of w.hist){if(p.t<t0-.2)continue;const x=X(p.t),y=Y(p.m2);st?ctx.lineTo(x,y):ctx.moveTo(x,y);st=true}ctx.stroke();
+    const p=w.hist[w.hist.length-1];ctx.fillStyle=rgba(PAL.brown,1);ctx.beginPath();ctx.arc(X(p.t),Y(p.m2),5,0,TAU);ctx.fill()}
+  ctx.restore();
+  if(o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=2;ctx.setLineDash([6,5]);rr(ctx,L-2,T-4,W+4,H+8,6);ctx.stroke();ctx.setLineDash([]);
+    if(!(o.sketch&&o.sketch.length>1))txt(ctx,'Draw your line here',L+W/2,T+H/2,{s:17,w:700,c:PAL.think,a:'center',b:'middle'})}
+  if(o.sketch&&o.sketch.length>1&&!o.sketching){ctx.strokeStyle=PAL.think;ctx.lineWidth=3;ctx.setLineDash([7,6]);ctx.beginPath();ctx.moveTo(r.x+r.w-150,r.y+19);ctx.lineTo(r.x+r.w-122,r.y+19);ctx.stroke();ctx.setLineDash([]);txt(ctx,'your guess',r.x+r.w-116,r.y+24,{s:13,c:PAL.think,w:700})}
+  return{L,T,W,H,ymax,span,t0}}
+
+// the sealed tube in its bath. bathC: 0, 25 or 60; cNO2 in mol/L; lift: 0..1 (tube raised while it changes bath)
+function drawTube(ctx,r,bathC,cNO2,lift,t){card(ctx,r,'What you see');
+  const cx=r.x+r.w/2,bw=r.w-44,bx=cx-bw/2,btop=r.y+r.h*.50,bbot=r.y+r.h-66,wl=btop+26;
+  // beaker
+  const hot=bathC>=45,ice=bathC<=5;ctx.fillStyle=hot?(PAL.dark?'rgba(255,150,110,.16)':'rgba(240,120,80,.14)'):PAL.water;rr(ctx,bx+3,wl,bw-6,bbot-wl-3,6);ctx.fill();
+  if(ice){ctx.fillStyle=PAL.dark?'rgba(210,235,255,.5)':'rgba(255,255,255,.95)';ctx.strokeStyle=PAL.dark?'rgba(210,235,255,.7)':'rgba(120,160,200,.8)';ctx.lineWidth=1.2;
+    [[.14,10,.2],[.52,4,-.3],[.74,14,.5],[.3,40,-.15],[.66,46,.25],[.1,66,.1]].forEach(([fx,dy,a])=>{ctx.save();ctx.translate(bx+10+fx*(bw-40)+10,wl+dy+8);ctx.rotate(a);rr(ctx,-10,-9,21,18,4);ctx.fill();ctx.stroke();ctx.restore()})}
+  if(hot&&!RM){ctx.strokeStyle=PAL.dark?'rgba(255,255,255,.28)':'rgba(120,120,130,.4)';ctx.lineWidth=2;ctx.lineCap='round';for(let i=0;i<3;i++){const x=bx+bw*.2+i*bw*.28,ph=(t*.7+i*.37)%1;ctx.globalAlpha=1-ph;ctx.beginPath();
+      for(let s=0;s<=10;s++){const y=wl-4-ph*26-s*3.2,xx=x+Math.sin(s*.8+t*2+i)*4;s?ctx.lineTo(xx,y):ctx.moveTo(xx,y)}ctx.stroke()}ctx.globalAlpha=1}
+  // tube
+  const tw=44,th=r.h*.56,ty=wl-th*.52-lift*46,tx=cx-tw/2-10;
+  ctx.fillStyle=PAL.box;rr(ctx,tx,ty,tw,th,tw/2);ctx.fill();const al=brownAlpha(cNO2);ctx.fillStyle=rgba(PAL.brown,clamp(al*1.05,0,.96));rr(ctx,tx+2,ty+2,tw-4,th-4,tw/2-2);ctx.fill();
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=2.5;rr(ctx,tx,ty,tw,th,tw/2);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx+10,ty+24);ctx.lineTo(tx+10,ty+th-28);ctx.stroke();
+  txt(ctx,'sealed',tx+tw/2,ty-8,{s:12.5,c:PAL.soft,a:'center'});
+  // beaker glass on top, thermometer
+  ctx.strokeStyle=PAL.glass;ctx.lineWidth=3;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(bx,btop);ctx.lineTo(bx,bbot-8);ctx.quadraticCurveTo(bx,bbot,bx+8,bbot);ctx.lineTo(bx+bw-8,bbot);ctx.quadraticCurveTo(bx+bw,bbot,bx+bw,bbot-8);ctx.lineTo(bx+bw,btop);ctx.stroke();
+  const mx=bx+bw-24,my0=btop-52,my1=bbot-22;ctx.strokeStyle=PAL.glass;ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(mx,my0);ctx.lineTo(mx,my1);ctx.stroke();
+  const lv=lerp(my1-10,my0+6,clamp(bathC/100,0,1));ctx.strokeStyle='#d92f45';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(mx,my1);ctx.lineTo(mx,lv);ctx.stroke();ctx.fillStyle='#d92f45';ctx.beginPath();ctx.arc(mx,my1+2,6,0,TAU);ctx.fill();
+  const name=ice?'Ice water':hot?'Hot water':'Room';pill(ctx,`${name} · ${bathC} °C`,cx,bbot+24,ice?'#2d6bd2':hot?'#c5471f':PAL.soft,'#fff',14,'center');
+  const shade=al<.05?'none':al<.25?'very pale':al<.5?'light brown':al<.68?'brown':'dark brown';txt(ctx,'Gas color: '+shade,cx,bbot+52,{s:14.5,w:600,a:'center',max:r.w-16});
+  return{tx:tx+tw,ty:ty+th*.3}}
+
+/* two bars that compete. rows: [{name,sub,v,col},{...}] ; o: {title,max,unit,dec,status:{more0,more1,bal}} */
+function drawPair(ctx,r,rows,o={}){card(ctx,r,o.title);const x=r.x+14,w=r.w-28,rowH=(r.h-80)/2,max=o.max||100,out=[];
+  rows.forEach((q,i)=>{const y=r.y+36+i*rowH;ctx.fillStyle=q.col;ctx.beginPath();ctx.arc(x+8,y+11,6,0,TAU);ctx.fill();txt(ctx,q.name,x+22,y+17,{s:16.5,w:700,max:w-22});
+    const bw=w-66,by=y+27,bh=Math.max(14,Math.min(34,rowH-42));rr(ctx,x,by,bw,bh,5);ctx.fillStyle=PAL.card2;ctx.fill();const f=clamp(q.v/max,0,1);if(f>.004){rr(ctx,x,by,Math.max(5,bw*f),bh,5);ctx.fillStyle=q.col;ctx.fill()}
+    txt(ctx,q.v.toFixed(o.dec===undefined?0:o.dec),x+w,by+bh/2+1,{s:19,w:700,a:'right',b:'middle'});if(q.sub)txt(ctx,q.sub,x,by+bh+16,{s:13,c:PAL.soft,max:w});out.push({by,bh,bw,f})});
+  const a=rows[0].v,b=rows[1].v,big=Math.max(a,b,1e-9),d=(a-b)/big,yy=r.y+r.h-16,s=o.status||{};
+  if(Math.abs(d)>.03){const A=a>b?out[0]:out[1],lo=x+A.bw*Math.min(out[0].f,out[1].f),hi=x+A.bw*Math.max(out[0].f,out[1].f);if(hi-lo>6){ctx.save();rr(ctx,lo,A.by,hi-lo,A.bh,5);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=3;
+      for(let xx=lo-A.bh;xx<hi;xx+=10){ctx.beginPath();ctx.moveTo(xx,A.by+A.bh);ctx.lineTo(xx+A.bh,A.by);ctx.stroke()}ctx.restore()}
+    txt(ctx,d>0?s.more0:s.more1,x,yy,{s:14.5,w:700,c:d>0?rows[0].col:rows[1].col,max:w})}
+  else if(s.bal)txt(ctx,s.bal,x,yy,{s:14.5,w:700,c:PAL.good,max:w});
+  if(o.unit)txt(ctx,o.unit,r.x+r.w-14,r.y+24,{s:12.5,c:PAL.soft,a:'right'})}
+
+</script>
+<script>
+/* ============================================================
+   Naming story pilot · Raider ChemLab · RJ Ed Tech
+   "One letter apart": why some names count (dinitrogen monoxide)
+   and others do not (magnesium chloride).
+   One idea: a name only has to say what you could not work out.
+   Ions are drawn to scale from ionic radii (pm): Na+ 102, Mg2+ 72,
+   Al3+ 54, Ca2+ 100, Fe2+ 78, Fe3+ 65, Cl- 181, O2- 140.
+   ============================================================ */
+const SITE='ChemLab',PAGE='naming-story',KEY='rjchemlab-namestory-v1',EVB='naming',EVT='Naming story';
+const LW=1000,LH=560;
+const cv=$('#stage'),ctx=cv.getContext('2d');let PX=1;
+const W=new World();
+let S={guess:{},sketch:[],text:'',name:'',seen:{},named:[0,0,0,0],miss:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+try{S.name=localStorage.getItem('raider-labs-name')||S.name||''}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let cur=0,st={},paused=false,lastCap='';
+const NOWORLD=()=>true,PAUSEOK=()=>false,settled=()=>true;
+
+/* ---------- the pieces ---------- */
+Object.assign(GEO,{NO3:{at:[['N',0,0],['O',0,-1.24],['O',1.074,.62],['O',-1.074,.62]],bd:[[0,1],[0,2],[0,3]]},
+  SO4:{at:[['S',0,0],['O',-.86,-.86],['O',.86,-.86],['O',-.86,.86],['O',.86,.86]],bd:[[0,1],[0,2],[0,3],[0,4]]},
+  OH:{at:[['O',-.3,0],['H',.66,0]],bd:[[0,1]]},
+  N2O:{at:[['N',-1.16,0],['N',-.03,0],['O',1.16,0]],bd:[[0,1],[1,2]]},NO:{at:[['N',-.575,0],['O',.575,0]],bd:[[0,1]]},
+  CO2:{at:[['C',0,0],['O',-1.16,0],['O',1.16,0]],bd:[[0,1],[0,2]]},
+  N2O3:{at:[['N',-.93,0],['N',.93,0],['O',-1.6,-.98],['O',1.56,-1.03],['O',1.56,1.03]],bd:[[0,1],[0,2],[1,3],[1,4]]},
+  N2O5:{at:[['O',0,-.4],['N',-1.2,.3],['N',1.2,.3],['O',-1.9,-.66],['O',-1.6,1.42],['O',1.9,-.66],['O',1.6,1.42]],bd:[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]]}});
+const ION={Na:{sym:'Na',name:'sodium',q:1,r:102,col:'#8e5bd6'},Mg:{sym:'Mg',name:'magnesium',q:2,r:72,col:'#2f9e58'},Al:{sym:'Al',name:'aluminum',q:3,r:54,col:'#7d8794'},Ca:{sym:'Ca',name:'calcium',q:2,r:100,col:'#2a9d8f'},
+  Fe2:{sym:'Fe',name:'iron',q:2,r:78,col:'#c7622b',rom:'II'},Fe3:{sym:'Fe',name:'iron',q:3,r:65,col:'#a8431c',rom:'III'},
+  Cl:{sym:'Cl',name:'chloride',q:-1,r:181,col:'#3aa655'},O:{sym:'O',name:'oxide',q:-2,r:140,col:'#d92f45'},
+  NO3:{sym:'NO₃',name:'nitrate',q:-1,geo:'NO3',poly:1},SO4:{sym:'SO₄',name:'sulfate',q:-2,geo:'SO4',poly:1},OH:{sym:'OH',name:'hydroxide',q:-1,geo:'OH',poly:1}};
+const FACT={'NaCl':'Table salt.','MgCl₂':'Sprayed on Colorado roads to melt ice.','Al₂O₃':'The hard skin on a soda can. Also ruby and sapphire.','FeO':'A black powder.','Fe₂O₃':'Rust.','MgO':'Used in fireproof bricks.','Na₂O':'Used in making glass.',
+  'Ca(NO₃)₂':'A fertilizer.','NaNO₃':'A fertilizer.','Al(NO₃)₃':'Used in tanning leather.','CaSO₄':'Drywall and plaster.','Na₂SO₄':'Used in laundry detergent.','Al₂(SO₄)₃':'Used to clean drinking water.','NaOH':'Lye: drain cleaner.','Ca(OH)₂':'Slaked lime, used in cement.','Al(OH)₃':'An antacid.','CaCl₂':'Ice melt for sidewalks.'};
+const PM=.3,CH=q=>{const n=Math.abs(q);return (n>1?n:'')+(q>0?'+':'−')},SUP=q=>{const n=Math.abs(q);return (n>1?'²³⁴'[n-2]:'')+(q>0?'⁺':'⁻')},SUBS=n=>n>1?String(n).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[d]).join(''):'',gcd=(a,b)=>b?gcd(b,a%b):a;
+function compound(cat,an,c,a){const C=ION[cat],A=ION[an],pos=c*C.q,neg=-a*A.q,ok=c>0&&a>0&&pos===neg,g=ok?gcd(c,a):1,cf=c/g,af=a/g;
+  return{C,A,pos,neg,ok,g,f:C.sym+SUBS(cf)+(A.poly&&af>1?'('+A.sym+')':A.sym)+SUBS(af),name:C.name+(C.rom?'('+C.rom+')':'')+' '+A.name}}
+function drawIon(I,x,y,hide){const r=I.geo?54:I.r*PM;if(I.geo){drawMol(ctx,I.geo,x,y,0,30,{bonds:true});ctx.strokeStyle=PAL.soft;ctx.lineWidth=2;[-1,1].forEach(s=>{ctx.beginPath();ctx.moveTo(x+s*(r+2),y-r);ctx.lineTo(x+s*(r+8),y-r);ctx.lineTo(x+s*(r+8),y+r);ctx.lineTo(x+s*(r+2),y+r);ctx.stroke()})}
+  else{ball(ctx,x,y,r,I.col);if(r>=17)txt(ctx,I.sym,x,y+1,{s:Math.min(24,r*.75),w:700,c:'#fff',a:'center',b:'middle'})}
+  txt(ctx,hide?'?':CH(I.q),x+r+(I.geo?12:1),y-r+12,{s:20,w:800,c:hide?PAL.think:PAL.ink});if(!I.geo&&r<17)txt(ctx,I.sym,x,y+r+17,{s:14,w:700,a:'center'})}
+const SPOT=[[],[[0,0]],[[-1,0],[1,0]],[[-1,-.9],[1,-.9],[0,.9]],[[-1,-.9],[1,-.9],[-1,.9],[1,.9]]];
+function group(I,n,cx,cy,hide){const d=(I.geo?54:Math.max(I.r*PM,18))+17;SPOT[n].forEach(p=>drawIon(I,cx+p[0]*d,cy+p[1]*d,hide))}
+const R_B={x:14,y:14,w:612,h:532},R_N={x:638,y:14,w:348,h:532};
+/* o: {hideName, hideCat, bars:false, title} */
+function sceneIons(o={}){const K=compound(st.cat,st.an,st.c,st.a),C=K.C,A=K.A;card(ctx,R_B,o.title||'Build it');
+  txt(ctx,C.name+' ion',R_B.x+170,R_B.y+58,{s:16,w:700,a:'center'});txt(ctx,A.name+' ion',R_B.x+450,R_B.y+58,{s:16,w:700,a:'center'});
+  if(st.c)group(C,st.c,R_B.x+170,R_B.y+190,o.hideCat);else txt(ctx,'none yet',R_B.x+170,R_B.y+190,{s:15,c:PAL.soft,a:'center'});
+  if(st.a)group(A,st.a,R_B.x+450,R_B.y+190,false);else txt(ctx,'none yet',R_B.x+450,R_B.y+190,{s:15,c:PAL.soft,a:'center'});
+  if(o.bars!==false){const U=26,x0=R_B.x+130,row=(y,lab,n,q,col,tot)=>{txt(ctx,lab,R_B.x+22,y+18,{s:15,w:700});let x=x0;for(let i=0;i<n;i++){const w=q*U;rr(ctx,x,y,w-3,U,6);ctx.fillStyle=col;ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;for(let k=1;k<q;k++){ctx.beginPath();ctx.moveTo(x+k*U-1.5,y+4);ctx.lineTo(x+k*U-1.5,y+U-4);ctx.stroke()}x+=w}
+      txt(ctx,tot?tot+(lab[0]==='+'?'+':'−'):'0',Math.max(x+10,x0+10),y+19,{s:19,w:700});return x};
+    const y=R_B.y+352,xa=row(y,'+ charge',st.c,C.q,C.col||PAL.split,K.pos),xb=row(y+54,'− charge',st.a,-A.q,A.col||PAL.join,K.neg);
+    if(K.ok){ctx.strokeStyle=PAL.good;ctx.lineWidth=3;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(xa-1,y-10);ctx.lineTo(xa-1,y+92);ctx.stroke();ctx.setLineDash([]);txt(ctx,'Same length: the charges cancel. Neutral.',R_B.x+22,y+134,{s:16.5,w:700,c:PAL.good})}
+    else if(st.c||st.a){const net=K.pos-K.neg;txt(ctx,'Not neutral yet: net charge '+Math.abs(net)+(net>0?'+':'−'),R_B.x+22,y+134,{s:16.5,w:700,c:PAL.ink})}}
+  card(ctx,R_N,'Formula and name');const x=R_N.x+20,w=R_N.w-40;
+  if(o.hideName){txt(ctx,o.f,x,R_N.y+118,{s:54,w:700,max:w});txt(ctx,'Name:',x,R_N.y+176,{s:15,c:PAL.soft});txt(ctx,o.built||'…',x,R_N.y+208,{s:25,w:700,c:o.right?PAL.good:PAL.ink,max:w});if(o.right)txt(ctx,'✓ '+(FACT[o.f]||''),x,R_N.y+244,{s:15.5,c:PAL.good,w:600,max:w});return}
+  if(K.ok){txt(ctx,K.f,x,R_N.y+118,{s:54,w:700,max:w});txt(ctx,K.name,x,R_N.y+166,{s:25,w:700,max:w});if(FACT[K.f])txt(ctx,FACT[K.f],x,R_N.y+200,{s:15.5,c:PAL.soft,max:w});
+    txt(ctx,(st.c/K.g)+' '+C.name+' for every '+(st.a/K.g)+' '+A.name,x,R_N.y+238,{s:16,w:600,max:w});
+    if(K.g>1){txt(ctx,'You built '+st.c+' and '+st.a+'. A formula keeps',x,R_N.y+266,{s:14.5,c:PAL.soft,max:w});txt(ctx,'the simplest ratio.',x,R_N.y+286,{s:14.5,c:PAL.soft})}
+    if(C.rom){ctx.fillStyle=C.rom==='II'?'#1f1f22':'#9b3b1e';rr(ctx,x,R_N.y+310,w,70,10);ctx.fill();ctx.strokeStyle=PAL.line;ctx.stroke();txt(ctx,'what it looks like',x,R_N.y+402,{s:13.5,c:PAL.soft});
+      txt(ctx,'Fe'+SUP(C.q)+'  →  iron('+C.rom+')',x,R_N.y+450,{s:21,w:700,c:PAL.think})}}
+  else{txt(ctx,'?',x,R_N.y+118,{s:54,w:700,c:PAL.soft});txt(ctx,st.c&&st.a?'Not a compound yet.':'Add ions on both sides.',x,R_N.y+166,{s:18,w:600,c:PAL.soft,max:w});txt(ctx,'A compound has no charge left over.',x,R_N.y+196,{s:15,c:PAL.soft,max:w})}}
+
+/* ---------- molecules: the name has to count ---------- */
+const PRE=['','mono','di','tri','tetra','penta'],MKEY={'2,1':'N2O','1,1':'NO','1,2':2,'2,3':'N2O3','2,4':4,'2,5':'N2O5'};
+const INFO={'2,1':['Laughing gas','The dentist’s gas. Also in whipped-cream cans.'],'1,1':['A signal in your body','Your blood vessels make it to relax and widen. Nobel Prize, 1998.'],'1,2':['Brown and toxic','The brown in smog. It burns lungs.'],
+  '2,3':['Deep blue when very cold','A liquid only below about 3 °C.'],'2,4':['Rocket propellant','The one behind the hatch that stayed shut.'],'2,5':['White crystals','Makes nitric acid when it meets water.']};
+function molName(n,o){const p=PRE[o],cut=/[ao]$/.test(p)&&p!=='di'&&p!=='tri';return{a:n>1?PRE[n]:'',b:cut?p.slice(0,-1):p,x:cut?p.slice(-1):'',full:(n>1?PRE[n]:'')+'nitrogen '+(cut?p.slice(0,-1):p)+'oxide'}}
+function sceneMol(){const n=st.n,o=st.o,k=n+','+o,g=MKEY[k],M=molName(n,o),A={x:14,y:14,w:480,h:532},B={x:506,y:14,w:480,h:532};card(ctx,A,'The molecule, drawn to shape');
+  if(g!==undefined){drawMol(ctx,g,A.x+A.w/2,A.y+230,0,g==='N2O5'||g===4?46:56,{bonds:true,label:true,halo:g===2?1:0});txt(ctx,INFO[k][0],A.x+A.w/2,A.y+410,{s:22,w:700,a:'center'});txt(ctx,INFO[k][1],A.x+A.w/2,A.y+440,{s:16,c:PAL.soft,a:'center',max:A.w-30});
+    if(g==='N2O3'||g==='N2O5')txt(ctx,'bonds shown; angles approximate',A.x+A.w/2,A.y+500,{s:13,c:PAL.soft,a:'center'})}
+  else{for(let i=0;i<n;i++)ball(ctx,A.x+150+i*70,A.y+200,30,PAL.N);for(let i=0;i<o;i++)ball(ctx,A.x+110+i*64,A.y+290,27,PAL.O);txt(ctx,'Not one of the six common nitrogen oxides.',A.x+A.w/2,A.y+410,{s:17,w:600,a:'center',max:A.w-30});txt(ctx,'Try another recipe.',A.x+A.w/2,A.y+438,{s:15.5,c:PAL.soft,a:'center'})}
+  card(ctx,B,'The name counts the atoms');const x=B.x+26;txt(ctx,'N'+SUBS(n)+'O'+SUBS(o),x,B.y+112,{s:54,w:700});
+  const line=(y,cnt,sym,pre,cutc,word,skip)=>{pill(ctx,cnt+' '+sym,x,y-46,PAL.think,'#fff',14);ctx.font=`700 36px ${FONT}`;let xx=x;
+    if(skip){ctx.fillStyle=PAL.soft;ctx.fillText('mono',xx,y);const ww=ctx.measureText('mono').width;ctx.strokeStyle=PAL.soft;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xx-2,y-12);ctx.lineTo(xx+ww+2,y-12);ctx.stroke();xx+=ww+6}
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle=PAL.think;ctx.fillText(pre,xx,y);xx+=ctx.measureText(pre).width;
+    if(cutc){ctx.fillStyle=PAL.soft;ctx.fillText(cutc,xx,y);const ww=ctx.measureText(cutc).width;ctx.strokeStyle=PAL.bad;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xx-1,y-24);ctx.lineTo(xx+ww+1,y-2);ctx.stroke();xx+=ww}
+    ctx.fillStyle=PAL.ink;ctx.fillText(word,xx,y)};
+  line(B.y+228,n,n===1?'nitrogen':'nitrogens',M.a,'','nitrogen',n===1);line(B.y+338,o,o===1?'oxygen':'oxygens',M.b,M.x,'oxide',false);
+  txt(ctx,'Say it: '+M.full,x,B.y+400,{s:19,w:700,c:g!==undefined?PAL.good:PAL.soft,max:B.w-50});
+  txt(ctx,'1 mono · 2 di · 3 tri · 4 tetra · 5 penta',x,B.y+456,{s:15.5,c:PAL.soft});txt(ctx,'The first word skips “mono.” A prefix drops',x,B.y+486,{s:14,c:PAL.soft});txt(ctx,'its last a or o before “oxide.”',x,B.y+505,{s:14,c:PAL.soft})}
+function sceneThree(t){const D=[['N2O','N₂O','The dentist’s gas','Calms you in the chair.'],['NO','NO','A signal in your body','Opens your blood vessels. Nobel Prize, 1998.'],[2,'NO₂','A brown poison','The brown in smog. Burns lungs.']];
+  D.forEach((d,i)=>{const r={x:20+i*326,y:30,w:308,h:500};card(ctx,r);drawMol(ctx,d[0],r.x+r.w/2,r.y+170,RM?0:Math.sin(t*.7+i)*.12,50,{bonds:true,label:true,halo:d[0]===2?1:0});
+    txt(ctx,d[1],r.x+r.w/2,r.y+330,{s:50,w:700,a:'center'});txt(ctx,d[2],r.x+r.w/2,r.y+384,{s:21,w:700,a:'center',max:r.w-24});txt(ctx,d[3],r.x+r.w/2,r.y+414,{s:15.5,c:PAL.soft,a:'center',max:r.w-24});
+    pill(ctx,st.names?molName(i===0?2:1,i===2?2:1).full:'name: ?',r.x+r.w/2,r.y+462,st.names?PAL.good:PAL.think,'#fff',15,'center')})}
+
+/* ---------- name it: tiles ---------- */
+const ITEMS=[{f:'CaCl₂',ans:'calcium chloride',ion:['Ca','Cl',1,2],tiles:['calcium','chloride','chlorine','di-','mono-','(II)']},
+ {f:'Fe₂O₃',ans:'iron(III) oxide',ion:['Fe3','O',2,3],tiles:['(II)','(III)','di-','iron','oxide','tri-']},
+ {f:'CO₂',ans:'carbon dioxide',mol:'CO2',tiles:['(IV)','carbon','di-','mono-','oxide','oxygen']},
+ {f:'Al(NO₃)₃',ans:'aluminum nitrate',ion:['Al','NO3',1,3],tiles:['(III)','aluminum','nitrate','nitride','nitrogen','tri-']}];
+const joinT=a=>{let s='';a.forEach(t=>{if(t[0]==='(')s+=t;else if(s.slice(-1)==='-')s=s.slice(0,-1)+t;else s+=(s?' ':'')+t});return s.replace(/-$/,'')};
+function hint(it,ch){const has=t=>ch.includes(t),pre=ch.some(t=>t.slice(-1)==='-'),rom=ch.find(t=>t[0]==='(');
+  if(it.mol){if(rom)return 'There is no metal here, so there are no ion charges and no Roman numeral.';if(has('oxygen'))return 'The second part changes its ending: oxygen becomes oxide.';if(has('mono-')&&ch.indexOf('mono-')<ch.indexOf('carbon'))return 'The first word skips “mono.” Only count the oxygens.';
+    if(!has('di-'))return 'Two nonmetals share electrons, so nothing forces the recipe. The name has to count the oxygens: two.';return 'Almost. Put the count right in front of the part it counts.'}
+  const C=ION[it.ion[0]];if(pre)return 'A metal is in it, so it is made of ions. Their charges already force the recipe, so the name does not count.';
+  if(has('chlorine'))return 'The second part changes its ending: chlorine becomes chloride.';if(has('nitride')||has('nitrogen'))return 'NO₃ is a team with its own name: nitrate.';
+  if(C.rom){if(!rom)return 'Iron can be 2+ or 3+, so the name has to say which. Three O²⁻ make 6−. What must each of the two irons be?';if(rom!=='('+C.rom+')')return 'Check the charges. Three O²⁻ make 6−, shared by two irons: 3+ each.'}
+  else if(rom)return C.name[0].toUpperCase()+C.name.slice(1)+' is always '+C.q+'+, so the name does not need a Roman numeral.';
+  return 'Not yet. Name the metal first, then the other part.'}
+function sceneName(){const it=ITEMS[st.i],built=joinT((st.sel||[]).map(k=>it.tiles[k])),right=!!S.named[st.i];
+  if(it.ion){[st.cat,st.an,st.c,st.a]=it.ion;sceneIons({hideName:true,hideCat:!!ION[it.ion[0]].rom,bars:false,title:'Compound '+(st.i+1)+' of 4',f:it.f,built:right?it.ans:built,right})}
+  else{card(ctx,R_B,'Compound '+(st.i+1)+' of 4');drawMol(ctx,it.mol,R_B.x+R_B.w/2,R_B.y+230,0,58,{bonds:true,label:true});txt(ctx,'carbon and oxygen: two nonmetals, sharing electrons',R_B.x+R_B.w/2,R_B.y+400,{s:16,c:PAL.soft,a:'center',max:R_B.w-30});
+    card(ctx,R_N,'Formula and name');const x=R_N.x+20,w=R_N.w-40;txt(ctx,it.f,x,R_N.y+118,{s:54,w:700});txt(ctx,'Name:',x,R_N.y+176,{s:15,c:PAL.soft});txt(ctx,right?it.ans:(built||'…'),x,R_N.y+208,{s:25,w:700,c:right?PAL.good:PAL.ink,max:w});if(right)txt(ctx,'✓ What you breathe out.',x,R_N.y+244,{s:15.5,c:PAL.good,w:600})}}
+
+/* ---------- captions and steps ---------- */
+const CAP={
+ ion0:'Start with ions: atoms that lost or gained electrons, so they carry a charge. Opposite charges pull together until they cancel. <b>Add chloride ions until the charges cancel.</b>',
+ ion1:'One sodium, one chloride: NaCl, sodium chloride. Table salt. <b>Now switch the metal to magnesium and balance it again.</b>',
+ ion2:'Magnesium is 2+, so it takes two chlorides. Nobody chose the 2. The charges forced it. So the name is just magnesium chloride. No numbers needed.',
+ al0:'Harder: aluminum is 3+ and oxide is 2−. <b>Add ions on both sides until the two bars are the same length.</b>',
+ al1:'Two aluminums make 6+. Three oxides make 6−. Al₂O₃ is aluminum oxide: the hard skin on a soda can, and the crystal in a ruby. <b>One question about its name.</b>',
+ al2:'Right. The charges force 2 and 3, so the name does not have to say them. Anyone who knows the charges can work out the recipe.',
+ al2x:'The charges force 2 and 3, so the name does not have to say them. Anyone who knows the charges can work out the recipe.',
+ fe0:'Some metals can form more than one ion. Iron can be 2+ or 3+. Then the charges alone cannot tell you the recipe, so the name must. <b>Build both iron oxides.</b>',
+ fe1:'Iron(II) oxide is FeO, a black powder. Iron(III) oxide is Fe₂O₃: rust. The Roman numeral is the iron’s charge. It is the one thing you could not work out yourself.',
+ team0:'Some ions are a team of atoms that travel together with one charge. Nitrate, NO₃⁻, is one. <b>Balance calcium with nitrate.</b>',
+ team1:'Calcium is 2+, so it takes two nitrates. The parentheses mean two whole teams: Ca(NO₃)₂, calcium nitrate. The name still needs no numbers. <b>Try other pairs.</b>',
+ mol0:'Nitrogen and oxygen are both nonmetals. They share electrons, so there are no charges to force a recipe. Many recipes are real, so the name has to <b>count</b>. <b>Build the dentist’s gas, N₂O.</b>',
+ mol1:'Two nitrogens: <b>di</b>nitrogen. One oxygen: <b>mon</b>oxide. Dinitrogen monoxide. <b>Now build other recipes.</b>',
+ mol2:'Each recipe is a different substance, so each count goes into the name. One oxygen more or less is the difference between a calming gas and a poison.',
+ nm0:'Your turn. Four compounds. First decide: is a metal in it, so it is made of ions? Or is it two nonmetals sharing? Then <b>tap tiles to build its name.</b>',
+ nm1:'All four. A metal in it: name the ions, and add a Roman numeral only if the metal has a choice. Two nonmetals: count with prefixes.'};
+const PARTS=['Three gases','Ions','A choice','Teams','Counting','Name it','Your turn'];
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function picks(key,q,opts,right,after){const g=S.guess[key];if(after&&g!==undefined)return `<p class="note">Your guess: <b>${opts[g].toLowerCase()}</b> <span class="chip ${g===right?'ok':'no'}">${g===right?'✓ matched':'✗ not this time'}</span></p>`;
+  return `<div class="pick" data-key="${key}"><p class="q">${q}</p><div class="row">${opts.map((o,i)=>`<button type="button" class="btn opt${g===i?' on':''}" data-i="${i}" aria-pressed="${g===i}">${o}</button>`).join('')}</div></div>`}
+function bindPicks(root,fn){$$('.pick .opt',root).forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.pick').dataset.key;S.guess[k]=+b.dataset.i;save();ev('guess-'+k+'-'+b.dataset.i);fn&&fn(k,+b.dataset.i);renderCtl()}))}
+const chips=(lab,attr,list,curv)=>`<div class="row"><span class="lab">${lab}</span>${list.map(([v,l])=>`<button type="button" class="btn${curv===v?' on':''}" data-${attr}="${v}" aria-pressed="${curv===v}">${l}</button>`).join('')}</div>`;
+const lab=k=>ION[k].sym+SUP(ION[k].q);
+const pm=(key,k,val)=>`<div class="row pm"><button type="button" class="btn" data-pm="${key}" data-d="-1" aria-label="Remove one ${ION[k].name} ion">−</button><b>${val} × ${lab(k)}</b><button type="button" class="btn" data-pm="${key}" data-d="1" aria-label="Add one ${ION[k].name} ion">+</button><span class="lab">${ION[k].name}</span></div>`;
+const builder=()=>pm('c',st.cat,st.c)+pm('a',st.an,st.a);
+function bindBuilder(r,after){$$('[data-pm]',r).forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.pm;st[k]=clamp(st[k]+(+b.dataset.d),0,4);after&&after();renderCtl()}))}
+const NAMES=['nitrogen oxide','dinitrogen monoxide','nitrogen dioxide'];
+
+const STEPS=[
+ {part:0,title:'One letter apart',
+  cap:'Three gases, each made of only nitrogen and oxygen. One is the dentist’s gas. One is a signal your own blood vessels make. One is brown and burns your lungs. The name has to tell them apart.',
+  alt:'Think of three medicine bottles with nearly the same label. The name is the only thing that tells you which one you are holding.',
+  aria:'Three molecules side by side: N2O, the dentist’s gas; NO, a signal in the body; and NO2, a brown poison. Each is labeled name: question mark.',
+  draw(){sceneThree(st.t)},ctl(){return picks('n2o','The dentist’s gas is N₂O. Guess its name.',NAMES)+(S.guess.n2o!==undefined?'<p class="note">Locked in. You will test it in Part 5.</p>':'')},bind(r){bindPicks(r,()=>markDone())}},
+ {part:1,title:'Charges that cancel',cap:CAP.ion0,
+  alt:'Each + needs one − to cancel it, like owing and paying back. A 2+ ion owes two, so it needs two 1− ions.',
+  aria:'A sodium ion with a 1 plus charge and chloride ions with a 1 minus charge, drawn to scale. Two bars compare the total plus charge with the total minus charge. When the bars are the same length the formula and name appear.',
+  enter(){st.cat='Na';st.an='Cl';st.c=1;st.a=0},
+  tick(){const K=compound(st.cat,st.an,st.c,st.a);if(st.cat==='Na'&&K.ok&&!st.s1){st.s1=true;cap(CAP.ion1);renderCtl()}if(st.cat==='Mg'&&K.ok&&!st.s2){st.s2=true;cap(CAP.ion2);markDone()}},
+  draw(){sceneIons()},ctl(){return (st.s1?chips('Metal:','cat',[['Na','Na⁺ sodium'],['Mg','Mg²⁺ magnesium']],st.cat):'')+builder()},
+  bind(r){bindBuilder(r);$$('[data-cat]',r).forEach(b=>b.addEventListener('click',()=>{st.cat=b.dataset.cat;st.c=1;st.a=0;renderCtl()}))}},
+ {part:1,title:'Build aluminum oxide',cap:CAP.al0,
+  alt:'Find a number that both 3 and 2 go into: 6. Two 3s make 6. Three 2s make 6. So two aluminums and three oxides.',
+  aria:'Aluminum ions with a 3 plus charge and oxide ions with a 2 minus charge. The plus bar and the minus bar match at 6 when there are two aluminum ions and three oxide ions, giving Al2O3, aluminum oxide.',
+  enter(){st.cat='Al';st.an='O';st.c=1;st.a=1},
+  tick(){const K=compound(st.cat,st.an,st.c,st.a);if(K.ok&&!st.s1){st.s1=true;cap(S.guess.why===undefined?CAP.al1:CAP.al2x);if(S.guess.why!==undefined)markDone();renderCtl()}},
+  draw(){sceneIons()},ctl(){return builder()+(st.s1?picks('why','Why is it not called “dialuminum trioxide”?',['The charges already force 2 and 3','Aluminum is a special case','It is. Both names are used'],0,S.guess.why!==undefined):'')},
+  bind(r){bindBuilder(r);bindPicks(r,(k,i)=>{cap(i===0?CAP.al2:CAP.al2x);markDone()})}},
+ {part:2,title:'When the metal has a choice',cap:CAP.fe0,
+  alt:'Sodium is always 1+, so the word “sodium” says everything. Iron has two settings, so its name carries a label: (II) or (III).',
+  aria:'Iron ions, either 2 plus or 3 plus, with oxide ions. Iron 2 plus makes FeO, iron(II) oxide, shown as a black swatch. Iron 3 plus makes Fe2O3, iron(III) oxide, shown as a rust-red swatch.',
+  enter(){st.cat='Fe2';st.an='O';st.c=1;st.a=0;st.made={}},
+  tick(){const K=compound(st.cat,st.an,st.c,st.a);if(K.ok)st.made[st.cat]=1;if(st.made.Fe2&&st.made.Fe3&&!st.s1){st.s1=true;cap(CAP.fe1);markDone()}},
+  draw(){sceneIons()},ctl(){return chips('Iron as:','cat',[['Fe2','Fe²⁺'],['Fe3','Fe³⁺']],st.cat)+builder()},
+  bind(r){bindBuilder(r);$$('[data-cat]',r).forEach(b=>b.addEventListener('click',()=>{st.cat=b.dataset.cat;st.c=1;st.a=0;renderCtl()}))}},
+ {part:3,title:'Ions that travel as a team',cap:CAP.team0,
+  alt:'Treat the team as one piece. NO₃ with its 1− charge acts just like a chloride ion. Parentheses are only a way to write “two of this whole piece.”',
+  aria:'A calcium ion with a 2 plus charge and nitrate ions, each a nitrogen with three oxygens carrying a 1 minus charge. Two nitrates balance one calcium: Ca(NO3)2, calcium nitrate.',
+  enter(){st.cat='Ca';st.an='NO3';st.c=1;st.a=0},
+  tick(){const K=compound(st.cat,st.an,st.c,st.a);if(K.ok&&st.cat==='Ca'&&st.an==='NO3'&&!st.s1){st.s1=true;cap(CAP.team1);markDone();renderCtl()}},
+  draw(){sceneIons()},ctl(){return (st.s1?chips('Metal:','cat',[['Na','Na⁺'],['Ca','Ca²⁺'],['Al','Al³⁺']],st.cat)+chips('Team:','an',[['NO3','nitrate'],['SO4','sulfate'],['OH','hydroxide']],st.an):'')+builder()},
+  bind(r){bindBuilder(r);$$('[data-cat]',r).forEach(b=>b.addEventListener('click',()=>{st.cat=b.dataset.cat;st.c=1;st.a=0;renderCtl()}));$$('[data-an]',r).forEach(b=>b.addEventListener('click',()=>{st.an=b.dataset.an;st.c=1;st.a=0;renderCtl()}))}},
+ {part:4,title:'No charges, so the name must count',cap:CAP.mol0,
+  alt:'Ions come with a charge that fixes the recipe. Compounds that share electrons do not, so the name works like a parts list: how many of each.',
+  aria:'A nitrogen and oxygen molecule drawn to shape, with its name built from prefixes that count the atoms: for example two nitrogens and four oxygens give dinitrogen tetroxide.',
+  enter(){st.n=1;st.o=1;st.seen={}},
+  tick(){const k=st.n+','+st.o;if(MKEY[k]!==undefined&&st.touched)st.seen[k]=1;if(k==='2,1'&&!st.s1){st.s1=true;cap(CAP.mol1);renderCtl()}if(st.s1&&Object.keys(st.seen).length>=3&&!st.s2){st.s2=true;cap(CAP.mol2);markDone()}},
+  draw(){sceneMol()},
+  ctl(){const g=S.guess.n2o;return (st.s1&&g!==undefined?`<p class="note">Your guess: <b>${NAMES[g]}</b> <span class="chip ${g===1?'ok':'no'}">${g===1?'✓ matched':'✗ not this time'}</span></p>`:'')+chips('Nitrogens:','n',[[1,'1'],[2,'2']],st.n)+chips('Oxygens:','o',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],st.o)},
+  bind(r){$$('[data-n]',r).forEach(b=>b.addEventListener('click',()=>{st.n=+b.dataset.n;st.touched=true;renderCtl()}));$$('[data-o]',r).forEach(b=>b.addEventListener('click',()=>{st.o=+b.dataset.o;st.touched=true;renderCtl()}))}},
+ {part:5,title:'Name it',cap:CAP.nm0,
+  alt:'Look for a metal first. If there is one, the charges do the counting for you. If there is none, you have to count in the name.',
+  aria:'A compound to name, shown as its ions or its molecule beside its formula. You build the name from word tiles.',
+  enter(){st.i=Math.max(0,S.named.findIndex(v=>!v));if(S.named.every(v=>v)){st.i=3;cap(CAP.nm1)}st.sel=[]},
+  draw(){sceneName()},
+  ctl(){const it=ITEMS[st.i],done=S.named.every(v=>v),solved=S.named[st.i];
+    return `<div class="row">${ITEMS.map((q,i)=>`<button type="button" class="btn sm${i===st.i?' on':''}" data-item="${i}">${S.named[i]?'✓ ':''}${q.f}</button>`).join('')}</div>`+
+    (solved?`<p class="fb ok" role="status">${it.ans} ✓</p>`:`<div class="row tiles">${it.tiles.map((t,k)=>`<button type="button" class="btn tile" data-tile="${k}" ${st.sel.includes(k)?'disabled':''}>${t}</button>`).join('')}</div><div class="row"><button type="button" class="btn" data-undo="1" ${st.sel.length?'':'disabled'}>Undo</button><button type="button" class="btn primary" data-check="1" ${st.sel.length?'':'disabled'}>Check</button></div><p class="fb no" role="status">${st.fb||''}</p>`)+(done?'':'')},
+  bind(r){$$('[data-item]',r).forEach(b=>b.addEventListener('click',()=>{st.i=+b.dataset.item;st.sel=[];st.fb='';renderCtl()}));$$('[data-tile]',r).forEach(b=>b.addEventListener('click',()=>{st.sel.push(+b.dataset.tile);st.fb='';renderCtl()}));
+    const u=$('[data-undo]',r);u&&u.addEventListener('click',()=>{st.sel.pop();st.fb='';renderCtl()});const c=$('[data-check]',r);c&&c.addEventListener('click',()=>{const it=ITEMS[st.i],ch=st.sel.map(k=>it.tiles[k]);
+      if(joinT(ch)===it.ans){S.named[st.i]=1;save();ev('name-right-'+(st.i+1));st.sel=[];st.fb='';const nx=S.named.findIndex(v=>!v);if(nx<0){cap(CAP.nm1);markDone()}else setTimeout(()=>{if(cur===6){st.i=nx;st.sel=[];renderCtl()}},1400)}
+      else{S.miss++;save();ev('name-wrong-'+(st.i+1));st.fb=hint(it,ch);st.sel=[]}renderCtl()})}},
+ {part:6,wide:true,title:'Now tell it back',
+  cap:'Back to the three gases: dinitrogen monoxide, nitrogen monoxide, nitrogen dioxide. You can now read each recipe off its name. <b>Explain the rule in your own words.</b>',
+  alt:'Start with table salt and why its name has no numbers. Then say what is different when two nonmetals share electrons.',
+  aria:'The three gases again, now labeled with their names: dinitrogen monoxide, nitrogen monoxide and nitrogen dioxide.',
+  enter(){st.names=true},draw(){sceneThree(st.t)},
+  ctl(){return `<div class="tell"><h3>1. Say it in your own words</h3><p class="q">Why does CO₂ need “di” in its name when MgCl₂ does not? Use the words <b>ions</b>, <b>charge</b> and <b>count</b>.</p>
+  <textarea id="tx" rows="4" placeholder="Type your explanation here.">${esc(S.text)}</textarea>
+  <h3>2. Turn it in</h3><p class="q">If your teacher assigned this, copy your work and paste it into the Canvas text box.</p>
+  <div class="row"><label class="nm">Name <input id="nm" type="text" value="${esc(S.name)}" autocomplete="name"></label><button type="button" class="btn primary" id="copy">Copy for Canvas</button><span id="cmsg" role="status"></span></div>
+  <div class="world"><h3>Why one letter matters</h3><p>In 1998 three scientists won the Nobel Prize for showing that NO, nitrogen monoxide, is a signal your body uses to relax blood vessels. Heart medicines work by releasing it. Add one oxygen and you have NO₂, a poison. The name is how a chemist, a pharmacist or a firefighter knows which one is in the tank.</p>
+  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#naming">Practice more names in the naming trainer.</a> More stories: <a href="https://rjedtech.github.io/Raider-ChemLab/equilibrium-story.html">The hatch that stayed shut</a> (what N₂O₄ does in a rocket) and <a href="https://rjedtech.github.io/Raider-ChemLab/pressure-story.html">The bag that swells</a> (gas pressure).</p></div></div>`},
+  bind(r){const tx=$('#tx',r),nm=$('#nm',r);tx.addEventListener('input',()=>{S.text=tx.value;save()});nm.addEventListener('input',()=>{S.name=nm.value;try{localStorage.setItem('raider-labs-name',nm.value)}catch(e){}save()});
+    $('#copy',r).addEventListener('click',()=>{const g=S.guess,L=['Raider ChemLab · Naming story: One letter apart','Name: '+(S.name||'(not given)'),'',
+      'Guess 1, the name of N2O: '+(g.n2o===undefined?'no guess':NAMES[g.n2o]+(g.n2o===1?' (matched)':' (it is dinitrogen monoxide)')),
+      'Why not "dialuminum trioxide": '+(g.why===undefined?'no answer':['the charges already force 2 and 3 (correct)','aluminum is a special case (not the reason)','both names are used (not so)'][g.why]),
+      'Named correctly: '+ITEMS.filter((q,i)=>S.named[i]).map(q=>q.ans).join(', ')+(S.named.some(v=>v)?'':'none yet')+' ('+S.named.filter(v=>v).length+' of 4, '+S.miss+' miss'+(S.miss===1?'':'es')+')','','In my own words:',S.text||'(nothing written)'].join('\n');
+    const ok=()=>{$('#cmsg').textContent='Copied. Paste it into Canvas.'},fb=()=>{const t=document.createElement('textarea');t.value=L;document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(e){$('#cmsg').textContent='Could not copy. Select your text and copy it by hand.'}t.remove()};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(L).then(ok,fb);else fb();ev('copy')})}},
+];
+
+/* ---------- page controls ---------- */
+let st0={};
+function ev(name){try{const g=window.goatcounter;if(g&&g.count)g.count({path:`story/${SITE}/${EVB}/${name}`,title:EVT,event:true})}catch(e){}}
+function cap(html){if(html===lastCap)return;lastCap=html;$('#cap').innerHTML=html;speak()}
+function markDone(){$('#next').classList.add('pulse')}
+function renderCtl(){const s=STEPS[cur],c=$(s.wide?'#ctlw':'#ctl'),o=$(s.wide?'#ctl':'#ctlw');o.innerHTML='';c.innerHTML=s.ctl?s.ctl.call(s):'';if(s.bind)s.bind.call(s,c)}
+function go(i,quiet){i=clamp(i,0,STEPS.length-1);const from=cur;st0=st;st={t:0};cur=i;const s=STEPS[i];lastCap='';paused=false;W.speed=1;
+  if(NOWORLD(i)){W.ps=[];W.fl=[]}
+  $('#stepno').textContent=`Part ${s.part+1} of ${PARTS.length} · Step ${i+1} of ${STEPS.length}`;$('#ttl').textContent=s.title;cv.setAttribute('aria-label',s.aria||'');
+  $('#alt').hidden=true;$('#alt').textContent='';$('#next').classList.remove('pulse');$('#back').disabled=i===0;$('#next').hidden=i===STEPS.length-1;
+  $('#pause').textContent='Pause';$('#pause').hidden=!PAUSEOK(i);
+  if(s.enter)s.enter.call(s,from);if(s.cap&&!lastCap)cap(s.cap);renderCtl();
+  $$('#parts button').forEach((b,k)=>{b.classList.toggle('on',k===s.part);b.setAttribute('aria-current',k===s.part?'step':'false')});
+  if(!quiet){try{history.replaceState(null,'','#s'+(i+1))}catch(e){}}
+  if(!S.seen[i]){S.seen[i]=1;save();ev('step-'+String(i+1).padStart(2,'0'))}
+  document.body.classList.toggle('tellmode',!!s.wide);fit();
+  if(!s.ctl)markDone()}
+function fit(){const w=cv.clientWidth||LW,d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*d);cv.height=Math.round(w*LH/LW*d);PX=cv.width/LW}
+let lastT=0;
+function frame(ts){const dt=Math.min(.05,(ts-lastT)/1000||0);lastT=ts;const s=STEPS[cur];
+  if(!paused){st.t+=dt;if(W.ps.length)W.step(dt);if(s.tick)s.tick.call(s,dt)}
+  ctx.setTransform(PX,0,0,PX,0,0);ctx.fillStyle=PAL.bg;ctx.fillRect(0,0,LW,LH);s.draw.call(s);requestAnimationFrame(frame)}
+
+// draw a prediction on the graph (step 5)
+function pt(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*LW,y:(e.clientY-r.top)/r.height*LH}}
+let drawing=false;
+cv.addEventListener('pointerdown',e=>{if(cur!==4||!st.g)return;const p=pt(e),g=st.g;if(p.x<g.L-10||p.x>g.L+g.W+10||p.y<g.T-10||p.y>g.T+g.H+10)return;drawing=true;S.sketch=[];S.guess.shape='drawn';cv.setPointerCapture(e.pointerId);addPt(p);e.preventDefault()});
+cv.addEventListener('pointermove',e=>{if(drawing)addPt(pt(e))});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{if(drawing){drawing=false;save()}}));
+function addPt(p){const g=st.g,t=clamp((p.x-g.L)/g.W,0,1)*g.span,v=clamp((g.T+g.H-p.y)/g.H,0,1)*g.ymax,a=S.sketch;if(a.length&&t<=a[a.length-1].t+.05)return;a.push({t,v})}
+
+// reading supports (shared across Raider Labs)
+const SS=window.speechSynthesis,CAN=!!(SS&&typeof SpeechSynthesisUtterance!=='undefined');
+const gk=k=>{try{return localStorage.getItem(k)==='on'}catch(e){return false}},pk=(k,v)=>{try{localStorage.setItem(k,v?'on':'off')}catch(e){}};
+let raOn=CAN&&gk('raider-labs-readaloud'),easy=gk('raider-labs-easyread');
+function speak(){if(!raOn||!CAN)return;try{SS.cancel();const u=new SpeechSynthesisUtterance($('#ttl').textContent+'. '+$('#cap').textContent.replace(/₂/g,'2').replace(/₄/g,'4').replace(/⇌/g,' both ways ').replace(/→/g,' makes '));u.rate=.95;SS.speak(u)}catch(e){}}
+function syncSup(){const a=$('#ra'),b=$('#er');a.textContent=raOn?'🔊 Read aloud: on':'🔊 Read aloud';a.setAttribute('aria-pressed',raOn);a.hidden=!CAN;b.textContent=easy?'Aa Easier reading: on':'Aa Easier reading';b.setAttribute('aria-pressed',easy);document.body.classList.toggle('easy',easy)}
+
+function boot(){setPal();if(DARKQ.addEventListener)DARKQ.addEventListener('change',setPal);
+  $('#parts').innerHTML=PARTS.map((p,i)=>`<button type="button" data-p="${i}"><span>${i+1}</span>${p}</button>`).join('');
+  $$('#parts button').forEach(b=>b.addEventListener('click',()=>go(STEPS.findIndex(s=>s.part===+b.dataset.p))));
+  $('#back').addEventListener('click',()=>go(cur-1));$('#next').addEventListener('click',()=>go(cur+1));
+  $('#pause').addEventListener('click',()=>{paused=!paused;$('#pause').textContent=paused?'Play':'Pause'});
+  $('#conf').addEventListener('click',()=>{const a=$('#alt');a.hidden=false;a.innerHTML='<b>Another way to see it.</b> '+STEPS[cur].alt;ev('confused-step-'+String(cur+1).padStart(2,'0'));try{const g=window.goatcounter;g&&g.count&&g.count({path:`confused/${SITE}/${PAGE}/step-${String(cur+1).padStart(2,'0')}`,event:true})}catch(e){}});
+  $('#ra').addEventListener('click',()=>{raOn=!raOn;pk('raider-labs-readaloud',raOn);syncSup();if(raOn)speak();else if(CAN)SS.cancel()});
+  $('#er').addEventListener('click',()=>{easy=!easy;pk('raider-labs-easyread',easy);syncSup()});syncSup();
+  document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='ArrowRight')go(cur+1);else if(e.key==='ArrowLeft')go(cur-1)});
+  window.addEventListener('resize',fit);if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);fit();
+  const m=/^#s(\d+)/.exec(location.hash);go(m?+m[1]-1:0,true);requestAnimationFrame(frame)}
+window.EQ={go,W,get st(){return st},get cur(){return cur},S,STEPS,settled,Kc,kf,eqSplit,molar};
+boot();
+
+</script>
+<!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents. -->
+<script>
+window.goatcounter={no_onload:true};
+(function(){var done=false,tries=0;function go(){if(done)return;var g=window.goatcounter;if(!g||typeof g.count!=='function'){if(tries++<40)setTimeout(go,250);return;}done=true;try{g.count({path:location.pathname+(/scrlybrkr/.test(location.search)?'?sd':'')});}catch(e){}}
+if(document.readyState==='complete')go();else window.addEventListener('load',go);})();
+</script>
+<script data-goatcounter="https://rjedtech.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

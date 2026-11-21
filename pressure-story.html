@@ -85,6 +85,8 @@ footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px}foote
 .tellmode .main{grid-template-columns:auto minmax(0,1fr)}
 @media (max-width:1040px){.tellmode .main{grid-template-columns:1fr}}
 #ans{width:96px}
+.pm b{min-width:92px;text-align:center;font-variant-numeric:tabular-nums}.pm .btn{min-width:44px;font-size:21px;line-height:1;padding:4px 10px}
+.tiles .tile{font-size:16px}
 
 </style>
 </head>
@@ -215,7 +217,7 @@ function arrow(ctx,x0,y0,x1,y1,w,c){const a=Math.atan2(y1-y0,x1-x0),h=Math.max(7
    NO2 is bent: N-O 1.20 A, O-N-O 134 degrees. */
 const GEO={4:{at:[['N',-.89,0],['N',.89,0],['O',-1.345,-1.10],['O',-1.345,1.10],['O',1.345,-1.10],['O',1.345,1.10]],bd:[[0,1,1],[0,2],[0,3],[1,4],[1,5]]},
            2:{at:[['N',-.313,0],['O',.157,-1.10],['O',.157,1.10]],bd:[[0,1],[0,2]]}};
-const RAD={N:.60,O:.56};
+const RAD={N:.60,O:.56,S:.72,H:.36,C:.62},ACOL=e=>e==='N'?PAL.N:e==='O'?PAL.O:e==='S'?'#c79a00':e==='H'?'#98a1ab':'#4f555e';
 GEO.N={at:[['N',-.55,0],['N',.55,0]],bd:[[0,1]]};GEO.O={at:[['O',-.605,0],['O',.605,0]],bd:[[0,1]]};   // N2 (1.10 A) and O2 (1.21 A)
 const SP={4:{r:1.95,m:92},2:{r:1.35,m:46},N:{r:1.2,m:28},O:{r:1.2,m:32}};
 function ball(ctx,x,y,r,col){const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.28,col);g.addColorStop(1,shade(col,-.38));
@@ -227,7 +229,7 @@ function drawMol(ctx,type,x,y,ang,sc,o={}){const G=GEO[type];ctx.save();ctx.tran
   if(o.halo){const R=2.5*sc,g=ctx.createRadialGradient(0,0,sc*.3,0,0,R);g.addColorStop(0,rgba(PAL.brown,.5*o.halo));g.addColorStop(1,rgba(PAL.brown,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill()}
   if(o.bonds){ctx.lineCap='round';G.bd.forEach(b=>{const A=G.at[b[0]],B=G.at[b[1]];ctx.strokeStyle=b[2]?(o.weak?PAL.think:PAL.soft):PAL.soft;ctx.lineWidth=b[2]?sc*.13:sc*.2;
     if(b[2]&&o.snap)return;ctx.beginPath();ctx.moveTo(px(A),py(A));ctx.lineTo(px(B),py(B));ctx.stroke()})}
-  G.at.forEach((a,i)=>{const col=a[0]==='N'?(o.tagN===i?PAL.think:PAL.N):PAL.O;ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
+  G.at.forEach((a,i)=>{const col=a[0]==='N'&&o.tagN===i?PAL.think:ACOL(a[0]);ball(ctx,px(a),py(a),RAD[a[0]]*sc,col)});
   ctx.restore();
   if(o.label){const cs=Math.cos(ang),sn=Math.sin(ang);G.at.forEach(a=>{const ax=px(a),ay=py(a);txt(ctx,a[0],x+ax*cs-ay*sn,y+ax*sn+ay*cs+1,{s:sc*.5,w:700,c:'#fff',a:'center',b:'middle'})})}}
 // cached pictures of the small molecules in the box
@@ -652,7 +654,7 @@ function tellHTML(){const o=S.order,done=o.length===4,right=done&&o.every((v,i)=
   <h3>3. Turn it in</h3><p class="q">If your teacher assigned this, copy your work and paste it into the Canvas text box.</p>
   <div class="row"><label class="nm">Name <input id="nm" type="text" value="${esc(S.name)}" autocomplete="name"></label><button type="button" class="btn primary" id="copy">Copy for Canvas</button><span id="cmsg" role="status"></span></div>
   <div class="world"><h3>Where else you feel it</h3><p>Your ears pop on the same drive: air trapped behind your eardrum pushes out as the outside air thins. An airplane cabin is pumped up for the same reason. And a weather balloon swells as it rises until it bursts.</p>
-  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#gaslaws">Try the gas laws in the full lab</a>, with real numbers for pressure, volume and temperature.</p></div></div>`}
+  <p><a href="https://rjedtech.github.io/Raider-ChemLab/index.html#gaslaws">Try the gas laws in the full lab</a>, with real numbers for pressure, volume and temperature. More stories: <a href="https://rjedtech.github.io/Raider-ChemLab/equilibrium-story.html">The hatch that stayed shut</a> (equilibrium) and <a href="https://rjedtech.github.io/Raider-ChemLab/naming-story.html">One letter apart</a> (naming compounds).</p></div></div>`}
 function tellBind(r){$$('[data-card]',r).forEach(b=>b.addEventListener('click',()=>{S.order.push(+b.dataset.card);if(S.order.length===4){S.tries++;ev('order-'+(S.order.every((v,i)=>v===i)?'right':'wrong'))}save();renderCtl()}));
   $$('[data-slot]',r).forEach(b=>b.addEventListener('click',()=>{S.order.splice(+b.dataset.slot,1);save();renderCtl()}));
   const tx=$('#tx',r),nm=$('#nm',r);tx.addEventListener('input',()=>{S.text=tx.value;save()});nm.addEventListener('input',()=>{S.name=nm.value;try{localStorage.setItem('raider-labs-name',nm.value)}catch(e){}save()});
