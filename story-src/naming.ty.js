@@ -1,0 +1,17 @@
+TestYourself.mount({lab:'ChemLab',id:'naming',title:'Raider ChemLab · One letter apart (naming compounds)',el:'#ty',scrollTo:'.main',go:i=>window.EQ.go(i),
+ questions:[
+ {q:'What is the name of N₂O₅?',choices:['Nitrogen pentoxide','Dinitrogen pentoxide','Dinitrogen(V) oxide','Nitrogen(V) oxide'],answer:1,
+  hint:'Nitrogen and oxygen are both nonmetals, so the name counts every atom with a prefix: 2 is di-, 5 is penta-.',step:6,stepName:'no charges, so the name must count',
+  why:'Two nonmetals share electrons, so nothing forces the recipe. The name counts both: dinitrogen pentoxide.'},
+ {q:'Why is CaCl₂ called calcium chloride and not calcium dichloride?',choices:['Calcium’s 2+ charge forces two chlorides, so the name doesn’t need to count them','Prefixes are only used for gases','Chlorine always comes in pairs','Both names are correct'],answer:0,
+  hint:'Calcium is 2+ and chloride is 1−. How many chlorides cancel the charge? If the charges force the recipe, does the name need to say it?',step:2,stepName:'charges that cancel',
+  why:'Calcium can only be 2+, so it always takes two chlorides. A name only says what you could not work out yourself.'},
+ {q:'Copper can be 1+ or 2+. What is the name of CuO?',choices:['Copper oxide','Copper(I) oxide','Copper(II) oxide','Copper monoxide'],answer:2,
+  hint:'Oxide is 2−. One copper has to cancel it alone, so what is that copper’s charge? The Roman numeral is that charge.',step:4,stepName:'when the metal has a choice',
+  why:'One oxide (2−) is canceled by one copper, so the copper is 2+: copper(II) oxide.'},
+ {q:'Aluminum is 3+ and sulfate (SO₄²⁻) is 2−. Which formula is right?',choices:['AlSO₄','Al₂SO₄₃','Al₂(SO₄)₃','Al₃(SO₄)₂'],answer:2,
+  hint:'Find the smallest numbers that cancel: 2 aluminums make 6+, 3 sulfates make 6−. A team of atoms that repeats goes in parentheses.',step:5,stepName:'ions that travel as a team',
+  why:'2 × 3+ = 6+ and 3 × 2− = 6−. Three whole sulfate teams: Al₂(SO₄)₃, aluminum sulfate.'},
+ {q:'Which of these needs prefixes in its name?',choices:['MgO','NaCl','SO₂','KBr'],answer:2,
+  hint:'Prefixes are for two nonmetals sharing electrons. Which one has no metal in it?',step:7,stepName:'name it',
+  why:'Sulfur and oxygen are both nonmetals, so the name counts: sulfur dioxide. The others each have a metal with a fixed charge.'}]});

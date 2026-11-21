@@ -1,0 +1,17 @@
+TestYourself.mount({lab:'ChemLab',id:'pressure',title:'Raider ChemLab · The bag that swells (gas pressure)',el:'#ty',scrollTo:'.main',go:i=>window.EQ.go(i),
+ questions:[
+ {q:'A sealed balloon holds 2.0 L of air at 100 kPa. The outside pressure drops to 80 kPa, at the same temperature. What is its volume now?',answer:2.5,tol:.02,unit:'L',
+  hint:v=>Math.abs(v-1.6)<.02?'1.6 L would mean it shrank. Less push from outside lets it grow: the rectangle keeps its area, so a shorter height needs more width.':'Pressure × volume stays the same: 100 × 2.0 = 200. Divide 200 by the new pressure.',step:6,stepName:'the rule as a picture',
+  why:'100 × 2.0 = 200, and 200 ÷ 80 = 2.5 L. Less push from outside, so the balloon grows until the pushes match.'},
+ {q:'Why does a gas push on the walls of its container?',choices:['Its molecules keep hitting the walls','The gas is heavier than the container','The molecules stick to the walls','Gas always moves toward cold places'],answer:0,
+  hint:'Look at one molecule in the box. What does it do every time it reaches the wall?',step:2,stepName:'one molecule, one push',
+  why:'Each hit is a tiny push. Billions of hits each second blur into one steady push: the pressure.'},
+ {q:'A capped, empty water bottle is carried from the Eisenhower Tunnel down to Denver. What happens to it?',choices:['It caves in a little, because the outside air pushes harder','It swells, because Denver is warmer','Nothing, because the cap is on','It swells, because it gains molecules'],answer:0,
+  hint:'Going down, the outside air pushes harder. Which way does the wall move until the two pushes match?',step:5,stepName:'drive up to the tunnel',
+  why:'Lower down the outside push grows, so the wall moves in until the gas inside is squeezed enough to push back just as hard.'},
+ {q:'A sealed box of gas keeps the same volume and temperature, but you double the number of molecules. What happens to the pressure?',choices:['It doubles','It halves','It stays the same','It becomes 4 times as large'],answer:0,
+  hint:'Twice the molecules means twice the hits on the wall each second, each just as hard.',step:3,stepName:'a crowd makes a steady push',
+  why:'Twice as many hits per second, each the same size, makes twice the push.'},
+ {q:'You warm a sealed can of gas without letting it grow. What happens to the pressure?',choices:['It goes up: molecules hit harder and more often','It goes down: warm gas is lighter','It stays the same: no molecules were added','It goes up: the can gains molecules'],answer:0,
+  hint:'Warmer molecules move faster. What does a faster molecule do to the wall?',step:7,stepName:'what sets the area?',
+  why:'Faster molecules hit the wall more often and harder, so the push goes up. That is why heated cans can burst.'}]});

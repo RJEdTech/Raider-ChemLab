@@ -1,0 +1,17 @@
+TestYourself.mount({lab:'ChemLab',id:'avgmass',title:'Raider ChemLab · The number no atom has (average atomic mass)',el:'#ty',scrollTo:'.main',go:i=>window.EQ.go(i),
+ questions:[
+ {q:'Copper is 69% copper-63 (62.93 u) and 31% copper-65 (64.93 u). What is its average atomic mass?',answer:63.55,tol:.03,unit:'u',
+  hint:v=>Math.abs(v-63.93)<.05?'That is exactly halfway. More atoms are copper-63, so the balance point sits closer to 63.':'Multiply each mass by its share, then add: 0.69 × 62.93 + 0.31 × 64.93.',step:5,stepName:'use it: chlorine',
+  why:'0.69 × 62.93 + 0.31 × 64.93 = 63.55 u, closer to 63 because most copper atoms are copper-63.'},
+ {q:'An element has two isotopes, mass 24 and mass 26, and an average atomic mass of 24.3. Which isotope is more common?',choices:['The one with mass 24','The one with mass 26','They are equally common','You can’t tell'],answer:0,
+  hint:'The balance point sits close to the bigger crowd. Is 24.3 closer to 24 or to 26?',step:4,stepName:'find the balance point',
+  why:'24.3 is much closer to 24, so most of the atoms are the lighter isotope.'},
+ {q:'Chlorine’s average atomic mass is 35.45. How many chlorine atoms have a mass of 35.45?',choices:['Almost all of them','About half of them','None: each atom is about 35 or about 37','Only the ones in a gas'],answer:2,
+  hint:'Think about where each atom landed on the detector. Did any land at 35.45?',step:3,stepName:'weigh a crowd',
+  why:'Each atom is one isotope or the other. 35.45 is the balance point of the crowd, not the mass of any one atom.'},
+ {q:'Gallium has two isotopes, gallium-69 (68.93 u) and gallium-71 (70.92 u). Its average atomic mass is 69.72. About what percent of gallium atoms are gallium-71?',answer:40,tol:1.5,unit:'%',
+  hint:'The average sits 0.79 above 68.93, out of the 1.99 between the two isotopes. That fraction is the share of gallium-71.',step:6,stepName:'run it backward: boron',
+  why:'0.79 ÷ 1.99 ≈ 0.40, so about 40% are gallium-71 and 60% are gallium-69.'},
+ {q:'Which number describes one single atom?',choices:['Its mass number, a whole number','The average atomic mass, a decimal','Both','Neither'],answer:0,
+  hint:'One number counts the protons and neutrons in one nucleus. The other is the balance point of a crowd.',step:7,stepName:'mass number or average atomic mass?',
+  why:'The mass number counts the protons and neutrons in one atom. The average atomic mass describes the whole crowd of isotopes.'}]});

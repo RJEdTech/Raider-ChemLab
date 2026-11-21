@@ -23,3 +23,8 @@ This rewrites the four pages in the repo root. The RJ mark is read from `index.h
 
 ## To add a page
 Copy `naming.js` (no molecule box) or `bag.js` (with one), write its `STEPS`, add a `*.more.html`, and add an entry to `PAGES` in `build.py`.
+
+## Test yourself (Nov 21, 2026)
+- `test-yourself.js` is the shared Raider Labs module (same file on every lab). `<page>.ty.js` holds that page's five questions (`eq`, `bag`, `naming`, `mass`).
+- `build.py` inlines both into each page, after the story script. `#ty` sits above the footer.
+- Each question's `step` is the 1-based story step that "Show me in the picture" opens (`window.EQ.go`).

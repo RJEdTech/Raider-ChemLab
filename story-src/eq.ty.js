@@ -1,0 +1,17 @@
+TestYourself.mount({lab:'ChemLab',id:'equilibrium',title:'Raider ChemLab · The hatch that stayed shut (equilibrium)',el:'#ty',scrollTo:'.main',go:i=>window.EQ.go(i),
+ questions:[
+ {q:'A sealed tube of N₂O₄ and NO₂ has stopped changing color. What is happening inside?',choices:['Nothing: the reactions have stopped','Molecules still split and join, at the same rate','Only joining is happening','Only splitting is happening'],answer:1,
+  hint:'Follow one tagged atom. Does it stay in one molecule, or keep moving in and out?',step:7,stepName:'did it stop?',
+  why:'Splits and joins keep happening, at equal rates, so the amounts stop changing. That is dynamic equilibrium.'},
+ {q:'Splitting N₂O₄ takes in heat. You move the tube into hot water. What happens first?',choices:['Splits speed up before joins catch up, so the tube gets browner','Joins speed up first, so the tube gets paler','Both rates stay the same','The tube loses its color'],answer:0,
+  hint:'In hot water the hits are harder. Which reaction needs a hard hit, and which one only needs two NO₂ to meet?',step:8,stepName:'into hot water',
+  why:'Harder hits split more N₂O₄ right away. Joins catch up only once there is more NO₂, at a browner balance.'},
+ {q:'The same gas suddenly has twice the room. Which way does the balance move?',choices:['Toward more NO₂: splits keep going, but NO₂ meet less often','Toward more N₂O₄: molecules join more in a big space','No change at all','It stops reacting'],answer:0,
+  hint:'Each N₂O₄ splits on its own, room or no room. But two NO₂ have to find each other to join.',step:10,stepName:'the leak spreads out',
+  why:'With more room, joins slow while splits don’t, so more of the gas ends up as brown NO₂. A leak in open air turns brown.'},
+ {q:'At 25 °C, K = 0.0046. A mixture has [NO₂] = 0.010 M and [N₂O₄] = 0.050 M. What happens?',choices:['More N₂O₄ splits, because 0.010 × 0.010 ÷ 0.050 = 0.002 is below K','More NO₂ joins, because 0.002 is below K','Nothing: it is already balanced','All of the N₂O₄ splits'],answer:0,
+  hint:'Work out the square over the strip: 0.010 × 0.010 ÷ 0.050. If it is smaller than K, joins are losing to splits.',step:11,stepName:'the balance as a picture',
+  why:'0.002 is below 0.0046, so splits outpace joins until the NO₂ square grows to match.'},
+ {q:'The tank held colorless N₂O₄. Why did a toxic brown gas show up outside the capsule?',choices:['N₂O₄ keeps splitting into brown NO₂, and in open air even more does','N₂O₄ reacts with oxygen in the air to make NO₂','The tank was filled with NO₂','Sunlight turns N₂O₄ brown'],answer:0,
+  hint:'Both gases are made of the same atoms. What does one N₂O₄ do when it is hit hard enough?',step:10,stepName:'the leak spreads out',
+  why:'Leaked N₂O₄ splits into NO₂, and with all the room of open air the balance moves even further toward NO₂.'}]});
