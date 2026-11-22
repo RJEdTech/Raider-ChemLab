@@ -8,6 +8,62 @@
    name agencies and programs, never parties; no em dashes. */
 window.RAIDER_NEWS = [
  {
+  "id": "us-storage-200-gwh-2026",
+  "week": "2026-11-22",
+  "date": "2026-11-17",
+  "title": "US battery storage passes 200 gigawatt-hours, with a record number of states setting records",
+  "summary": "The Solar Energy Industries Association (SEIA) and Benchmark Mineral Intelligence reported that installed US energy storage, almost all of it lithium-ion batteries, has passed 200 gigawatt-hours. Batteries let solar power captured at noon be used after sunset.",
+  "numbers": [
+   "Installed US energy storage has passed 200 gigawatt-hours (GWh) (<a href=\"https://www.powermag.com/u-s-exceeds-200-gwh-of-installed-energy-storage-capacity/\" target=\"_blank\" rel=\"noopener\">POWER Magazine, reporting the SEIA and Benchmark Mineral Intelligence outlook, Nov 17, 2026</a>).",
+   "14.3 GWh was added in July to September 2026: 12.2 GWh utility-scale, 1.3 GWh commercial and industrial, 746 MWh residential (<a href=\"https://www.powermag.com/u-s-exceeds-200-gwh-of-installed-energy-storage-capacity/\" target=\"_blank\" rel=\"noopener\">POWER Magazine, reporting the SEIA and Benchmark Mineral Intelligence outlook, Nov 17, 2026</a>).",
+   "48.3 GWh was added in the first nine months of 2026, up 20% from the same months of 2025 (<a href=\"https://www.powermag.com/u-s-exceeds-200-gwh-of-installed-energy-storage-capacity/\" target=\"_blank\" rel=\"noopener\">POWER Magazine, reporting the SEIA and Benchmark Mineral Intelligence outlook, Nov 17, 2026</a>).",
+   "The forecast for total US storage in 2030 was raised 3.7% to 708 GWh (<a href=\"https://www.powermag.com/u-s-exceeds-200-gwh-of-installed-energy-storage-capacity/\" target=\"_blank\" rel=\"noopener\">POWER Magazine, reporting the SEIA and Benchmark Mineral Intelligence outlook, Nov 17, 2026</a>).",
+   "Top states for utility-scale storage added in Q3: Texas 12.3 GWh, Arizona 7.7 GWh, California 6.8 GWh; eleven states set records (<a href=\"https://www.powermag.com/u-s-exceeds-200-gwh-of-installed-energy-storage-capacity/\" target=\"_blank\" rel=\"noopener\">POWER Magazine, reporting the SEIA and Benchmark Mineral Intelligence outlook, Nov 17, 2026</a>). These state totals are as reported and may count a longer period than one quarter.",
+   "The EIA expects large US battery power capacity to grow from 28.9 gigawatts (GW) in 2025 to 66 GW by the end of 2026 (<a href=\"https://www.energycentral.com/energy-biz/post/seia-eia-doe-storage-and-solar-soars-coal-contracts-emMzuD4OIqcZ4Kf\" target=\"_blank\" rel=\"noopener\">Energy Central, quoting the EIA Short-Term Energy Outlook, Nov 18, 2026</a>)."
+  ],
+  "concept": {
+   "title": "Energy stored in a battery: charge times voltage",
+   "html": "A battery stores energy in a redox reaction. In a lithium iron phosphate (LFP) cell, common in grid batteries, each lithium ion that moves from one electrode to the other is matched by one electron moving through the outside circuit. The energy delivered is <b>E = Q &times; V</b>: charge (coulombs) times voltage (volts). The Faraday constant links charge to moles: 1 mole of electrons carries 96,485 C. So from an amount of energy you can find the moles of electrons, and from those the moles and mass of lithium that had to move. 1 kWh = 3.6 &times; 10<sup>6</sup> J."
+  },
+  "hook": {
+   "prompt": "Assume an LFP cell with a voltage of 3.2 V. Use F = 96,485 C/mol and a lithium molar mass of 6.94 g/mol. One lithium ion moves for each electron.",
+   "parts": [
+    {
+     "label": "(a) How many moles of electrons flow to deliver 1.00 kWh?",
+     "answer": 11.66,
+     "tol": 0.05,
+     "unit": "mol"
+    },
+    {
+     "label": "(b) What mass of lithium must move between electrodes for 1.00 kWh?",
+     "answer": 80.9,
+     "tol": 0.5,
+     "unit": "g"
+    },
+    {
+     "label": "(c) At that rate, how many metric tons of lithium must move to deliver the 14.3 GWh added in Q3? (1 GWh = 10<sup>6</sup> kWh)",
+     "answer": 1157,
+     "tol": 8,
+     "unit": "t"
+    }
+   ],
+   "worked": "(a) Q = E &divide; V = 3.6 &times; 10<sup>6</sup> J &divide; 3.2 V = 1.125 &times; 10<sup>6</sup> C. Moles of electrons = 1.125 &times; 10<sup>6</sup> &divide; 96,485 = <b>11.66 mol</b>. (b) 11.66 mol Li &times; 6.94 g/mol = <b>80.9 g</b>. (c) 14.3 &times; 10<sup>6</sup> kWh &times; 80.9 g = 1.157 &times; 10<sup>9</sup> g = <b>about 1,157 metric tons</b> of lithium shuttled in one full discharge."
+  },
+  "hides": "The hook gives the minimum lithium that must move; real cells hold more lithium than they cycle, and packs also need iron, phosphate, graphite, copper and aluminum. Mining those materials has its own environmental and community costs. A record in storage capacity (GWh) is not the same as how much energy is actually delivered, which depends on how often the batteries cycle. SEIA is an industry group, and the outlook's falling wholesale prices in Texas and California (42% and 51% since 2021) are an association, not proof that batteries caused the drop.",
+  "evidence": "Moderate: an industry market report with an independent analytics firm, read through trade-press coverage, not the report itself. The EIA capacity numbers are federal forecasts.",
+  "investigate": "The <a href=\"https://www.eia.gov/electricity/data/browser/\" target=\"_blank\" rel=\"noopener\">EIA Electricity Data Browser</a> shows generation by source for each state. Pick Texas or California and compare solar generation in a summer month of 2021 and 2025. How much did it grow?",
+  "related": [
+   {
+    "href": "index.html#galvanic",
+    "label": "Galvanic cells: electricity from redox"
+   },
+   {
+    "href": "index.html#mole",
+    "label": "The mole"
+   }
+  ]
+ },
+ {
   "id": "battery-history",
   "week": "2026-11-15",
   "date": "2026-04-21",
