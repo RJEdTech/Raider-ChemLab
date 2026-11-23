@@ -1,0 +1,18 @@
+/* Test yourself questions for "Why does water bead up on a waxed car?" (polarity story). Steps are 1-based story steps. */
+TestYourself.mount({lab:'ChemLab',id:'waterbeads',title:'Raider ChemLab · Why does water bead up on a waxed car?',el:'#ty',scrollTo:'#story',go:i=>window.Story.go(i),
+ questions:[
+ {q:'Why is the oxygen end of a water molecule slightly negative?',choices:['Oxygen pulls the shared electrons toward itself','Oxygen has extra protons','The hydrogens give away their protons','Water is missing an electron'],answer:0,
+  hint:'Think of the tug of war over the electrons in each O–H bond. Which atom is the stronger puller?',step:2,stepName:'a water molecule is lopsided',
+  why:'Oxygen attracts shared electrons more strongly than hydrogen does, so the electrons spend more time near it. The O end is δ− and the H ends are δ+: water is polar.'},
+ {q:'What is a hydrogen bond between two water molecules?',choices:['The pull of a δ+ hydrogen on one water toward the δ− oxygen of another','The O–H bond inside one water','Two hydrogen atoms joined to make H₂','A bond that makes water heavier'],answer:0,
+  hint:'Look at the dashed lines in step 3. Which end of one water touches which end of the next?',step:3,stepName:'water sticks to water',
+  why:'A hydrogen bond is an attraction between molecules: the slightly positive H of one water and the slightly negative O of a neighbor. It is weaker than the O–H bond inside a molecule, but there are a great many of them.'},
+ {q:'Why can’t water hold on to car wax?',choices:['Wax is made of carbon and hydrogen with no δ+ or δ− ends to attract water','Wax repels water with a magnetic force','Wax is too smooth for water to touch','Wax is hotter than water'],answer:0,
+  hint:'Water holds on to things with partial charges. Does wax have any?',step:4,stepName:'wax gives water nothing to hold',
+  why:'Carbon and hydrogen share electrons almost evenly, so wax is nonpolar. With nothing to form hydrogen bonds with, water holds on to itself and pulls into a bead.'},
+ {q:'Water spreads flat on clean glass because',choices:['glass is covered in O–H groups that water forms hydrogen bonds with','glass is warmer than wax','glass soaks up water like a sponge','glass has no surface for water to sit on'],answer:0,
+  hint:'Switch to clean glass in step 4. What do the red dashed lines connect?',step:4,stepName:'wax gives water nothing to hold',
+  why:'The O–H groups on glass let water form hydrogen bonds with the surface. Water spreads to make as many of those as it can, so it lies flat.'},
+ {q:'A drop meets a waxed surface at about 105°. What does that tell you?',choices:['Water pulls on itself more than the wax pulls on it, so the drop is a round bead','The drop is spreading out flat','The wax is wet all the way through','The drop is boiling'],answer:0,
+  hint:'More than 90° or less than 90°: which one means a bead?',step:5,stepName:'from molecules to a drop you can see',
+  why:'A contact angle over 90° means the liquid prefers itself to the surface, so it balls up. On clean glass the angle is under 20°, so the water spreads.'}]});
