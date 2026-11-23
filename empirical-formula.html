@@ -304,6 +304,9 @@ html.easy :is(p,li,.why,.msg,.helpbox,.prompt,label.f,.reveal,td,dd,.tq .opt){fo
 html.easy .eyebrow,html.easy th{text-transform:none;letter-spacing:.02em}
 html.easy i,html.easy em{font-style:normal;font-weight:700}
 html.easy p{max-width:62ch}
+  /* Nov 23: Make it whole rule list */
+  .mrule{margin:4px 0 6px;padding-left:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px 16px}
+  .mrule li{margin:0}
 </style>
 <link rel="stylesheet" href="kit/lesson-kit.css?v=2">
 </head>
@@ -595,7 +598,7 @@ const EX={
   prompt:'A sugar is 40.0% carbon, 6.71% hydrogen and 53.3% oxygen by mass. Find its empirical formula.',
   notes:['40.0% C means 40.0 g of carbon in every 100 g of compound. The "g sample" units cancel, leaving g C.',
    'Divide by molar mass. Put g C on the bottom of the conversion factor so it cancels the g C on top, leaving mol C.',
-   'Carbon and oxygen tie for the smallest amount (3.331 mol). Dividing every value by 3.331 mol cancels the mol units and leaves the atom ratio.',
+   'Carbon and oxygen tie for the smallest (3.331 mol), so use either one. Divide every element by 3.331 mol. Hydrogen: 6.657 ÷ 3.331 = 2.00, so there are 2 H for every 1 C and 1 O.',
    '1 : 2.00 : 1 are already whole numbers, so the multiplier is 1. Empirical formula: CH₂O.']},
  exB:{id:'exB',els:[{sym:'Fe',pct:69.9,m:55.85},{sym:'O',pct:30.1,m:16.00}],subs:[2,3],mult:2,
   prompt:'An iron oxide is 69.9% iron and 30.1% oxygen by mass. Find its empirical formula.',
@@ -608,7 +611,7 @@ const EX={
 let PR=[],MP=[];
 const M1={id:'m1',els:[{sym:'C',m:12.01},{sym:'H',m:1.008},{sym:'O',m:16.00}],emp:[1,2,1],molar:180.16,n:6,
  notes:['Add the masses in one CH₂O unit: 1(12.01) + 2(1.008) + 1(16.00) = 30.03 g/mol.',
-  'n = 180.16 g/mol ÷ 30.03 g/mol = 6.00. The g/mol units cancel, so n is a pure number: six CH₂O units fit in one molecule.',
+  'n = 180.16 g/mol ÷ 30.03 g/mol = 6.00. The g/mol units cancel, so n is just a count: 6 copies of CH₂O fit in one molecule.',
   'Multiply every subscript by 6: C 1×6, H 2×6, O 1×6. Molecular formula: C₆H₁₂O₆ (glucose).']};
 /* ---------- problem banks (RJ Ed Tech, Nov 18 2026) ----------
    Each practice slot draws a real compound from its bank, so classmates get different numbers and a student can ask for more.
@@ -667,7 +670,7 @@ function empStage(i,p,w,key){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span class="val">${shown(w.grams[j])}</span>${u('g '+e.sym,done)}<span class="op">×</span><span class="frac"><span>1 ${u('mol '+e.sym)}</span><span>${ms(e.m)} ${u('g '+e.sym,done)}</span><span class="cap">molar mass of ${e.sym}</span></span><span class="op">=</span>${inp(key,'moles',j,w.moles[j],dis,'moles of '+e.sym)}${u('mol '+e.sym)}</div>`).join('');
   }
   if(i===2){
-    b+=`<p class="muted">Which element has the smallest number of <b>moles</b>? Use your answers from step 2, not the molar masses.</p><div class="row">`+
+    b+=`<p class="muted">Which element has the smallest number of <b>moles</b>? Use your answers from step 2, not the molar masses. If two tie, use either one.</p><div class="row">`+
       p.els.map((e,j)=>`<button class="chip${w.si===j?' sel':''}" data-act="si" data-v="${j}" ${dis?'disabled':''}>${e.sym}: ${shown(w.moles[j])} mol</button>`).join('')+`</div>`;
     if(w.si!=null){
       const s=p.els[w.si];
@@ -675,7 +678,7 @@ function empStage(i,p,w,key){
     }
   }
   if(i===3){
-    b+=`<p class="muted">Subscripts count atoms, and there is no such thing as part of an atom. Are all ratios within about 0.1 of a whole number? If yes, multiply by 1. If not, pick the multiplier that makes them whole.</p><div class="row">`+
+    b+=`<p class="muted">You can’t have part of an atom, so every number must end up whole. Look at the decimals from step 3:</p><ul class="mrule"><li>Close to whole, like 2.03? <b>× 1</b></li><li>Ends in .5? <b>× 2</b></li><li>Ends in .33 or .67? <b>× 3</b></li><li>Ends in .25 or .75? <b>× 4</b></li></ul><p class="muted">Multiply <b>every</b> element by the same number.</p><div class="row">`+
       [1,2,3,4,5].map(m=>`<button class="chip${w.mult===m?' sel':''}" data-act="mult" data-v="${m}" ${dis?'disabled':''}>× ${m}</button>`).join('')+`</div>`;
     if(w.mult!=null){
       b+=p.els.map((e,j)=>{const r=num(w.ratio[j]);const prod=r*w.mult;
@@ -740,9 +743,9 @@ function molStage(i,p,w,key){
     b+=`<div class="calc"><b>Empirical formula mass</b><span class="op">=</span>${inp(key,'efm',null,w.efm,dis,'empirical formula mass')}${u('g/mol')}</div>`;
   }
   if(i===1){
-    b+=`<p class="muted">How many ${fHTML(p.els,p.emp)} units fit in one molecule? Divide the molecule’s molar mass (the bigger number) by the mass of one ${fHTML(p.els,p.emp)} unit from step 1.</p>`;
+    b+=`<p class="muted">How many copies of ${fHTML(p.els,p.emp)} fit in one molecule? Look at the two bars above. Divide the whole molecule’s mass (${p.molar} g/mol) by one copy’s mass (your step 1 answer).</p>`;
     b+=`<div class="calc"><i>n</i><span class="op">=</span>${frac(`${p.molar} ${u('g/mol',done)}`,`<span class="val">${shown(w.efm)}</span> ${u('g/mol',done)}`)}<span class="op">=</span>${inp(key,'nRaw',null,w.nRaw,dis,'n before rounding')}</div>`;
-    b+=`<div class="calc">Whole number <i>n</i><span class="op">=</span>${inp(key,'n',null,w.n,dis,'n as a whole number','w')}</div>`;
+    b+=`<div class="calc">Round to a whole number: <i>n</i><span class="op">=</span>${inp(key,'n',null,w.n,dis,'n as a whole number','w')}</div>`;
   }
   if(i===2){
     b+=p.els.map((e,j)=>`<div class="calc">${tile(e.sym)}<span>${p.emp[j]}</span><span class="op">×</span><span>${shown(w.n)}</span><span class="op">=</span>${inp(key,'subs',j,w.subs[j],dis,'molecular subscript for '+e.sym,'w')}<span class="muted">atoms of ${e.sym}</span></div>`).join('');
@@ -760,8 +763,8 @@ function copyBars(p,w){if(!(w.stage>=1))return '';const efm=p.els.reduce((a,e,i)
   const seg=got?Array.from({length:n},()=>`<i style="flex:1;background:#d8c6f0;border-right:2px solid #fff">${ef}</i>`).join(''):`<i style="flex:1;background:#d8c6f0">${M} g/mol</i>`;
   return `<div class="mcwrap"><div class="eyebrow">How many copies fit?</div><div class="lk-bars">
    <div class="lk-brow"><span class="lk-bl">Molecule</span><div class="lk-btrack"><div class="lk-bfill" style="width:100%">${seg}</div></div></div>
-   <div class="lk-brow"><span class="lk-bl">One ${ef}</span><div class="lk-btrack"><div class="lk-bfill" style="width:${(efm/M*100).toFixed(1)}%"><i style="flex:1;background:#cfe3ff">${efm.toFixed(1)}</i></div></div></div>
-   <p class="lk-note">${got?`<b>${n} copies</b> of ${ef} (${efm.toFixed(1)} g/mol each) weigh ${(n*efm).toFixed(1)} g/mol, the molecule’s ${M} g/mol. So multiply every subscript by ${n}.`:`One ${ef} weighs ${efm.toFixed(1)} g/mol. The whole molecule weighs ${M} g/mol. How many copies fit?`}</p></div></div>`}
+   <div class="lk-brow"><span class="lk-bl">One ${ef}</span><div class="lk-btrack"><div class="lk-bfill" style="width:${(efm/M*100).toFixed(1)}%"><i style="flex:1;background:#cfe3ff">${efm.toFixed(2)}</i></div></div></div>
+   <p class="lk-note">${got?`<b>${n} copies</b> of ${ef}: ${n} × ${efm.toFixed(2)} = ${(n*efm).toFixed(2)} g/mol${Math.abs(n*efm-M)>=0.005?`, close to the molecule’s ${M} g/mol (the small gap is rounding)`:`, the molecule’s ${M} g/mol`}. So multiply every subscript by ${n}.`:`One ${ef} weighs ${efm.toFixed(2)} g/mol. The whole molecule weighs ${M} g/mol. How many copies fit?`}</p></div></div>`}
 function molHTML(p,key,o){
   const w=W(key,()=>o.demo?demoMolW(p):newMolW());
   let h=`<div class="solver"><div class="problem"><p class="prompt">${p.full?'Now use the molar mass. ':''}Empirical formula <b style="font-family:var(--f-mono)">${fHTML(p.els,p.emp)}</b>, molar mass <b style="font-family:var(--f-mono)">${p.molar} g/mol</b>. Find the molecular formula.</p></div>`;
@@ -931,7 +934,7 @@ function empExpl(i,p,w){const e=p.els[0];
   return `<p><b>You can’t have half an atom.</b> If a recipe calls for 1 cup of milk and 1.5 eggs, double the whole recipe: 2 cups and 3 eggs. Same idea here: multiply <b>every</b> ratio by the same number until all are whole.</p><span class="k">1 : 1.5 → × 2 → 2 : 3 (never round 1.5 to 2)</span>`;}
 function molExpl(i,p){
   if(i===0)return `<p><b>Weigh one copy of the recipe.</b> Add up the mass of every atom in ${fHTML(p.els,p.emp)}. That is the mass of one empirical unit.</p>`;
-  if(i===1)return `<p><b>How many copies fit?</b> If one unit weighs 30 and the whole molecule weighs 180, then 180 ÷ 30 = 6 units fit in one molecule. That number is <i>n</i>.</p><span class="k">n = molar mass ÷ empirical formula mass</span>`;
+  if(i===1)return `<p><b>How many copies fit?</b> If one copy weighs 30 and the whole molecule weighs 180, then 180 ÷ 30 = 6 copies fit in one molecule. That number is <i>n</i>.</p><span class="k">n = molar mass ÷ empirical formula mass</span>`;
   return `<p><b>Make n batches.</b> If the recipe is ${fHTML(p.els,p.emp)} and there are ${p.n} batches, multiply every subscript by ${p.n}.</p>`;}
 
 /* ---------- Show me this step + reveal (RJ Ed Tech) ----------
@@ -1079,7 +1082,7 @@ function useMake(v){const pk=(a,k)=>a[v[k]%a.length];
   {id:'mgo',ask:"The ash weighs more than the ribbon because it picked up oxygen. Find how much oxygen, turn both masses into moles, and compare them.",start:"For (a), subtract: mass after − mass before.",t:'🧪 Your MgO lab',p:`Your lab group heats ${mg.toFixed(3)} g of magnesium ribbon in a crucible. After heating to constant mass, the white ash weighs ${mgo.toFixed(3)} g.`,
    parts:[{l:'(a) Grams of oxygen that combined with the Mg',a:o,tol:.01,u:'g O'},{l:'(b) Moles of Mg',a:nMg,tol:.02,u:'mol Mg'},{l:'(c) Moles of O',a:nO,tol:.02,u:'mol O'},{l:'(d) Mole ratio, mol O ÷ mol Mg',a:nO/nMg,tol:.03,u:''}],
    w:`(a) ${mgo.toFixed(3)} g − ${mg.toFixed(3)} g = <b>${o.toFixed(3)} g O</b>. (b) ${mg.toFixed(3)} g ÷ 24.31 g/mol = <b>${r3(nMg)} mol Mg</b>. (c) ${o.toFixed(3)} g ÷ 16.00 g/mol = <b>${r3(nO)} mol O</b>. (d) ${r3(nO)} ÷ ${r3(nMg)} = <b>${(nO/nMg).toFixed(2)}</b>, so 1 O for every Mg: <b>MgO</b>.`},
-  {id:'unknown',ask:"One test gave the simplest ratio, like a recipe. The other gave the weight of the whole molecule. How many copies of the recipe are in one molecule?",start:"Both answers are numbers. n = 176.12 ÷ 88.06. Then carbon atoms = 3 × n (the formula has 3 carbons per copy).",t:'🔎 A powder from a supplement',p:'A lab tests a white powder from a vitamin tablet. One test gives the empirical formula C₃H₄O₃ (88.06 g/mol). A mass spectrometer gives a molar mass of 176.12 g/mol.',
+  {id:'unknown',ask:"Test 1 gave the simplest ratio, C₃H₄O₃. Test 2 weighed the whole molecule. How many copies of C₃H₄O₃ make one molecule?",another:`<div class="lk-bars"><div class="lk-brow"><span class="lk-bl">Molecule</span><div class="lk-btrack"><div class="lk-bfill" style="width:100%"><i style="flex:1;background:#d8c6f0">176.12 g/mol</i></div></div></div><div class="lk-brow"><span class="lk-bl">One C₃H₄O₃</span><div class="lk-btrack"><div class="lk-bfill" style="width:50%"><i style="flex:1;background:#cfe3ff">88.06</i></div></div></div><p class="lk-note">How many short bars fit in the long bar?</p></div>`,start:"Divide the whole molecule’s mass by one copy’s mass: n = 176.12 ÷ 88.06. Each copy has 3 carbons, so carbon atoms = 3 × n.",t:'🔎 A powder from a supplement',p:'A lab tests a white powder from a vitamin tablet. Test 1 gives its simplest ratio of atoms (the empirical formula): C₃H₄O₃. One copy of that weighs 88.06 g/mol. Test 2, a mass spectrometer, weighs the whole molecule: 176.12 g/mol.',
    parts:[{l:'(a) n, the number of C₃H₄O₃ copies in one molecule',a:2,tol:.01,u:'copies'},{l:'(b) How many carbon atoms are in one molecule?',a:6,tol:.01,u:'C atoms'}],
    w:'(a) n = 176.12 ÷ 88.06 = <b>2</b>. (b) 3 × 2 = <b>6 carbon atoms</b>. The molecular formula is C₆H₈O₆: vitamin C. The label on the bottle was telling the truth.'},
   {id:'ore',ask:"If you buy 1,000 kg of each rock, which gives more iron, and by how many kg?",start:"For each ore, iron = 1,000 × the percent written as a decimal. Then subtract.",t:'⛏️ Choosing an ore',p:'A steel mill can buy 1,000 kg of magnetite (Fe₃O₄, 72.4% iron) or 1,000 kg of hematite (Fe₂O₃, 69.9% iron).',
@@ -1088,7 +1091,7 @@ function useMake(v){const pk=(a,k)=>a[v[k]%a.length];
 function useState(){if(!S.use||!Array.isArray(S.use.v))S.use={v:[0,1,2].map(()=>Math.floor(Math.random()*20)),ans:{},ok:{},tried:{},shown:{}};return S.use}
 const useOK=v=>{const U=useState();return useMake(U.v).filter(p=>p.parts.every((_,j)=>U.ok[p.id+j])).length};
 function drawUse(){const U=useState(),host=document.getElementById('useHost');
-  host.innerHTML=useMake(U.v).map(p=>`<div class="uprob" data-u="${p.id}"><div class="tqhead"><h4>${p.t}</h4>${cfBtn('use/'+p.id)}</div><p>${p.p}</p>${CFOPEN.has('use/'+p.id)?cfPanel('use/'+p.id,p.ask,null,p.start,U.shown[p.id]?'':'<button class="btn ghost small" data-uact="show">Show the worked answer</button>'):''}
+  host.innerHTML=useMake(U.v).map(p=>`<div class="uprob" data-u="${p.id}"><div class="tqhead"><h4>${p.t}</h4>${cfBtn('use/'+p.id)}</div><p>${p.p}</p>${CFOPEN.has('use/'+p.id)?cfPanel('use/'+p.id,p.ask,p.another||null,p.start,U.shown[p.id]?'':'<button class="btn ghost small" data-uact="show">Show the worked answer</button>'):''}
     ${p.parts.map((q,j)=>{const k=p.id+j;return `<div class="upart"><label for="u-${k}">${q.l}</label><input id="u-${k}" data-k="${k}" inputmode="decimal" autocomplete="off" placeholder="number" value="${esc(U.ans[k]||'')}"><span class="muted">${q.u}</span>${U.tried[k]?(U.ok[k]?'<span class="ok">✓ Correct</span>':'<span class="no">Not yet</span>'):''}</div>`}).join('')}
     <div class="row"><button class="btn small" data-uact="check">Check</button>${p.parts.some((_,j)=>U.tried[p.id+j])?`<button class="btn ghost small" data-uact="show">${U.shown[p.id]?'Hide':'Show'} the worked answer</button>`:''}</div>
     ${U.shown[p.id]?`<div class="why">${p.w}</div>`:''}</div>`).join('')+`<div class="row"><button class="btn ghost small" data-uact="new">New numbers</button><span class="muted">${useOK()} of 5 solved</span></div>`}
@@ -1313,7 +1316,7 @@ const CFOPEN=new Set(),CFWHY=new Map(),cfDone=new Set();
 const WHY=[['reading','Too much to read'],['see','Couldn’t see what changed'],['words','Words I don’t know'],['fast','Went too fast'],['question','The question was confusing']];
 const TIP={reading:'Thanks. Try 🔊 Read aloud or Aa Easier reading at the top.',see:'Thanks. Compare your numbers with the worked examples in Part 3, step by step.',words:'Thanks. Part 1 has the definitions. Ask your teacher about any other word.',fast:'Thanks. Take one step at a time, and use Show me this step.',question:'Thanks. That helps us rewrite it. Ask your teacher, too.'};
 const ASK_E=['Turn each percent into grams. Pretend you have exactly 100 g, so the percent and the grams are the same number.','How many moles (a count of atoms) is each mass? Divide each mass by that element’s molar mass.','Which element has the fewest moles (your step 2 answers, not the molar masses)? Divide every element’s moles by that number.','Are all your ratios close to whole numbers? If not, what number makes them whole when you multiply every one?'];
-const ASK_M=['How much does one copy of the empirical formula weigh? Add up the masses of its atoms.','How many copies fit in the real molecule? Divide the molar mass by your answer from step 1.','Write the real formula: multiply each subscript by n.'];
+const ASK_M=['How much does one copy of the empirical formula weigh? Add up the masses of its atoms.','How many copies of the empirical formula fit in one molecule? Whole molecule’s mass ÷ one copy’s mass (your step 1 answer).','Write the real formula: multiply each subscript by n.'];
 const QHELP=[['Which formula keeps the same 1 : 2 : 1 ratio as C₆H₁₂O₆, but in the smallest whole numbers?','Find the biggest number that divides 6, 12 and 6, and divide every subscript by it.'],
  ['Reduce the subscripts 2 and 4 to the smallest whole numbers.','What number divides both 2 and 4?'],
  ['Reduce each formula to its simplest ratio. Which pair ends up with the same simplest formula?','Try C₂H₂: divide by 2. Then C₆H₆: divide by 6.'],
