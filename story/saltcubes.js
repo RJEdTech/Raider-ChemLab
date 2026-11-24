@@ -51,13 +51,16 @@ function grow(S){const g=S.grow;if(g.n>=6||g.fly.length)return;const n=g.n+1,odd
   L.forEach(q=>{if(q.ijk.every(v=>v<n-1)&&have.has(q.ijk.join(',')))return;const from=G.add(q.p,G.mul(G.norm(q.p[0]||q.p[1]||q.p[2]?q.p:[1,1,1]),1.2+R()*.6));g.fly.push({q,from,t:-R()*.5});});
   g.n=n;g.L=g.L.map(q=>q);g.L.forEach(q=>{q.na=((q.ijk[0]+q.ijk[1]+q.ijk[2])%2)===0;});}
 
-/* ---------- "Who is doing this" (Nov 24, 2026): Dr. David Cowie and iodized salt ----------
-   Sources: Markel, "When it rains it pours" (Am J Public Health, 1987); University of Michigan Medicine history; Michigan State
-   Medical Society; UNICEF (about 89% of the world’s households use iodized salt). Cowie (U-M pediatrics) pushed iodized salt for the
-   Great Lakes "goiter belt"; Dow chemist William Hale helped show a tiny amount of iodide could be added safely; Michigan stores sold
-   it from May 1924 and Morton shipped it nationwide that fall. Some doctors resisted at first. Iodide is mixed onto the grains as
-   potassium or sodium iodide (about 20-40 mg of iodine per kg of salt): it rides along on the crystals; it does not replace the
-   chloride ions inside them. Drawings, not to scale; no real children are shown. */
+/* ---------- "Who is doing this" (Nov 24, 2026; rebuilt Nov 23 for cause and effect): Dr. David Cowie and iodized salt ----------
+   Sources: Markel, "When it rains it pours" (Am J Public Health, 1987); University of Michigan Medicine history; UNICEF (about 89% of
+   the world's households use iodized salt); NIH Office of Dietary Supplements (iodine and the thyroid). Cowie pushed iodized salt for the
+   Great Lakes "goiter belt"; Dow chemist William Hale helped show a tiny amount of iodide could be added safely; Michigan stores sold it
+   from 1924. Iodide is mixed onto the grains as KI or NaI; it does not replace chloride inside the crystal.
+   What the student does and sees, with no numbers on screen: switch the family's salt (cause) → with iodized salt, purple I⁻ rides from
+   the plate down to the neck → in the thyroid close-up, iodide snaps onto rings and the rings become hormone (transformation) → the
+   hormone flows out, the brain's "make more" signals quiet down, the gland stops growing, and over months the swelling goes down on the
+   child and across a classroom (effect). Plain salt reverses it. The real hormone (thyroxine) has two rings and four iodines; one ring
+   with four is drawn. Drawings, not to scale; no real children are shown. */
 const IO='#6b3fa0';
 const IO_PICK=[{v:'k',x:600,y:30,draw(ctx,cx,cy){ion2(ctx,cx,cy+6,14,'#e08a2b','K⁺');}},{v:'i',x:740,y:30,draw(ctx,cx,cy){ion2(ctx,cx,cy+6,26,IO,'I⁻');}}];
 function ion2(ctx,x,y,r,c,l){ctx.save();const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);g.addColorStop(0,'#fff');g.addColorStop(.25,c);g.addColorStop(1,c);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
@@ -65,26 +68,68 @@ function ion2(ctx,x,y,r,c,l){ctx.save();const g=ctx.createRadialGradient(x-r*.35
 function kid(ctx,x,y,g){ctx.save();ctx.fillStyle='#4a7fc1';rr(ctx,x-18,y+22,36,40,10);ctx.fill();ctx.fillStyle='#e9c39b';ctx.fillRect(x-6,y+10,12,14);
   if(g>.02){ctx.fillStyle='#d9a77c';ctx.beginPath();ctx.ellipse(x,y+21,8+16*g,5+10*g,0,0,7);ctx.fill();ctx.fillStyle='#e9c39b';}ctx.beginPath();ctx.arc(x,y-4,16,0,7);ctx.fill();
   ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(x-5,y-6,1.8,0,7);ctx.arc(x+5,y-6,1.8,0,7);ctx.fill();ctx.restore();}
-function shaker(ctx,x,y,tilt){ctx.save();ctx.translate(x,y);ctx.rotate(tilt);ctx.fillStyle='#e9eef3';rr(ctx,-22,-40,44,70,10);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle='#b9c0c8';rr(ctx,-22,-52,44,16,6);ctx.fill();ctx.fillStyle=C.ink;[-10,0,10].forEach(d=>{ctx.beginPath();ctx.arc(d,-44,2,0,7);ctx.fill();});
-  txt(ctx,'I⁻',0,4,{s:18,w:800,c:IO,a:'center'});ctx.restore();}
-function ioScene(ctx,S){const M=S.io,t=S.t,on=M.pick==='i',k=on?ease(M.k):0;ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,590,430);
-  // a grain of salt, close up, with iodide dusted on its faces
-  const gx=150,gy=190;ctx.fillStyle='#2d3742';rr(ctx,40,110,240,250,16);ctx.fill();grain(ctx,95,185,120,1);
-  if(on)for(let i=0;i<Math.floor(k*14);i++){const x=105+((i*37)%100),y=195+((i*53)%100);ctx.fillStyle=IO;ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fill();}
-  shaker(ctx,150,58+(on?6*Math.sin(t*8)*(1-k):0),on?-2.4+(1-k)*.4:-.2);
-  if(on)for(let j=0;j<8;j++){const u=((t*.9+j/8)%1);ctx.fillStyle=IO;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(140+((j*13)%30),100+u*95,3.5,0,7);ctx.fill();ctx.globalAlpha=1;}
-  // the kids: swollen necks (goiter) shrink once iodized salt arrives
-  for(let i=0;i<8;i++){const x=320+(i%4)*68,y=120+Math.floor(i/4)*120,g0=[1,0,.8,0,0,.9,0,.7][i];kid(ctx,x,y,g0*(1-k));}
-  txt(ctx,on?'🧂 → fewer goiters':'🧒 goiter belt, 1920s',428,385,{s:18,w:700,c:on?'#2f8f4e':C.rj,a:'center'});
-  if(M.pick==='k'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'K⁺ is positive, like Na⁺. No iodine in it.',300,415,{s:15,w:700,c:C.rj,a:'center'});ctx.restore();}}
+const IO_HEX=[0,1,2,3,4,5].map(i=>[Math.cos(i*Math.PI/3),Math.sin(i*Math.PI/3)]);
+function newIo(){return {pick:null,k:0,salt:'plain',g:1,hor:.05,meal:1,bites:[],rings:[0,1,2].map(i=>({i,n:0,out:0})),ions:[],sig:[],hout:[],cells:14,healed:false,rev:false,page:0};}
+function ioTick(S,dt){const M=S.io;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.5);if(M.pick!=='i')return;
+  M.page+=dt;
+  // a meal every few seconds: a bite goes plate → mouth → down to the neck; iodized salt carries I⁻
+  M.meal-=dt;if(M.meal<=0){M.meal=1.2;for(let j=0;j<(M.salt==='iodized'?5:1);j++)M.bites.push({u:-j*.08,io:M.salt==='iodized'});}
+  M.bites.forEach(b=>{b.u+=dt*.55;if(b.u>=1&&!b.done){b.done=true;if(b.io)M.ions.push({x:612,y:150+(Math.random()-.5)*60,r:null});}});M.bites=M.bites.filter(b=>!b.done);
+  // in the thyroid: each I⁻ snaps onto a ring; a ring with four becomes hormone and leaves
+  M.ions.forEach(o=>{if(o.r==null){const r=M.rings.find(r=>r.out===0&&r.n+M.ions.filter(q=>q.r===r).length<4);if(r)o.r=r;}
+    if(o.r){const r=o.r,k=r.n+M.ions.filter(q=>q.r===r&&q.done).length,v=IO_HEX[[0,1,3,4][Math.min(3,k)]],cx=664+r.i*80,cy=140,tx=cx+v[0]*30,ty=cy+v[1]*30;o.x=lerp(o.x,tx,dt*7);o.y=lerp(o.y,ty,dt*7);if(Math.hypot(o.x-tx,o.y-ty)<3&&!o.done){o.done=true;r.n++;}}});
+  M.ions=M.ions.filter(o=>!o.done);
+  M.rings.forEach(r=>{if(r.n>=4&&r.out===0)r.out=.001;if(r.out>0){r.out+=dt*1.2;if(r.out>=1){r.out=0;r.n=0;M.lastH=0;M.hout.push({u:0});}}});
+  M.hout.forEach(h=>h.u+=dt*.6);M.hout=M.hout.filter(h=>h.u<1);
+  M.lastH=(M.lastH==null?99:M.lastH)+dt;M.hor+=((M.lastH<2.5?1:0)-M.hor)*dt*.5;
+  // the brain's signal: louder when hormone is low; the gland grows while it is loud
+  const sig=clamp(1-M.hor*1.6,0,1);if(Math.random()<dt*(.4+5*sig))M.sig.push({u:0});M.sig.forEach(q=>q.u+=dt*.9);M.sig=M.sig.filter(q=>q.u<1);
+  M.g=clamp(M.g+(sig-.35)*dt*.5,0,1);if(M.salt==='iodized')M.ever=true;M.cells=lerp(M.cells,8+10*M.g,dt*2);
+  if(M.ever&&M.g<.15)M.healed=true;if(M.healed&&M.salt==='plain'&&M.g>.55)M.rev=true;}
+function ioNeck(ctx,S){const M=S.io,t=S.t,on=M.pick==='i',g=on?M.g:1;
+  ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,590,430);
+  // the table: plate and shaker
+  ctx.fillStyle='#c8a77a';ctx.fillRect(20,318,210,14);ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(110,312,60,13,0,0,7);ctx.fill();ctx.strokeStyle='#cfd5dc';ctx.stroke();
+  ctx.fillStyle='#e0b560';ctx.beginPath();ctx.ellipse(110,306,34,9,0,0,7);ctx.fill();
+  const iod=on&&M.salt==='iodized';ctx.save();ctx.translate(176,262);ctx.rotate(on?-2.3+Math.sin(t*6)*.15:-.2);ctx.fillStyle='#e9eef3';rr(ctx,-20,-36,40,62,9);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#b9c0c8';rr(ctx,-20,-46,40,14,6);ctx.fill();if(iod)txt(ctx,'I⁻',0,4,{s:17,w:800,c:IO,a:'center'});ctx.restore();
+  if(on)for(let j=0;j<6;j++){const u=((t*1.1+j/6)%1);ctx.fillStyle=iod&&j%2?IO:'#fff';ctx.strokeStyle='#aaa';ctx.lineWidth=.5;ctx.beginPath();ctx.arc(150+((j*7)%14),282+u*24,2.6,0,7);ctx.fill();ctx.stroke();}
+  // the child: the neck's outline bulges as the gland inside it grows
+  const hx=360,hy=92,ny=214;ctx.fillStyle='#4a7fc1';rr(ctx,hx-92,272,184,170,40);ctx.fill();
+  const bw=30+38*g;ctx.fillStyle='#e9c39b';ctx.beginPath();ctx.moveTo(hx-28,140);ctx.lineTo(hx-28,ny-30);ctx.bezierCurveTo(hx-bw-6,ny-26,hx-bw-6,ny+30,hx-30,ny+46);ctx.lineTo(hx-34,280);ctx.lineTo(hx+34,280);ctx.lineTo(hx+30,ny+46);ctx.bezierCurveTo(hx+bw+6,ny+30,hx+bw+6,ny-26,hx+28,ny-30);ctx.lineTo(hx+28,140);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#c99a72';ctx.lineWidth=2;ctx.stroke();
+  const s=.8+1.4*g;ctx.save();ctx.globalAlpha=.8;ctx.fillStyle='#cc4862';[-1,1].forEach(d=>{ctx.beginPath();ctx.ellipse(hx+d*12*s,ny,11*s,16*s,d*.25,0,7);ctx.fill();});ctx.fillRect(hx-8,ny-4,16,9);ctx.restore();
+  ctx.fillStyle='#e9c39b';ctx.beginPath();ctx.arc(hx,hy,58,0,7);ctx.fill();ctx.fillStyle='#5a3a22';ctx.beginPath();ctx.arc(hx,hy-10,58,Math.PI*1.08,Math.PI*1.92);ctx.fill();
+  ctx.fillStyle=C.ink;[[-20,-2],[20,-2]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(hx+dx,hy+dy,4.5,0,7);ctx.fill();});ctx.strokeStyle='#a0584a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(hx,hy+22,12,.3,Math.PI-.3);ctx.stroke();
+  // the brain's signal: "!" pulses running down to the gland
+  const pit=[hx+70,hy-40];txt(ctx,'🧠',pit[0],pit[1]+10,{s:30,a:'center'});
+  if(on)M.sig.forEach(q=>{const x=lerp(pit[0],hx+bw*.6,q.u),y=lerp(pit[1]+16,ny-10,q.u);ctx.save();ctx.globalAlpha=1-q.u*.4;txt(ctx,'!',x,y,{s:20,w:900,c:'#e07a00',a:'center'});ctx.restore();});
+  // bites from the plate to the mouth, down to the neck
+  if(on)M.bites.forEach(b=>{if(b.u<0)return;const u=b.u,x=u<.5?lerp(110,hx,u*2):hx,y=u<.5?lerp(300,hy+30,u*2)-Math.sin(u*2*Math.PI)*40:lerp(hy+30,ny,(u-.5)*2);
+    ctx.fillStyle='#d9a54a';ctx.beginPath();ctx.arc(x,y,6,0,7);ctx.fill();if(b.io){ctx.fillStyle=IO;ctx.beginPath();ctx.arc(x+4,y-3,4,0,7);ctx.fill();}});
+  // hormone leaving the gland into the body
+  if(on)M.hout.forEach(h=>{ctx.save();ctx.globalAlpha=1-h.u;ioRing(ctx,hx+30+h.u*50,ny+20+h.u*140,10,4,true);ctx.restore();});
+  if(on){ctx.save();ctx.translate(46,46);const f=Math.floor(M.page*1.5)%3;txt(ctx,'📅',0,10,{s:30,a:'center'});ctx.globalAlpha=.6;txt(ctx,['·','··','···'][f],0,34,{s:18,w:900,c:C.soft,a:'center'});ctx.restore();}
+  if(M.pick==='k'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;ion2(ctx,470,60,18,'#e08a2b','K⁺');ion2(ctx,520,60,18,'#8e5ad6','Na⁺');ctx.restore();}}
+function ioRing(ctx,x,y,r,n,filled){ctx.save();ctx.beginPath();IO_HEX.forEach((v,i)=>ctx[i?'lineTo':'moveTo'](x+v[0]*r,y+v[1]*r));ctx.closePath();ctx.fillStyle=filled?'#f2b45a':'rgba(255,255,255,.9)';ctx.fill();ctx.strokeStyle='#8a6a2e';ctx.lineWidth=2;ctx.stroke();
+  [0,1,3,4].slice(0,n).forEach(i=>{ctx.beginPath();ctx.arc(x+IO_HEX[i][0]*r,y+IO_HEX[i][1]*r,r*.32,0,7);ctx.fillStyle=IO;ctx.fill();});ctx.restore();}
+function ioInside(ctx,S){const M=S.io;
+  ctx.save();ctx.strokeStyle='rgba(98,98,106,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(400,214);ctx.lineTo(600,150);ctx.stroke();ctx.restore();
+  ctx.fillStyle='#fde9ee';rr(ctx,600,24,285,236,12);ctx.fill();ctx.strokeStyle='#cc4862';ctx.lineWidth=2;ctx.stroke();
+  // gland cells around the edge: more of them while the signal is loud
+  const n=Math.round(M.cells);ctx.fillStyle='rgba(204,72,98,.35)';for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=742+Math.cos(a)*118,y=142+Math.sin(a)*92;ctx.beginPath();ctx.arc(x,y,12,0,7);ctx.fill();}
+  M.rings.forEach(r=>{const x=664+r.i*80+r.out*60,y=140+r.out*90;ctx.save();ctx.globalAlpha=1-r.out;ioRing(ctx,x,y,30,r.n,r.n>=4);ctx.restore();});
+  M.ions.forEach(o=>ion2(ctx,o.x,o.y,10,IO));
+  if(M.salt==='plain'){ctx.save();ctx.globalAlpha=.5+.5*Math.sin(S.t*6);txt(ctx,'!',742,72,{s:26,w:900,c:'#e07a00',a:'center'});ctx.restore();}
+  // a classroom: the same change, child after child
+  ctx.fillStyle='#fff';rr(ctx,600,272,285,150,12);ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const base=[1,.3,.85,.15,.6,.95,.4,.75];for(let i=0;i<8;i++){const x=636+(i%4)*68,y=304+Math.floor(i/4)*62;kid(ctx,x,y,clamp(M.g*base[i]*1.1,0,1));}}
 function ioRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{for(let r=0;r<3;r++)for(let q=0;q<5;q++){const cl=(r+q)%2;ion2(c,x+26+q*44,y+30+r*40,cl?16:10,cl?CL:NA);}},
   (c,x,y,w,h)=>{ion2(c,x+60,y+h/2,18,CL,'Cl⁻');txt(c,'≈',x+112,y+h/2+10,{s:28,w:700,c:C.ink,a:'center'});ion2(c,x+170,y+h/2,24,IO,'I⁻');});}
 function ioPick(S,v){const M=S.io;if(!M||M.pick==='i')return;M.pick=v;M.k=0;}
-
 Story.start({
   id:'saltcubes',title:'Why are salt grains little cubes?',W,H,labHref:'../index.html#ionic',
-  about:'<p><b>What is real.</b> Table salt is sodium chloride. Sodium ions (Na⁺, radius 0.102 nm) and chloride ions (Cl⁻, radius 0.181 nm) alternate on a cubic grid, 0.282 nm apart center to center; every ion touches six of the other kind. A grain of table salt is about 0.3 mm on an edge: about a million ions along each edge.</p><p><b>What is simplified.</b> Crystals 2 to 6 ions on an edge stand in for real grains. The new ions in step 4 fly straight in; in real salt water they arrive one by one from all directions, wrapped in water molecules, and many land and leave before one sticks. Ions have no color; purple and green are labels.</p><p><b>Iodized salt (step 6).</b> Dr. David Cowie of the University of Michigan pushed to add iodine to salt for the Great Lakes "goiter belt," where many children had goiters from too little iodine. Dow chemist William Hale helped show a tiny amount could be added safely; Michigan stores sold iodized salt from 1924. Iodide (as potassium or sodium iodide, about 20 to 40 mg of iodine per kg) is mixed onto the grains; it does not replace the chloride inside the crystal. Today about 89% of the world’s households use iodized salt. Sources: H. Markel, American Journal of Public Health (1987); University of Michigan Medicine; UNICEF. The children are drawings.</p>',
+  about:'<p><b>What is real.</b> Table salt is sodium chloride. Sodium ions (Na⁺, radius 0.102 nm) and chloride ions (Cl⁻, radius 0.181 nm) alternate on a cubic grid, 0.282 nm apart center to center; every ion touches six of the other kind. A grain of table salt is about 0.3 mm on an edge: about a million ions along each edge.</p><p><b>What is simplified.</b> Crystals 2 to 6 ions on an edge stand in for real grains. The new ions in step 4 fly straight in; in real salt water they arrive one by one from all directions, wrapped in water molecules, and many land and leave before one sticks. Ions have no color; purple and green are labels.</p><p><b>Iodized salt (step 6).</b> Dr. David Cowie of the University of Michigan pushed to add iodine to salt for the Great Lakes "goiter belt," where many children had goiters from too little iodine. Dow chemist William Hale helped show a tiny amount could be added safely; Michigan stores sold iodized salt from 1924. Iodide (as potassium or sodium iodide, about 20 to 40 mg of iodine per kg) is mixed onto the grains; it does not replace the chloride inside the crystal. The thyroid gland in the neck uses iodine to build its hormone (thyroxine: two rings and four iodines; the picture draws one ring). With too little iodine, the brain keeps signaling for more hormone and the gland grows: that swelling is a goiter. Glaciers and rain left the soils around the Great Lakes low in iodine, so food grown there carried little. Today about 89% of the world’s households use iodized salt. Sources: H. Markel, American Journal of Public Health (1987); University of Michigan Medicine; UNICEF. The children are drawings.</p>',
   tell:{frames:FRAMES,terms:['ion','Na⁺|sodium','Cl⁻|chloride','attract|opposite','grid|lattice','right angle','six|6','cube'],
     nudge:'For each picture ask: what had to be true first for this to happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -138,16 +183,21 @@ Story.start({
      K.panel(ctx,'Counting ions',[],(x,y)=>{txt(ctx,'Ions along an edge',x+18,y,{s:15,c:C.soft});txt(ctx,fmtBig(n),x+18,y+34,{s:26,w:700,c:C.rj});txt(ctx,'Ions in the grain',x+18,y+76,{s:15,c:C.soft});txt(ctx,fmtBig(n*n*n),x+18,y+110,{s:26,w:700,c:C.ink});y+=60;txt(ctx,'Each ion step: 0.282 nm',x+18,y+96,{s:13.5,c:C.soft});txt(ctx,'1 mm = 1,000,000 nm',x+18,y+116,{s:13.5,c:C.soft});});}},
 
   {rail:'Who did it',title:'Dr. David Cowie, Michigan',live:true,views:false,
-   text(S){const M=S.io;if(!M||!M.pick)return 'Michigan, 1920s. Many kids have a swollen neck, a goiter: too little iodine. <b>Tap the ion that can ride in salt.</b>';
+   text(S){const M=S.io;if(!M||!M.pick)return 'Michigan, 1920s. Many kids have a swollen neck, a goiter. <b>Tap the ion that can bring iodine.</b>';
      if(M.pick==='k')return 'K⁺ is positive, like Na⁺, and it carries no iodine. Try the other.';
-     return 'I⁻ is a negative ion, like Cl⁻. A pinch rides on every grain. In 1924, iodized salt reached Michigan stores, and goiters faded.';},
-   alt:'Look at the two pictures at the bottom. Salt is Na⁺ and Cl⁻. Iodide, I⁻, has the same −1 charge as chloride, so a tiny bit of potassium iodide can be mixed onto salt grains. Everyone eats salt, so everyone gets iodine.',
-   ui:[{type:'seg',key:'ip',val:'',label:'Which ion can bring iodine?',opts:[{v:'k',l:'K⁺'},{v:'i',l:'I⁻'}],on(S,v){ioPick(S,v);},show:S=>S.io&&S.io.pick!=='i'}],
-   todo:[{t:'Tap the ion that can bring iodine',ok:S=>S.io&&S.io.pick==='i'},{t:'Watch the salt reach the kids',ok:S=>S.io&&S.io.pick==='i'&&S.io.k>=.95}],
-   enter(S){S.io={pick:null,k:0};S.v.ip='';},tick(S,dt){const M=S.io;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='i'?.22:.5));},
-   click(S,x,y){const v=Who.hit(IO_PICK,x,y);if(v){ioPick(S,v);S.v.ip=v;}},
-   draw(ctx,S){const M=S.io||(S.io={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ioScene(ctx,S);
-     if(M.pick!=='i')Who.cards(ctx,S,IO_PICK,M.pick);ioRhyme(ctx);
+     if(M.rev)return 'No iodine, no hormone: the gland swells again. In 1924, iodized salt reached Michigan stores, and goiters faded.';
+     if(M.healed&&M.salt==='iodized')return 'Now <b>switch back to plain salt</b> and watch the neck.';
+     if(M.salt==='iodized')return 'Each I⁻ snaps onto a ring and makes hormone. The brain\'s "!" signal quiets, and over months the swelling goes down.';
+     if(M.healed)return 'Plain salt again. Watch the signal and the gland.';
+     return 'Plain salt: no iodine reaches the neck. The brain keeps signaling "make more!" and the gland grows. <b>Switch to iodized salt.</b>';},
+   alt:'Look at the two pictures at the bottom. Salt is Na⁺ and Cl⁻. Iodide, I⁻, has the same −1 charge as chloride, so a tiny bit can be mixed onto salt grains. The thyroid needs iodine to make its hormone; without it, the brain keeps asking for more and the gland grows.',
+   ui:[{type:'seg',key:'ip',val:'',label:'Which ion can bring iodine?',opts:[{v:'k',l:'K⁺'},{v:'i',l:'I⁻'}],on(S,v){ioPick(S,v);},show:S=>S.io&&S.io.pick!=='i'},
+     {type:'seg',key:'salt',val:'plain',label:'The family\'s salt',opts:[{v:'plain',l:'🧂 Plain salt'},{v:'iodized',l:'🧂 Iodized salt'}],on(S,v){S.io.salt=v;},show:S=>S.io&&S.io.pick==='i'}],
+   todo:[{t:'Tap the ion that can bring iodine',ok:S=>S.io&&S.io.pick==='i'},{t:'Switch to iodized salt and watch the neck',ok:S=>S.io&&S.io.healed},{t:'Switch back to plain salt',ok:S=>S.io&&S.io.rev}],
+   enter(S){S.io=newIo();S.v.ip='';S.v.salt='plain';},tick(S,dt){ioTick(S,dt);},
+   click(S,x,y){const v=Who.hit(IO_PICK,x,y);if(v&&S.io.pick!=='i'){ioPick(S,v);S.v.ip=v;}},
+   draw(ctx,S){const M=S.io||(S.io=newIo());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ioNeck(ctx,S);
+     if(M.pick!=='i')Who.cards(ctx,S,IO_PICK,M.pick);else ioInside(ctx,S);ioRhyme(ctx);
      Who.panel(ctx,'Dr. David Cowie',[['🗺️','Great Lakes "goiter belt"'],['🩺','children\'s doctor, U of Michigan'],['🧪','Dow chemist William Hale'],['🧂','1924: iodized salt in stores'],['✋','hard part: doctors doubted'],['🌍','today: ~89% of homes']],['Sources: Markel, Am J Public','Health 1987; U-M Medicine; UNICEF.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}

@@ -75,42 +75,91 @@ const V2=View3D.make({yaw:.5,pitch:-.25,auto:.12}),V3=View3D.make({yaw:.5,pitch:
 const bg=ctx=>{ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);};
 const KEY=[[G.C.C,'CO₂ molecule (gray C, red O)'],[G.C.O,'water molecule (faded)',.45]];
 
-/* ---------- "Who is doing this" (Nov 24, 2026): Whiskey Creek oyster hatchery and ocean CO₂ ----------
+/* ---------- "Who is doing this" (Nov 24, 2026; rebuilt Nov 23 for cause and effect): Whiskey Creek oyster hatchery and ocean CO₂ ----------
    Sources: Barton et al., Limnology & Oceanography (2012); NOAA Ocean Acidification Program; Oregon State University. Whiskey Creek
-   Shellfish Hatchery (Netarts Bay, Oregon; Sue Cudd and Alan Barton) lost most of its oyster larvae in 2007-2008. Oregon State
-   chemists Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep (upwelling):
-   that water makes it hard for baby oysters to build their first shells. A monitor nicknamed the "Burke-o-Lator" lets the hatchery
-   pump in seawater at better times and buffer it. Ocean CO₂ keeps rising, so the problem is managed, not solved. Drawings, not to scale. */
+   Shellfish Hatchery (Netarts Bay, Oregon; Sue Cudd and Alan Barton) lost most of its oyster larvae in 2007-2008. Oregon State chemists
+   Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep (upwelling). Dissolved CO₂
+   reacts with carbonate (CO₂ + CO₃²⁻ + H₂O → 2 HCO₃⁻), leaving less carbonate for baby oysters to build calcium carbonate shells. A CO₂
+   monitor lets the hatchery pump in seawater at better times, and they add soda ash (sodium carbonate) to buffer it.
+   What the student does and sees, with no numbers on screen: choose when the pump runs (cause) → upwelled water brings CO₂ into the
+   tank → in the tank close-up, CO₂ grabs carbonate and both turn into bicarbonate, while carbonate + calcium join the shell as it grows
+   (transformation) → shells grow or crumble, the larvae live or sink, and the oyster beds in the bay fill or empty (effect). Soda ash
+   adds carbonate. Ocean CO₂ keeps rising, so the problem is managed, not solved. Rates are made up; drawings, not to scale. */
 const OC_PICK=[{v:'warm',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#f3b26b';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'☀️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx,cy+15,1,.9);}},
   {v:'cold',x:740,y:30,draw(ctx,cx,cy){ctx.fillStyle='#1f4f86';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'❄️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx-20,cy+8,1,.9);co2s(ctx,cx+18,cy+24,1,.9);co2s(ctx,cx-14,cy+26,1,.9);co2s(ctx,cx+20,cy+6,1,.9);}}];
 function co2s(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.strokeStyle='#cfd5dc';ctx.lineWidth=2.4*s;ctx.beginPath();ctx.moveTo(x-9*s,y);ctx.lineTo(x+9*s,y);ctx.stroke();
   [[x-9*s,'#e0473b',4.2],[x,'#5f6670',4.6],[x+9*s,'#e0473b',4.2]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
-function larva(ctx,x,y,r,good){ctx.save();ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.closePath();
+function co3(ctx,x,y,s,a,h){ctx.save();ctx.globalAlpha=a==null?1:a;for(let i=0;i<3;i++){const t=i*Math.PI*2/3-Math.PI/2,ox=x+Math.cos(t)*9*s,oy=y+Math.sin(t)*9*s;ctx.strokeStyle='#cfd5dc';ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ox,oy);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,4*s,0,7);ctx.fillStyle='#e0473b';ctx.fill();}
+  ctx.beginPath();ctx.arc(x,y,4.4*s,0,7);ctx.fillStyle='#5f6670';ctx.fill();if(h){ctx.beginPath();ctx.arc(x+Math.cos(-Math.PI/2)*9*s+5*s,y-9*s-4*s,2.6*s,0,7);ctx.fillStyle='#f2f2f2';ctx.fill();ctx.strokeStyle='#aaa';ctx.lineWidth=1;ctx.stroke();}ctx.restore();}
+function larva(ctx,x,y,r,good,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.closePath();
   ctx.fillStyle=good>.5?'#e8d3a6':'rgba(232,211,166,.35)';ctx.fill();ctx.lineWidth=1+3*good;ctx.strokeStyle=good>.5?'#8a6a2e':'#C11430';ctx.setLineDash(good>.5?[]:[3,3]);ctx.stroke();ctx.restore();}
-function ocScene(ctx,S){const M=S.oc,t=S.t,on=M.pick==='cold',k=on?M.k:0;
+const OC_SH=[742,190],OC_R=52,OC_BOX=[606,30,273,224];
+function ocRand(a,b){return a+Math.random()*(b-a);}
+function newOc(){return {pick:null,k:0,pump:'always',cyc:0,flow:[],co3:[...Array(8)].map(()=>({x:ocRand(620,860),y:ocRand(50,140),vx:ocRand(-15,15),vy:ocRand(-10,10),go:null})),co2:[],hco3:[],shell:.55,chips:[],beds:.5,good:false,rev:false,add:0,ca:0};}
+function ocBad(M){return (M.cyc%12)<8;}
+function ocOpen(M){return M.pump==='always'||!ocBad(M);}
+function ocTick(S,dt){const M=S.oc;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.5);if(M.pick!=='cold')return;
+  M.cyc+=dt;const bad=ocBad(M),open=ocOpen(M);
+  // the pump: parcels of bay water run up the pipe; bad water carries CO₂, good water carries carbonate
+  if(open&&Math.random()<dt*2.4)M.flow.push({u:0,bad});M.flow.forEach(f=>f.u+=dt*.7);
+  M.flow=M.flow.filter(f=>{if(f.u<1)return true;for(let j=0;j<2;j++){if(f.bad){if(M.co2.length<22)M.co2.push({x:612,y:ocRand(50,150),vx:40,vy:0});}else if(M.co3.length<14)M.co3.push({x:612,y:ocRand(50,150),vx:30,vy:ocRand(-8,8),go:null});}return false;});
+  // CO₂ hunts carbonate: CO₂ + CO₃²⁻ → two HCO₃⁻
+  M.co2.forEach(c=>{let best=null,bd=1e9;M.co3.forEach(q=>{if(q.go)return;const d=Math.hypot(q.x-c.x,q.y-c.y);if(d<bd){bd=d;best=q;}});
+    if(best){const d=Math.max(1,bd);c.x+=(best.x-c.x)/d*80*dt;c.y+=(best.y-c.y)/d*80*dt;if(bd<12){c.dead=true;best.dead=true;M.hco3.push({x:c.x-8,y:c.y,vx:-20,vy:-14,a:1},{x:c.x+8,y:c.y,vx:20,vy:-10,a:1});}}
+    else{// no free carbonate: the CO₂ goes for the shell itself and dissolves a piece of it
+      if(c.a==null)c.a=Math.PI*ocRand(.1,.9);const tx=OC_SH[0]+Math.cos(c.a)*OC_R,ty=OC_SH[1]-Math.sin(c.a)*OC_R,d=Math.max(1,Math.hypot(tx-c.x,ty-c.y));
+      if(M.shell<=0){c.x=clamp(c.x+c.vx*dt,612,870);c.vx*=.98;}else{c.x+=(tx-c.x)/d*70*dt;c.y+=(ty-c.y)/d*70*dt;
+      if(d<6){c.dead=true;M.shell=Math.max(0,M.shell-.05);for(let j=0;j<3;j++)M.chips.push({x:tx+ocRand(-4,4),y:ty,vy:ocRand(5,20),a:1});M.hco3.push({x:tx-8,y:ty,vx:-18,vy:-12,a:1},{x:tx+8,y:ty,vx:18,vy:-12,a:1});}}}});
+  M.co2=M.co2.filter(c=>!c.dead);M.co3=M.co3.filter(q=>!q.dead);
+  M.hco3.forEach(h=>{h.x+=h.vx*dt;h.y+=h.vy*dt;h.a-=dt*.25;});M.hco3=M.hco3.filter(h=>h.a>0);
+  // carbonate drifts; when the shell is ready for more, one goes to its edge with a calcium and becomes shell
+  M.ca-=dt;M.co3.forEach(q=>{if(q.go){const a=q.go,tx=OC_SH[0]+Math.cos(a)*OC_R,ty=OC_SH[1]-Math.abs(Math.sin(a))*OC_R;q.x=lerp(q.x,tx,dt*5);q.y=lerp(q.y,ty,dt*5);if(Math.hypot(q.x-tx,q.y-ty)<3){q.dead=true;M.shell=Math.min(1,M.shell+.07);}return;}
+    q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.x<616||q.x>868)q.vx*=-1;if(q.y<44||q.y>150)q.vy*=-1;});
+  if(M.ca<=0&&!M.co2.length){const q=M.co3.find(q=>!q.go);if(q){q.go=Math.PI*ocRand(.05,.95);M.ca=.4;}}
+  M.co3=M.co3.filter(q=>!q.dead);
+  // with CO₂ around and no carbonate to spare, the shell crumbles
+  M.chips.forEach(c=>{c.y+=c.vy*dt;c.vy+=40*dt;c.a-=dt*.6;});M.chips=M.chips.filter(c=>c.a>0);
+  M.beds=clamp(M.beds+(M.shell>.6?.12:M.shell<.35?-.12:0)*dt,0,1);
+  if(M.pump==='smart'&&M.beds>.85)M.good=true;if(M.good&&M.pump==='always'&&M.beds<.45)M.rev=true;}
+function ocScene(ctx,S){const M=S.oc,t=S.t,on=M.pick==='cold',bad=on&&ocBad(M),open=on&&ocOpen(M);
   ctx.fillStyle='#e6f2fb';ctx.fillRect(0,0,590,430);
-  // sea: warm surface, cold deep water rising toward the coast (right)
-  const sea=ctx.createLinearGradient(0,120,0,430);sea.addColorStop(0,'#5fa8d8');sea.addColorStop(1,'#163d6b');ctx.fillStyle=sea;ctx.fillRect(0,120,420,310);
-  ctx.fillStyle='#8a6a3e';ctx.beginPath();ctx.moveTo(420,120);ctx.lineTo(590,120);ctx.lineTo(590,430);ctx.lineTo(300,430);ctx.closePath();ctx.fill();
-  txt(ctx,'💨',230,96,{s:30,a:'center'});arrow(ctx,200,86,110,86,'#62626a');
-  if(on){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#bfe3ff';ctx.lineWidth=5;ctx.setLineDash([10,8]);ctx.lineDashOffset=-t*30;ctx.beginPath();ctx.moveTo(60,410);ctx.quadraticCurveTo(330,400,380,150);ctx.stroke();ctx.restore();}
-  for(let i=0;i<14;i++){const u=((t*.12+i/14)%1),x=on?lerp(60,370,u):40+((i*97)%340),y=on?lerp(400,160,u*u)+((i*17)%30):150+((i*151)%250);co2s(ctx,x,y,1,on?.95:.35);}
-  // the hatchery
-  ctx.fillStyle='#f4efe6';ctx.fillRect(440,60,130,60);ctx.fillStyle='#7a4f22';ctx.beginPath();ctx.moveTo(432,60);ctx.lineTo(505,24);ctx.lineTo(578,60);ctx.closePath();ctx.fill();txt(ctx,'🦪',505,104,{s:24,a:'center'});
-  ctx.strokeStyle='#8a8f98';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(400,170);ctx.lineTo(470,170);ctx.lineTo(470,215);ctx.stroke();
-  const fixed=on&&k>.55;if(fixed){ctx.fillStyle='#fff';rr(ctx,430,150,62,40,8);ctx.fill();ctx.strokeStyle='#26262b';ctx.lineWidth=1.5;ctx.stroke();txt(ctx,'📟',461,178,{s:22,a:'center'});}
-  ctx.fillStyle='#cfe8f7';rr(ctx,440,215,140,120,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  const good=!on?.9:(k<.25?.9:k<.55?0:1);
-  for(let i=0;i<9;i++)larva(ctx,462+(i%3)*44,250+Math.floor(i/3)*32,11,good);
-  if(on){ctx.fillStyle='#fff';rr(ctx,438,343,144,32,10);ctx.fill();}if(on)txt(ctx,good>.5?(fixed?'shells grow ✓':'baby oysters'):'shells fail ✗',510,365,{s:17,w:800,c:good>.5?'#2f8f4e':'#C11430',a:'center'});
-  if(M.pick==='warm'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'warm water holds less CO₂',210,250,{s:18,w:800,c:'#fff',a:'center'});ctx.restore();}}
-function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle=C.cold;rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'❄️',cx,y+40,{s:22,a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
+  const sea=ctx.createLinearGradient(0,110,0,430);sea.addColorStop(0,bad?'#4f8fbf':'#5fa8d8');sea.addColorStop(1,'#163d6b');ctx.fillStyle=sea;ctx.fillRect(0,110,420,320);
+  ctx.fillStyle='#8a6a3e';ctx.beginPath();ctx.moveTo(420,110);ctx.lineTo(590,110);ctx.lineTo(590,430);ctx.lineTo(300,430);ctx.closePath();ctx.fill();
+  if(bad||!on){txt(ctx,'💨',230,92,{s:30,a:'center'});arrow(ctx,200,82,110,82,'#62626a');}else txt(ctx,'☀️',120,70,{s:34,a:'center'});
+  if(bad){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#bfe3ff';ctx.lineWidth=5;ctx.setLineDash([10,8]);ctx.lineDashOffset=-t*30;ctx.beginPath();ctx.moveTo(60,410);ctx.quadraticCurveTo(330,400,380,140);ctx.stroke();ctx.restore();}
+  for(let i=0;i<16;i++){const u=((t*.12+i/16)%1),x=bad?lerp(60,370,u):40+((i*97)%340),y=bad?lerp(400,150,u*u)+((i*17)%30):150+((i*151)%250);co2s(ctx,x,y,1,bad?.95:(on?.2:.35));}
+  if(on&&!bad){ctx.fillStyle='rgba(60,170,90,.8)';for(let i=0;i<22;i++){ctx.beginPath();ctx.arc(20+((i*71)%380),122+((i*13)%26),3,0,7);ctx.fill();}}
+  // oyster beds on the bay floor: full when the hatchery's larvae live
+  const n=on?Math.round(M.beds*14):7;for(let i=0;i<14;i++){const x=40+i*22,y=404+(i%2)*8;if(i<n){ctx.fillStyle='#c9b99a';ctx.beginPath();ctx.ellipse(x,y,10,6,.4,0,7);ctx.fill();ctx.strokeStyle='#6f6350';ctx.lineWidth=1.5;ctx.stroke();}else{ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.ellipse(x,y,9,3,0,0,7);ctx.fill();}}
+  // the hatchery, its pipe, its monitor and its tank
+  ctx.fillStyle='#f4efe6';ctx.fillRect(440,50,130,56);ctx.fillStyle='#7a4f22';ctx.beginPath();ctx.moveTo(432,50);ctx.lineTo(505,16);ctx.lineTo(578,50);ctx.closePath();ctx.fill();txt(ctx,'🦪',505,92,{s:22,a:'center'});
+  ctx.strokeStyle='#8a8f98';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(380,170);ctx.lineTo(470,170);ctx.lineTo(470,212);ctx.stroke();
+  M.flow.forEach(f=>{const u=f.u,x=u<.7?lerp(380,470,u/.7):470,y=u<.7?170:lerp(170,212,(u-.7)/.3);if(f.bad)co2s(ctx,x,y,.55);else co3(ctx,x,y,.5);});
+  if(on&&M.pump==='smart'){ctx.fillStyle='#fff';rr(ctx,404,138,48,26,6);ctx.fill();ctx.strokeStyle='#26262b';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=bad?'#e0473b':'#3fbf6a';ctx.beginPath();ctx.arc(440,151,7,0,7);ctx.fill();txt(ctx,'📟',418,157,{s:14,a:'center'});}
+  if(on){ctx.fillStyle=open?'#3fbf6a':'#e0473b';ctx.beginPath();ctx.arc(470,190,6,0,7);ctx.fill();}
+  ctx.fillStyle='#cfe8f7';rr(ctx,440,214,140,120,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
+  const sh=on?M.shell:.9;for(let i=0;i<9;i++){const sink=sh<.35?(.35-sh)*120:0;larva(ctx,462+(i%3)*44,248+Math.floor(i/3)*30+Math.min(sink,24),11,sh>.45?1:0,sh<.35?.5:1);}
+  if(M.pick==='warm'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'☀️ → fewer CO₂',210,250,{s:20,w:800,c:'#fff',a:'center'});ctx.restore();}}
+function ocInside(ctx,S){const M=S.oc;
+  ctx.save();ctx.strokeStyle='rgba(98,98,106,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(580,230);ctx.lineTo(606,142);ctx.stroke();ctx.restore();
+  ctx.fillStyle='#e3f1fa';rr(ctx,...OC_BOX,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
+  // the shell: thicker as carbonate joins it, crumbling when it cannot
+  ctx.save();rr(ctx,...OC_BOX,12);ctx.clip();
+  const s=M.shell;ctx.save();ctx.beginPath();ctx.moveTo(OC_SH[0]-OC_R,OC_SH[1]);ctx.arc(OC_SH[0],OC_SH[1],OC_R,Math.PI,0);ctx.closePath();ctx.fillStyle=`rgba(232,211,166,${.25+.75*s})`;ctx.fill();
+  ctx.lineWidth=2+12*s;ctx.strokeStyle=s>.35?'#8a6a2e':'#C11430';ctx.setLineDash(s>.35?[]:[6,5]);ctx.beginPath();ctx.arc(OC_SH[0],OC_SH[1],OC_R,Math.PI,0);ctx.stroke();ctx.restore();
+  ctx.fillStyle='#8a6a2e';M.chips.forEach(c=>{ctx.globalAlpha=Math.max(0,c.a);ctx.fillRect(c.x-3,c.y-2,6,4);});ctx.globalAlpha=1;
+  M.co3.forEach(q=>co3(ctx,q.x,q.y,1));M.co2.forEach(c=>co2s(ctx,c.x,c.y,1));M.hco3.forEach(h=>co3(ctx,h.x,h.y,.9,Math.max(0,h.a)*.7,true));ctx.restore();
+  // the bay's oyster farm: the effect people see
+  ctx.fillStyle='#fff';rr(ctx,606,266,273,154,12);ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  ctx.fillStyle='#7fb6dc';ctx.fillRect(612,276,261,80);ctx.fillStyle='#c9b48f';ctx.fillRect(612,356,261,58);
+  const n=Math.round(M.beds*18);for(let i=0;i<18;i++){const x=628+(i%9)*29,y=372+Math.floor(i/9)*22;if(i<n){ctx.fillStyle='#d9ccb0';ctx.beginPath();ctx.ellipse(x,y,12,7,.3,0,7);ctx.fill();ctx.strokeStyle='#6f6350';ctx.lineWidth=1.5;ctx.stroke();}}
+  if(M.beds>.7)txt(ctx,'🚣',840+Math.sin(S.t)*6,312,{s:26,a:'center'});if(M.beds<.3)txt(ctx,'🪧',640,334,{s:22,a:'center'});}
+function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#2f7fd0';rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'❄️',cx,y+40,{s:22,a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
   (c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#163d6b';rr(c,cx-90,y+14,180,112,12);c.fill();txt(c,'❄️',cx-60,y+40,{s:22,a:'center'});[[-30,64],[0,78],[-50,96],[24,104],[-10,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));c.fillStyle='#fff';c.beginPath();c.arc(cx+60,y+74,20,0,7);c.fill();larva(c,cx+60,y+80,14,0);});}
 function ocPick(S,v){const M=S.oc;if(!M||M.pick==='cold')return;M.pick=v;M.k=0;}
-
 Story.start({
   id:'soda',title:'Why does warm soda go flat faster?',W,H,labHref:'../index.html#solcurve',
-  about:'<p><b>What is real.</b> Soda is water with CO₂ dissolved under pressure; a cold sealed can is at about 2 to 3 atmospheres. CO₂ is straight (O=C=O, 0.116 nm per bond) and water is bent. The solubility numbers are measured values for CO₂ in water at 1 atmosphere: about 2.8 g/L at 4 °C and 1.1 g/L at 35 °C.</p><p><b>What is simplified.</b> One CO₂ molecule drawn stands for a great many, and only a few water molecules are drawn. Time is sped up. The race in step 5 is a simple model (each soda loses its CO₂ at a rate set by how much the water can hold at that temperature); real cans also lose CO₂ to bubbles on the sides, so its minutes are a model, not a measurement.</p><p><b>Oysters and ocean CO₂ (step 6).</b> In 2007 and 2008 the Whiskey Creek Shellfish Hatchery on Netarts Bay, Oregon (Sue Cudd and Alan Barton) lost most of its oyster larvae. Oregon State University chemists Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep. Like cold soda, cold water holds more CO₂, and that water makes it hard for baby oysters to build their first shells. A CO₂ monitor now lets the hatchery pump in seawater at safer times and buffer it. Ocean CO₂ keeps rising, so the problem is managed, not solved. Sources: Barton et al., Limnology &amp; Oceanography (2012); NOAA Ocean Acidification Program; Oregon State University.</p>',
+  about:'<p><b>What is real.</b> Soda is water with CO₂ dissolved under pressure; a cold sealed can is at about 2 to 3 atmospheres. CO₂ is straight (O=C=O, 0.116 nm per bond) and water is bent. The solubility numbers are measured values for CO₂ in water at 1 atmosphere: about 2.8 g/L at 4 °C and 1.1 g/L at 35 °C.</p><p><b>What is simplified.</b> One CO₂ molecule drawn stands for a great many, and only a few water molecules are drawn. Time is sped up. The race in step 5 is a simple model (each soda loses its CO₂ at a rate set by how much the water can hold at that temperature); real cans also lose CO₂ to bubbles on the sides, so its minutes are a model, not a measurement.</p><p><b>Oysters and ocean CO₂ (step 6).</b> In 2007 and 2008 the Whiskey Creek Shellfish Hatchery on Netarts Bay, Oregon (Sue Cudd and Alan Barton) lost most of its oyster larvae. Oregon State University chemists Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep. Like cold soda, cold water holds more CO₂. In seawater, CO₂ reacts with carbonate ions (CO₂ + CO₃²⁻ + H₂O → 2 HCO₃⁻), leaving less carbonate for baby oysters to build their calcium carbonate shells. A CO₂ monitor now lets the hatchery pump in seawater at safer times and buffer it with soda ash (sodium carbonate), which adds carbonate back. Ocean CO₂ keeps rising, so the problem is managed, not solved. Sources: Barton et al., Limnology &amp; Oceanography (2012); NOAA Ocean Acidification Program; Oregon State University.</p>',
   tell:{frames:FRAMES,terms:['CO₂|carbon dioxide','dissolve|dissolved','pressure','escape|leave','temperature|warm','solubility|hold'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -170,15 +219,21 @@ Story.start({
   {rail:'Who did it',title:'Oyster hatchery, Oregon',live:true,views:false,
    text(S){const M=S.oc;if(!M||!M.pick)return 'Oregon, 2007: baby oysters at a hatchery start dying. <b>Tap the water that holds more CO₂.</b>';
      if(M.pick==='warm')return 'Like the hot-car soda, warm water holds less CO₂. Try the other.';
-     if(M.k<.55)return 'Wind pulls cold, CO₂-rich water up from the deep. Baby oysters cannot build shells in it.';
-     return 'Chemists built a CO₂ monitor. Now the hatchery pumps in seawater at the right times, and the oysters grow.';},
-   alt:'Look at the two pictures at the bottom. A cold soda holds more CO₂ than a warm one. Cold deep ocean water holds more CO₂ too. That extra CO₂ makes the water hard for baby oysters to build shells in, so the hatchery measures it and pumps in water when it is safer.',
-   ui:[{type:'seg',key:'op',val:'',label:'Which water holds more CO₂?',opts:[{v:'warm',l:'☀️ Warm surface'},{v:'cold',l:'❄️ Cold deep'}],on(S,v){ocPick(S,v);},show:S=>S.oc&&S.oc.pick!=='cold'}],
-   todo:[{t:'Tap the water that holds more CO₂',ok:S=>S.oc&&S.oc.pick==='cold'},{t:'Watch the hatchery fix it',ok:S=>S.oc&&S.oc.pick==='cold'&&S.oc.k>=.95}],
-   enter(S){S.oc={pick:null,k:0};S.v.op='';},tick(S,dt){const M=S.oc;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='cold'?.12:.5));},
-   click(S,x,y){const v=Who.hit(OC_PICK,x,y);if(v){ocPick(S,v);S.v.op=v;}},
-   draw(ctx,S){const M=S.oc||(S.oc={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ocScene(ctx,S);
-     if(M.pick!=='cold')Who.cards(ctx,S,OC_PICK,M.pick);ocRhyme(ctx);
+     if(M.rev)return 'Red water in: CO₂ eats the carbonate again. Oregon State chemists built that monitor, and ocean CO₂ is still rising.';
+     if(M.good&&M.pump==='always')return 'Pumping any time again. Watch the shell and the beds.';
+     if(M.good)return 'Carbonate builds the shells, the larvae live, and the oyster beds fill. <b>Now switch back.</b>';
+     if(M.pump==='smart'&&M.co2.length)return 'The pump waits for green water, but leftover CO₂ still grabs carbonate. <b>Add soda ash</b> to give the shells more.';
+     if(M.pump==='smart')return 'Only green water comes in now. Watch the shell and the oyster beds.';
+     return 'Wind pulls cold, CO₂-rich water up, and the pump brings it in. CO₂ grabs the carbonate, then eats the shell. <b>Pump only on green.</b>';},
+   alt:'Look at the two pictures at the bottom. A cold soda holds more CO₂ than a warm one; cold deep ocean water does too. In the tank, each CO₂ grabs a carbonate ion, and both become bicarbonate, which a shell cannot use. Less carbonate, thinner shells. Pumping only when the water is better, or adding carbonate (soda ash), lets the shells grow.',
+   ui:[{type:'seg',key:'op',val:'',label:'Which water holds more CO₂?',opts:[{v:'warm',l:'☀️ Warm surface'},{v:'cold',l:'❄️ Cold deep'}],on(S,v){ocPick(S,v);},show:S=>S.oc&&S.oc.pick!=='cold'},
+     {type:'seg',key:'pump',val:'always',label:'Run the pump',opts:[{v:'always',l:'🚰 Any time'},{v:'smart',l:'📟 Only when the monitor is green'}],on(S,v){S.oc.pump=v;},show:S=>S.oc&&S.oc.pick==='cold'},
+     {type:'button',label:'🧪 Add soda ash',act(S){const M=S.oc;for(let i=0;i<6&&M.co3.length<14;i++)M.co3.push({x:ocRand(620,860),y:44,vx:ocRand(-15,15),vy:ocRand(5,15),go:null});},show:S=>S.oc&&S.oc.pick==='cold'}],
+   todo:[{t:'Tap the water that holds more CO₂',ok:S=>S.oc&&S.oc.pick==='cold'},{t:'Pump only on green and watch the oyster beds',ok:S=>S.oc&&S.oc.good},{t:'Switch back to any time',ok:S=>S.oc&&S.oc.rev}],
+   enter(S){S.oc=newOc();S.v.op='';S.v.pump='always';},tick(S,dt){ocTick(S,dt);},
+   click(S,x,y){const v=Who.hit(OC_PICK,x,y);if(v&&S.oc.pick!=='cold'){ocPick(S,v);S.v.op=v;}},
+   draw(ctx,S){const M=S.oc||(S.oc=newOc());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ocScene(ctx,S);
+     if(M.pick!=='cold')Who.cards(ctx,S,OC_PICK,M.pick);else ocInside(ctx,S);ocRhyme(ctx);
      Who.panel(ctx,'Whiskey Creek Hatchery',[['🦪','oyster hatchery, Oregon'],['📉','2007–08: most larvae die'],['🔬','Oregon State chemists'],['🌊','cause: cold CO₂-rich water'],['📟','a CO₂ monitor in the bay'],['⏱️','pump at safer times'],['⚠️','hard part: ocean CO₂ rising']],['Sources: Barton et al. 2012; NOAA;','Oregon State University.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
