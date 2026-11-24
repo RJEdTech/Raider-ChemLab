@@ -42,6 +42,8 @@ function canItems(s){const it=[];
   for(const [a,b] of [[0,1],[1,2],[2,3],[3,0]]){const q=sq(Y0-.12),u=sq(s.open?SURF+.4:Y1+.12);it.push({t:'bond',a:q[a],b:q[b],r:.012,c:'#9aa1ab',op:.5},{t:'bond',a:q[a],b:u[a],r:.012,c:'#9aa1ab',op:.35});if(!s.open)it.push({t:'bond',a:u[a],b:u[b],r:.012,c:'#9aa1ab',op:.5});}
   s.waters.forEach(w=>it.push(...K.waterItems(K.water(w.p,w.d),{op:.45})));
   s.co2.forEach(m=>{if(!m.gone)it.push(...K.co2Items(m.p,m.ax,{s:1.15}));});
+  if(s.fol&&!s.fol.gone){const f=s.fol;(s.trail||[]).forEach((q,i,a)=>it.push({t:'atom',p:q,r:.035,c:'#f2a900',op:.15+.6*i/a.length}));(s.marks||[]).forEach(q=>it.push({t:'atom',p:q.p,r:.09,c:q.inn?'#2f7fd0':'#C11430',op:.85}));
+    it.push({t:'atom',p:f.p,r:.3,c:'#f7c20a',op:.3},{t:'tag',p:[f.p[0],f.p[1]+.45,f.p[2]],text:f.inSoda&&!f.move?'this one: in the soda':'this one: in the gas above',c:'#8a5a00'});}
   it.push({t:'tag',p:[0,Y1+.35,0],text:s.open?'open: the gas above escapes':'sealed: gas squeezed above the soda',c:C.ink},{t:'tag',p:[X+.1,SURF-.75,X+.1],text:'soda (water)',c:C.soda});
   return it;}
 const inSoda=s=>s.co2.filter(m=>!m.gone&&m.inSoda&&!m.move).length;
@@ -172,10 +174,12 @@ Story.start({
 
   {rail:'Zoom in',title:'Inside a sealed can',live:true,
    text(S){return 'Soda is water with <b>carbon dioxide (CO₂)</b> squeezed into it. In a sealed can the gas above the soda is under pressure (about 2 to 3 times normal air pressure). '+
-     'CO₂ molecules keep leaving the soda and going back in, at the <b>same rate</b>, so the fizz stays put. Watch the counts. <b>Drag to turn the can.</b>';},
+     'CO₂ molecules keep leaving the soda and going back in, at the <b>same rate</b>, so the fizz stays put. '+(S.can.fol?(S.can.folX>=2?'Yours left and came back: one of many, all trading places. ':'Watch the yellow one: red dot where it leaves, blue where it comes back. '):'<b>Follow one CO₂.</b> ')+'<b>Drag to turn the can.</b>';},
    alt:'Think of a crowded room with a doorway to a hall that is just as crowded. People wander out and wander back in all the time, but the number in the room stays about the same.',
-   todo:[{t:'Drag the can to turn it',ok:()=>V2.touched}],
-   enter(S){S.can=newCan(4);},tick(S,dt){if(S.can)stepCan(S.can,dt);},
+   ui:[{type:'button',label:'👁 Follow one CO₂',pulse:true,act(S){const c=S.can,live=c.co2.filter(m=>!m.gone&&m.inSoda&&!m.move);live.sort((a,b)=>b.p[1]-a.p[1]);c.fol=live[Math.floor(Math.random()*Math.min(4,live.length))]||null;c.trail=[];c.marks=[];c.folX=0;c.fw=c.fol?c.fol.inSoda:null;}}],
+   todo:[{t:'Follow one CO₂ out of the soda and back in',ok:S=>S.can&&S.can.folX>=2},{t:'Drag the can to turn it',ok:()=>V2.touched}],
+   enter(S){S.can=newCan(4);},tick(S,dt){const c=S.can;if(!c)return;stepCan(c,dt);if(c.fol){c.tt=(c.tt||0)+dt;if(c.tt>.1){c.tt=0;c.trail.push(c.fol.p.slice());if(c.trail.length>70)c.trail.shift();}
+     const w=c.fol.inSoda&&!c.fol.move;if(c.fw!==null&&w!==c.fw&&!c.fol.move){c.folX++;c.marks.push({p:c.fol.p.slice(),inn:w});}if(!c.fol.move)c.fw=w;}},
    draw(ctx,S){bg(ctx);V2.render(ctx,{x:0,y:0,w:880,h:600,nm:150,items:canItems(S.can),bg:'#f4f6f8'});
      K.panel(ctx,'What you are looking at',KEY,(x,y)=>{K.stat(ctx,x,y+10,'CO₂ that left the soda',S.can.outN);K.stat(ctx,x,y+52,'CO₂ that went back in',S.can.inN);K.stat(ctx,x,y+94,'CO₂ in the soda now',inSoda(S.can),C.soda);});}},
 
