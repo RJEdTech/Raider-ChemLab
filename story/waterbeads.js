@@ -57,13 +57,43 @@ const FRAMES=[
  {label:'Wax has no δ+ or δ− ends, so water has nothing to hold on to',draw:fr(ctx=>VT.render(ctx,{x:0,y:0,w:300,h:193,nm:62,items:[...surfItems('wax'),...waters(BEAD).flatMap(w=>K.waterItems(w))],bg:'#f4f6f8'}))},
  {label:'So the water pulls itself into a round bead',draw:fr(ctx=>{ctx.fillStyle='#8e1d25';ctx.fillRect(0,140,300,54);drop(ctx,150,140,70,105);angleMark(ctx,150,140,70,105);})},
  {label:'On clean glass, water holds on to O–H groups and spreads flat',draw:fr(ctx=>{ctx.fillStyle='#9cc3d6';ctx.fillRect(0,140,300,54);drop(ctx,150,140,125,18);})}];
+
+/* ---------- "Who's doing it" (Nov 24, 2026): Gitanjali Rao's lead sensor, Tethys ----------
+   Facts: Wikipedia (Gitanjali Rao, inventor): Lone Tree, Colorado; STEM School Highlands Ranch; carbon nanotubes whose resistance
+   changes with lead; Bluetooth; worked with a 3M research scientist and in the Denver Water Quality Research Lab; 2017 Discovery
+   Education 3M Young Scientist Challenge; TIME's first Kid of the Year (2020); studying biological engineering at MIT as of 2025.
+   CPR / Texas Public Radio (2019): 'America's Top Young Scientist' at 11. The Analytical Scientist: three months with 3M mentor
+   Kathleen Shafer. WaterWorld: family test strips gave hazy results; lead sticks and raises resistance; data to a phone app.
+   Science Blog: nanotubes treated with chloride; first version in a cardboard box; not on store shelves. Gadget Review: flags lead
+   above 15 parts per billion. EPA (Oct 2024): lead action level lowered from 15 to 10 µg/L (ppb).
+   Picture: one carbon nanotube at real geometry (C–C 0.142 nm, about 1.25 nm across). The real sensor is a film of many tubes
+   between two electrodes; the number of lead ions shown is far smaller than in any real sample. */
+const TUBE=(()=>{const a=.246,m=16,Cc=m*a,R=Cc/(2*Math.PI),L=1.9,pts=[];
+  for(let i=-2;i<m+2;i++)for(let j=-1;j<Math.ceil(L/(a*Math.sqrt(3)/2))+2;j++)for(const b of [0,a/Math.sqrt(3)]){let u=i*a+j*a/2,v=j*a*Math.sqrt(3)/2+b;u=((u%Cc)+Cc)%Cc;if(v<0||v>L)continue;
+    if(!pts.some(q=>Math.abs(q[0]-u)<1e-6&&Math.abs(q[1]-v)<1e-6))pts.push([u,v]);}
+  const P=pts.map(([u,v])=>{const th=u/R;return [v-L/2,R*Math.cos(th),R*Math.sin(th)];}),B=[];
+  for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const d=G.len(G.sub(P[i],P[j]));if(d>.12&&d<.16)B.push([i,j]);}
+  const CL=[];const r=K.rng(21);for(let k=0;k<12;k++){const th=r()*6.283,x=(r()-.5)*(L-.3);CL.push([x,(R+.17)*Math.cos(th),(R+.17)*Math.sin(th)]);}
+  return {P,B,CL,R,L};})();
+function newLead(){return {pb:[],stuck:0,adds:0,w:Array.from({length:10},(_,i)=>{const r=K.rng(40+i);return {p:[(r()-.5)*2.6,(r()-.5)*2.2,(r()-.5)*2.2],d:[r()-.5,r()-.5,r()-.5]};})};}
+function addLead(L){const r=K.rng(70+L.adds);L.adds++;for(let k=0;k<3;k++){const th=r()*6.283,rad=1.25+r()*.4;L.pb.push({p:[(r()-.5)*1.6,rad*Math.cos(th),rad*Math.sin(th)],to:null,t:0});}}
+function stepLead(L,dt){const used=new Set(L.pb.filter(q=>q.to!=null).map(q=>q.to));
+  for(const q of L.pb){if(q.to==null){let best=-1,d=9;TUBE.CL.forEach((c,i)=>{if(used.has(i))return;const e=G.len(G.sub(q.p,c));if(e<d){d=e;best=i;}});if(best>=0){q.to=best;used.add(best);}}
+    if(q.to!=null&&q.t<1){q.t=Math.min(1,q.t+dt*.55);const c=TUBE.CL[q.to],out=G.norm([0,c[1],c[2]]),tgt=G.add(c,G.mul(out,.27));q.p=q.p.map((v,i)=>v+(tgt[i]-v)*Math.min(1,dt*1.6));}}
+  L.stuck=L.pb.filter(q=>q.t>=.95).length;}
+function leadItems(L){const it=[];TUBE.B.forEach(([i,j])=>it.push({t:'bond',a:TUBE.P[i],b:TUBE.P[j],r:.018,c:'#7d838c'}));TUBE.P.forEach(p=>it.push({t:'atom',p,r:.035,c:G.C.C}));
+  TUBE.CL.forEach((c,i)=>{const near=G.mul(G.norm([0,c[1],c[2]]),TUBE.R);it.push({t:'bond',a:[c[0],near[1],near[2]],b:c,r:.015,c:'#9aa1ab'},{t:'atom',p:c,r:.1,c:'#2fae4f'});});
+  L.w.forEach(w=>it.push(...K.waterItems(K.water(w.p,w.d),{op:.35})));
+  L.pb.forEach(q=>{it.push({t:'atom',p:q.p,r:.119*1.1,c:'#4a5568'});});
+  return it;}
 /* ---------- chapters ---------- */
 const PICK=['Wax makes water lighter, so it floats up into balls','A thin layer of air under the water holds it up','Wax is so slippery that water slides into balls','Water sticks to itself more strongly than it sticks to wax'];
-const V2=View3D.make({yaw:.2,pitch:-.2,auto:.25}),V3=View3D.make({yaw:.4,pitch:-.25,auto:.15}),V4=View3D.make({yaw:.45,pitch:-.32,auto:.1});
+const V5=View3D.make({yaw:.35,pitch:-.3,auto:.12}),V2=View3D.make({yaw:.2,pitch:-.2,auto:.25}),V3=View3D.make({yaw:.4,pitch:-.25,auto:.15}),V4=View3D.make({yaw:.45,pitch:-.32,auto:.1});
 const bg=(ctx,c)=>{ctx.fillStyle=c||'#f4f6f8';ctx.fillRect(0,0,W,H);};
+const legendRow=(ctx,x,y,rows)=>{let xx=x;rows.forEach(([c,t])=>{ctx.beginPath();ctx.arc(xx+7,y-5,7,0,7);ctx.fillStyle=c;ctx.fill();xx+=18;xx+=txt(ctx,t,xx,y,{s:13,c:C.ink})+14;});};
 Story.start({
   id:'waterbeads',title:'Why does water bead up on a waxed car?',W,H,labHref:'../index.html#polarity',
-  about:'<p><b>What is real.</b> Water is bent: O–H bonds 0.096 nm long at 104.5°. Oxygen pulls the shared electrons toward itself, so its end is slightly negative and the hydrogen ends slightly positive. Hydrogen bonds (dashed) are drawn at their real length. Wax is chains of carbon and hydrogen; clean glass is covered in O–H groups. Contact angles: about 105° on wax, under 20° on clean glass.</p><p><b>What is simplified.</b> About 34 water molecules stand in for a drop; a real bead holds about 10²¹. The wax chains are drawn only 4 carbons deep. The glow around each atom marks its partial charge; real molecules have no color.</p>',
+  about:'<p><b>What is real.</b> Water is bent: O–H bonds 0.096 nm long at 104.5°. Oxygen pulls the shared electrons toward itself, so its end is slightly negative and the hydrogen ends slightly positive. Hydrogen bonds (dashed) are drawn at their real length. Wax is chains of carbon and hydrogen; clean glass is covered in O–H groups. Contact angles: about 105° on wax, under 20° on clean glass.</p><p><b>What is simplified.</b> About 34 water molecules stand in for a drop; a real bead holds about 10²¹. The wax chains are drawn only 4 carbons deep. The glow around each atom marks its partial charge; real molecules have no color.</p><p><b>Who is doing this (step 6).</b> Gitanjali Rao’s story is from Wikipedia, Colorado Public Radio (2019), The Analytical Scientist, WaterWorld and Science Blog. Her real sensor is a film of many carbon nanotubes between two electrodes; the picture shows one tube and far fewer lead ions than a real sample. The EPA lowered its lead action level from 15 to 10 parts per billion in October 2024.</p>',
   tell:{frames:FRAMES,terms:['polar|lopsided','δ+|δ−|partial charge','hydrogen bond','nonpolar|no charges','wax','bead|round'],
     nudge:'For each picture ask: what had to be true first for this to happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -119,6 +149,28 @@ Story.start({
      drop(ctx,450,420,a,th);angleMark(ctx,450,420,a,th);txt(ctx,'side view, about 50 times life size',450,575,{s:14,c:C.soft,a:'center'});
      K.panel(ctx,'The contact angle',[],(x,y)=>{K.stat(ctx,x,y+10,'Car wax',(m<.5?'▶ ':'')+'105°',C.ink);K.stat(ctx,x,y+52,'Clean glass',(m>=.5?'▶ ':'')+'under 20°',C.ink);
        txt(ctx,'More than 90°: the drop is a bead.',x+18,y+100,{s:14,c:C.soft});txt(ctx,'Under 90°: it spreads.',x+18,y+120,{s:14,c:C.soft});});}},
+
+  {rail:'Who did it',title:'Who is doing this: Gitanjali Rao',live:true,
+   text(S){const L=S.lead,n=L?L.stuck:0;
+     if(!L||!L.adds)return 'At age 11, <b>Gitanjali Rao</b> of Lone Tree, Colorado, near here, watched the Flint water crisis on the news. Her family\'s lead test strips gave fuzzy answers, so she set out to build a better test. '+
+       'It uses this story\'s idea: a surface with the right atoms on it <b>grabs</b> what you want out of water. <b>Add tap water with lead.</b>';
+     if(n<6)return 'This is a carbon tube, about 1 nm across, with <b style="color:#2fae4f">chlorine atoms</b> stuck to it. <b>Lead ions</b> (Pb²⁺, dark gray) are pulled to the chlorines and stick. Each one makes it harder for electricity to flow along the tubes. Add more lead and watch the meter.';
+     return '<b>Lead found.</b> Her sensor, named <b>Tethys</b> after the Greek goddess of fresh water, measures that change and sends the result to a phone. She built the first one in a cardboard box, improved it over a summer with a 3M scientist as her mentor, and was named America\'s Top Young Scientist in 2017. '+
+       '<b>The hard part:</b> it still is not sold in stores. Turning a working idea into a product is its own challenge.';},
+   alt:'Think of fly paper: a sticky surface catches what touches it. Her sensor is a surface coated with atoms that catch lead. The more lead it catches, the harder it is for electricity to get through, and that is something a cheap circuit can measure.',
+   ui:[{type:'button',label:'Add tap water with lead',pulse:true,act(S){addLead(S.lead);},show:S=>S.lead&&S.lead.stuck<9&&S.lead.adds<4},{type:'button',label:'Test clean water',ghost:true,act(S){S.lead=newLead();},show:S=>S.lead&&S.lead.adds>0}],
+   todo:[{t:'Add lead until the sensor flags it',ok:S=>S.lead&&S.lead.stuck>=6}],
+   enter(S){S.lead=newLead();},tick(S,dt){if(S.lead)stepLead(S.lead,dt);},
+   draw(ctx,S){bg(ctx);const L=S.lead||(S.lead=newLead());V5.render(ctx,{x:0,y:0,w:880,h:600,nm:230,items:leadItems(L),bg:'#f4f6f8'});
+     const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
+     txt(ctx,'Electrical resistance',x+18,58,{s:16,w:700,c:C.ink});const f=Math.min(1,.12+L.stuck/9),hit=L.stuck>=6;ctx.fillStyle='#eee';rr(ctx,x+18,70,244,22,6);ctx.fill();ctx.fillStyle=hit?C.rj:'#2f7fd0';rr(ctx,x+18,70,244*f,22,6);ctx.fill();
+     ctx.strokeStyle='#26262b';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x+18+244*(.12+6/9),66);ctx.lineTo(x+18+244*(.12+6/9),96);ctx.stroke();ctx.setLineDash([]);
+     txt(ctx,hit?'Lead found':'No lead found yet',x+18,120,{s:15,w:700,c:hit?C.rj:C.soft});
+     txt(ctx,'How she got there',x+18,160,{s:16,w:700,c:C.ink});
+     [['Age 11','Flint on the news; fuzzy test strips at home'],['First try','a sensor built in a cardboard box'],['A mentor','a summer working with a 3M scientist'],['2017','named America\'s Top Young Scientist'],['2020','TIME\'s first Kid of the Year'],['Now','studying biological engineering at MIT (2025)']]
+       .forEach(([h,b],k)=>{const y=186+k*44;txt(ctx,h,x+18,y,{s:14,w:700,c:C.rj});txt(ctx,b,x+18,y+19,{s:13,c:C.ink});});
+     txt(ctx,'Her sensor flags lead above 15 parts per',x+18,466,{s:12.5,c:C.soft});txt(ctx,'billion. In 2024 the EPA lowered its action',x+18,482,{s:12.5,c:C.soft});txt(ctx,'level for lead to 10 parts per billion.',x+18,498,{s:12.5,c:C.soft});
+     legendRow(ctx,x+18,530,[[G.C.C,'carbon'],['#2fae4f','chlorine'],['#4a5568','lead ion']]);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});

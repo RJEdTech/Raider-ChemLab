@@ -15,4 +15,7 @@ TestYourself.mount({lab:'ChemLab',id:'waterbeads',title:'Raider ChemLab · Why d
   why:'The O–H groups on glass let water form hydrogen bonds with the surface. Water spreads to make as many of those as it can, so it lies flat.'},
  {q:'A drop meets a waxed surface at about 105°. What does that tell you?',choices:['Water pulls on itself more than the wax pulls on it, so the drop is a round bead','The drop is spreading out flat','The wax is wet all the way through','The drop is boiling'],answer:0,
   hint:'More than 90° or less than 90°: which one means a bead?',step:5,stepName:'from molecules to a drop you can see',
-  why:'A contact angle over 90° means the liquid prefers itself to the surface, so it balls up. On clean glass the angle is under 20°, so the water spreads.'}]});
+  why:'A contact angle over 90° means the liquid prefers itself to the surface, so it balls up. On clean glass the angle is under 20°, so the water spreads.'},
+ {q:'Gitanjali Rao’s sensor flags lead above 15 parts per billion (ppb). In water, 1 ppb is 1 microgram per liter. How many micrograms of lead are in a 0.5-liter bottle of water at exactly 15 ppb?',answer:7.5,tol:.05,unit:'µg',
+  hint:v=>v===15?'15 µg is for a whole liter. The bottle holds half a liter.':v===30?'Multiply by the liters, not divide: 15 µg per liter × 0.5 L.':'15 micrograms in each liter, and the bottle holds 0.5 liter.',step:6,stepName:'who is doing this: gitanjali rao',
+  why:'15 µg/L × 0.5 L = 7.5 µg. A microgram is a millionth of a gram, which is why a sensitive, cheap test matters: you cannot see or taste lead at these levels.'}]});
