@@ -75,17 +75,38 @@ const TUBE=(()=>{const a=.246,m=16,Cc=m*a,R=Cc/(2*Math.PI),L=1.9,pts=[];
   for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const d=G.len(G.sub(P[i],P[j]));if(d>.12&&d<.16)B.push([i,j]);}
   const CL=[];const r=K.rng(21);for(let k=0;k<12;k++){const th=r()*6.283,x=(r()-.5)*(L-.3);CL.push([x,(R+.17)*Math.cos(th),(R+.17)*Math.sin(th)]);}
   return {P,B,CL,R,L};})();
-function newLead(){return {pb:[],stuck:0,adds:0,w:Array.from({length:10},(_,i)=>{const r=K.rng(40+i);return {p:[(r()-.5)*2.6,(r()-.5)*2.2,(r()-.5)*2.2],d:[r()-.5,r()-.5,r()-.5]};})};}
+function newLead(){return {pb:[],stuck:0,adds:0,pick:null,w:Array.from({length:10},(_,i)=>{const r=K.rng(40+i);return {p:[(r()-.5)*2.6,(r()-.5)*2.2,(r()-.5)*2.2],d:[r()-.5,r()-.5,r()-.5]};})};}
 function addLead(L){const r=K.rng(70+L.adds);L.adds++;for(let k=0;k<3;k++){const th=r()*6.283,rad=1.25+r()*.4;L.pb.push({p:[(r()-.5)*1.6,rad*Math.cos(th),rad*Math.sin(th)],to:null,t:0});}}
+/* the student's guess: the first lead ion goes to what they picked; a carbon does not hold it, so it bounces on to a chlorine */
+function firstLead(L,pick){L.pick=pick;const q={p:[0,1.5,.3],to:null,t:0};if(pick==='c'){const c=TUBE.P.reduce((m,p)=>p[1]>m[1]?p:m,TUBE.P[0]);q.via=G.add(c,[0,.2,0]);q.vt=0;}L.pb.push(q);}
 function stepLead(L,dt){const used=new Set(L.pb.filter(q=>q.to!=null).map(q=>q.to));
-  for(const q of L.pb){if(q.to==null){let best=-1,d=9;TUBE.CL.forEach((c,i)=>{if(used.has(i))return;const e=G.len(G.sub(q.p,c));if(e<d){d=e;best=i;}});if(best>=0){q.to=best;used.add(best);}}
+  for(const q of L.pb){if(q.via){q.vt+=dt*.8;q.p=q.p.map((v,i)=>v+(q.via[i]-v)*Math.min(1,dt*2.4));if(q.vt>1.1){q.p=G.add(q.p,[0,.5,0]);delete q.via;}continue;}
+    if(q.to==null){let best=-1,d=9;TUBE.CL.forEach((c,i)=>{if(used.has(i))return;const e=G.len(G.sub(q.p,c));if(e<d){d=e;best=i;}});if(best>=0){q.to=best;used.add(best);}}
     if(q.to!=null&&q.t<1){q.t=Math.min(1,q.t+dt*.55);const c=TUBE.CL[q.to],out=G.norm([0,c[1],c[2]]),tgt=G.add(c,G.mul(out,.27));q.p=q.p.map((v,i)=>v+(tgt[i]-v)*Math.min(1,dt*1.6));}}
   L.stuck=L.pb.filter(q=>q.t>=.95).length;}
+const NEG='#e0453a',POS='#3b6fd8';
 function leadItems(L){const it=[];TUBE.B.forEach(([i,j])=>it.push({t:'bond',a:TUBE.P[i],b:TUBE.P[j],r:.018,c:'#7d838c'}));TUBE.P.forEach(p=>it.push({t:'atom',p,r:.035,c:G.C.C}));
-  TUBE.CL.forEach((c,i)=>{const near=G.mul(G.norm([0,c[1],c[2]]),TUBE.R);it.push({t:'bond',a:[c[0],near[1],near[2]],b:c,r:.015,c:'#9aa1ab'},{t:'atom',p:c,r:.1,c:'#2fae4f'});});
+  TUBE.CL.forEach((c,i)=>{const near=G.mul(G.norm([0,c[1],c[2]]),TUBE.R);it.push({t:'bond',a:[c[0],near[1],near[2]],b:c,r:.015,c:'#9aa1ab'},{t:'atom',p:c,r:.1,c:'#2fae4f'},{t:'atom',p:c,r:.2,c:NEG,op:.22});});
   L.w.forEach(w=>it.push(...K.waterItems(K.water(w.p,w.d),{op:.35})));
-  L.pb.forEach(q=>{it.push({t:'atom',p:q.p,r:.119*1.1,c:'#4a5568'});});
+  L.pb.forEach(q=>{it.push({t:'atom',p:q.p,r:.119*1.1,c:'#4a5568'},{t:'atom',p:q.p,r:.24,c:POS,op:.22});if(q.via)it.push({t:'atom',p:q.via,r:.3,c:'#8a8f98',op:.18});});
   return it;}
+/* same pull, two places: δ+ H of one water grabs the δ− O of the next (step 3) = Pb²⁺ grabs δ− chlorine */
+const VR=View3D.make({yaw:.2,pitch:-.15,auto:0,hint:false});
+const PAIR_W=(()=>{const a=K.water([-.16,0,0],[1,0,0],[0,1,0]),bO=G.add(a.h[0],[.18,0,0]),b=K.water(bO,[.6,.8,0],[0,0,1]);return [a,b];})();
+function rhymeW(ctx,x,y,w,h){ctx.save();rr(ctx,x,y,w,h,12);ctx.fillStyle='rgba(255,255,255,.95)';ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
+  const [a,b]=PAIR_W,hw=(w-60)/2;
+  VR.render(ctx,{x:x,y:y,w:hw,h,nm:330,center:[.05,0,0],items:[...K.waterItems(a,{charges:true}),...K.waterItems(b,{charges:true}),{t:'bond',a:a.h[0],b:b.o,r:.012,c:'#2f7fd0',dash:true}],bg:'#ffffff'});
+  txt(ctx,'=',x+w/2,y+h/2+14,{s:40,w:700,c:C.ink,a:'center'});
+  const cl=[.12,0,0],pb=[-.18,0,0];VR.render(ctx,{x:x+w-hw,y:y,w:hw,h,nm:250,center:[-.03,0,0],items:[{t:'atom',p:cl,r:.1,c:'#2fae4f'},{t:'atom',p:cl,r:.2,c:NEG,op:.25},{t:'atom',p:pb,r:.13,c:'#4a5568'},{t:'atom',p:pb,r:.24,c:POS,op:.25},{t:'bond',a:pb,b:cl,r:.012,c:'#2f7fd0',dash:true}],bg:'#ffffff'});
+  ctx.restore();}
+/* the two pictures the student taps to predict */
+const PICKS=[{v:'c',x:600,y:36},{v:'cl',x:740,y:36}];
+function pickCards(ctx,S){const L=S.lead;PICKS.forEach(c=>{rr(ctx,c.x,c.y,120,120,14);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#26262b';ctx.stroke();
+  const cx=c.x+60,cy=c.y+60;if(c.v==='cl'){ctx.beginPath();ctx.arc(cx,cy,40,0,7);ctx.fillStyle='rgba(224,69,58,.25)';ctx.fill();}
+  const g=ctx.createRadialGradient(cx-8,cy-9,3,cx,cy,c.v==='cl'?24:20);g.addColorStop(0,'#fff');g.addColorStop(.4,c.v==='cl'?'#2fae4f':'#5f6670');g.addColorStop(1,c.v==='cl'?'#17602b':'#2a2e33');ctx.beginPath();ctx.arc(cx,cy,c.v==='cl'?24:20,0,7);ctx.fillStyle=g;ctx.fill();});
+  // the lead ion waiting, with its + glow and a question mark
+  const lx=730,ly=222;ctx.beginPath();ctx.arc(lx,ly,34,0,7);ctx.fillStyle='rgba(59,111,216,.25)';ctx.fill();ctx.beginPath();ctx.arc(lx,ly,20,0,7);ctx.fillStyle='#4a5568';ctx.fill();
+  txt(ctx,'?',lx+44,ly+12,{s:34,w:800,c:C.ink});ctx.save();ctx.globalAlpha=.55+.45*Math.sin(S.t*4);txt(ctx,'👆',800,190,{s:30,a:'center'});ctx.restore();}
 /* ---------- chapters ---------- */
 const PICK=['Wax makes water lighter, so it floats up into balls','A thin layer of air under the water holds it up','Wax is so slippery that water slides into balls','Water sticks to itself more strongly than it sticks to wax'];
 const V5=View3D.make({yaw:.35,pitch:-.3,auto:.12}),V2=View3D.make({yaw:.2,pitch:-.2,auto:.25}),V3=View3D.make({yaw:.4,pitch:-.25,auto:.15}),V4=View3D.make({yaw:.45,pitch:-.32,auto:.1});
@@ -150,27 +171,26 @@ Story.start({
      K.panel(ctx,'The contact angle',[],(x,y)=>{K.stat(ctx,x,y+10,'Car wax',(m<.5?'▶ ':'')+'105°',C.ink);K.stat(ctx,x,y+52,'Clean glass',(m>=.5?'▶ ':'')+'under 20°',C.ink);
        txt(ctx,'More than 90°: the drop is a bead.',x+18,y+100,{s:14,c:C.soft});txt(ctx,'Under 90°: it spreads.',x+18,y+120,{s:14,c:C.soft});});}},
 
-  {rail:'Who did it',title:'Who is doing this: Gitanjali Rao',live:true,
+  {rail:'Who did it',title:'Gitanjali Rao, Lone Tree, Colorado',live:true,
    text(S){const L=S.lead,n=L?L.stuck:0;
-     if(!L||!L.adds)return 'At age 11, <b>Gitanjali Rao</b> of Lone Tree, Colorado, near here, watched the Flint water crisis on the news. Her family\'s lead test strips gave fuzzy answers, so she set out to build a better test. '+
-       'It uses this story\'s idea: a surface with the right atoms on it <b>grabs</b> what you want out of water. <b>Add tap water with lead.</b>';
-     if(n<6)return 'This is a carbon tube, about 1 nm across, with <b style="color:#2fae4f">chlorine atoms</b> stuck to it. <b>Lead ions</b> (Pb²⁺, dark gray) are pulled to the chlorines and stick. Each one makes it harder for electricity to flow along the tubes. Add more lead and watch the meter.';
-     return '<b>Lead found.</b> Her sensor, named <b>Tethys</b> after the Greek goddess of fresh water, measures that change and sends the result to a phone. She built the first one in a cardboard box, improved it over a summer with a 3M scientist as her mentor, and was named America\'s Top Young Scientist in 2017. '+
-       '<b>The hard part:</b> it still is not sold in stores. Turning a working idea into a product is its own challenge.';},
-   alt:'Think of fly paper: a sticky surface catches what touches it. Her sensor is a surface coated with atoms that catch lead. The more lead it catches, the harder it is for electricity to get through, and that is something a cheap circuit can measure.',
-   ui:[{type:'button',label:'Add tap water with lead',pulse:true,act(S){addLead(S.lead);},show:S=>S.lead&&S.lead.stuck<9&&S.lead.adds<4},{type:'button',label:'Test clean water',ghost:true,act(S){S.lead=newLead();},show:S=>S.lead&&S.lead.adds>0}],
-   todo:[{t:'Add lead until the sensor flags it',ok:S=>S.lead&&S.lead.stuck>=6}],
-   enter(S){S.lead=newLead();},tick(S,dt){if(S.lead)stepLead(S.lead,dt);},
-   draw(ctx,S){bg(ctx);const L=S.lead||(S.lead=newLead());V5.render(ctx,{x:0,y:0,w:880,h:600,nm:230,items:leadItems(L),bg:'#f4f6f8'});
+     if(!L||!L.pick)return 'Lead in water is <b style="color:'+POS+'">positive</b>. Her sensor is a carbon tube with chlorine on it. <b>Tap the atom</b> that will grab the lead.';
+     if(!L.adds)return (L.pick==='cl'?'Yes: ':'Not the carbon: ')+'<b style="color:'+NEG+'">negative</b> chlorine grabs <b style="color:'+POS+'">positive</b> lead. Same pull as water on water. <b>Add tap water with lead.</b>';
+     return n<6?'Each lead ion it catches makes it harder for electricity to flow. Watch the meter.':'<b>Lead found.</b> Her sensor, Tethys, sends this to a phone. She built the first one in a cardboard box at age 11.';},
+   alt:'Look at the two pictures at the bottom. A slightly positive hydrogen grabs a slightly negative oxygen. A positive lead ion grabs a negative chlorine. Opposite charges pull together in both.',
+   ui:[{type:'seg',key:'pk',val:'',label:'Which atom grabs lead?',opts:[{v:'c',l:'Carbon'},{v:'cl',l:'Chlorine'}],on(S,v){if(S.lead&&!S.lead.pick)firstLead(S.lead,v);},show:S=>S.lead&&!S.lead.pick},
+       {type:'button',label:'Add tap water with lead',pulse:true,act(S){addLead(S.lead);},show:S=>S.lead&&S.lead.pick&&S.lead.stuck<9&&S.lead.adds<4},{type:'button',label:'Start over',ghost:true,act(S){S.lead=newLead();S.v.pk='';},show:S=>S.lead&&S.lead.adds>0}],
+   todo:[{t:'Tap the atom that grabs lead',ok:S=>S.lead&&S.lead.pick},{t:'Add lead until the sensor flags it',ok:S=>S.lead&&S.lead.stuck>=6}],
+   enter(S){S.lead=newLead();S.v.pk='';},tick(S,dt){if(S.lead)stepLead(S.lead,dt);},
+   click(S,x,y){const L=S.lead;if(!L||L.pick)return;for(const c of PICKS)if(x>c.x&&x<c.x+120&&y>c.y&&y<c.y+120){firstLead(L,c.v);S.v.pk=c.v;}},
+   draw(ctx,S){bg(ctx);const L=S.lead||(S.lead=newLead());V5.render(ctx,{x:0,y:0,w:880,h:600,nm:205,center:[.3,-.22,0],items:leadItems(L),bg:'#f4f6f8'});
+     if(!L.pick)pickCards(ctx,S);rhymeW(ctx,20,462,520,126);
      const x=900;ctx.fillStyle='#fff';ctx.strokeStyle='#d5d9de';ctx.lineWidth=1;rr(ctx,x,24,280,552,12);ctx.fill();ctx.stroke();
-     txt(ctx,'Electrical resistance',x+18,58,{s:16,w:700,c:C.ink});const f=Math.min(1,.12+L.stuck/9),hit=L.stuck>=6;ctx.fillStyle='#eee';rr(ctx,x+18,70,244,22,6);ctx.fill();ctx.fillStyle=hit?C.rj:'#2f7fd0';rr(ctx,x+18,70,244*f,22,6);ctx.fill();
-     ctx.strokeStyle='#26262b';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x+18+244*(.12+6/9),66);ctx.lineTo(x+18+244*(.12+6/9),96);ctx.stroke();ctx.setLineDash([]);
-     txt(ctx,hit?'Lead found':'No lead found yet',x+18,120,{s:15,w:700,c:hit?C.rj:C.soft});
-     txt(ctx,'How she got there',x+18,160,{s:16,w:700,c:C.ink});
-     [['Age 11','Flint on the news; fuzzy test strips at home'],['First try','a sensor built in a cardboard box'],['A mentor','a summer working with a 3M scientist'],['2017','named America\'s Top Young Scientist'],['2020','TIME\'s first Kid of the Year'],['Now','studying biological engineering at MIT (2025)']]
-       .forEach(([h,b],k)=>{const y=186+k*44;txt(ctx,h,x+18,y,{s:14,w:700,c:C.rj});txt(ctx,b,x+18,y+19,{s:13,c:C.ink});});
-     txt(ctx,'Her sensor flags lead above 15 parts per',x+18,466,{s:12.5,c:C.soft});txt(ctx,'billion. In 2024 the EPA lowered its action',x+18,482,{s:12.5,c:C.soft});txt(ctx,'level for lead to 10 parts per billion.',x+18,498,{s:12.5,c:C.soft});
-     legendRow(ctx,x+18,530,[[G.C.C,'carbon'],['#2fae4f','chlorine'],['#4a5568','lead ion']]);}},
+     const f=Math.min(1,.12+L.stuck/9),hit=L.stuck>=6;txt(ctx,'⚡ resistance',x+18,58,{s:16,w:700,c:C.ink});ctx.fillStyle='#eee';rr(ctx,x+18,70,244,22,6);ctx.fill();ctx.fillStyle=hit?C.rj:'#2f7fd0';rr(ctx,x+18,70,244*f,22,6);ctx.fill();
+     txt(ctx,hit?'📱 Lead found':'📱 …',x+18,122,{s:17,w:700,c:hit?C.rj:C.soft});
+     txt(ctx,'Gitanjali Rao',x+18,168,{s:17,w:700,c:C.ink});
+     [['📺','age 11: Flint water'],['📦','cardboard prototype'],['🧑‍🔬','a 3M scientist mentor'],['🏆','2017: top young scientist'],['📰','2020: TIME Kid of the Year'],['🎓','MIT'],['🏪','not in stores yet']]
+       .forEach(([i,t],k)=>{const y=206+k*42;txt(ctx,i,x+36,y,{s:24,a:'center'});txt(ctx,t,x+66,y-4,{s:14.5,w:600,c:C.ink});});
+     txt(ctx,'Flags lead above 15 ppb. EPA action',x+18,520,{s:12,c:C.soft});txt(ctx,'level since 2024: 10 ppb.',x+18,536,{s:12,c:C.soft});}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});
