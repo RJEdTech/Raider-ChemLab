@@ -15,4 +15,7 @@ TestYourself.mount({lab:'ChemLab',id:'soda',title:'Raider ChemLab · Why does wa
   why:'Temperature is how hard the molecules jiggle. In warm water a dissolved CO₂ molecule is shaken free more easily, so less gas stays dissolved.'},
  {q:'Two sodas are opened at the same time, one at 4 °C and one at 35 °C. Which goes flat first, and why?',choices:['The 35 °C soda, because warm water holds less CO₂ so it leaves faster','The 4 °C soda, because cold makes CO₂ escape','Both at the same time, because they started the same','The 4 °C soda, because it has more CO₂ to lose'],answer:0,
   hint:'Run the race in step 5. Which line drops faster?',step:5,stepName:'two open cans, side by side',
-  why:'Both lose CO₂ once open, but the warm soda can hold much less, so its CO₂ leaves faster and it goes flat first.'}]});
+  why:'Both lose CO₂ once open, but the warm soda can hold much less, so its CO₂ leaves faster and it goes flat first.'},
+ {q:'Water at 5 °C can hold about 2.77 g of CO₂ per liter. Water at 25 °C can hold about 1.45 g per liter. About how many times as much CO₂ can the cold water hold?',answer:1.9,tol:.1,unit:'times',
+  hint:v=>Math.abs(v-1.32)<.05?'That is the difference in grams. The question asks how many times as much: divide.':'2.77 ÷ 1.45.',step:6,stepName:'oyster hatchery, oregon',
+  why:'2.77 ÷ 1.45 ≈ 1.9. Cold water can hold almost twice as much CO₂, which is why cold water pulled up from the deep is so hard on baby oysters.'}]});

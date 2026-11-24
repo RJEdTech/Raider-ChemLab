@@ -8,7 +8,7 @@
    CO₂ leaves is set by how much the water can hold at that temperature), so its minutes are a model, not a measurement. */
 (function(){
 'use strict';
-const {clamp,lerp,ease,rr,txt,pill}=Story.h,G=View3D.G,K=Chem3D;
+const {clamp,lerp,ease,rr,txt,pill,arrow}=Story.h,G=View3D.G,K=Chem3D;
 const W=1200,H=600;
 const C={ink:'#26262b',soft:'#62626a',rj:'#C11430',cold:'#2f7fd0',hot:'#d4542a',soda:'#7a3b16'};
 /* CO₂ solubility in water at 1 atm, grams per liter (standard tables) */
@@ -74,9 +74,43 @@ const PICK=['Warm soda has more sugar in it','Heat makes the can leak','In warm 
 const V2=View3D.make({yaw:.5,pitch:-.25,auto:.12}),V3=View3D.make({yaw:.5,pitch:-.25,auto:.1}),V4=View3D.make({yaw:.5,pitch:-.25,auto:.1});
 const bg=ctx=>{ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);};
 const KEY=[[G.C.C,'CO₂ molecule (gray C, red O)'],[G.C.O,'water molecule (faded)',.45]];
+
+/* ---------- "Who is doing this" (Nov 24, 2026): Whiskey Creek oyster hatchery and ocean CO₂ ----------
+   Sources: Barton et al., Limnology & Oceanography (2012); NOAA Ocean Acidification Program; Oregon State University. Whiskey Creek
+   Shellfish Hatchery (Netarts Bay, Oregon; Sue Cudd and Alan Barton) lost most of its oyster larvae in 2007-2008. Oregon State
+   chemists Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep (upwelling):
+   that water makes it hard for baby oysters to build their first shells. A monitor nicknamed the "Burke-o-Lator" lets the hatchery
+   pump in seawater at better times and buffer it. Ocean CO₂ keeps rising, so the problem is managed, not solved. Drawings, not to scale. */
+const OC_PICK=[{v:'warm',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#f3b26b';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'☀️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx,cy+15,1,.9);}},
+  {v:'cold',x:740,y:30,draw(ctx,cx,cy){ctx.fillStyle='#1f4f86';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'❄️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx-20,cy+8,1,.9);co2s(ctx,cx+18,cy+24,1,.9);co2s(ctx,cx-14,cy+26,1,.9);co2s(ctx,cx+20,cy+6,1,.9);}}];
+function co2s(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.strokeStyle='#cfd5dc';ctx.lineWidth=2.4*s;ctx.beginPath();ctx.moveTo(x-9*s,y);ctx.lineTo(x+9*s,y);ctx.stroke();
+  [[x-9*s,'#e0473b',4.2],[x,'#5f6670',4.6],[x+9*s,'#e0473b',4.2]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
+function larva(ctx,x,y,r,good){ctx.save();ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.closePath();
+  ctx.fillStyle=good>.5?'#e8d3a6':'rgba(232,211,166,.35)';ctx.fill();ctx.lineWidth=1+3*good;ctx.strokeStyle=good>.5?'#8a6a2e':'#C11430';ctx.setLineDash(good>.5?[]:[3,3]);ctx.stroke();ctx.restore();}
+function ocScene(ctx,S){const M=S.oc,t=S.t,on=M.pick==='cold',k=on?M.k:0;
+  ctx.fillStyle='#e6f2fb';ctx.fillRect(0,0,590,430);
+  // sea: warm surface, cold deep water rising toward the coast (right)
+  const sea=ctx.createLinearGradient(0,120,0,430);sea.addColorStop(0,'#5fa8d8');sea.addColorStop(1,'#163d6b');ctx.fillStyle=sea;ctx.fillRect(0,120,420,310);
+  ctx.fillStyle='#8a6a3e';ctx.beginPath();ctx.moveTo(420,120);ctx.lineTo(590,120);ctx.lineTo(590,430);ctx.lineTo(300,430);ctx.closePath();ctx.fill();
+  txt(ctx,'💨',230,96,{s:30,a:'center'});arrow(ctx,200,86,110,86,'#62626a');
+  if(on){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#bfe3ff';ctx.lineWidth=5;ctx.setLineDash([10,8]);ctx.lineDashOffset=-t*30;ctx.beginPath();ctx.moveTo(60,410);ctx.quadraticCurveTo(330,400,380,150);ctx.stroke();ctx.restore();}
+  for(let i=0;i<14;i++){const u=((t*.12+i/14)%1),x=on?lerp(60,370,u):40+((i*97)%340),y=on?lerp(400,160,u*u)+((i*17)%30):150+((i*151)%250);co2s(ctx,x,y,1,on?.95:.35);}
+  // the hatchery
+  ctx.fillStyle='#f4efe6';ctx.fillRect(440,60,130,60);ctx.fillStyle='#7a4f22';ctx.beginPath();ctx.moveTo(432,60);ctx.lineTo(505,24);ctx.lineTo(578,60);ctx.closePath();ctx.fill();txt(ctx,'🦪',505,104,{s:24,a:'center'});
+  ctx.strokeStyle='#8a8f98';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(400,170);ctx.lineTo(470,170);ctx.lineTo(470,215);ctx.stroke();
+  const fixed=on&&k>.55;if(fixed){ctx.fillStyle='#fff';rr(ctx,430,150,62,40,8);ctx.fill();ctx.strokeStyle='#26262b';ctx.lineWidth=1.5;ctx.stroke();txt(ctx,'📟',461,178,{s:22,a:'center'});}
+  ctx.fillStyle='#cfe8f7';rr(ctx,440,215,140,120,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
+  const good=!on?.9:(k<.25?.9:k<.55?0:1);
+  for(let i=0;i<9;i++)larva(ctx,462+(i%3)*44,250+Math.floor(i/3)*32,11,good);
+  if(on){ctx.fillStyle='#fff';rr(ctx,438,343,144,32,10);ctx.fill();}if(on)txt(ctx,good>.5?(fixed?'shells grow ✓':'baby oysters'):'shells fail ✗',510,365,{s:17,w:800,c:good>.5?'#2f8f4e':'#C11430',a:'center'});
+  if(M.pick==='warm'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'warm water holds less CO₂',210,250,{s:18,w:800,c:'#fff',a:'center'});ctx.restore();}}
+function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle=C.cold;rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'❄️',cx,y+40,{s:22,a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
+  (c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#163d6b';rr(c,cx-90,y+14,180,112,12);c.fill();txt(c,'❄️',cx-60,y+40,{s:22,a:'center'});[[-30,64],[0,78],[-50,96],[24,104],[-10,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));c.fillStyle='#fff';c.beginPath();c.arc(cx+60,y+74,20,0,7);c.fill();larva(c,cx+60,y+80,14,0);});}
+function ocPick(S,v){const M=S.oc;if(!M||M.pick==='cold')return;M.pick=v;M.k=0;}
+
 Story.start({
   id:'soda',title:'Why does warm soda go flat faster?',W,H,labHref:'../index.html#solcurve',
-  about:'<p><b>What is real.</b> Soda is water with CO₂ dissolved under pressure; a cold sealed can is at about 2 to 3 atmospheres. CO₂ is straight (O=C=O, 0.116 nm per bond) and water is bent. The solubility numbers are measured values for CO₂ in water at 1 atmosphere: about 2.8 g/L at 4 °C and 1.1 g/L at 35 °C.</p><p><b>What is simplified.</b> One CO₂ molecule drawn stands for a great many, and only a few water molecules are drawn. Time is sped up. The race in step 5 is a simple model (each soda loses its CO₂ at a rate set by how much the water can hold at that temperature); real cans also lose CO₂ to bubbles on the sides, so its minutes are a model, not a measurement.</p>',
+  about:'<p><b>What is real.</b> Soda is water with CO₂ dissolved under pressure; a cold sealed can is at about 2 to 3 atmospheres. CO₂ is straight (O=C=O, 0.116 nm per bond) and water is bent. The solubility numbers are measured values for CO₂ in water at 1 atmosphere: about 2.8 g/L at 4 °C and 1.1 g/L at 35 °C.</p><p><b>What is simplified.</b> One CO₂ molecule drawn stands for a great many, and only a few water molecules are drawn. Time is sped up. The race in step 5 is a simple model (each soda loses its CO₂ at a rate set by how much the water can hold at that temperature); real cans also lose CO₂ to bubbles on the sides, so its minutes are a model, not a measurement.</p><p><b>Oysters and ocean CO₂ (step 6).</b> In 2007 and 2008 the Whiskey Creek Shellfish Hatchery on Netarts Bay, Oregon (Sue Cudd and Alan Barton) lost most of its oyster larvae. Oregon State University chemists Burke Hales and George Waldbusser traced it to cold, CO₂-rich water that summer winds pull up from the deep. Like cold soda, cold water holds more CO₂, and that water makes it hard for baby oysters to build their first shells. A CO₂ monitor now lets the hatchery pump in seawater at safer times and buffer it. Ocean CO₂ keeps rising, so the problem is managed, not solved. Sources: Barton et al., Limnology &amp; Oceanography (2012); NOAA Ocean Acidification Program; Oregon State University.</p>',
   tell:{frames:FRAMES,terms:['CO₂|carbon dioxide','dissolve|dissolved','pressure','escape|leave','temperature|warm','solubility|hold'],
     nudge:'For each picture ask: what had to happen just before this could happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -132,6 +166,20 @@ Story.start({
    draw(ctx,S){bg(ctx);graph(ctx,40,40,820,520,[[left(4),C.cold,'4 °C'],[left(35),C.hot,'35 °C']],120,S.v.rt||0);
      K.panel(ctx,'CO₂ left in each can',[],(x,y)=>{const t=S.v.rt||0;K.stat(ctx,x,y,'Fridge, 4 °C',Math.round(left(4)(t)*100)+'%',C.cold);K.stat(ctx,x,y+42,'Hot car, 35 °C',Math.round(left(35)(t)*100)+'%',C.hot);
        txt(ctx,'Time: '+Math.round(t)+' min (model)',x+18,y+90,{s:14,c:C.soft});});}},
+
+  {rail:'Who did it',title:'Oyster hatchery, Oregon',live:true,views:false,
+   text(S){const M=S.oc;if(!M||!M.pick)return 'Oregon, 2007: baby oysters at a hatchery start dying. <b>Tap the water that holds more CO₂.</b>';
+     if(M.pick==='warm')return 'Like the hot-car soda, warm water holds less CO₂. Try the other.';
+     if(M.k<.55)return 'Wind pulls cold, CO₂-rich water up from the deep. Baby oysters cannot build shells in it.';
+     return 'Chemists built a CO₂ monitor. Now the hatchery pumps in seawater at the right times, and the oysters grow.';},
+   alt:'Look at the two pictures at the bottom. A cold soda holds more CO₂ than a warm one. Cold deep ocean water holds more CO₂ too. That extra CO₂ makes the water hard for baby oysters to build shells in, so the hatchery measures it and pumps in water when it is safer.',
+   ui:[{type:'seg',key:'op',val:'',label:'Which water holds more CO₂?',opts:[{v:'warm',l:'☀️ Warm surface'},{v:'cold',l:'❄️ Cold deep'}],on(S,v){ocPick(S,v);},show:S=>S.oc&&S.oc.pick!=='cold'}],
+   todo:[{t:'Tap the water that holds more CO₂',ok:S=>S.oc&&S.oc.pick==='cold'},{t:'Watch the hatchery fix it',ok:S=>S.oc&&S.oc.pick==='cold'&&S.oc.k>=.95}],
+   enter(S){S.oc={pick:null,k:0};S.v.op='';},tick(S,dt){const M=S.oc;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='cold'?.12:.5));},
+   click(S,x,y){const v=Who.hit(OC_PICK,x,y);if(v){ocPick(S,v);S.v.op=v;}},
+   draw(ctx,S){const M=S.oc||(S.oc={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ocScene(ctx,S);
+     if(M.pick!=='cold')Who.cards(ctx,S,OC_PICK,M.pick);ocRhyme(ctx);
+     Who.panel(ctx,'Whiskey Creek Hatchery',[['🦪','oyster hatchery, Oregon'],['📉','2007–08: most larvae die'],['🔬','Oregon State chemists'],['🌊','cause: cold CO₂-rich water'],['📟','a CO₂ monitor in the bay'],['⏱️','pump at safer times'],['⚠️','hard part: ocean CO₂ rising']],['Sources: Barton et al. 2012; NOAA;','Oregon State University.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});

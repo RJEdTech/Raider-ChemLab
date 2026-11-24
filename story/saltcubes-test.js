@@ -15,4 +15,7 @@ TestYourself.mount({lab:'ChemLab',id:'saltcubes',title:'Raider ChemLab · Why ar
   why:'Each new ion fits only where the grid puts it, so whole layers build up on the flat faces. Every layer follows the same right angles, so the crystal stays a cube at every size.'},
  {q:'Ions in salt are 0.282 nm apart. About how many ions line up along one edge of a 0.3 mm grain? (1 mm = 1,000,000 nm)',choices:['About a million','About a thousand','About 300','About a billion'],answer:0,
   hint:'0.3 mm is 300,000 nm. How many 0.282 nm steps fit in that?',step:5,stepName:'how many ions in one grain?',
-  why:'300,000 nm ÷ 0.282 nm ≈ 1,060,000: about a million ions along each edge, and about 10¹⁸ in the whole grain.'}]});
+  why:'300,000 nm ÷ 0.282 nm ≈ 1,060,000: about a million ions along each edge, and about 10¹⁸ in the whole grain.'},
+ {q:'Iodized salt carries about 30 mg of iodine in every kilogram (1,000 g) of salt. Someone eats 5 g of salt in a day. How many micrograms (µg) of iodine is that? (1 mg = 1,000 µg)',answer:150,tol:3,unit:'µg',
+  hint:v=>Math.abs(v-.15)<.01?'That is in milligrams. Change it to micrograms: × 1,000.':'5 g is 5/1,000 of a kilogram, so 30 mg × 5 ÷ 1,000 mg. Then change mg to µg.',step:6,stepName:'dr. david cowie, michigan',
+  why:'30 × 5 ÷ 1,000 = 0.15 mg = 150 µg, right about what an adult needs in a day. That is why a pinch on every grain is enough.'}]});

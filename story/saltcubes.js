@@ -50,9 +50,41 @@ function grow(S){const g=S.grow;if(g.n>=6||g.fly.length)return;const n=g.n+1,odd
   g.L.forEach(q=>have.add(q.ijk.join(',')));const R=K.rng(n*13);
   L.forEach(q=>{if(q.ijk.every(v=>v<n-1)&&have.has(q.ijk.join(',')))return;const from=G.add(q.p,G.mul(G.norm(q.p[0]||q.p[1]||q.p[2]?q.p:[1,1,1]),1.2+R()*.6));g.fly.push({q,from,t:-R()*.5});});
   g.n=n;g.L=g.L.map(q=>q);g.L.forEach(q=>{q.na=((q.ijk[0]+q.ijk[1]+q.ijk[2])%2)===0;});}
+
+/* ---------- "Who is doing this" (Nov 24, 2026): Dr. David Cowie and iodized salt ----------
+   Sources: Markel, "When it rains it pours" (Am J Public Health, 1987); University of Michigan Medicine history; Michigan State
+   Medical Society; UNICEF (about 89% of the world’s households use iodized salt). Cowie (U-M pediatrics) pushed iodized salt for the
+   Great Lakes "goiter belt"; Dow chemist William Hale helped show a tiny amount of iodide could be added safely; Michigan stores sold
+   it from May 1924 and Morton shipped it nationwide that fall. Some doctors resisted at first. Iodide is mixed onto the grains as
+   potassium or sodium iodide (about 20-40 mg of iodine per kg of salt): it rides along on the crystals; it does not replace the
+   chloride ions inside them. Drawings, not to scale; no real children are shown. */
+const IO='#6b3fa0';
+const IO_PICK=[{v:'k',x:600,y:30,draw(ctx,cx,cy){ion2(ctx,cx,cy+6,14,'#e08a2b','K⁺');}},{v:'i',x:740,y:30,draw(ctx,cx,cy){ion2(ctx,cx,cy+6,26,IO,'I⁻');}}];
+function ion2(ctx,x,y,r,c,l){ctx.save();const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);g.addColorStop(0,'#fff');g.addColorStop(.25,c);g.addColorStop(1,c);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  if(l)txt(ctx,l,x,y+r+20,{s:15,w:700,c:C.ink,a:'center'});ctx.restore();}
+function kid(ctx,x,y,g){ctx.save();ctx.fillStyle='#4a7fc1';rr(ctx,x-18,y+22,36,40,10);ctx.fill();ctx.fillStyle='#e9c39b';ctx.fillRect(x-6,y+10,12,14);
+  if(g>.02){ctx.fillStyle='#d9a77c';ctx.beginPath();ctx.ellipse(x,y+21,8+16*g,5+10*g,0,0,7);ctx.fill();ctx.fillStyle='#e9c39b';}ctx.beginPath();ctx.arc(x,y-4,16,0,7);ctx.fill();
+  ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(x-5,y-6,1.8,0,7);ctx.arc(x+5,y-6,1.8,0,7);ctx.fill();ctx.restore();}
+function shaker(ctx,x,y,tilt){ctx.save();ctx.translate(x,y);ctx.rotate(tilt);ctx.fillStyle='#e9eef3';rr(ctx,-22,-40,44,70,10);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#b9c0c8';rr(ctx,-22,-52,44,16,6);ctx.fill();ctx.fillStyle=C.ink;[-10,0,10].forEach(d=>{ctx.beginPath();ctx.arc(d,-44,2,0,7);ctx.fill();});
+  txt(ctx,'I⁻',0,4,{s:18,w:800,c:IO,a:'center'});ctx.restore();}
+function ioScene(ctx,S){const M=S.io,t=S.t,on=M.pick==='i',k=on?ease(M.k):0;ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,590,430);
+  // a grain of salt, close up, with iodide dusted on its faces
+  const gx=150,gy=190;ctx.fillStyle='#2d3742';rr(ctx,40,110,240,250,16);ctx.fill();grain(ctx,95,185,120,1);
+  if(on)for(let i=0;i<Math.floor(k*14);i++){const x=105+((i*37)%100),y=195+((i*53)%100);ctx.fillStyle=IO;ctx.beginPath();ctx.arc(x,y,4.5,0,7);ctx.fill();}
+  shaker(ctx,150,58+(on?6*Math.sin(t*8)*(1-k):0),on?-2.4+(1-k)*.4:-.2);
+  if(on)for(let j=0;j<8;j++){const u=((t*.9+j/8)%1);ctx.fillStyle=IO;ctx.globalAlpha=1-u;ctx.beginPath();ctx.arc(140+((j*13)%30),100+u*95,3.5,0,7);ctx.fill();ctx.globalAlpha=1;}
+  // the kids: swollen necks (goiter) shrink once iodized salt arrives
+  for(let i=0;i<8;i++){const x=320+(i%4)*68,y=120+Math.floor(i/4)*120,g0=[1,0,.8,0,0,.9,0,.7][i];kid(ctx,x,y,g0*(1-k));}
+  txt(ctx,on?'🧂 → fewer goiters':'🧒 goiter belt, 1920s',428,385,{s:18,w:700,c:on?'#2f8f4e':C.rj,a:'center'});
+  if(M.pick==='k'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'K⁺ is positive, like Na⁺. No iodine in it.',300,415,{s:15,w:700,c:C.rj,a:'center'});ctx.restore();}}
+function ioRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{for(let r=0;r<3;r++)for(let q=0;q<5;q++){const cl=(r+q)%2;ion2(c,x+26+q*44,y+30+r*40,cl?16:10,cl?CL:NA);}},
+  (c,x,y,w,h)=>{ion2(c,x+60,y+h/2,18,CL,'Cl⁻');txt(c,'≈',x+112,y+h/2+10,{s:28,w:700,c:C.ink,a:'center'});ion2(c,x+170,y+h/2,24,IO,'I⁻');});}
+function ioPick(S,v){const M=S.io;if(!M||M.pick==='i')return;M.pick=v;M.k=0;}
+
 Story.start({
   id:'saltcubes',title:'Why are salt grains little cubes?',W,H,labHref:'../index.html#ionic',
-  about:'<p><b>What is real.</b> Table salt is sodium chloride. Sodium ions (Na⁺, radius 0.102 nm) and chloride ions (Cl⁻, radius 0.181 nm) alternate on a cubic grid, 0.282 nm apart center to center; every ion touches six of the other kind. A grain of table salt is about 0.3 mm on an edge: about a million ions along each edge.</p><p><b>What is simplified.</b> Crystals 2 to 6 ions on an edge stand in for real grains. The new ions in step 4 fly straight in; in real salt water they arrive one by one from all directions, wrapped in water molecules, and many land and leave before one sticks. Ions have no color; purple and green are labels.</p>',
+  about:'<p><b>What is real.</b> Table salt is sodium chloride. Sodium ions (Na⁺, radius 0.102 nm) and chloride ions (Cl⁻, radius 0.181 nm) alternate on a cubic grid, 0.282 nm apart center to center; every ion touches six of the other kind. A grain of table salt is about 0.3 mm on an edge: about a million ions along each edge.</p><p><b>What is simplified.</b> Crystals 2 to 6 ions on an edge stand in for real grains. The new ions in step 4 fly straight in; in real salt water they arrive one by one from all directions, wrapped in water molecules, and many land and leave before one sticks. Ions have no color; purple and green are labels.</p><p><b>Iodized salt (step 6).</b> Dr. David Cowie of the University of Michigan pushed to add iodine to salt for the Great Lakes "goiter belt," where many children had goiters from too little iodine. Dow chemist William Hale helped show a tiny amount could be added safely; Michigan stores sold iodized salt from 1924. Iodide (as potassium or sodium iodide, about 20 to 40 mg of iodine per kg) is mixed onto the grains; it does not replace the chloride inside the crystal. Today about 89% of the world’s households use iodized salt. Sources: H. Markel, American Journal of Public Health (1987); University of Michigan Medicine; UNICEF. The children are drawings.</p>',
   tell:{frames:FRAMES,terms:['ion','Na⁺|sodium','Cl⁻|chloride','attract|opposite','grid|lattice','right angle','six|6','cube'],
     nudge:'For each picture ask: what had to be true first for this to happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -104,6 +136,19 @@ Story.start({
    enter(S){S.v.mm=.3;},
    draw(ctx,S){bg(ctx);const e=S.v.mm,n=e*1e-3/(A*1e-9);grain(ctx,220,170,180+e*200,1);txt(ctx,e.toFixed(2)+' mm',330+e*100,560,{s:20,w:700,c:C.ink,a:'center'});
      K.panel(ctx,'Counting ions',[],(x,y)=>{txt(ctx,'Ions along an edge',x+18,y,{s:15,c:C.soft});txt(ctx,fmtBig(n),x+18,y+34,{s:26,w:700,c:C.rj});txt(ctx,'Ions in the grain',x+18,y+76,{s:15,c:C.soft});txt(ctx,fmtBig(n*n*n),x+18,y+110,{s:26,w:700,c:C.ink});y+=60;txt(ctx,'Each ion step: 0.282 nm',x+18,y+96,{s:13.5,c:C.soft});txt(ctx,'1 mm = 1,000,000 nm',x+18,y+116,{s:13.5,c:C.soft});});}},
+
+  {rail:'Who did it',title:'Dr. David Cowie, Michigan',live:true,views:false,
+   text(S){const M=S.io;if(!M||!M.pick)return 'Michigan, 1920s. Many kids have a swollen neck, a goiter: too little iodine. <b>Tap the ion that can ride in salt.</b>';
+     if(M.pick==='k')return 'K⁺ is positive, like Na⁺, and it carries no iodine. Try the other.';
+     return 'I⁻ is a negative ion, like Cl⁻. A pinch rides on every grain. In 1924, iodized salt reached Michigan stores, and goiters faded.';},
+   alt:'Look at the two pictures at the bottom. Salt is Na⁺ and Cl⁻. Iodide, I⁻, has the same −1 charge as chloride, so a tiny bit of potassium iodide can be mixed onto salt grains. Everyone eats salt, so everyone gets iodine.',
+   ui:[{type:'seg',key:'ip',val:'',label:'Which ion can bring iodine?',opts:[{v:'k',l:'K⁺'},{v:'i',l:'I⁻'}],on(S,v){ioPick(S,v);},show:S=>S.io&&S.io.pick!=='i'}],
+   todo:[{t:'Tap the ion that can bring iodine',ok:S=>S.io&&S.io.pick==='i'},{t:'Watch the salt reach the kids',ok:S=>S.io&&S.io.pick==='i'&&S.io.k>=.95}],
+   enter(S){S.io={pick:null,k:0};S.v.ip='';},tick(S,dt){const M=S.io;if(M&&M.pick)M.k=Math.min(1,M.k+dt*(M.pick==='i'?.22:.5));},
+   click(S,x,y){const v=Who.hit(IO_PICK,x,y);if(v){ioPick(S,v);S.v.ip=v;}},
+   draw(ctx,S){const M=S.io||(S.io={pick:null,k:0});ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);ioScene(ctx,S);
+     if(M.pick!=='i')Who.cards(ctx,S,IO_PICK,M.pick);ioRhyme(ctx);
+     Who.panel(ctx,'Dr. David Cowie',[['🗺️','Great Lakes "goiter belt"'],['🩺','children\'s doctor, U of Michigan'],['🧪','Dow chemist William Hale'],['🧂','1924: iodized salt in stores'],['✋','hard part: doctors doubted'],['🌍','today: ~89% of homes']],['Sources: Markel, Am J Public','Health 1987; U-M Medicine; UNICEF.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});
