@@ -553,13 +553,119 @@ const CAP={
  use1:'Yes. 41.7 ÷ 66.6 = 0.63 L. Less pressure, so more room, and the area holds at 41.7. <b>One more guess, going the other way.</b>',
  use2:'It crushes inward. Denver’s thicker air pushes harder than the thin tunnel air sealed inside. The bottle shrinks about a fifth, until the squeezed gas pushes back just as hard.',
 };
-const PARTS=['The bag','One molecule','A crowd','Both sides','The rule','Use it','Your turn'];
+const PARTS=['The bag','One molecule','A crowd','Both sides','The rule','Use it','Who is doing this','Your turn'];
 const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function picks(key,q,opts,right,after){const g=S.guess[key];if(after&&g!==undefined)return `<p class="note">Your guess: <b>${opts[g].toLowerCase()}</b> <span class="chip ${g===right?'ok':'no'}">${g===right?'✓ matched':'✗ not this time'}</span></p>`;
   return `<div class="pick" data-key="${key}"><p class="q">${q}</p><div class="row">${opts.map((o,i)=>`<button type="button" class="btn opt${g===i?' on':''}" data-i="${i}" aria-pressed="${g===i}">${o}</button>`).join('')}</div></div>`}
 function bindPicks(root,fn){$$('.pick .opt',root).forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.pick').dataset.key;S.guess[k]=+b.dataset.i;save();ev('guess-'+k+'-'+b.dataset.i);fn&&fn(k,+b.dataset.i);renderCtl()}))}
 const chips=(lab,attr,list,curv)=>`<div class="row"><span class="lab">${lab}</span>${list.map(([v,l])=>`<button type="button" class="btn${curv===v?' on':''}" data-${attr}="${v}" aria-pressed="${curv===v}">${l}</button>`).join('')}</div>`;
 const WHY=['The gas inside got warmer','The air outside pushes less','Extra air leaked in'];
+
+/*WB*/
+/* ---------- Who is doing this: weather-balloon crews (NWS Grand Junction and about 900 sites worldwide), Nov 25, 2026 ----------
+   Cause: launch the morning balloon; later, hikers check the forecast or skip it. Transformation: the balloon wall from both sides
+   (outside air thins, the wall moves out, the balloon swells until it pops); then what the balloon measured: warm, moist air near the
+   ground under cold air, rising air turning vapor into cloud drops and a storm. Effect: hikers off the peak before the lightning, or not.
+   Sources: NWS upper-air fact sheet; NWS Grand Junction "Education corner: weather balloons"; NWS balloon poster; NOAA JetStream. */
+const WB_SC={x:10,y:10,w:600,h:540},WB_Z={x:622,y:10,w:368,h:262},WB_P={x:622,y:282,w:368,h:268};
+const wbP=ft=>Math.exp(-ft*.3048/7600)*86;// kPa: about 86 at Grand Junction, falling with height
+const wbY=ft=>WB_SC.y+WB_SC.h-40-(WB_SC.h-80)*ft/105000;
+function wbR(ft){return 11*Math.cbrt(86/wbP(ft))}
+function wbSky(ft){const k=clamp(ft/100000,0,1),g=ctx.createLinearGradient(0,WB_SC.y,0,WB_SC.y+WB_SC.h);g.addColorStop(0,'#081430');g.addColorStop(.45,'#1f4f93');g.addColorStop(.85,'#7fb3e0');g.addColorStop(1,'#b9d6ee');return g}
+function wbGround(){const x0=WB_SC.x,yb=WB_SC.y+WB_SC.h,gy=yb-40;
+  // Grand Mesa (flat, dark green top) behind, the Book Cliffs (layered tan cliffs) in front, the valley and the town
+  ctx.fillStyle='#4f6a4a';ctx.beginPath();ctx.moveTo(x0+300,gy-6);ctx.lineTo(x0+360,gy-38);ctx.lineTo(x0+600,gy-42);ctx.lineTo(x0+600,gy);ctx.lineTo(x0+300,gy);ctx.fill();
+  ctx.fillStyle='#c9a77c';ctx.beginPath();ctx.moveTo(x0,gy-46);ctx.lineTo(x0+150,gy-50);ctx.lineTo(x0+175,gy-20);ctx.lineTo(x0+230,gy-14);ctx.lineTo(x0+250,gy);ctx.lineTo(x0,gy);ctx.fill();
+  ctx.strokeStyle='rgba(120,90,60,.5)';ctx.lineWidth=1.2;[14,24,34].forEach(d=>{ctx.beginPath();ctx.moveTo(x0,gy-50+d);ctx.lineTo(x0+150+d*.6,gy-52+d);ctx.stroke();});
+  ctx.fillStyle='#b98f62';ctx.fillRect(x0,gy,600,40);ctx.fillStyle='#8aa86a';ctx.fillRect(x0,gy+6,600,10);ctx.strokeStyle='#5f8fb0';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0,gy+22);ctx.bezierCurveTo(x0+200,gy+14,x0+380,gy+32,x0+600,gy+20);ctx.stroke();
+  for(let k=0;k<26;k++){const bx=x0+250+k*13,bh=5+((k*37)%9);ctx.fillStyle=['#d7d2c8','#bfb6a8','#e4ddd0'][k%3];ctx.fillRect(bx,gy-bh,10,bh);}
+  // the NWS office and its upper-air shed
+  ctx.fillStyle='#e9eaec';ctx.fillRect(x0+80,gy-22,60,22);ctx.fillStyle='#9aa1a8';ctx.fillRect(x0+80,gy-24,60,3);ctx.fillStyle='#f4f4f4';ctx.fillRect(x0+150,gy-30,30,30);ctx.fillStyle='#c9cdd2';ctx.beginPath();ctx.moveTo(x0+148,gy-30);ctx.lineTo(x0+165,gy-40);ctx.lineTo(x0+182,gy-30);ctx.fill();
+  ctx.fillStyle='#2f5f8f';ctx.fillRect(x0+95,gy-14,8,8);ctx.fillRect(x0+112,gy-14,8,8);}
+function wbBalloon(x,y,r,burst){if(burst>0){ctx.strokeStyle='rgba(240,240,240,.8)';ctx.lineWidth=2;for(let k=0;k<7;k++){const a=k*.9+burst*2,d=r*(1+burst*1.5);ctx.beginPath();ctx.moveTo(x+Math.cos(a)*d,y+Math.sin(a)*d);ctx.quadraticCurveTo(x+Math.cos(a+.3)*d*1.2,y+Math.sin(a+.3)*d*1.2+8,x+Math.cos(a+.5)*d*1.1,y+Math.sin(a+.5)*d*1.1+14);ctx.stroke();}return;}
+  const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.6,'rgba(236,232,222,.85)');g.addColorStop(1,'rgba(190,182,168,.85)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,r,r*1.04,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(220,214,200,.95)';ctx.beginPath();ctx.moveTo(x-3,y+r);ctx.lineTo(x+3,y+r);ctx.lineTo(x+2,y+r+6);ctx.lineTo(x-2,y+r+6);ctx.fill();}
+function wbTrain(x,y,chute){ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+30);ctx.stroke();
+  if(chute){ctx.fillStyle='#e8742c';ctx.beginPath();ctx.ellipse(x,y+4,16,9,0,Math.PI,0);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.6)';[-14,-5,5,14].forEach(dx=>{ctx.beginPath();ctx.moveTo(x+dx,y+4);ctx.lineTo(x,y+26);ctx.stroke();});}
+  else{ctx.fillStyle='#e8742c';ctx.fillRect(x-2,y+10,4,7);}ctx.fillStyle='#f5f5f5';rr(ctx,x-5,y+28,10,13,2);ctx.fill();ctx.fillStyle='#3a6fb0';ctx.fillRect(x-3,y+31,6,3);}
+function wbAscent(){const S=WB_SC,ft=st.ft||0;ctx.save();rr(ctx,S.x,S.y,S.w,S.h,12);ctx.clip();ctx.fillStyle=wbSky(ft);ctx.fillRect(S.x,S.y,S.w,S.h);
+  for(let k=0;k<40;k++){const sx=S.x+((k*97)%S.w),sy=S.y+((k*53)%160);ctx.fillStyle=`rgba(255,255,255,${.25+.25*((k*7)%3)/2})`;ctx.fillRect(sx,sy,1.4,1.4);}
+  // height marks
+  [[29029,'top of Mount Everest'],[38000,'jets fly here'],[100000,'it pops about here']].forEach(([h,s])=>{const y=wbY(h);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(S.x+330,y);ctx.lineTo(S.x+S.w-10,y);ctx.stroke();ctx.setLineDash([]);txt(ctx,s,S.x+S.w-14,y-6,{s:13,w:600,c:'rgba(255,255,255,.85)',a:'right'});});
+  const jy=wbY(38000),jx=S.x+((st.t*40)%700)-50;ctx.fillStyle='rgba(235,240,245,.9)';ctx.beginPath();ctx.moveTo(jx,jy+14);ctx.lineTo(jx+34,jy+12);ctx.lineTo(jx+38,jy+14);ctx.lineTo(jx+34,jy+16);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(jx+14,jy+14);ctx.lineTo(jx+22,jy+6);ctx.lineTo(jx+25,jy+14);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(jx,jy+14);ctx.lineTo(jx-80,jy+14);ctx.stroke();
+  wbGround();
+  // the balloon and its train
+  const bx=S.x+165+(st.dx||0),by=wbY(ft)-(st.ph==='pre'?40:0);
+  if(st.ph==='fall'||st.ph==='done'){const fy=st.ph==='done'?S.y+S.h-52:wbY(st.fft);if(st.ph==='fall')wbBalloon(bx,wbY(100000)-30,wbR(100000),Math.min(1,st.bt*1.5));wbTrain(bx+(st.ph==='done'?120:st.fdx),fy-30,true);
+    if(st.ph==='done')txt(ctx,'lands about 100 miles away',bx+120,S.y+S.h-66,{s:13,w:700,c:'#fff',a:'center'});}
+  else{const r=wbR(ft);wbBalloon(bx,by-r-30,r,0);wbTrain(bx,by-30,false);
+    if(st.ph==='pre'){// the observer letting go
+      const ox=bx+14,oy=S.y+S.h-40;ctx.strokeStyle='#2c3e57';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox+2,oy-16);ctx.moveTo(ox+7,oy);ctx.lineTo(ox+5,oy-16);ctx.stroke();ctx.fillStyle='#2f5f8f';rr(ctx,ox-3,oy-34,13,19,4);ctx.fill();ctx.fillStyle='#7a5a44';ctx.beginPath();ctx.arc(ox+4,oy-40,5,0,TAU);ctx.fill();ctx.strokeStyle='#7a5a44';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ox,oy-30);ctx.lineTo(bx-1,by-4);ctx.stroke();}}
+  ctx.restore();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;rr(ctx,S.x,S.y,S.w,S.h,12);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.9)';rr(ctx,S.x+12,S.y+12,262,30,8);ctx.fill();txt(ctx,'Grand Junction, Colorado, 5 am',S.x+24,S.y+32,{s:14.5,w:700,c:'#1c1c1f'});}
+/* the close-up during the flight: the balloon wall from both sides, the same picture as your chip bag */
+function wbWall(){const R=WB_Z;card(ctx,R,'Zoomed in: the balloon wall, from both sides');const ft=st.ft||0,P=wbP(ft),grow=clamp((wbR(ft)-11)/32,0,1);
+  const x0=R.x+12,x1=R.x+R.w-12,y0=R.y+38,y1=R.y+R.h-68,wx=x0+120+grow*110;
+  ctx.fillStyle=PAL.dark?'rgba(242,161,60,.08)':'rgba(201,106,0,.07)';rr(ctx,x0,y0,wx-x0,y1-y0,8);ctx.fill();ctx.fillStyle=PAL.dark?'rgba(76,201,192,.08)':'rgba(15,139,141,.07)';rr(ctx,wx+8,y0,x1-wx-8,y1-y0,8);ctx.fill();
+  const nIn=Math.max(2,Math.round(26*P/86)),nOut=Math.max(1,Math.round(30*P/86)),t=st.t;
+  if(!st.mI)wbParts();
+  for(let k=0;k<nIn;k++){const m=st.mI[k],x=x0+8+m.x*(wx-x0-16),y=y0+8+m.y*(y1-y0-16);ball(ctx,x-3,y,3.2,'#98a1ab');ball(ctx,x+3,y,3.2,'#98a1ab');}
+  for(let k=0;k<nOut;k++){const m=st.mO[k],x=wx+16+m.x*(x1-wx-26),y=y0+8+m.y*(y1-y0-16);drawMol(ctx,k%5===0?'O':'N',x,y,m.a,4.2);}
+  foil(wx,y0,y1-y0,false);
+  txt(ctx,'inside: hydrogen',x0+2,y1+22,{s:14,w:700,c:INC()});txt(ctx,'outside: air',x1,y1+22,{s:14,w:700,c:OUTC(),a:'right'});
+  txt(ctx,ft<1000?'Same push both ways. The wall stays put.':ft<99000?'Outside thins. Inside pushes the wall out until the pushes match.':'Stretched too far: it pops.',x0+2,y1+46,{s:13.5,c:PAL.soft,max:R.w-24});}
+/* the afternoon: a Colorado fourteener, hikers, and the storm the balloon saw coming */
+const WB_TR=[[60,520],[120,500],[200,505],[250,470],[200,440],[280,410],[230,380],[320,350],[290,320],[370,290],[350,255],[420,225],[455,175]];
+function wbAlong(u){const P=WB_TR,L=[];let tot=0;for(let i=1;i<P.length;i++){const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);L.push(d);tot+=d;}let s=clamp(u,0,1)*tot;for(let i=0;i<L.length;i++){if(s<=L[i]){const k=s/L[i];return[P[i][0]*(1-k)+P[i+1][0]*k,P[i][1]*(1-k)+P[i+1][1]*k];}s-=L[i];}return P[P.length-1];}
+function wbHiker(x,y,col,step){ctx.strokeStyle='#2a2a2a';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-2+Math.sin(step)*2,y-8);ctx.moveTo(x+3,y);ctx.lineTo(x+1-Math.sin(step)*2,y-8);ctx.stroke();ctx.fillStyle=col;rr(ctx,x-3,y-18,7,11,2);ctx.fill();ctx.fillStyle='#5a4632';rr(ctx,x-7,y-18,5,9,2);ctx.fill();ctx.fillStyle='#c79a7a';ctx.beginPath();ctx.arc(x,y-21,3,0,TAU);ctx.fill();}
+function wbPeak(){const S=WB_SC,h=st.clock||6;ctx.save();rr(ctx,S.x,S.y,S.w,S.h,12);ctx.clip();const st0=clamp((h-9.5)/2.5,0,1);
+  const g=ctx.createLinearGradient(0,S.y,0,S.y+300);g.addColorStop(0,st0>.6?'#5d6670':'#4f8fd0');g.addColorStop(1,st0>.6?'#9aa2aa':'#bcd9ef');ctx.fillStyle=g;ctx.fillRect(S.x,S.y,S.w,S.h);
+  // the storm cloud, growing over the summit
+  if(h>8.5){const k=clamp((h-8.5)/3.2,0,1),cx=S.x+470,cy=S.y+150;ctx.fillStyle=`rgba(${Math.round(250-80*k)},${Math.round(250-80*k)},${Math.round(252-70*k)},.97)`;
+    for(let j=0;j<14;j++){const a=j/14*Math.PI,r=(26+34*k)*(.7+.3*((j*7)%5)/4);ctx.beginPath();ctx.arc(cx+Math.cos(a)*(40+70*k)*-1,cy-Math.sin(a)*(20+90*k)+20,r,0,TAU);ctx.fill();}
+    if(k>.6){ctx.fillStyle='rgba(200,205,212,.95)';ctx.beginPath();ctx.moveTo(cx-140,cy-120*k+10);ctx.lineTo(cx+150,cy-125*k);ctx.lineTo(cx+80,cy-90*k);ctx.lineTo(cx-90,cy-90*k);ctx.fill();}
+    ctx.fillStyle=`rgba(90,96,106,${.5*k})`;ctx.fillRect(cx-90,cy+30,180,14);
+    if(k>.8){ctx.strokeStyle='rgba(120,130,145,.45)';ctx.lineWidth=1.2;for(let j=0;j<40;j++){const rx=cx-80+((j*37+st.t*90)%170),ry=cy+44+((j*29+st.t*260)%120);ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-3,ry+10);ctx.stroke();}
+      if(((st.t*1.7)%1)<.08){ctx.strokeStyle='#fffbe0';ctx.lineWidth=3;ctx.beginPath();let lx=cx+10,ly=cy+44;ctx.moveTo(lx,ly);for(let j=0;j<6;j++){lx+=((j*53)%23)-11;ly+=22;ctx.lineTo(lx,ly);}ctx.stroke();ctx.fillStyle='rgba(255,255,230,.18)';ctx.fillRect(S.x,S.y,S.w,S.h);}}}
+  // the mountain: rock, snow, treeline
+  ctx.fillStyle='#7d7b78';ctx.beginPath();ctx.moveTo(S.x,S.y+430);ctx.lineTo(S.x+200,S.y+300);ctx.lineTo(S.x+330,S.y+230);ctx.lineTo(S.x+455,S.y+165);ctx.lineTo(S.x+520,S.y+200);ctx.lineTo(S.x+600,S.y+260);ctx.lineTo(S.x+600,S.y+540);ctx.lineTo(S.x,S.y+540);ctx.fill();
+  ctx.fillStyle='#93908b';ctx.beginPath();ctx.moveTo(S.x+455,S.y+165);ctx.lineTo(S.x+520,S.y+200);ctx.lineTo(S.x+600,S.y+260);ctx.lineTo(S.x+600,S.y+330);ctx.lineTo(S.x+420,S.y+260);ctx.fill();
+  ctx.fillStyle='#f4f6f8';[[440,180,30],[500,215,22],[360,240,18]].forEach(([x,y,w])=>{ctx.beginPath();ctx.moveTo(S.x+x,S.y+y);ctx.lineTo(S.x+x+w,S.y+y+10);ctx.lineTo(S.x+x+w*.4,S.y+y+16);ctx.fill();});
+  ctx.fillStyle='#8a9a62';ctx.beginPath();ctx.moveTo(S.x,S.y+430);ctx.lineTo(S.x+200,S.y+360);ctx.lineTo(S.x+600,S.y+390);ctx.lineTo(S.x+600,S.y+540);ctx.lineTo(S.x,S.y+540);ctx.fill();
+  for(let k=0;k<46;k++){const tx=S.x+((k*61)%600),ty=S.y+440+((k*37)%90);ctx.fillStyle=k%2?'#2f4f34':'#3b5f3e';ctx.beginPath();ctx.moveTo(tx,ty-26);ctx.lineTo(tx-8,ty);ctx.lineTo(tx+8,ty);ctx.fill();}
+  ctx.strokeStyle='rgba(235,225,200,.85)';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();WB_TR.forEach((p,i)=>i?ctx.lineTo(S.x+p[0],S.y+p[1]-10):ctx.moveTo(S.x+p[0],S.y+p[1]-10));ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'treeline',S.x+20,S.y+425,{s:12.5,w:700,c:'rgba(255,255,255,.9)'});
+  // the hikers
+  const u=st.hu||0;[0,1,2].forEach(k=>{const p=wbAlong(u-k*.018);wbHiker(S.x+p[0]+k*2,S.y+p[1]-8,['#c8452c','#2f6fb0','#e0a020'][k],st.t*8+k);});
+  ctx.restore();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;rr(ctx,S.x,S.y,S.w,S.h,12);ctx.stroke();
+  // the clock and the plan card
+  const hh=Math.floor(h),mm=Math.floor((h-hh)*60/15)*15,lab=(hh>12?hh-12:hh)+':'+String(mm).padStart(2,'0')+(hh>=12?' pm':' am');
+  ctx.fillStyle='rgba(255,255,255,.92)';rr(ctx,S.x+12,S.y+12,250,st.fc==='use'?84:62,8);ctx.fill();txt(ctx,lab,S.x+24,S.y+36,{s:18,w:700,c:'#1c1c1f'});
+  if(st.fc)txt(ctx,st.fc==='use'?'Forecast: storms by noon.':'They skipped the forecast.',S.x+24,S.y+58,{s:13.5,w:700,c:st.fc==='use'?'#1b6fb0':'#8a3a1a'});
+  if(st.fc==='use')txt(ctx,'Start at 5, off the peak by noon.',S.x+24,S.y+77,{s:13.5,c:'#3a3a3a'});
+  if(st.hu<0.02&&h>11.9&&st.fc==='use')txt(ctx,'back at the car',S.x+70,S.y+505,{s:13,w:700,c:'#fff'});}
+/* the afternoon close-up: what the balloon measured, and why it means a storm */
+function wbColumn(){const R=WB_Z;card(ctx,R,'What the morning balloon measured');const x0=R.x+14,x1=R.x+R.w-14,y0=R.y+38,y1=R.y+R.h-40,h=st.clock||6,k=clamp((h-8.5)/3.2,0,1);
+  const g=ctx.createLinearGradient(0,y0,0,y1);g.addColorStop(0,'#7fa7d6');g.addColorStop(.55,'#c8d9ea');g.addColorStop(.8,'#f3d2a8');g.addColorStop(1,'#f0b77a');ctx.fillStyle=g;rr(ctx,x0,y0,x1-x0,y1-y0,8);ctx.fill();
+  txt(ctx,'cold, dry air above',x0+8,y0+20,{s:13.5,w:700,c:'#1f3f6f'});txt(ctx,'warm, moist air near the ground',x0+8,y1-10,{s:13.5,w:700,c:'#8a4a12'});
+  const base=y0+(y1-y0)*.45;ctx.strokeStyle='rgba(60,60,60,.35)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x0+4,base);ctx.lineTo(x1-4,base);ctx.stroke();ctx.setLineDash([]);
+  // rising bubbles of warm air: water vapor (small blue) turns into cloud drops (white) above the line
+  for(let j=0;j<5;j++){const ph=((st.t*.18+j*.2)%1),bx=x0+50+j*58,by=y1-12-ph*(y1-y0-30)*(.4+.6*k);if(by<base){ctx.fillStyle='rgba(255,255,255,.95)';for(let q=0;q<7;q++){ctx.beginPath();ctx.arc(bx+Math.cos(q*.9)*10,by+Math.sin(q*.9)*7,4+k*2,0,TAU);ctx.fill();}}
+    else{ctx.strokeStyle='rgba(200,110,30,.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(bx,by,12,0,TAU);ctx.stroke();ctx.fillStyle='#2f6fd0';for(let q=0;q<5;q++){ctx.beginPath();ctx.arc(bx+Math.cos(q*1.3)*6,by+Math.sin(q*1.3)*5,1.8,0,TAU);ctx.fill();}}}
+  txt(ctx,'vapor becomes cloud drops here',x1-6,base-6,{s:12.5,w:600,c:'#3a3a3a',a:'right'});
+  txt(ctx,'Warm, moist air under cold air keeps rising: storms by afternoon.',R.x+14,R.y+R.h-14,{s:13,c:PAL.soft,max:R.w-28});}
+function wbPanel(){const R=WB_P;card(ctx,R,'');txt(ctx,'Weather-balloon crews',R.x+16,R.y+30,{s:18,w:700});
+  [['🎈','twice a day, every day of the year'],['🌍','about 900 sites, all at the same time'],['📍','92 run by the NWS, Grand Junction too'],['📏','5 feet wide at launch, 20 to 25 at the pop'],['⏱️','about 2 hours to 100,000 feet'],['⛈️','extra launches when storms are coming'],['⚠️','hard part: only about 1 in 5 is found']].forEach(([i,t],k)=>{const y=R.y+60+k*27;txt(ctx,i,R.x+28,y+5,{s:17,a:'center'});txt(ctx,t,R.x+48,y+1,{s:14,w:600,max:R.w-60});});
+  txt(ctx,'Sources: NWS upper-air fact sheet; NWS Grand Junction; NOAA.',R.x+16,R.y+R.h-12,{s:11.5,c:PAL.soft,max:R.w-28});}
+function wbParts(){const R=()=>Math.random(),mk=n=>Array.from({length:n},()=>({x:R(),y:R(),vx:(R()-.5)*.5,vy:(R()-.5)*.5,a:R()*6}));st.mI=mk(30);st.mO=mk(34);}
+function wbTick(dt){if(st.mI)[st.mI,st.mO].forEach(L=>L.forEach(m=>{m.x+=m.vx*dt;m.y+=m.vy*dt;m.a+=dt;if(m.x<0||m.x>1){m.vx*=-1;m.x=clamp(m.x,0,1);}if(m.y<0||m.y>1){m.vy*=-1;m.y=clamp(m.y,0,1);}}));
+  if(st.ph==='up'){st.ft=Math.min(100000,(st.ft||0)+dt*100000/13);st.dx=(st.ft/100000)*90;if(st.ft>=100000){st.ph='fall';st.bt=0;st.fft=100000;st.fdx=st.dx;cap('Pop. Stretched about five times wider, the balloon bursts. A small parachute brings the instrument back down.');}}
+  else if(st.ph==='fall'){st.bt+=dt;st.fft=Math.max(0,st.fft-dt*100000/4);st.fdx+=dt*12;if(st.fft<=0){st.ph='done';st.flown=true;renderCtl();cap('The instrument sent back temperature, moisture, pressure and wind every second on the way up. Now see what that means for an afternoon in the mountains.');}}
+  if(st.view==='pm'&&st.pmRun){st.clock=Math.min(13,st.clock+dt*7/9);const h=st.clock;
+    if(st.fc==='use')st.hu=h<5?0:h<9.5?(h-5)/4.5:h<12?1-(h-9.5)/2.5:0;else st.hu=h<8?0:h<12.2?(h-8)/4.2:Math.max(.55,1-(h-12.2)*.5);
+    if(h>=13){st.pmRun=false;if(st.fc==='use')st.didUse=true;else st.didSkip=true;renderCtl();cap(st.fc==='use'?'They were back below the trees when the lightning started. The storm hit an empty summit.':'The storm caught them near the summit. Lightning on the ridge, rain and hail on the way down: the most dangerous place to be.');if(st.didUse&&st.didSkip)markDone();}}}
+function wbDraw(){if(st.view==='pm'){wbPeak();wbColumn();}else{wbAscent();wbWall();}wbPanel();}
+const wbThumb=k=>{const r=k==='small'?6:k==='same'?11:18;return `<svg width="44" height="48" viewBox="0 0 44 48" aria-hidden="true" style="vertical-align:middle;margin-right:6px"><ellipse cx="22" cy="${24-r*.2}" rx="${r}" ry="${r*1.04}" fill="#ece8de" stroke="#9a9488"/><line x1="22" y1="${24+r*.84}" x2="22" y2="44" stroke="#9a9488"/><rect x="19" y="40" width="6" height="7" fill="#fff" stroke="#9a9488"/></svg>`};
 
 const STEPS=[
  {part:0,nw:1,title:'The bag that swells',
@@ -629,7 +735,22 @@ const STEPS=[
       S.miss++;save();ev('answer-wrong');st.fb=Math.abs(v-.4)<.03?'That is smaller than Denver. The outside pressure dropped, so the bag gets more room: divide 41.7 by 66.6.':v>30?'That looks like the area. Divide the area, 41.7, by the new pressure.':v<.5?'The outside pushes less at the tunnel, so the bag has to be bigger than 0.50 L.':'Not yet. Height × width must still be 41.7, and the height is now 66.6.';renderCtl()};
       chk.addEventListener('click',go1);$('#ans',r).addEventListener('keydown',e=>{if(e.key==='Enter')go1()});const sh=$('#show',r);sh&&sh.addEventListener('click',()=>{st.fb='41.7 ÷ 66.6 = 0.63. Type 0.63.';renderCtl()})}
     bindPicks(r,()=>{st.mode=2;rectWorld(N0*P_TUN/P_DEN,T0,VB);st.mode=2;cap(CAP.use2)})}},
- {part:6,nw:1,wide:true,title:'Now tell it back',
+ {part:6,nw:1,title:'Who is doing this: weather balloons',
+  cap:'Grand Junction, Colorado, 5 am. Twice a day a weather-service crew lets go of a balloon about 5 feet wide, with a small instrument on a string. What happens to the balloon as it climbs?',
+  alt:'The balloon is a sealed bag, like your chips. Going up, the air outside pushes less and less, so the gas inside pushes the wall out until the two pushes match again. Forecasters also use satellites, radar and aircraft; the balloons are the main way to measure the air straight up.',
+  aria:'A weather balloon rises from Grand Junction past jet height to about 100,000 feet, growing as the outside air thins, until it pops and the instrument parachutes down. Then a Colorado fourteener in the afternoon, with hikers and a thunderstorm.',
+  enter(){st.ph='pre';st.ft=0;st.view='up';st.clock=6;st.hu=0},tick:wbTick,draw:wbDraw,
+  ctl(){if(st.pick!=='big'){return `<div class="row">${[['small','It shrinks'],['same','It stays the same'],['big','It swells']].filter(([k])=>k!==st.pick).map(([k,l])=>`<button type="button" class="btn" data-wb="${k}">${wbThumb(k)}${l}</button>`).join('')}</div>`}
+    if(st.view==='up'){if(st.ph==='pre')return '<div class="row"><button type="button" class="btn primary" data-go="1">Let it go</button></div>';if(st.ph!=='done')return '<p class="note">Climbing about 1,000 feet a minute. Watch the wall.</p>';
+      return '<div class="row"><button type="button" class="btn primary" data-pm="1">See this afternoon on a fourteener</button></div>'}
+    const busy=st.pmRun;return `<div class="row"><span class="lab">The hikers:</span><button type="button" class="btn${st.fc==='use'?' on':''}" data-fc="use" ${busy?'disabled':''}>Check the forecast</button><button type="button" class="btn${st.fc==='skip'?' on':''}" data-fc="skip" ${busy?'disabled':''}>Skip the forecast</button></div>`
+      +`<p class="note">${st.didUse?'✓':'○'} Check the forecast &nbsp; ${st.didSkip?'✓':'○'} Skip the forecast</p>`
+      +(st.didUse&&st.didSkip?'<p class="note"><b>Go deeper:</b> <a href="https://www.weather.gov/upperair/factsheet" target="_blank" rel="noopener">NWS: how the balloons work ↗</a> · <a href="https://www.weather.gov/gjt/education_corner_balloon" target="_blank" rel="noopener">NWS Grand Junction’s balloon launches ↗</a> · <a href="https://www.noaa.gov/jetstream/upperair/radiosondes" target="_blank" rel="noopener">NOAA JetStream: radiosondes ↗</a></p>':'')},
+  bind(r){$$('[data-wb]',r).forEach(b=>b.addEventListener('click',()=>{st.pick=b.dataset.wb;ev('who-pick-'+st.pick);cap(st.pick==='big'?'Right: it swells, like your chip bag at the tunnel. It leaves the ground 5 feet wide. Let it go and watch the wall.':st.pick==='small'?'It is cold up there, but the bigger change is outside: the air thins out and pushes less. Try again.':'A sealed bag cannot stay the same if the outside push drops. Think of the chips at the tunnel. Try again.');renderCtl()}));
+    const g=$('[data-go]',r);g&&g.addEventListener('click',()=>{st.ph='up';cap('Up it goes. Outside, the air thins. Inside, the hydrogen pushes the wall out until the pushes match again.');renderCtl()});
+    const pm=$('[data-pm]',r);pm&&pm.addEventListener('click',()=>{st.view='pm';st.clock=6;st.hu=0;cap('The same morning, on a Colorado fourteener. Did the hikers check the forecast that this balloon helped make?');renderCtl()});
+    $$('[data-fc]',r).forEach(b=>b.addEventListener('click',()=>{st.fc=b.dataset.fc;st.clock=4.5;st.hu=0;st.pmRun=true;cap(st.fc==='use'?'They read “storms by noon” and start at 5 am.':'They sleep in and start at 8.');renderCtl()}))}},
+ {part:7,nw:1,wide:true,title:'Now tell it back',
   cap:'You are at the tunnel with a bag as tight as a drum. <b>Now you explain why.</b>',
   alt:'Start outside the bag: what happens to the air as you climb? Then say what that does to the two pushes on the wall, and what the wall does next.',
   aria:'The car at the Eisenhower Tunnel with the bag of chips puffed up tight.',
@@ -833,7 +954,10 @@ TestYourself.mount({lab:'ChemLab',id:'pressure',title:'Raider ChemLab · The bag
   why:'Twice as many hits per second, each the same size, makes twice the push.'},
  {q:'You warm a sealed can of gas without letting it grow. What happens to the pressure?',choices:['It goes up: molecules hit harder and more often','It goes down: warm gas is lighter','It stays the same: no molecules were added','It goes up: the can gains molecules'],answer:0,
   hint:'Warmer molecules move faster. What does a faster molecule do to the wall?',step:7,stepName:'what sets the area?',
-  why:'Faster molecules hit the wall more often and harder, so the push goes up. That is why heated cans can burst.'}]});
+  why:'Faster molecules hit the wall more often and harder, so the push goes up. That is why heated cans can burst.'},
+ {q:'A weather balloon leaves the ground 5 feet wide and pops 25 feet wide. How many times more room (volume) is inside it when it pops?',answer:125,tol:.5,unit:'times',
+  hint:v=>Math.abs(v-5)<.1?'That is how many times wider. Room grows with width × width × width.':Math.abs(v-25)<.1?'That is width × width. A balloon has three directions: 5 × 5 × 5.':'25 ÷ 5 = 5 times wider. Volume grows with the cube of the width.',step:9,stepName:'who is doing this: weather balloons',
+  why:'(25 ÷ 5)³ = 5³ = 125. The outside air up there pushes about a hundred times less than at the ground, and it is very cold, so the gas spreads into about 125 times the room.'}]});
 
 </script>
 <!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents. -->
