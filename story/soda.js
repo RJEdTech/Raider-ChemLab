@@ -87,14 +87,12 @@ const KEY=[[G.C.C,'CO₂ molecule (gray C, red O)'],[G.C.O,'water molecule (fade
    tank → in the tank close-up, CO₂ grabs carbonate and both turn into bicarbonate, while carbonate + calcium join the shell as it grows
    (transformation) → shells grow or crumble, the larvae live or sink, and the oyster beds in the bay fill or empty (effect). Soda ash
    adds carbonate. Ocean CO₂ keeps rising, so the problem is managed, not solved. Rates are made up; drawings, not to scale. */
-const OC_PICK=[{v:'warm',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#f3b26b';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'☀️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx,cy+15,1,.9);}},
-  {v:'cold',x:740,y:30,draw(ctx,cx,cy){ctx.fillStyle='#1f4f86';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'❄️',cx,cy-16,{s:28,a:'center'});co2s(ctx,cx-20,cy+8,1,.9);co2s(ctx,cx+18,cy+24,1,.9);co2s(ctx,cx-14,cy+26,1,.9);co2s(ctx,cx+20,cy+6,1,.9);}}];
+const OC_PICK=[{v:'warm',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#f3b26b';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();co2s(ctx,cx,cy+15,1,.9);txt(ctx,'warm',cx,cy-14,{s:15,w:700,c:'#9a5a1a',a:'center'});}},
+  {v:'cold',x:740,y:30,draw(ctx,cx,cy){ctx.fillStyle='#1f4f86';rr(ctx,cx-40,cy-6,80,42,8);ctx.fill();txt(ctx,'cold',cx,cy-14,{s:15,w:700,c:'#1f4f86',a:'center'});co2s(ctx,cx-20,cy+8,1,.9);co2s(ctx,cx+18,cy+24,1,.9);co2s(ctx,cx-14,cy+26,1,.9);co2s(ctx,cx+20,cy+6,1,.9);}}];
 function co2s(ctx,x,y,s,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.strokeStyle='#cfd5dc';ctx.lineWidth=2.4*s;ctx.beginPath();ctx.moveTo(x-9*s,y);ctx.lineTo(x+9*s,y);ctx.stroke();
   [[x-9*s,'#e0473b',4.2],[x,'#5f6670',4.6],[x+9*s,'#e0473b',4.2]].forEach(([xx,c,r])=>{ctx.beginPath();ctx.arc(xx,y,r*s,0,7);ctx.fillStyle=c;ctx.fill();});ctx.restore();}
 function co3(ctx,x,y,s,a,h){ctx.save();ctx.globalAlpha=a==null?1:a;for(let i=0;i<3;i++){const t=i*Math.PI*2/3-Math.PI/2,ox=x+Math.cos(t)*9*s,oy=y+Math.sin(t)*9*s;ctx.strokeStyle='#cfd5dc';ctx.lineWidth=2*s;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ox,oy);ctx.stroke();ctx.beginPath();ctx.arc(ox,oy,4*s,0,7);ctx.fillStyle='#e0473b';ctx.fill();}
   ctx.beginPath();ctx.arc(x,y,4.4*s,0,7);ctx.fillStyle='#5f6670';ctx.fill();if(h){ctx.beginPath();ctx.arc(x+Math.cos(-Math.PI/2)*9*s+5*s,y-9*s-4*s,2.6*s,0,7);ctx.fillStyle='#f2f2f2';ctx.fill();ctx.strokeStyle='#aaa';ctx.lineWidth=1;ctx.stroke();}ctx.restore();}
-function larva(ctx,x,y,r,good,a){ctx.save();ctx.globalAlpha=a==null?1:a;ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.closePath();
-  ctx.fillStyle=good>.5?'#e8d3a6':'rgba(232,211,166,.35)';ctx.fill();ctx.lineWidth=1+3*good;ctx.strokeStyle=good>.5?'#8a6a2e':'#C11430';ctx.setLineDash(good>.5?[]:[3,3]);ctx.stroke();ctx.restore();}
 const OC_SH=[742,190],OC_R=52,OC_BOX=[606,30,273,224];
 function ocRand(a,b){return a+Math.random()*(b-a);}
 function newOc(){return {pick:null,k:0,pump:'always',cyc:0,flow:[],co3:[...Array(8)].map(()=>({x:ocRand(620,860),y:ocRand(50,140),vx:ocRand(-15,15),vy:ocRand(-10,10),go:null})),co2:[],hco3:[],shell:.55,chips:[],beds:.5,good:false,rev:false,add:0,ca:0};}
@@ -104,7 +102,7 @@ function ocTick(S,dt){const M=S.oc;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.
   M.cyc+=dt;const bad=ocBad(M),open=ocOpen(M);
   // the pump: parcels of bay water run up the pipe; bad water carries CO₂, good water carries carbonate
   if(open&&Math.random()<dt*2.4)M.flow.push({u:0,bad});M.flow.forEach(f=>f.u+=dt*.7);
-  M.flow=M.flow.filter(f=>{if(f.u<1)return true;for(let j=0;j<2;j++){if(f.bad){if(M.co2.length<22)M.co2.push({x:612,y:ocRand(50,150),vx:40,vy:0});}else if(M.co3.length<14)M.co3.push({x:612,y:ocRand(50,150),vx:30,vy:ocRand(-8,8),go:null});}return false;});
+  M.flow=M.flow.filter(f=>{if(f.u<1)return true;for(let j=0;j<2;j++){if(f.bad){if(M.co2.length<22)M.co2.push({x:612,y:ocRand(50,150),vx:40,vy:0});}else{if(M.co2.length)M.co2.shift();if(M.co3.length<16)M.co3.push({x:612,y:ocRand(50,150),vx:30,vy:ocRand(-8,8),go:null});}}return false;});
   // CO₂ hunts carbonate: CO₂ + CO₃²⁻ → two HCO₃⁻
   M.co2.forEach(c=>{let best=null,bd=1e9;M.co3.forEach(q=>{if(q.go)return;const d=Math.hypot(q.x-c.x,q.y-c.y);if(d<bd){bd=d;best=q;}});
     if(best){const d=Math.max(1,bd);c.x+=(best.x-c.x)/d*80*dt;c.y+=(best.y-c.y)/d*80*dt;if(bd<12){c.dead=true;best.dead=true;M.hco3.push({x:c.x-8,y:c.y,vx:-20,vy:-14,a:1},{x:c.x+8,y:c.y,vx:20,vy:-10,a:1});}}
@@ -121,41 +119,67 @@ function ocTick(S,dt){const M=S.oc;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.
   M.co3=M.co3.filter(q=>!q.dead);
   // with CO₂ around and no carbonate to spare, the shell crumbles
   M.chips.forEach(c=>{c.y+=c.vy*dt;c.vy+=40*dt;c.a-=dt*.6;});M.chips=M.chips.filter(c=>c.a>0);
-  M.beds=clamp(M.beds+(M.shell>.6?.12:M.shell<.35?-.12:0)*dt,0,1);
+  M.beds=clamp(M.beds+(M.shell>.6?.12:M.shell<.35?-.2:0)*dt,0,1);
   if(M.pump==='smart'&&M.beds>.85)M.good=true;if(M.good&&M.pump==='always'&&M.beds<.45)M.rev=true;}
+function larva(ctx,x,y,r,good,a,t){ctx.save();ctx.globalAlpha=a==null?1:a;
+  // a D-stage oyster larva: straight hinge, rounded shell with growth lines; when healthy its velum (a ring of beating hairs) is out
+  if(good>.5){const vx=x-r*.55,vy=y-r*.55,w=(t||0)*14;ctx.fillStyle='rgba(235,190,190,.55)';ctx.beginPath();ctx.ellipse(vx,vy,r*.55,r*.4,-.6,0,7);ctx.fill();ctx.strokeStyle='rgba(150,90,90,.6)';ctx.lineWidth=.8;for(let k=0;k<9;k++){const a2=-.6+Math.PI+(k-4)*.32,ex=vx+Math.cos(a2)*r*.55,ey=vy+Math.sin(a2)*r*.4;ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex+Math.cos(a2+Math.sin(w+k)*.4)*r*.25,ey+Math.sin(a2+Math.sin(w+k)*.4)*r*.25);ctx.stroke();}}
+  const g=ctx.createRadialGradient(x-r*.3,y-r*.6,1,x,y-r*.2,r);g.addColorStop(0,good>.5?'rgba(250,240,215,.95)':'rgba(240,228,205,.4)');g.addColorStop(1,good>.5?'rgba(205,175,120,.95)':'rgba(205,175,120,.3)');
+  ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle=good>.5?'rgba(140,105,50,.5)':'rgba(193,20,48,.6)';ctx.lineWidth=.8;for(let k=1;k<4;k++){ctx.beginPath();ctx.arc(x,y,r*k/4,Math.PI,0);ctx.stroke();}
+  ctx.lineWidth=good>.5?1.6:1.2;ctx.setLineDash(good>.5?[]:[3,2]);ctx.strokeStyle=good>.5?'#8a6a2e':'#C11430';ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);ctx.arc(x,y,r,0,Math.PI,true);ctx.stroke();ctx.restore();}
+function ocOyster(ctx,x,y,s,seed){const R=k=>{const v=Math.sin((seed*12.9+k*78.2))*43758.5;return v-Math.floor(v);};ctx.save();ctx.translate(x,y);ctx.rotate((R(1)-.5)*1.2);ctx.scale(s,s);
+  ctx.beginPath();for(let i=0;i<=14;i++){const a=i/14*Math.PI*2,rx=15+R(i+3)*3,ry=7+R(i+9)*2;ctx[i?'lineTo':'moveTo'](Math.cos(a)*rx,Math.sin(a)*ry);}ctx.closePath();
+  const g=ctx.createLinearGradient(-15,-8,15,8);g.addColorStop(0,'#eeeae2');g.addColorStop(.5,'#b9b2a6');g.addColorStop(1,'#7d6f80');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#5e5560';ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle='rgba(90,80,90,.5)';for(let k=1;k<4;k++){ctx.beginPath();ctx.ellipse(-3,0,15-k*4,7-k*1.6,0,0,7);ctx.stroke();}ctx.restore();}
 function ocScene(ctx,S){const M=S.oc,t=S.t,on=M.pick==='cold',bad=on&&ocBad(M),open=on&&ocOpen(M);
-  ctx.fillStyle='#e6f2fb';ctx.fillRect(0,0,590,430);
-  const sea=ctx.createLinearGradient(0,110,0,430);sea.addColorStop(0,bad?'#4f8fbf':'#5fa8d8');sea.addColorStop(1,'#163d6b');ctx.fillStyle=sea;ctx.fillRect(0,110,420,320);
-  ctx.fillStyle='#8a6a3e';ctx.beginPath();ctx.moveTo(420,110);ctx.lineTo(590,110);ctx.lineTo(590,430);ctx.lineTo(300,430);ctx.closePath();ctx.fill();
-  if(bad||!on){txt(ctx,'💨',230,92,{s:30,a:'center'});arrow(ctx,200,82,110,82,'#62626a');}else txt(ctx,'☀️',120,70,{s:34,a:'center'});
-  if(bad){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#bfe3ff';ctx.lineWidth=5;ctx.setLineDash([10,8]);ctx.lineDashOffset=-t*30;ctx.beginPath();ctx.moveTo(60,410);ctx.quadraticCurveTo(330,400,380,140);ctx.stroke();ctx.restore();}
-  for(let i=0;i<16;i++){const u=((t*.12+i/16)%1),x=bad?lerp(60,370,u):40+((i*97)%340),y=bad?lerp(400,150,u*u)+((i*17)%30):150+((i*151)%250);co2s(ctx,x,y,1,bad?.95:(on?.2:.35));}
-  if(on&&!bad){ctx.fillStyle='rgba(60,170,90,.8)';for(let i=0;i<22;i++){ctx.beginPath();ctx.arc(20+((i*71)%380),122+((i*13)%26),3,0,7);ctx.fill();}}
-  // oyster beds on the bay floor: full when the hatchery's larvae live
-  const n=on?Math.round(M.beds*14):7;for(let i=0;i<14;i++){const x=40+i*22,y=404+(i%2)*8;if(i<n){ctx.fillStyle='#c9b99a';ctx.beginPath();ctx.ellipse(x,y,10,6,.4,0,7);ctx.fill();ctx.strokeStyle='#6f6350';ctx.lineWidth=1.5;ctx.stroke();}else{ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.ellipse(x,y,9,3,0,0,7);ctx.fill();}}
-  // the hatchery, its pipe, its monitor and its tank
-  ctx.fillStyle='#f4efe6';ctx.fillRect(440,50,130,56);ctx.fillStyle='#7a4f22';ctx.beginPath();ctx.moveTo(432,50);ctx.lineTo(505,16);ctx.lineTo(578,50);ctx.closePath();ctx.fill();txt(ctx,'🦪',505,92,{s:22,a:'center'});
-  ctx.strokeStyle='#8a8f98';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(380,170);ctx.lineTo(470,170);ctx.lineTo(470,212);ctx.stroke();
-  M.flow.forEach(f=>{const u=f.u,x=u<.7?lerp(380,470,u/.7):470,y=u<.7?170:lerp(170,212,(u-.7)/.3);if(f.bad)co2s(ctx,x,y,.55);else co3(ctx,x,y,.5);});
-  if(on&&M.pump==='smart'){ctx.fillStyle='#fff';rr(ctx,404,138,48,26,6);ctx.fill();ctx.strokeStyle='#26262b';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=bad?'#e0473b':'#3fbf6a';ctx.beginPath();ctx.arc(440,151,7,0,7);ctx.fill();txt(ctx,'📟',418,157,{s:14,a:'center'});}
-  if(on){ctx.fillStyle=open?'#3fbf6a':'#e0473b';ctx.beginPath();ctx.arc(470,190,6,0,7);ctx.fill();}
-  ctx.fillStyle='#cfe8f7';rr(ctx,440,214,140,120,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  const sh=on?M.shell:.9;for(let i=0;i<9;i++){const sink=sh<.35?(.35-sh)*120:0;larva(ctx,462+(i%3)*44,248+Math.floor(i/3)*30+Math.min(sink,24),11,sh>.45?1:0,sh<.35?.5:1);}
-  if(M.pick==='warm'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;txt(ctx,'☀️ → fewer CO₂',210,250,{s:20,w:800,c:'#fff',a:'center'});ctx.restore();}}
-function ocInside(ctx,S){const M=S.oc;
-  ctx.save();ctx.strokeStyle='rgba(98,98,106,.7)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(580,230);ctx.lineTo(606,142);ctx.stroke();ctx.restore();
-  ctx.fillStyle='#e3f1fa';rr(ctx,...OC_BOX,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
-  // the shell: thicker as carbonate joins it, crumbling when it cannot
+  const sky=ctx.createLinearGradient(0,0,0,110);sky.addColorStop(0,'#9ec6e6');sky.addColorStop(1,'#e8f2f9');ctx.fillStyle=sky;ctx.fillRect(0,0,590,110);
+  // the coast: spruce hills behind the hatchery
+  ctx.fillStyle='#4f6b55';ctx.beginPath();ctx.moveTo(360,110);for(let x=360;x<=590;x+=14){ctx.lineTo(x,92-((x*7)%23)*.6);ctx.lineTo(x+7,72-((x*13)%17));}ctx.lineTo(590,110);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#2f4a37';for(let x=372;x<590;x+=18){const h=24+((x*11)%14);ctx.beginPath();ctx.moveTo(x,104);ctx.lineTo(x+7,104-h);ctx.lineTo(x+14,104);ctx.closePath();ctx.fill();}
+  // the ocean in cross-section: warm water on top, cold water below, the shelf rising to the coast
+  const sea=ctx.createLinearGradient(0,110,0,430);sea.addColorStop(0,'#4a8fc4');sea.addColorStop(.45,'#245a8d');sea.addColorStop(1,'#0f2f52');ctx.fillStyle=sea;ctx.fillRect(0,110,420,320);
+  if(bad){ctx.save();const pg=ctx.createLinearGradient(60,420,380,140);pg.addColorStop(0,'rgba(120,200,235,.0)');pg.addColorStop(.5,'rgba(120,200,235,.35)');pg.addColorStop(1,'rgba(120,200,235,.5)');ctx.fillStyle=pg;ctx.beginPath();ctx.moveTo(40,430);ctx.bezierCurveTo(260,420,320,330,392,140);ctx.lineTo(420,150);ctx.bezierCurveTo(360,340,300,430,200,430);ctx.closePath();ctx.fill();ctx.restore();}
+  const sh=ctx.createLinearGradient(0,150,0,430);sh.addColorStop(0,'#9c8a6a');sh.addColorStop(1,'#6e5f45');ctx.fillStyle=sh;ctx.beginPath();ctx.moveTo(120,430);ctx.bezierCurveTo(260,400,340,320,400,140);ctx.lineTo(420,110);ctx.lineTo(590,110);ctx.lineTo(590,430);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.2;for(let k=0;k<6;k++){const x=(k*70+t*15)%420;ctx.beginPath();ctx.moveTo(x,112);ctx.lineTo(x+20,112);ctx.stroke();}
+  // weather: north wind pushing surface water offshore (upwelling), or calm sun with plankton using CO₂
+  if(bad||!on){ctx.strokeStyle='#4a5563';ctx.lineWidth=2;for(let k=0;k<3;k++){const y=40+k*18,x0=(330-((t*60+k*40)%120));ctx.beginPath();ctx.moveTo(x0,y);ctx.bezierCurveTo(x0-30,y-6,x0-60,y+6,x0-90,y);ctx.stroke();ctx.beginPath();ctx.moveTo(x0-90,y);ctx.lineTo(x0-82,y-5);ctx.moveTo(x0-90,y);ctx.lineTo(x0-82,y+5);ctx.stroke();}
+    ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;for(let k=0;k<4;k++){const x=300-((t*25+k*70)%280);ctx.beginPath();ctx.moveTo(x,124);ctx.lineTo(x-24,124);ctx.stroke();}}
+  else{const sg=ctx.createRadialGradient(90,46,2,90,46,46);sg.addColorStop(0,'rgba(255,250,220,1)');sg.addColorStop(.35,'rgba(255,220,120,.85)');sg.addColorStop(1,'rgba(255,220,120,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(90,46,46,0,7);ctx.fill();
+    ctx.fillStyle='rgba(70,170,90,.75)';for(let i=0;i<40;i++){ctx.beginPath();ctx.arc(10+((i*71)%400),118+((i*13)%36),2,0,7);ctx.fill();}}
+  for(let i=0;i<16;i++){const u=((t*.12+i/16)%1),x=bad?lerp(80,385,u):30+((i*97)%360),y=bad?lerp(415,150,u*u)+((i*17)%24):160+((i*151)%230);if(!bad&&x>lerp(120,400,(y-140)/290)+40)continue;co2s(ctx,x,y,1,bad?.95:(on?.2:.35));}
+  // the hatchery: a long shed, its intake pipe, the CO₂ monitor and a valve
+  ctx.fillStyle='#eef0f2';ctx.fillRect(436,64,148,44);ctx.fillStyle='#8f969e';ctx.beginPath();ctx.moveTo(430,66);ctx.lineTo(510,44);ctx.lineTo(590,66);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;for(let x=440;x<584;x+=8){ctx.beginPath();ctx.moveTo(x,66-((x<510?(x-430)/80:(590-x)/80))*22);ctx.lineTo(x,66);ctx.stroke();}
+  ctx.fillStyle='#6b737c';[[454,80],[482,80],[540,80]].forEach(([x,y])=>ctx.fillRect(x,y,14,10));ctx.fillStyle='#5a3a22';ctx.fillRect(560,84,12,24);
+  ctx.strokeStyle='#7d848c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(392,170);ctx.lineTo(470,170);ctx.lineTo(470,226);ctx.stroke();ctx.strokeStyle='#a3aab2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(392,168);ctx.lineTo(468,168);ctx.stroke();
+  M.flow.forEach(f=>{const u=f.u,x=u<.7?lerp(392,470,u/.7):470,y=u<.7?170:lerp(170,226,(u-.7)/.3);if(f.bad)co2s(ctx,x,y,.55);else co3(ctx,x,y,.5);});
+  if(on&&M.pump==='smart'){ctx.fillStyle='#3d434a';rr(ctx,404,136,52,26,4);ctx.fill();ctx.fillStyle='#1d2228';rr(ctx,408,140,30,18,2);ctx.fill();ctx.fillStyle=bad?'#e0473b':'#3fbf6a';ctx.fillRect(410,142,26,14);ctx.fillStyle='#9aa1a9';ctx.beginPath();ctx.arc(446,149,4,0,7);ctx.fill();ctx.strokeStyle='#3d434a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(430,162);ctx.lineTo(430,168);ctx.stroke();}
+  if(on){ctx.fillStyle='#4b525b';ctx.fillRect(463,188,14,14);ctx.fillStyle=open?'#3fbf6a':'#e0473b';ctx.beginPath();ctx.arc(470,195,4,0,7);ctx.fill();}
+  // round larval tanks
+  const shl=on?M.shell:.9;[[480,0],[540,1]].forEach(([cx,j])=>{const tg=ctx.createLinearGradient(cx-26,0,cx+26,0);tg.addColorStop(0,'#d9dde2');tg.addColorStop(.5,'#f7f8f9');tg.addColorStop(1,'#c2c8cf');ctx.fillStyle=tg;ctx.fillRect(cx-26,232,52,92);ctx.beginPath();ctx.ellipse(cx,324,26,6,0,0,7);ctx.fill();
+    const wtr=ctx.createLinearGradient(0,236,0,320);wtr.addColorStop(0,'rgba(120,180,215,.6)');wtr.addColorStop(1,'rgba(70,130,180,.7)');ctx.fillStyle=wtr;ctx.fillRect(cx-23,240,46,82);ctx.fillStyle='#b9dcef';ctx.beginPath();ctx.ellipse(cx,240,23,5,0,0,7);ctx.fill();ctx.strokeStyle='#9aa1a9';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(cx,232,26,6,0,0,7);ctx.stroke();
+    for(let i=0;i<7;i++){const sink=shl<.35?(.35-shl)*200:0,x=cx-16+((i*13+j*7)%32),y=Math.min(314,252+((i*23+j*11)%50)+sink+Math.sin(t*2+i)*2);larva(ctx,x,y,5,shl>.45?1:0,shl<.35?.6:1,t);}});
+  ctx.strokeStyle='#7d848c';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(470,226);ctx.lineTo(470,236);ctx.moveTo(470,226);ctx.lineTo(540,226);ctx.lineTo(540,236);ctx.stroke();
+  if(M.pick==='warm'&&M.k<1){ctx.save();ctx.globalAlpha=1-M.k;ctx.fillStyle='rgba(255,255,255,.88)';rr(ctx,120,230,190,40,10);ctx.fill();txt(ctx,'warm water: less CO₂',215,256,{s:16,w:700,c:'#245a8d',a:'center'});ctx.restore();}}
+function ocInside(ctx,S){const M=S.oc,t=S.t;
+  ctx.save();ctx.strokeStyle='rgba(60,60,70,.45)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(540,280,30,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(566,264);ctx.lineTo(606,190);ctx.stroke();ctx.restore();
+  const wg=ctx.createLinearGradient(0,30,0,254);wg.addColorStop(0,'#e6f3fa');wg.addColorStop(1,'#cfe5f2');ctx.fillStyle=wg;rr(ctx,...OC_BOX,12);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;ctx.stroke();
   ctx.save();rr(ctx,...OC_BOX,12);ctx.clip();
-  const s=M.shell;ctx.save();ctx.beginPath();ctx.moveTo(OC_SH[0]-OC_R,OC_SH[1]);ctx.arc(OC_SH[0],OC_SH[1],OC_R,Math.PI,0);ctx.closePath();ctx.fillStyle=`rgba(232,211,166,${.25+.75*s})`;ctx.fill();
-  ctx.lineWidth=2+12*s;ctx.strokeStyle=s>.35?'#8a6a2e':'#C11430';ctx.setLineDash(s>.35?[]:[6,5]);ctx.beginPath();ctx.arc(OC_SH[0],OC_SH[1],OC_R,Math.PI,0);ctx.stroke();ctx.restore();
+  // the larva, close up: carbonate joins the growing edge of the shell; CO₂ dissolves it
+  const s=M.shell,[cx,cy]=OC_SH,R=OC_R;
+  if(s>.35){const vx=cx-R*.75,vy=cy-R*.9,w=t*14;ctx.fillStyle='rgba(235,190,190,.6)';ctx.beginPath();ctx.ellipse(vx,vy,26,18,-.7,0,7);ctx.fill();ctx.strokeStyle='rgba(150,90,90,.65)';ctx.lineWidth=1.2;for(let k=0;k<14;k++){const a=-.7+Math.PI+(k-6.5)*.2,ex=vx+Math.cos(a)*26,ey=vy+Math.sin(a)*18;ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex+Math.cos(a+Math.sin(w+k)*.5)*12,ey+Math.sin(a+Math.sin(w+k)*.5)*12);ctx.stroke();}}
+  const g=ctx.createRadialGradient(cx-R*.3,cy-R*.6,2,cx,cy-R*.2,R);g.addColorStop(0,`rgba(250,242,220,${.35+.6*s})`);g.addColorStop(1,`rgba(200,168,112,${.3+.65*s})`);ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.arc(cx,cy,R,Math.PI,0);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=`rgba(140,105,50,${.25+.4*s})`;ctx.lineWidth=1;for(let k=1;k<6;k++){ctx.beginPath();ctx.arc(cx,cy,R*k/6,Math.PI,0);ctx.stroke();}
+  ctx.lineWidth=2+11*s;ctx.strokeStyle=s>.35?'#8a6a2e':'#C11430';ctx.setLineDash(s>.35?[]:[6,5]);ctx.beginPath();ctx.arc(cx,cy,R,Math.PI,0);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle='#6f5524';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.stroke();
   ctx.fillStyle='#8a6a2e';M.chips.forEach(c=>{ctx.globalAlpha=Math.max(0,c.a);ctx.fillRect(c.x-3,c.y-2,6,4);});ctx.globalAlpha=1;
   M.co3.forEach(q=>co3(ctx,q.x,q.y,1));M.co2.forEach(c=>co2s(ctx,c.x,c.y,1));M.hco3.forEach(h=>co3(ctx,h.x,h.y,.9,Math.max(0,h.a)*.7,true));ctx.restore();
-  // the bay's oyster farm: the effect people see
-  ctx.fillStyle='#fff';rr(ctx,606,266,273,154,12);ctx.fill();ctx.strokeStyle='#d5d9de';ctx.stroke();
-  ctx.fillStyle='#7fb6dc';ctx.fillRect(612,276,261,80);ctx.fillStyle='#c9b48f';ctx.fillRect(612,356,261,58);
-  const n=Math.round(M.beds*18);for(let i=0;i<18;i++){const x=628+(i%9)*29,y=372+Math.floor(i/9)*22;if(i<n){ctx.fillStyle='#d9ccb0';ctx.beginPath();ctx.ellipse(x,y,12,7,.3,0,7);ctx.fill();ctx.strokeStyle='#6f6350';ctx.lineWidth=1.5;ctx.stroke();}}
-  if(M.beds>.7)txt(ctx,'🚣',840+Math.sin(S.t)*6,312,{s:26,a:'center'});if(M.beds<.3)txt(ctx,'🪧',640,334,{s:22,a:'center'});}
+  // the bay's oyster beds: full and worked, or bare mud
+  ctx.save();rr(ctx,606,266,273,154,12);ctx.clip();const bw=ctx.createLinearGradient(0,266,0,350);bw.addColorStop(0,'#8fbcd8');bw.addColorStop(1,'#5f93b8');ctx.fillStyle=bw;ctx.fillRect(606,266,273,84);
+  const md=ctx.createLinearGradient(0,346,0,420);md.addColorStop(0,'#8a7a62');md.addColorStop(1,'#6a5c48');ctx.fillStyle=md;ctx.beginPath();ctx.moveTo(606,352);ctx.bezierCurveTo(680,342,800,346,879,354);ctx.lineTo(879,420);ctx.lineTo(606,420);ctx.closePath();ctx.fill();
+  const n=Math.round(M.beds*22);for(let i=0;i<22;i++){if(i>=n)break;const x=618+((i*47)%250),y=362+((i*29)%46);ocOyster(ctx,x,y,.8+((i*7)%5)/12,i+1);}
+  if(M.beds>.7){const bx=820+Math.sin(t)*6;ctx.fillStyle='#b8c0c8';ctx.beginPath();ctx.moveTo(bx-30,318);ctx.lineTo(bx+28,318);ctx.lineTo(bx+20,330);ctx.lineTo(bx-24,330);ctx.closePath();ctx.fill();ctx.strokeStyle='#7d858d';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#d8dee4';ctx.fillRect(bx-10,306,14,12);}
+  ctx.restore();ctx.strokeStyle='#d5d9de';ctx.lineWidth=1.5;rr(ctx,606,266,273,154,12);ctx.stroke();}
+
 function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#2f7fd0';rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'❄️',cx,y+40,{s:22,a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
   (c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#163d6b';rr(c,cx-90,y+14,180,112,12);c.fill();txt(c,'❄️',cx-60,y+40,{s:22,a:'center'});[[-30,64],[0,78],[-50,96],[24,104],[-10,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));c.fillStyle='#fff';c.beginPath();c.arc(cx+60,y+74,20,0,7);c.fill();larva(c,cx+60,y+80,14,0);});}
 function ocPick(S,v){const M=S.oc;if(!M||M.pick==='cold')return;M.pick=v;M.k=0;}
@@ -232,7 +256,7 @@ Story.start({
    alt:'Look at the two pictures at the bottom. A cold soda holds more CO₂ than a warm one; cold deep ocean water does too. In the tank, each CO₂ grabs a carbonate ion, and both become bicarbonate, which a shell cannot use. Less carbonate, thinner shells. Pumping only when the water is better, or adding carbonate (soda ash), lets the shells grow.',
    ui:[{type:'seg',key:'op',val:'',label:'Which water holds more CO₂?',opts:[{v:'warm',l:'☀️ Warm surface'},{v:'cold',l:'❄️ Cold deep'}],on(S,v){ocPick(S,v);},show:S=>S.oc&&S.oc.pick!=='cold'},
      {type:'seg',key:'pump',val:'always',label:'Run the pump',opts:[{v:'always',l:'🚰 Any time'},{v:'smart',l:'📟 Only when the monitor is green'}],on(S,v){S.oc.pump=v;},show:S=>S.oc&&S.oc.pick==='cold'},
-     {type:'button',label:'🧪 Add soda ash',act(S){const M=S.oc;for(let i=0;i<6&&M.co3.length<14;i++)M.co3.push({x:ocRand(620,860),y:44,vx:ocRand(-15,15),vy:ocRand(5,15),go:null});},show:S=>S.oc&&S.oc.pick==='cold'}],
+     {type:'button',label:'🧪 Add soda ash',act(S){const M=S.oc;for(let i=0;i<10&&M.co3.length<20;i++)M.co3.push({x:ocRand(620,860),y:44,vx:ocRand(-15,15),vy:ocRand(5,15),go:null});},show:S=>S.oc&&S.oc.pick==='cold'}],
    todo:[{t:'Tap the water that holds more CO₂',ok:S=>S.oc&&S.oc.pick==='cold'},{t:'Pump only on green and watch the oyster beds',ok:S=>S.oc&&S.oc.good},{t:'Switch back to any time',ok:S=>S.oc&&S.oc.rev}],
    enter(S){S.oc=newOc();S.v.op='';S.v.pump='always';},tick(S,dt){ocTick(S,dt);},
    click(S,x,y){const v=Who.hit(OC_PICK,x,y);if(v&&S.oc.pick!=='cold'){ocPick(S,v);S.v.op=v;}},
