@@ -220,7 +220,7 @@ Story.start({
      K.panel(ctx,'CO₂ left in each can',[],(x,y)=>{const t=S.v.rt||0;K.stat(ctx,x,y,'Fridge, 4 °C',Math.round(left(4)(t)*100)+'%',C.cold);K.stat(ctx,x,y+42,'Hot car, 35 °C',Math.round(left(35)(t)*100)+'%',C.hot);
        txt(ctx,'Time: '+Math.round(t)+' min (model)',x+18,y+90,{s:14,c:C.soft});});}},
 
-  {rail:'Who did it',title:'Oyster hatchery, Oregon',live:true,views:false,
+  {rail:'Who did it',title:'Oyster hatchery, Oregon',links:[{t:"What happened to billions of baby oysters",u:"https://oceanconservancy.org/blog/2017/06/07/mystery-happened-billions-baby-oysters",d:"the hatchery manager, Alan Barton, tells it himself"},{t:"Ocean acidification with real NOAA data",u:"https://dataintheclassroom.noaa.gov/content/ocean-acidification",d:"NOAA Data in the Classroom: explore it yourself"},{t:"NOAA ocean acidification: student resources",u:"https://oceanacidification.noaa.gov/ocean-acidification-education-outreach/",d:"what people are doing about it"}],live:true,views:false,
    text(S){const M=S.oc;if(!M||!M.pick)return 'Oregon, 2007: baby oysters at a hatchery start dying. <b>Tap the water that holds more CO₂.</b>';
      if(M.pick==='warm')return 'Like the hot-car soda, warm water holds less CO₂. Try the other.';
      if(M.rev)return 'Red water in: CO₂ eats the carbonate again. Oregon State chemists built that monitor, and ocean CO₂ is still rising.';

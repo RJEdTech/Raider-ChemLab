@@ -171,7 +171,7 @@ Story.start({
      K.panel(ctx,'The contact angle',[],(x,y)=>{K.stat(ctx,x,y+10,'Car wax',(m<.5?'▶ ':'')+'105°',C.ink);K.stat(ctx,x,y+52,'Clean glass',(m>=.5?'▶ ':'')+'under 20°',C.ink);
        txt(ctx,'More than 90°: the drop is a bead.',x+18,y+100,{s:14,c:C.soft});txt(ctx,'Under 90°: it spreads.',x+18,y+120,{s:14,c:C.soft});});}},
 
-  {rail:'Who did it',title:'Gitanjali Rao, Lone Tree, Colorado',live:true,
+  {rail:'Who did it',title:'Gitanjali Rao, Lone Tree, Colorado',links:[{t:"One girl's commitment",u:"https://www.uspto.gov/learning-and-resources/journeys-innovation/field-stories/one-girls-commitment",d:"U.S. Patent and Trademark Office: how she invents"},{t:"TIME names its first Kid of the Year",u:"https://www.npr.org/2020/12/03/942034617/time-names-its-kid-of-the-year-water-testing-scientist-gitanjali-rao",d:"NPR"}],live:true,
    text(S){const L=S.lead,n=L?L.stuck:0;
      if(!L||!L.pick)return 'Lead in water is <b style="color:'+POS+'">positive</b>. Her sensor is a carbon tube with chlorine on it. <b>Tap the atom</b> that will grab the lead.';
      if(!L.adds)return (L.pick==='cl'?'Yes: ':'Not the carbon: ')+'<b style="color:'+NEG+'">negative</b> chlorine grabs <b style="color:'+POS+'">positive</b> lead. Same pull as water on water. <b>Add tap water with lead.</b>';

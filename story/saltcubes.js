@@ -230,7 +230,7 @@ Story.start({
    draw(ctx,S){bg(ctx);const e=S.v.mm,n=e*1e-3/(A*1e-9);grain(ctx,220,170,180+e*200,1);txt(ctx,e.toFixed(2)+' mm',330+e*100,560,{s:20,w:700,c:C.ink,a:'center'});
      K.panel(ctx,'Counting ions',[],(x,y)=>{txt(ctx,'Ions along an edge',x+18,y,{s:15,c:C.soft});txt(ctx,fmtBig(n),x+18,y+34,{s:26,w:700,c:C.rj});txt(ctx,'Ions in the grain',x+18,y+76,{s:15,c:C.soft});txt(ctx,fmtBig(n*n*n),x+18,y+110,{s:26,w:700,c:C.ink});y+=60;txt(ctx,'Each ion step: 0.282 nm',x+18,y+96,{s:13.5,c:C.soft});txt(ctx,'1 mm = 1,000,000 nm',x+18,y+116,{s:13.5,c:C.soft});});}},
 
-  {rail:'Who did it',title:'Dr. David Cowie, Michigan',live:true,views:false,
+  {rail:'Who did it',title:'Dr. David Cowie, Michigan',links:[{t:"Iodine: what it does and where to get it",u:"https://ods.od.nih.gov/factsheets/Iodine-Consumer/",d:"National Institutes of Health"},{t:"Iodine in your diet",u:"https://medlineplus.gov/ency/article/002421.htm",d:"MedlinePlus: iodine-poor soil, iodized salt and goiter"},{t:"Iodine Global Network",u:"https://www.ign.org/",d:"the group still working to end iodine deficiency worldwide"}],live:true,views:false,
    text(S){const M=S.io;if(!M||!M.pick)return 'Michigan, 1920s. Many kids have a swollen neck, a goiter. <b>Tap the ion that can bring iodine.</b>';
      if(M.pick==='k')return 'K⁺ is positive, like Na⁺, and it carries no iodine. Try the other.';
      if(M.rev)return 'No iodine, no hormone: the gland swells again. In 1924, iodized salt reached Michigan stores, and goiters faded.';
