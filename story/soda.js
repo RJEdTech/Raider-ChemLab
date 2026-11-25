@@ -180,8 +180,8 @@ function ocInside(ctx,S){const M=S.oc,t=S.t;
   if(M.beds>.7){const bx=820+Math.sin(t)*6;ctx.fillStyle='#b8c0c8';ctx.beginPath();ctx.moveTo(bx-30,318);ctx.lineTo(bx+28,318);ctx.lineTo(bx+20,330);ctx.lineTo(bx-24,330);ctx.closePath();ctx.fill();ctx.strokeStyle='#7d858d';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#d8dee4';ctx.fillRect(bx-10,306,14,12);}
   ctx.restore();ctx.strokeStyle='#d5d9de';ctx.lineWidth=1.5;rr(ctx,606,266,273,154,12);ctx.stroke();}
 
-function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#2f7fd0';rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'❄️',cx,y+40,{s:22,a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
-  (c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#163d6b';rr(c,cx-90,y+14,180,112,12);c.fill();txt(c,'❄️',cx-60,y+40,{s:22,a:'center'});[[-30,64],[0,78],[-50,96],[24,104],[-10,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));c.fillStyle='#fff';c.beginPath();c.arc(cx+60,y+74,20,0,7);c.fill();larva(c,cx+60,y+80,14,0);});}
+function ocRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#2f7fd0';rr(c,cx-34,y+14,68,112,12);c.fill();txt(c,'cold soda',cx,y+34,{s:13,w:700,c:'#fff',a:'center'});[[-14,64],[12,78],[-8,96],[14,104],[0,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));},
+  (c,x,y,w,h)=>{const cx=x+w/2;c.fillStyle='#163d6b';rr(c,cx-90,y+14,180,112,12);c.fill();txt(c,'cold deep water',cx-40,y+34,{s:13,w:700,c:'#fff',a:'center'});[[-30,64],[0,78],[-50,96],[24,104],[-10,116]].forEach(([dx,dy])=>co2s(c,cx+dx,y+dy,.9));c.fillStyle='#fff';c.beginPath();c.arc(cx+60,y+74,20,0,7);c.fill();larva(c,cx+60,y+80,14,0);});}
 function ocPick(S,v){const M=S.oc;if(!M||M.pick==='cold')return;M.pick=v;M.k=0;}
 Story.start({
   id:'soda',title:'Why does warm soda go flat faster?',W,H,labHref:'../index.html#solcurve',
