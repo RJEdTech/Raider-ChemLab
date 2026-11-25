@@ -622,7 +622,7 @@ const CAP={
 const heatLine=()=>{const g=S.guess.heat;return g===undefined?'':` <span class="chip ${g===0?'ok':'no'}">Your guess: ${['browner','no change','paler'][g]} ${g===0?'✓':'✗'}</span>`};
 
 /* ---------- the steps ---------- */
-const PARTS=['The hatch','One molecule','A crowd','Heat','Room','The rule','Your turn'];
+const PARTS=['The hatch','One molecule','A crowd','Heat','Room','The rule','Who is doing this','Your turn'];
 function picks(key,q,opts,right,after){const g=S.guess[key];if(after&&g!==undefined)return `<p class="note">Your guess: <b>${opts[g].toLowerCase()}</b> <span class="chip ${g===right?'ok':'no'}">${g===right?'✓ matched':'✗ not this time'}</span></p>`;return `<div class="pick" data-key="${key}"><p class="q">${q}</p><div class="row">${opts.map((o,i)=>`<button type="button" class="btn opt${g===i?' on':''}${g!==undefined&&after&&i===right?' right':''}" data-i="${i}" aria-pressed="${g===i}">${o}</button>`).join('')}</div></div>`}
 function bindPicks(root,fn){$$('.pick .opt',root).forEach(b=>b.addEventListener('click',()=>{const k=b.closest('.pick').dataset.key;S.guess[k]=+b.dataset.i;save();ev('guess-'+k+'-'+b.dataset.i);fn&&fn(k,+b.dataset.i);renderCtl()}))}
 function settled(){const r=W.rates(),big=Math.max(r.S,r.J);return big>0&&Math.abs(r.S-r.J)/big<.05}
@@ -642,6 +642,74 @@ function heatTick(){ // lift the tube, swap the bath, hold the first moment in s
 function beatGo(){st.beat=2;renderCtl()}
 const beatBtn=()=>st.beat===1?'<div class="row"><button type="button" class="btn primary act pulse" data-beat="1">See what happens next ▶</button></div>':'';
 function bindBeat(r){const b=$('[data-beat]',r);b&&b.addEventListener('click',beatGo)}
+
+/*CC*/
+/* ---------- Who is doing this: the three-way catalytic converter (Carl Keith and John Mooney, Engelhard) and Denver's brown cloud, Nov 25, 2026 ----------
+   Cause: cars with no converter, a cold converter, or a hot one. Transformation (close-up): heat in the engine pushes the balance toward NO; once the
+   exhaust cools the balance favors N2 and O2 again, but too slowly; on hot platinum and rhodium NO splits and the atoms pair up as N2 and O2, and CO
+   becomes CO2. With no converter, NO leaves the pipe and meets oxygen in the air: brown NO2, the same brown as your tube. Effect: the brown layer
+   under Denver's winter inversion thickens or clears, and the mountains disappear or come back.
+   Sources: National Medal of Technology and Innovation (2002); EPA Air Trends (1980 vs 2024); Denver Dept. of Public Health & Environment; NASA Earthdata. */
+const CC_SC={x:10,y:10,w:600,h:540},CC_Z={x:622,y:10,w:368,h:262},CC_P={x:622,y:282,w:368,h:268};
+const ccTarget=()=>st.cv==='hot'?.12:st.cv==='cold'?.78:1;
+function ccScene(){const S=CC_SC,hz=st.haze==null?1:st.haze,t=st.t;ctx.save();rr(ctx,S.x,S.y,S.w,S.h,12);ctx.clip();
+  let g=ctx.createLinearGradient(0,S.y,0,S.y+320);g.addColorStop(0,'#7fb2e3');g.addColorStop(1,'#d9e8f3');ctx.fillStyle=g;ctx.fillRect(S.x,S.y,S.w,S.h);
+  // the Front Range, west of the city
+  ctx.fillStyle='#8a9bb0';ctx.beginPath();ctx.moveTo(S.x,S.y+250);[[40,205],[90,180],[130,198],[180,160],[230,190],[280,150],[330,185],[380,165],[430,195],[480,170],[540,200],[600,185]].forEach(([x,y])=>ctx.lineTo(S.x+x,S.y+y));ctx.lineTo(S.x+600,S.y+260);ctx.lineTo(S.x,S.y+260);ctx.fill();
+  ctx.fillStyle='#f3f6fa';[[180,160],[280,150],[380,165],[90,180],[480,170]].forEach(([x,y])=>{ctx.beginPath();ctx.moveTo(S.x+x,S.y+y);ctx.lineTo(S.x+x-16,S.y+y+16);ctx.lineTo(S.x+x-4,S.y+y+12);ctx.lineTo(S.x+x+6,S.y+y+18);ctx.lineTo(S.x+x+18,S.y+y+14);ctx.closePath();ctx.fill();});
+  ctx.fillStyle='#6f7f6a';ctx.beginPath();ctx.moveTo(S.x,S.y+262);ctx.lineTo(S.x+600,S.y+258);ctx.lineTo(S.x+600,S.y+290);ctx.lineTo(S.x,S.y+290);ctx.fill();
+  // downtown Denver
+  const B=[[150,70,26],[180,110,22],[205,150,30],[238,96,24],[265,128,20],[288,84,28],[318,62,22],[342,100,18],[362,74,26],[392,50,20]];
+  B.forEach(([x,h,w],k)=>{const gr=ctx.createLinearGradient(S.x+x,0,S.x+x+w,0);gr.addColorStop(0,'#5c6773');gr.addColorStop(1,'#3f4852');ctx.fillStyle=gr;ctx.fillRect(S.x+x,S.y+320-h,w,h);
+    ctx.fillStyle='rgba(255,236,170,.35)';for(let r=0;r<h/9-1;r++)for(let c=0;c<w/7-1;c++)if((r*3+c*5+k)%4===0)ctx.fillRect(S.x+x+3+c*7,S.y+320-h+5+r*9,3,4);});
+  ctx.fillStyle='#4a5560';ctx.beginPath();ctx.moveTo(S.x+205,S.y+170);ctx.lineTo(S.x+220,S.y+150);ctx.lineTo(S.x+235,S.y+170);ctx.fill();
+  ctx.fillStyle='#7d8a72';ctx.fillRect(S.x,S.y+318,600,60);
+  for(let k=0;k<40;k++){const x=S.x+((k*47)%600),y=S.y+322+((k*29)%40);ctx.fillStyle=k%3?'#c9c3b5':'#a9b0b8';ctx.fillRect(x,y,12,8);}
+  // the highway and the cars
+  ctx.fillStyle='#55585e';ctx.fillRect(S.x,S.y+420,600,46);ctx.strokeStyle='#e6d36a';ctx.lineWidth=2;ctx.setLineDash([16,12]);ctx.beginPath();ctx.moveTo(S.x,S.y+443);ctx.lineTo(S.x+600,S.y+443);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#8a8f7a';ctx.fillRect(S.x,S.y+378,600,42);ctx.fillStyle='#9aa184';ctx.fillRect(S.x,S.y+466,600,74);
+  for(let k=0;k<9;k++){const lane=k%2,dir=lane?-1:1,x=S.x+((k*83+dir*t*70)%700+700)%700-50,y=S.y+(lane?452:430),col=['#b33a3a','#2d5d9a','#e2e2e2','#3a3a3a','#7a8a3a','#c9a43a'][k%6];
+    ctx.fillStyle=col;rr(ctx,x,y-10,34,11,3);ctx.fill();rr(ctx,x+7,y-17,18,8,3);ctx.fill();ctx.fillStyle='#9fc3e0';ctx.fillRect(x+10,y-15,12,5);ctx.fillStyle='#1c1c1c';ctx.beginPath();ctx.arc(x+8,y+1,3.4,0,TAU);ctx.arc(x+26,y+1,3.4,0,TAU);ctx.fill();
+    // exhaust puffs: brown-tinted when no working converter
+    const tx=dir>0?x-2:x+36,pu=(t*1.3+k*.37)%1,br=hz>.5?1:0;ctx.fillStyle=br?`rgba(150,95,45,${.45*(1-pu)})`:`rgba(220,220,220,${.35*(1-pu)})`;ctx.beginPath();ctx.arc(tx-dir*pu*16,y-4-pu*8,3+pu*6,0,TAU);ctx.fill();}
+  // the brown layer under the inversion lid
+  if(hz>.02){g=ctx.createLinearGradient(0,S.y+150,0,S.y+420);g.addColorStop(0,'rgba(150,100,55,0)');g.addColorStop(.25,`rgba(150,100,55,${.55*hz})`);g.addColorStop(1,`rgba(140,95,55,${.75*hz})`);ctx.fillStyle=g;ctx.fillRect(S.x,S.y+150,600,270);}
+  ctx.strokeStyle='rgba(255,255,255,.75)';ctx.setLineDash([8,6]);ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(S.x,S.y+170);ctx.bezierCurveTo(S.x+200,S.y+160,S.x+400,S.y+178,S.x+600,S.y+166);ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'warm air lid (winter inversion)',S.x+S.w-14,S.y+160,{s:13,w:700,c:'#fff',a:'right'});
+  ctx.restore();ctx.strokeStyle=PAL.line;ctx.lineWidth=1;rr(ctx,S.x,S.y,S.w,S.h,12);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.92)';rr(ctx,S.x+12,S.y+12,238,30,8);ctx.fill();txt(ctx,'Denver, a winter morning',S.x+24,S.y+32,{s:14.5,w:700,c:'#1c1c1f'});
+  // the rhyme: your tube of brown NO2 beside the sky
+  ctx.fillStyle='rgba(255,255,255,.92)';rr(ctx,S.x+12,S.y+52,196,96,8);ctx.fill();
+  ctx.fillStyle='rgba(150,82,24,.75)';rr(ctx,S.x+40,S.y+62,20,56,9);ctx.fill();ctx.strokeStyle='#8a8f98';ctx.lineWidth=1.5;rr(ctx,S.x+40,S.y+62,20,56,9);ctx.stroke();
+  txt(ctx,'=',S.x+92,S.y+98,{s:22,w:700,c:'#5d5d63'});ctx.fillStyle='rgba(150,100,55,.75)';rr(ctx,S.x+114,S.y+78,84,28,6);ctx.fill();
+  txt(ctx,'your tube',S.x+50,S.y+138,{s:12,c:'#5d5d63',a:'center'});txt(ctx,'the brown cloud',S.x+156,S.y+124,{s:12,c:'#5d5d63',a:'center'});}
+function ccAtom(el,x,y){ball(ctx,x,y,el==='C'?6.4:el==='N'?6.2:6,ACOL(el));}
+function ccZoom(){const R=CC_Z,mode=st.cv||'none';card(ctx,R,mode==='none'?'At the tailpipe, no converter':'Inside the converter, zoomed in');
+  const x0=R.x+14,x1=R.x+R.w-14,y0=R.y+38,y1=R.y+R.h-58,t=st.t;
+  if(mode==='none'){// NO leaves the pipe and meets O2 in the air: brown NO2
+    ctx.fillStyle='#6b6e73';rr(ctx,x0,y0+70,90,40,6);ctx.fill();ctx.fillStyle='#3a3c40';ctx.beginPath();ctx.ellipse(x0+90,y0+90,8,20,0,0,TAU);ctx.fill();
+    for(let k=0;k<6;k++){const u=((t*.22+k/6)%1),x=x0+100+u*(x1-x0-110),y=y0+90+Math.sin(k*2+u*5)*24-u*20;
+      if(u<.5){ccAtom('N',x-6,y);ccAtom('O',x+6,y);}else{drawMol(ctx,2,x,y,u*3+k,5.4);if(u>.6){ctx.fillStyle=`rgba(150,82,24,${.25*(u-.6)/.4})`;ctx.beginPath();ctx.arc(x,y,18,0,TAU);ctx.fill();}}
+      if(u>.38&&u<.52){drawMol(ctx,'O',x+18-(u-.38)*80,y-14,1,4.6);}}
+    txt(ctx,'NO',x0+104,y0+30,{s:14,w:700,c:PAL.N});txt(ctx,'+ O₂ from the air',x0+190,y0+30,{s:13.5,c:PAL.soft,a:'center'});txt(ctx,'→ brown NO₂',x1-4,y0+30,{s:14,w:700,c:'#96521a',a:'right'});
+    txt(ctx,'Engine heat pushed N₂ and O₂ toward NO. Cooled, the balance',x0,y1+28,{s:13,c:PAL.soft,max:R.w-28});txt(ctx,'leans back to N₂ and O₂, but far too slowly to get there.',x0,y1+46,{s:13,c:PAL.soft,max:R.w-28});return;}
+  // honeycomb channel walls coated with metal
+  const hot=mode==='hot';ctx.fillStyle=hot?'#efe0cf':'#e4e6ea';rr(ctx,x0,y0,x1-x0,y1-y0,8);ctx.fill();
+  for(let r=0;r<2;r++){const wy=y0+(r+1)*(y1-y0)/3;ctx.fillStyle=hot?'#c9a27a':'#a9adb4';ctx.fillRect(x0,wy-3,x1-x0,6);for(let k=0;k<22;k++){ctx.fillStyle=k%3?'#b8bcc3':'#7f8792';ctx.beginPath();ctx.arc(x0+8+k*16,wy,2.2,0,TAU);ctx.fill();}}
+  // molecules flowing left to right; on a hot wall, NO splits and atoms pair up
+  for(let k=0;k<12;k++){const lane=k%3,u=((t*(hot?.16:.22)+Math.floor(k/3)*.25+lane*.11)%1),x=x0+12+u*(x1-x0-24),y=y0+(lane+.5)*(y1-y0)/3;const done=hot&&u>.55,mid=hot&&u>.35&&u<=.55,isCO=k%3===2;
+    if(isCO){if(done){ccAtom('O',x-9,y);ccAtom('C',x,y);ccAtom('O',x+9,y);}else{ccAtom('C',x-5,y);ccAtom('O',x+6,y);}}
+    else if(done){if(k%2){ccAtom('N',x-5,y);ccAtom('N',x+5,y);}else{ccAtom('O',x-5,y);ccAtom('O',x+5,y);}}
+    else if(mid){const s=(u-.35)/.2*8;ccAtom('N',x-6-s,y+s*.4);ccAtom('O',x+6+s,y-s*.4);}else{ccAtom('N',x-6,y);ccAtom('O',x+6,y);}}
+  txt(ctx,'NO, CO in',x0+4,y1+22,{s:13.5,w:700,c:PAL.soft});txt(ctx,hot?'N₂, O₂, CO₂ out':'NO, CO out',x1-4,y1+22,{s:13.5,w:700,c:hot?PAL.good:PAL.bad,a:'right'});
+  txt(ctx,hot?'On hot platinum and rhodium, NO splits and the atoms pair up.':'Cold metal: the molecules mostly slide past unchanged.',x0,y1+44,{s:13,c:PAL.soft,max:R.w-28});}
+function ccPanel(){const R=CC_P;card(ctx,R,'');txt(ctx,'Carl Keith and John Mooney',R.x+16,R.y+30,{s:18,w:700});
+  [['🚗','1970s: car exhaust, a brown cloud'],['🏙️','Denver: bad air about 200 days a year'],['🧪','chemists at Engelhard, New Jersey'],['🔁','one converter, three cleanups'],['📅','on 1975 cars; now on most cars'],['📉','US NO₂ down about two-thirds since 1980'],['⚠️','hard part: it still makes CO₂']].forEach(([i,s],k)=>{const y=R.y+60+k*27;txt(ctx,i,R.x+28,y+5,{s:17,a:'center'});txt(ctx,s,R.x+48,y+1,{s:14,w:600,max:R.w-60});});
+  txt(ctx,'Sources: National Medals; EPA Air Trends; Denver DPHE; NASA.',R.x+16,R.y+R.h-12,{s:11.5,c:PAL.soft,max:R.w-28});}
+function ccTick(dt){if(st.haze==null)st.haze=1;if(st.cv){const tg=ccTarget();st.haze+=clamp(tg-st.haze,-dt*.16,dt*.16);
+    if(Math.abs(st.haze-tg)<.02&&!st.seen[st.cv]){st.seen[st.cv]=1;renderCtl();cap(st.cv==='hot'?'The brown layer thins and the mountains come back. Same inversion, same cars: the NO changed back before it left the pipe.':st.cv==='cold'?'A cold converter barely helps. Heat speeds up a reaction both ways; cold metal is too slow.':'No converter: every car adds NO, the air turns it brown, and the lid holds it over the city.');
+      if(st.seen.none&&st.seen.cold&&st.seen.hot)markDone();}}}
+function ccDraw(){ccScene();ccZoom();ccPanel();}
 
 const STEPS=[
  {part:0,title:'The hatch stays shut',
@@ -730,6 +798,17 @@ const STEPS=[
   tick(){if(st.changed&&settled())markDone()},draw(){sceneArea()},
   ctl(){return `<div class="row baths"><span class="lab">Temperature:</span>${[[0,'Ice water · 0 °C'],[25,'Room · 25 °C'],[60,'Hot water · 60 °C']].map(([c,l])=>`<button type="button" class="btn bath b${c}${st.tc===c?' on':''}" data-c="${c}" aria-pressed="${st.tc===c}">${l}</button>`).join('')}</div>`},
   bind(r){$$('.bath',r).forEach(b=>b.addEventListener('click',()=>{st.tc=+b.dataset.c;st.changed=true;W.setT(TK(st.tc));W.speed=st.tc===0?2:1;cap(CAP.temp1);renderCtl()}))}},
+ {part:6,nw:1,title:'Who is doing this: the catalytic converter',
+  cap:'Denver, a winter morning in the 1970s. Inside a hot engine, nitrogen and oxygen from the air join into NO. Once the exhaust cools down, which way does that balance lean?',
+  alt:'Heat pushed the balance toward NO, the way hot water pushed your tube toward brown NO₂. Cool it and the balance leans back toward N₂ and O₂. The catch is speed: on its own the change back is so slow that the NO leaves the tailpipe first.',
+  aria:'Denver under a winter inversion, with the Front Range behind and a highway of cars in front. A brown layer of NO2 thickens or clears depending on the cars. A close-up shows the tailpipe or the inside of a catalytic converter, where NO splits and the atoms pair up as N2 and O2.',
+  enter(){st.cv=null;st.haze=1;st.seen={};st.pick=null},tick:ccTick,draw:ccDraw,
+  ctl(){if(st.pick!=='back')return `<div class="row">${[['back','Back toward N₂ and O₂'],['no','Toward even more NO']].filter(([k])=>k!==st.pick).map(([k,l])=>`<button type="button" class="btn" data-cc="${k}">${l}</button>`).join('')}</div>`;
+    const busy=false;return `<div class="row"><span class="lab">The cars have:</span>${[['none','No converter'],['cold','A cold converter'],['hot','A hot converter']].map(([k,l])=>`<button type="button" class="btn${st.cv===k?' on':''}" data-cv="${k}" aria-pressed="${st.cv===k}">${l}</button>`).join('')}</div>`
+      +`<p class="note">${['none','cold','hot'].map(k=>(st.seen[k]?'✓ ':'○ ')+{none:'none',cold:'cold',hot:'hot'}[k]).join(' &nbsp; ')}: wait until the sky settles each time.</p>`
+      +(st.seen.none&&st.seen.cold&&st.seen.hot?'<p class="note"><b>Go deeper:</b> <a href="https://nationalmedals.org/laureate/john-j-mooney/" target="_blank" rel="noopener">John Mooney, National Medal of Technology ↗</a> · <a href="https://www.epa.gov/air-trends/nitrogen-dioxide-trends" target="_blank" rel="noopener">EPA: NO₂ in US air since 1980 ↗</a> · <a href="https://www.earthdata.nasa.gov/learn/sensing-our-planet/a-rising-problem" target="_blank" rel="noopener">NASA: Denver’s air today ↗</a></p>':'')},
+  bind(r){$$('[data-cc]',r).forEach(b=>b.addEventListener('click',()=>{st.pick=b.dataset.cc;ev('who-pick-'+st.pick);cap(st.pick==='back'?'Right: cooled, it leans back toward N₂ and O₂. But on its own that takes far too long, so NO pours out of every tailpipe. In 1973 two chemists tested a fix on a Volvo. Choose what the cars have.':'Heat pushed it toward NO. Take the heat away and it leans back, like your tube in ice water. Try the other one.');renderCtl()}));
+    $$('[data-cv]',r).forEach(b=>b.addEventListener('click',()=>{st.cv=b.dataset.cv;cap(st.cv==='hot'?'Hot metal: NO splits on the surface and the atoms pair up as N₂ and O₂. CO picks up an O and leaves as CO₂.':st.cv==='cold'?'The converter is there, but cold, like a car in its first minutes.':'No converter: NO leaves the pipe and meets the oxygen in the air.');renderCtl()}))}},
  {part:6,title:'The hatch opens. Now tell it back.',
   cap:'The team kept clearing the leftover vapor until the sensors read zero. About half an hour later the hatch opened, and both astronauts climbed out. <b>Now you explain what happened.</b>',
   alt:'Start with what the propellant is (N₂O₄, no color). Then say what happens to it when it warms up and spreads out. Use the words split, join and balance.',
@@ -931,7 +1010,10 @@ TestYourself.mount({lab:'ChemLab',id:'equilibrium',title:'Raider ChemLab · The 
   why:'0.002 is below 0.0046, so splits outpace joins until the NO₂ square grows to match.'},
  {q:'The tank held colorless N₂O₄. Why did a toxic brown gas show up outside the capsule?',choices:['N₂O₄ splits into brown NO₂, and open air favors NO₂','N₂O₄ reacts with oxygen in the air to make NO₂','The tank was really filled with NO₂ all along','Sunlight turns N₂O₄ brown once it is outside'],answer:0,
   hint:'Both gases are made of the same atoms. What does one N₂O₄ do when it is hit hard enough?',step:10,stepName:'the leak spreads out',
-  why:'Leaked N₂O₄ splits into NO₂, and with all the room of open air the balance moves even further toward NO₂.'}]});
+  why:'Leaked N₂O₄ splits into NO₂, and with all the room of open air the balance moves even further toward NO₂.'},
+ {q:'From 1980 to 2024, the average NO₂ in US air fell 69% (EPA). A city that averaged 50 parts per billion in 1980 falls by the same share. About what does it average now?',answer:15.5,tol:.3,unit:'ppb',
+  hint:v=>Math.abs(v-34.5)<.3?'That is how much it dropped. Subtract that from 50, or keep 31% of 50.':Math.abs(v-69)<.5?'69 is the percent that went away. What is left is 100 − 69 = 31%.':'Keep 31% of 50: 50 × 0.31.',step:13,stepName:'who is doing this: the catalytic converter',
+  why:'50 × (1 − 0.69) = 50 × 0.31 = 15.5 ppb. Converters on cars are a big part of that drop.'}]});
 
 </script>
 <!-- Anonymous page-view count (GoatCounter, rjedtech.goatcounter.com): no cookies, no personal data, no form contents. -->
