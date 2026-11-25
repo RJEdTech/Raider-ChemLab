@@ -18,4 +18,7 @@ TestYourself.mount({lab:'ChemLab',id:'waterbeads',title:'Raider ChemLab · Why d
   why:'A contact angle over 90° means the liquid prefers itself to the surface, so it balls up. On clean glass the angle is under 20°, so the water spreads.'},
  {q:'Gitanjali Rao’s sensor flags lead above 15 parts per billion (ppb). In water, 1 ppb is 1 microgram per liter. How many micrograms of lead are in a 0.5-liter bottle of water at exactly 15 ppb?',answer:7.5,tol:.05,unit:'µg',
   hint:v=>v===15?'15 µg is for a whole liter. The bottle holds half a liter.':v===30?'Multiply by the liters, not divide: 15 µg per liter × 0.5 L.':'15 micrograms in each liter, and the bottle holds 0.5 liter.',step:6,stepName:'gitanjali rao, lone tree, colorado',
-  why:'15 µg/L × 0.5 L = 7.5 µg. A microgram is a millionth of a gram, which is why a sensitive, cheap test matters: you cannot see or taste lead at these levels.'}]});
+  why:'15 µg/L × 0.5 L = 7.5 µg. A microgram is a millionth of a gram, which is why a sensitive, cheap test matters: you cannot see or taste lead at these levels.'},
+ {q:'Dar Si Hmad\'s nets catch about 6,300 liters of water a day for about 400 people. About how many liters is that per person per day?',answer:15.8,tol:.4,unit:'liters',
+  hint:v=>v<1?'You divided the people by the water. Put the water on top: 6,300 ÷ 400.':v>100000?'That multiplies them. Share the water out: divide.':'6,300 ÷ 400.',step:7,stepName:'fog nets, mount boutmezguida, morocco',
+  why:'6,300 ÷ 400 ≈ 15.8 liters each, every day, from fog, and no one walks hours to the well to carry it.'}]});

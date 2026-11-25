@@ -112,9 +112,106 @@ const PICK=['Wax makes water lighter, so it floats up into balls','A thin layer 
 const V5=View3D.make({yaw:.35,pitch:-.3,auto:.12}),V2=View3D.make({yaw:.2,pitch:-.2,auto:.25}),V3=View3D.make({yaw:.4,pitch:-.25,auto:.15}),V4=View3D.make({yaw:.45,pitch:-.32,auto:.1});
 const bg=(ctx,c)=>{ctx.fillStyle=c||'#f4f6f8';ctx.fillRect(0,0,W,H);};
 const legendRow=(ctx,x,y,rows)=>{let xx=x;rows.forEach(([c,t])=>{ctx.beginPath();ctx.arc(xx+7,y-5,7,0,7);ctx.fillStyle=c;ctx.fill();xx+=18;xx+=txt(ctx,t,xx,y,{s:13,c:C.ink})+14;});};
+/* ---------- "Who is doing this" (Nov 25, 2026): Dar Si Hmad's fog nets, Mount Boutmezguida, Morocco ----------
+   Sources: UN Climate Change, Momentum for Change entry "Women-led Fog Harvesting" (Dar Si Hmad, a women-led NGO; Ait Baamrane villages
+   on the edge of the Sahara; 600 m² of nets capture an average of 6,300 liters a day, more than enough for 400 residents); Stanford Social
+   Innovation Review (cofounded 2010 by Aissa Derhem and anthropologist Jamila Bargach; water collection used to take nearly four hours a day,
+   done by women); World Economic Forum / Thomson Reuters Foundation (the first nets tore in high winds; the German WaterFoundation helped
+   build stronger CloudFisher nets); PBS SoCal Earth Focus (freeing girls and young women to go to school); fog-collector physics (US patent
+   10,882,054: a solid plate deflects the airflow and the droplets with it; on a mesh, droplets hit the threads, stick, join, and drip into a
+   gutter once big enough). What the student does and sees, with no numbers on screen: put up a mesh or a solid sheet, thick or light fog
+   (cause) → droplets stick to the threads and join into drops that run down (transformation) → the village tank fills, the tap runs, and a
+   girl walks to school instead of a woman walking to the far well (effect). Rates are made up; drawings, not to scale. */
+const FG_PICK=[{v:'sheet',x:600,y:30,draw(ctx,cx,cy){ctx.fillStyle='#8d97a3';ctx.fillRect(cx-30,cy-14,60,40);ctx.strokeStyle='#5a626c';ctx.lineWidth=2;ctx.strokeRect(cx-30,cy-14,60,40);txt(ctx,'solid sheet',cx,cy-24,{s:13,w:700,c:C.ink,a:'center'});}},
+  {v:'mesh',x:740,y:30,draw(ctx,cx,cy){ctx.strokeStyle='#5a626c';ctx.lineWidth=2;ctx.strokeRect(cx-30,cy-14,60,40);ctx.lineWidth=.8;ctx.strokeStyle='#7d8794';for(let k=-26;k<30;k+=5){ctx.beginPath();ctx.moveTo(cx+k,cy-14);ctx.lineTo(cx+k,cy+26);ctx.stroke();}for(let k=-10;k<26;k+=5){ctx.beginPath();ctx.moveTo(cx-30,cy+k);ctx.lineTo(cx+30,cy+k);ctx.stroke();}txt(ctx,'mesh net',cx,cy-24,{s:13,w:700,c:C.ink,a:'center'});}}];
+const FG_FIB=[0,1,2,3,4,5,6,7].map(i=>652+i*28),FG_BOX=[600,24,285,236];
+function newFg(){return {pick:null,k:0,net:'mesh',fog:'thick',d:[],st:[],slide:[],tank:.15,full:false,rev:false,flow:[],walk:0};}
+function fgTick(S,dt){const M=S.fg;if(!M||!M.pick)return;M.k=Math.min(1,M.k+dt*.5);if(M.pick!=='mesh'&&!M.mesh)return;
+  const mesh=M.net==='mesh';
+  // fog droplets drift in from the ocean side
+  if(Math.random()<dt*(M.fog==='thick'?32:5))M.d.push({x:604,y:40+Math.random()*190,vy:0});
+  M.d.forEach(q=>{q.x+=62*dt;q.y+=Math.sin(q.x*.05)*.3;
+    if(!mesh){// a solid sheet turns the air aside, and the droplets with it
+      const cy=140;if(q.x>655&&q.x<700){q.vy+=(q.y<cy?-1:1)*160*dt;}q.y+=q.vy*dt;if(q.x>=700&&!q.hit){q.hit=true;if(q.y>40&&q.y<240&&Math.random()<.02){q.done=true;M.st.push({x:700,y:q.y,v:1});}else q.y=q.y<cy?Math.min(q.y,34):Math.max(q.y,246);}}
+    else{for(let fi=0;fi<FG_FIB.length;fi++){const fx=FG_FIB[fi];if(q.x>=fx&&(q.f==null||q.f<fi)){q.f=fi;if(Math.random()>.22)continue;q.done=true;// it sticks; drops close together join (water sticks to water)
+        const near=M.st.find(s=>Math.abs(s.x-fx)<1&&Math.abs(s.y-q.y)<22);if(near)near.v+=1;else M.st.push({x:fx,y:q.y,v:1});break;}}}
+    if(q.x>885||q.y<26||q.y>256)q.done=true;});
+  M.d=M.d.filter(q=>!q.done);
+  M.st.forEach(s=>{const r=1.6+Math.sqrt(s.v)*1.5;if(r>4.4){s.done=true;M.slide.push({x:s.x,y:s.y,r});}});M.st=M.st.filter(s=>!s.done);
+  M.slide.forEach(s=>{s.y+=90*dt;// sliding drops sweep up the small ones below them
+    M.st.forEach(o=>{if(!o.done&&Math.abs(o.x-s.x)<1&&o.y>s.y-2&&o.y<s.y+8){o.done=true;s.r=Math.min(8,s.r+.3);}});
+    if(s.y>238){s.done=true;M.tank=Math.min(1,M.tank+.06);M.flow.push({u:0});}});
+  M.st=M.st.filter(s=>!s.done);M.slide=M.slide.filter(s=>!s.done);
+  M.flow.forEach(f=>f.u+=dt*.6);M.flow=M.flow.filter(f=>f.u<1);
+  M.tank=Math.max(0,M.tank-dt*.045);if(M.tank>.9&&mesh)M.full=true;if(M.full&&!mesh&&M.tank<.5)M.rev=true;
+  M.walk+=dt;}
+function fgNet(ctx,x,y,mesh){// a CloudFisher-style panel: steel frame on posts, fine mesh, a gutter along the bottom
+  ctx.fillStyle='#6b7178';ctx.fillRect(x-2,y,3,46);ctx.fillRect(x+55,y,3,46);
+  if(mesh){ctx.fillStyle='rgba(60,70,80,.18)';ctx.fillRect(x,y,56,30);ctx.strokeStyle='rgba(60,70,80,.45)';ctx.lineWidth=.5;for(let k=2;k<56;k+=3){ctx.beginPath();ctx.moveTo(x+k,y);ctx.lineTo(x+k,y+30);ctx.stroke();}for(let k=2;k<30;k+=3){ctx.beginPath();ctx.moveTo(x,y+k);ctx.lineTo(x+56,y+k);ctx.stroke();}}
+  else{ctx.fillStyle='#8d97a3';ctx.fillRect(x,y,56,30);}
+  ctx.strokeStyle='#4b525b';ctx.lineWidth=2;ctx.strokeRect(x,y,56,30);ctx.fillStyle='#4b525b';ctx.fillRect(x-1,y+30,58,4);}
+function fgScene(ctx,S){const M=S.fg,t=S.t,on=!!M.pick,mesh=M.net==='mesh',thick=M.fog==='thick';
+  const sky=ctx.createLinearGradient(0,0,0,240);sky.addColorStop(0,'#c9d6df');sky.addColorStop(1,'#eef0ea');ctx.fillStyle=sky;ctx.fillRect(0,0,590,430);
+  ctx.fillStyle='#7fa3c0';ctx.fillRect(0,196,120,8);// the Atlantic, far off
+  // the mountain: dry, rocky, a few argan trees
+  const mg=ctx.createLinearGradient(0,110,0,430);mg.addColorStop(0,'#b38a5a');mg.addColorStop(1,'#8a6a45');const ridge=[];for(let x=60;x<=590;x+=10){const base=x<180?lerp(430,154,Math.pow((x-60)/120,.8)):x<=400?146+Math.pow((x-290)/110,2)*8:lerp(154,300,Math.pow((x-400)/190,1.1));const top=x>=180&&x<=400;ridge.push([x,base+(top?Math.sin(x*.3)*1.5:Math.sin(x*.21)*5+Math.sin(x*.07+1)*6)]);}
+  ctx.fillStyle=mg;ctx.beginPath();ctx.moveTo(60,430);ridge.forEach(([x,y])=>ctx.lineTo(x,y));ctx.lineTo(590,430);ctx.closePath();ctx.fill();
+  ctx.save();ctx.clip();const sh=ctx.createLinearGradient(290,0,590,0);sh.addColorStop(0,'rgba(60,40,25,0)');sh.addColorStop(1,'rgba(60,40,25,.35)');ctx.fillStyle=sh;ctx.fillRect(290,120,300,310);
+  ctx.strokeStyle='rgba(80,55,35,.35)';ctx.lineWidth=1.5;for(let k=0;k<7;k++){const y0=180+k*34;ctx.beginPath();for(let x=60;x<=590;x+=12){const y=y0+Math.sin(x*.05+k)*6+(x-290)*.08;ctx[x===60?'moveTo':'lineTo'](x,y);}ctx.stroke();}
+  ctx.fillStyle='rgba(215,190,150,.35)';[[220,250,40,14],[360,230,34,12],[300,330,50,16]].forEach(([x,y,w,h])=>{ctx.beginPath();ctx.ellipse(x,y,w,h,.3,0,7);ctx.fill();});ctx.restore();
+  ctx.fillStyle='rgba(90,65,40,.35)';for(let i=0;i<40;i++){const x=120+((i*61)%440),y=170+((i*37)%240);if(y>140+Math.abs(x-290)*.5)ctx.fillRect(x,y,4,2);}
+  [[150,262],[205,218],[420,232],[500,300],[110,330]].forEach(([x,y])=>{ctx.fillStyle='#4a3424';ctx.fillRect(x-1.5,y-8,3,8);ctx.fillStyle='#4f6a3a';[[-6,-11],[0,-14],[6,-11]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(x+dx,y+dy,5,0,7);ctx.fill();});});
+  // the nets along the ridge
+  [[200,108],[262,100],[324,104]].forEach(([x,y])=>fgNet(ctx,x,y,mesh));
+  // the fog: rolling in from the ocean; around a solid sheet it streams away
+  const fa=thick?.7:.32;for(let i=0;i<9;i++){const fx=((t*22+i*80)%700)-120,fy=110+((i*29)%60),r=46+((i*13)%30);const g=ctx.createRadialGradient(fx,fy,4,fx,fy,r);g.addColorStop(0,`rgba(255,255,255,${fa})`);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(fx,fy,r*1.6,r*.7,0,0,7);ctx.fill();}
+  if(on&&!mesh){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;for(let k=0;k<3;k++){const yy=96+k*8;ctx.beginPath();ctx.moveTo(150,yy+10);ctx.bezierCurveTo(190,yy+10,190,yy-30,240,yy-34);ctx.lineTo(360,yy-34);ctx.stroke();}}
+  // pipe down to the reservoir; water moves in it after each drop
+  const P=[[290,138],[330,200],[420,262],[470,300]];ctx.strokeStyle='#5a626c';ctx.lineWidth=4;ctx.beginPath();P.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p[0],p[1]));ctx.stroke();
+  M.flow.forEach(f=>{const u=f.u*3,i=Math.min(2,Math.floor(u)),k=u-i,x=lerp(P[i][0],P[i+1][0],k),y=lerp(P[i][1],P[i+1][1],k);ctx.fillStyle='#4f9ad6';ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill();});
+  // the reservoir, seen in cutaway, and the village of flat-roofed houses
+  const tx=462,ty=292;ctx.fillStyle='#c9c2b4';ctx.fillRect(tx,ty,64,46);ctx.fillStyle='#e9eef2';ctx.fillRect(tx+6,ty+6,52,34);const wl=M.tank*34;ctx.fillStyle='#4f9ad6';ctx.fillRect(tx+6,ty+40-wl,52,wl);ctx.strokeStyle='#8a8378';ctx.lineWidth=2;ctx.strokeRect(tx,ty,64,46);
+  [[480,368,46,28],[532,360,40,34],[430,380,40,26],[550,392,36,24]].forEach(([x,y,w,h])=>{ctx.fillStyle='#c79b6a';ctx.fillRect(x,y,w,h);ctx.fillStyle='#b0855a';ctx.fillRect(x,y,w,4);ctx.fillStyle='#4a3424';ctx.fillRect(x+w*.4,y+h*.45,7,h*.55);ctx.fillRect(x+6,y+8,6,6);});
+  // the far well and the school: who walks where
+  ctx.fillStyle='#9a8a74';ctx.beginPath();ctx.ellipse(40,404,16,6,0,0,7);ctx.fill();ctx.strokeStyle='#6b5a44';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(30,404);ctx.lineTo(30,386);ctx.lineTo(50,386);ctx.lineTo(50,404);ctx.stroke();
+  ctx.strokeStyle='rgba(120,90,55,.6)';ctx.setLineDash([5,5]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(60,404);ctx.quadraticCurveTo(250,420,430,396);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#e9e2d2';ctx.fillRect(250,382,46,28);ctx.fillStyle='#b0855a';ctx.beginPath();ctx.moveTo(246,382);ctx.lineTo(273,368);ctx.lineTo(300,382);ctx.closePath();ctx.fill();ctx.fillStyle='#4a3424';ctx.fillRect(268,396,9,14);ctx.strokeStyle='#4b525b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(296,368);ctx.lineTo(296,346);ctx.stroke();ctx.fillStyle='#c1272d';ctx.fillRect(296,346,12,8);ctx.fillStyle='#006233';ctx.fillRect(300,348,4,4);
+  const water=M.tank>.35&&on,u=(M.walk*.06)%1;
+  if(!water){// a woman carrying water from the far well
+    const x=lerp(70,420,u),y=405+Math.sin(u*Math.PI)*10;fgPerson(ctx,x,y,'#8a3b5a',true,t);}
+  else{// a girl with a school bag, headed to school
+    const x=lerp(430,300,u),y=402+Math.sin(u*Math.PI)*6;fgPerson(ctx,x,y,'#2f6fb0',false,t,true);}
+  if(M.pick==='sheet'&&M.k<1&&!M.mesh){ctx.save();ctx.globalAlpha=1-M.k;ctx.fillStyle='rgba(255,255,255,.9)';rr(ctx,170,40,240,34,8);ctx.fill();txt(ctx,'the fog goes around it',290,62,{s:15,w:700,c:'#4b525b',a:'center'});ctx.restore();}}
+function fgPerson(ctx,x,y,col,cans,t,bag){const s=Math.sin(t*8)*2.5;ctx.save();ctx.translate(x,y);ctx.fillStyle='#5a3a26';ctx.fillRect(-2-s*.3,-10,2.2,10);ctx.fillRect(1+s*.3,-10,2.2,10);ctx.fillStyle=col;rr(ctx,-5,-26,11,17,4);ctx.fill();
+  if(!bag){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(-6,-25);ctx.lineTo(0,-33);ctx.lineTo(7,-25);ctx.closePath();ctx.fill();}
+  ctx.fillStyle='#8a5a3c';ctx.beginPath();ctx.arc(.5,-30,4.5,0,7);ctx.fill();
+  if(cans){ctx.fillStyle='#e8c43a';ctx.fillRect(-12,-16,6,9);ctx.fillRect(7,-16,6,9);}
+  if(bag){ctx.fillStyle='#c1272d';rr(ctx,4,-25,6,10,2);ctx.fill();}ctx.restore();}
+function fgInside(ctx,S){const M=S.fg,mesh=M.net==='mesh';
+  ctx.save();ctx.strokeStyle='rgba(60,60,70,.45)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.rect(262,96,62,40);ctx.stroke();ctx.beginPath();ctx.moveTo(324,100);ctx.lineTo(600,40);ctx.stroke();ctx.restore();
+  ctx.save();rr(ctx,...FG_BOX,12);ctx.clip();const bg=ctx.createLinearGradient(600,0,885,0);bg.addColorStop(0,'#e6ecf0');bg.addColorStop(1,'#f3f5f6');ctx.fillStyle=bg;ctx.fillRect(...FG_BOX);
+  if(mesh){ctx.strokeStyle='#7d8794';ctx.lineWidth=2;FG_FIB.forEach(x=>{ctx.beginPath();ctx.moveTo(x,24);ctx.lineTo(x,240);ctx.stroke();});ctx.lineWidth=1;ctx.strokeStyle='rgba(125,135,148,.5)';for(let y=40;y<240;y+=28){ctx.beginPath();ctx.moveTo(640,y);ctx.lineTo(860,y);ctx.stroke();}}
+  else{const g=ctx.createLinearGradient(700,0,810,0);g.addColorStop(0,'#9aa3ad');g.addColorStop(1,'#7d8794');ctx.fillStyle=g;ctx.fillRect(700,36,110,204);}
+  ctx.fillStyle='#4b525b';ctx.fillRect(630,240,240,8);
+  M.d.forEach(q=>{ctx.fillStyle='rgba(120,170,215,.75)';ctx.beginPath();ctx.arc(q.x,q.y,1.6,0,7);ctx.fill();});
+  const drop=(x,y,r)=>{const g=ctx.createRadialGradient(x-r*.35,y-r*.35,.5,x,y,r);g.addColorStop(0,'#ffffff');g.addColorStop(.35,'#9fd0f2');g.addColorStop(1,'#3d86c6');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();};
+  M.st.forEach(s=>drop(s.x,s.y,1.6+Math.sqrt(s.v)*1.5));M.slide.forEach(s=>drop(s.x,s.y,s.r));
+  ctx.restore();ctx.strokeStyle='#8a8f98';ctx.lineWidth=2;rr(ctx,...FG_BOX,12);ctx.stroke();
+  // the village tap
+  ctx.save();rr(ctx,600,272,285,150,12);ctx.clip();ctx.fillStyle='#efe6d6';ctx.fillRect(600,272,285,150);ctx.fillStyle='#c79b6a';ctx.fillRect(600,272,285,70);
+  ctx.fillStyle='#9aa1a9';ctx.fillRect(724,300,30,8);ctx.fillRect(748,300,8,22);ctx.fillStyle='#b9b2a6';rr(ctx,690,360,120,36,6);ctx.fill();ctx.fillStyle='#8f887c';ctx.fillRect(690,360,120,6);
+  const on=M.tank>.08;if(on){ctx.fillStyle='rgba(79,154,214,.85)';ctx.fillRect(749,322,6,40);ctx.fillStyle='#4f9ad6';ctx.fillRect(696,366,108,10+M.tank*14);}
+  ctx.fillStyle='#e8c43a';rr(ctx,826,352,30,38,4);ctx.fill();ctx.fillStyle='#c9a52a';ctx.fillRect(834,346,12,8);
+  ctx.restore();ctx.strokeStyle='#d5d9de';ctx.lineWidth=1.5;rr(ctx,600,272,285,150,12);ctx.stroke();}
+function fgRhyme(ctx){Who.rhyme(ctx,20,440,560,140,(c,x,y,w,h)=>{const wtr=(ox,oy,a)=>{c.fillStyle='#e0453a';c.beginPath();c.arc(ox,oy,11,0,7);c.fill();[[-1,1],[1,1]].forEach(([dx])=>{const hx=ox+Math.cos(a+dx*.9)*16,hy=oy+Math.sin(a+dx*.9)*16;c.fillStyle='#f2f2f2';c.beginPath();c.arc(hx,hy,6.5,0,7);c.fill();c.strokeStyle='#bbb';c.lineWidth=1;c.stroke();});};
+    wtr(x+60,y+h/2,0);wtr(x+150,y+h/2,Math.PI);c.save();c.strokeStyle='#2f7fd0';c.lineWidth=2.5;c.setLineDash([4,4]);c.beginPath();c.moveTo(x+82,y+h/2);c.lineTo(x+136,y+h/2);c.stroke();c.restore();},
+  (c,x,y,w,h)=>{c.strokeStyle='#7d8794';c.lineWidth=3;c.beginPath();c.moveTo(x+w/2,y+10);c.lineTo(x+w/2,y+h-10);c.stroke();const d=(dx,dy,r)=>{const g=c.createRadialGradient(dx-r*.35,dy-r*.35,.5,dx,dy,r);g.addColorStop(0,'#fff');g.addColorStop(.35,'#9fd0f2');g.addColorStop(1,'#3d86c6');c.fillStyle=g;c.beginPath();c.arc(dx,dy,r,0,7);c.fill();};
+    d(x+w/2,y+h/2-16,9);d(x+w/2,y+h/2+10,12);c.save();c.strokeStyle='#2f7fd0';c.lineWidth=2;c.setLineDash([3,3]);c.beginPath();c.moveTo(x+w/2+14,y+h/2-14);c.quadraticCurveTo(x+w/2+26,y+h/2-2,x+w/2+16,y+h/2+8);c.stroke();c.restore();});}
+function fgPick(S,v){const M=S.fg;if(!M)return;if(!M.mesh){M.pick=v;M.k=0;if(v==='mesh'){M.mesh=true;M.net='mesh';S.v.fn='mesh';}else M.net='sheet';}}
+
 Story.start({
   id:'waterbeads',title:'Why does water bead up on a waxed car?',W,H,labHref:'../index.html#polarity',
-  about:'<p><b>What is real.</b> Water is bent: O–H bonds 0.096 nm long at 104.5°. Oxygen pulls the shared electrons toward itself, so its end is slightly negative and the hydrogen ends slightly positive. Hydrogen bonds (dashed) are drawn at their real length. Wax is chains of carbon and hydrogen; clean glass is covered in O–H groups. Contact angles: about 105° on wax, under 20° on clean glass.</p><p><b>What is simplified.</b> About 34 water molecules stand in for a drop; a real bead holds about 10²¹. The wax chains are drawn only 4 carbons deep. The glow around each atom marks its partial charge; real molecules have no color.</p><p><b>Who is doing this (step 6).</b> Gitanjali Rao’s story is from Wikipedia, Colorado Public Radio (2019), The Analytical Scientist, WaterWorld and Science Blog. Her real sensor is a film of many carbon nanotubes between two electrodes; the picture shows one tube and far fewer lead ions than a real sample. The EPA lowered its lead action level from 15 to 10 parts per billion in October 2024.</p>',
+  about:'<p><b>What is real.</b> Water is bent: O–H bonds 0.096 nm long at 104.5°. Oxygen pulls the shared electrons toward itself, so its end is slightly negative and the hydrogen ends slightly positive. Hydrogen bonds (dashed) are drawn at their real length. Wax is chains of carbon and hydrogen; clean glass is covered in O–H groups. Contact angles: about 105° on wax, under 20° on clean glass.</p><p><b>What is simplified.</b> About 34 water molecules stand in for a drop; a real bead holds about 10²¹. The wax chains are drawn only 4 carbons deep. The glow around each atom marks its partial charge; real molecules have no color.</p><p><b>Who is doing this (step 6).</b> Gitanjali Rao’s story is from Wikipedia, Colorado Public Radio (2019), The Analytical Scientist, WaterWorld and Science Blog. Her real sensor is a film of many carbon nanotubes between two electrodes; the picture shows one tube and far fewer lead ions than a real sample. The EPA lowered its lead action level from 15 to 10 parts per billion in October 2024.</p><p><b>Fog nets (step 7).</b> Dar Si Hmad, a women-led nonprofit co-founded in 2010 by anthropologist Jamila Bargach and Aissa Derhem, collects drinking water from fog on Mount Boutmezguida in southwest Morocco, on the edge of the Sahara. About 600 square meters of nets catch an average of 6,300 liters a day, more than enough for about 400 people in five villages; before, women spent close to four hours a day fetching water. The first nets tore in high winds; stronger CloudFisher nets came from a partnership with the German WaterFoundation. Why a mesh and not a solid sheet: air pushes around a solid sheet and carries the droplets with it, but it passes through a mesh, so droplets hit the threads, stick, join into bigger drops (water sticks to water), and run down into a gutter. Sources: UN Climate Change (Momentum for Change); Stanford Social Innovation Review; World Economic Forum; PBS SoCal Earth Focus; US patent 10,882,054. Rates in the picture are made up.</p>',
   tell:{frames:FRAMES,terms:['polar|lopsided','δ+|δ−|partial charge','hydrogen bond','nonpolar|no charges','wax','bead|round'],
     nudge:'For each picture ask: what had to be true first for this to happen?',
     done:'<b>That is the story.</b> Now tell it in your own words.',
@@ -191,6 +288,24 @@ Story.start({
      [['📺','age 11: Flint water'],['📦','cardboard prototype'],['🧑‍🔬','a 3M scientist mentor'],['🏆','2017: top young scientist'],['📰','2020: TIME Kid of the Year'],['🎓','MIT'],['🏪','not in stores yet']]
        .forEach(([i,t],k)=>{const y=206+k*42;txt(ctx,i,x+36,y,{s:24,a:'center'});txt(ctx,t,x+66,y-4,{s:14.5,w:600,c:C.ink});});
      txt(ctx,'Flags lead above 15 ppb. EPA action',x+18,520,{s:12,c:C.soft});txt(ctx,'level since 2024: 10 ppb.',x+18,536,{s:12,c:C.soft});}},
+
+  {rail:'Who did it',title:'Fog nets, Mount Boutmezguida, Morocco',links:[{t:"Turning fog into water transforms women's lives in Morocco",u:"https://pbssocal.org/shows/earth-focus/turning-fog-into-water-transforms-womens-lives-in-morocco",d:"PBS SoCal Earth Focus"},{t:"These Moroccans are turning foggy days into a solution to their water crisis",u:"https://theworld.org/stories/2018/03/29/fog-nets-pkg",d:"The World: meet the fog technician"},{t:"A device that collects water from clouds",u:"https://www.smithsonianmag.com/innovation/device-collects-water-clouds-180962705/",d:"Smithsonian: how the CloudFisher net works"}],live:true,views:false,
+   text(S){const M=S.fg;if(!M||!M.pick)return 'Southwest Morocco, on the edge of the Sahara: almost no rain, but fog rolls in from the Atlantic. <b>Tap what catches more of it.</b>';
+     if(!M.mesh)return 'A solid sheet: the wind goes around it and carries the fog with it. Try the other.';
+     if(M.rev)return 'Solid sheet: the fog slips past, and the tank runs low. Dar Si Hmad\'s nets catch about 6,300 liters a day for over 400 people.';
+     if(M.full&&M.net==='mesh')return 'The tank is full and the tap runs: no long walk to the well, so a girl can walk to school. <b>Now put up a solid sheet.</b>';
+     if(M.net==='sheet')return 'Watch the tank.';
+     return 'Air flows through the mesh. Fog droplets hit the threads, stick, and join, because <b>water sticks to water</b>. Big drops run down to the pipe.';},
+   alt:'Look at the two pictures at the bottom. Two water molecules hold on to each other. On a net, a fog droplet that lands next to another one joins it, and the drop grows until it is heavy enough to run down. Same pull, bigger scale.',
+   ui:[{type:'seg',key:'fp',val:'',label:'What catches more fog?',opts:[{v:'sheet',l:'A solid sheet'},{v:'mesh',l:'A mesh net'}],on(S,v){fgPick(S,v);},show:S=>S.fg&&!S.fg.mesh},
+     {type:'seg',key:'fn',val:'mesh',label:'Put up',opts:[{v:'mesh',l:'Mesh net'},{v:'sheet',l:'Solid sheet'}],on(S,v){S.fg.net=v;},show:S=>S.fg&&S.fg.mesh},
+     {type:'seg',key:'ff',val:'thick',label:'Fog',opts:[{v:'light',l:'Light'},{v:'thick',l:'Thick'}],on(S,v){S.fg.fog=v;},show:S=>S.fg&&S.fg.mesh}],
+   todo:[{t:'Tap what catches more fog',ok:S=>S.fg&&S.fg.mesh},{t:'Fill the village tank',ok:S=>S.fg&&S.fg.full},{t:'Put up a solid sheet and watch',ok:S=>S.fg&&S.fg.rev}],
+   enter(S){S.fg=newFg();S.v.fp='';S.v.fn='mesh';S.v.ff='thick';},tick(S,dt){fgTick(S,dt);},
+   click(S,x,y){const v=Who.hit(FG_PICK,x,y);if(v&&!S.fg.mesh){fgPick(S,v);S.v.fp=v;}},
+   draw(ctx,S){const M=S.fg||(S.fg=newFg());ctx.fillStyle='#f4f6f8';ctx.fillRect(0,0,W,H);fgScene(ctx,S);
+     if(!M.mesh)Who.cards(ctx,S,FG_PICK,M.pick);else fgInside(ctx,S);fgRhyme(ctx);
+     Who.panel(ctx,'Dar Si Hmad',[['🏜️','Sahara edge, little rain'],['🌫️','fog from the Atlantic'],['👩','2010: Jamila Bargach co-founds'],['🕸️','stronger nets from Germany'],['💧','about 6,300 liters a day'],['🏘️','400+ people, 5 villages'],['🌬️','hard part: winds tore nets']],['Sources: UN Climate Change; SSIR;','WEF; PBS SoCal Earth Focus.']);}},
 
   {rail:'Tell it',title:'Now you tell the story',tell:true}
   ]});
